@@ -1,0 +1,52 @@
+# config/packages/security.yaml
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Infrastructure\Persistence\Doctrine\Entity\UserEntity
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        
+        # Public endpoints (no auth required)
+        api_public:
+            pattern: ^/api($|/$|/health|/auth)
+            stateless: true
+            security: false
+
+        # Therapist setup endpoint (should be secured in production)
+        api_setup:
+            pattern: ^/api/therapist/setup
+            stateless: true
+            security: false
+
+        # Protected API endpoints
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+    access_control:
+        # Public endpoints
+        - { path: ^/api/health, roles: PUBLIC_ACCESS }
+        - { path: ^/api/$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/api/therapist/setup, roles: PUBLIC_ACCESS }
+        
+        # Protected endpoints
+        - { path: ^/api/therapist, roles: ROLE_THERAPIST }
+        - { path: ^/api/patient, roles: ROLE_PATIENT }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4

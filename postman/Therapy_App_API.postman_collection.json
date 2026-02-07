@@ -1,0 +1,165 @@
+{
+  "info": {
+    "name": "Therapy App API",
+    "description": "API endpoints for Authentication & User Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8080/api"},
+    {"key": "therapist_token", "value": ""},
+    {"key": "patient_token", "value": ""},
+    {"key": "invitation_token", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "2. Create Therapist (Setup)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+        },
+        "url": "{{base_url}}/therapist/setup"
+      }
+    },
+    {
+      "name": "3. Therapist Login",
+      "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"]}}],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+        },
+        "url": "{{base_url}}/auth/therapist/login"
+      }
+    },
+    {
+      "name": "4. Get Therapist Profile",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+        "url": "{{base_url}}/therapist/me"
+      }
+    },
+    {
+      "name": "5. Invite Patient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+        },
+        "url": "{{base_url}}/therapist/patients/invite"
+      }
+    },
+    {
+      "name": "6. List Pending Invitations",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+        "url": "{{base_url}}/therapist/invitations"
+      }
+    },
+    {
+      "name": "7. Validate Invitation (use token from email)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
+      }
+    },
+    {
+      "name": "8. Register Patient",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\"}"
+        },
+        "url": "{{base_url}}/auth/register"
+      }
+    },
+    {
+      "name": "9. Patient Login",
+      "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"]}}],
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
+        },
+        "url": "{{base_url}}/auth/patient/login"
+      }
+    },
+    {
+      "name": "10. Get Patient Profile",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+        "url": "{{base_url}}/patient/me"
+      }
+    },
+    {
+      "name": "11. Update Patient Profile",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{patient_token}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
+        },
+        "url": "{{base_url}}/patient/profile"
+      }
+    },
+    {
+      "name": "12. List Patients (as Therapist)",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+        "url": "{{base_url}}/therapist/patients"
+      }
+    },
+    {
+      "name": "13. Request Password Reset",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"patient@example.com\"}"
+        },
+        "url": "{{base_url}}/auth/password/forgot"
+      }
+    },
+    {
+      "name": "14. Reset Password (use token from email)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
+        },
+        "url": "{{base_url}}/auth/password/reset"
+      }
+    }
+  ]
+}

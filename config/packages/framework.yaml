@@ -1,0 +1,31 @@
+# config/packages/framework.yaml
+framework:
+    secret: '%env(APP_SECRET)%'
+    
+    # Enable PHP attributes for routing
+    annotations:
+        enabled: false
+    
+    http_method_override: false
+    handle_all_throwables: true
+    
+    php_errors:
+        log: true
+
+    session:
+        handler_id: null
+        cookie_secure: auto
+        cookie_samesite: lax
+        storage_factory_id: session.storage.factory.native
+
+    serializer:
+        enabled: true
+
+    validation:
+        enabled: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

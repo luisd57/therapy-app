@@ -1,0 +1,58 @@
+# config/services.yaml
+parameters:
+    app.frontend_url: '%env(APP_FRONTEND_URL)%'
+    app.invitation_ttl: '%env(int:INVITATION_TOKEN_TTL)%'
+    app.password_reset_ttl: '%env(int:PASSWORD_RESET_TOKEN_TTL)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Domain Interfaces -> Infrastructure Implementations
+    App\Domain\User\Repository\UserRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineUserRepository
+
+    App\Domain\User\Repository\InvitationTokenRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineInvitationTokenRepository
+
+    App\Domain\User\Repository\PasswordResetTokenRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrinePasswordResetTokenRepository
+
+    App\Domain\User\Service\PasswordHasherInterface:
+        class: App\Infrastructure\Security\BcryptPasswordHasher
+
+    App\Domain\User\Service\TokenGeneratorInterface:
+        class: App\Infrastructure\Security\SecureTokenGenerator
+
+    App\Domain\User\Service\EmailSenderInterface:
+        class: App\Infrastructure\Email\SymfonyEmailSender
+
+    App\Application\User\Handler\JwtTokenGeneratorInterface:
+        class: App\Infrastructure\Security\JwtTokenGenerator
+
+    # Application Handlers
+    App\Application\User\Handler\:
+        resource: '../src/Application/User/Handler/'
+
+    # Invite Patient Handler needs specific configuration
+    App\Application\User\Handler\InvitePatientHandler:
+        arguments:
+            $frontendUrl: '%app.frontend_url%'
+            $invitationTtl: '%app.invitation_ttl%'
+
+    # Request Password Reset Handler needs specific configuration
+    App\Application\User\Handler\RequestPasswordResetHandler:
+        arguments:
+            $frontendUrl: '%app.frontend_url%'
+            $passwordResetTtl: '%app.password_reset_ttl%'
+
+    # Infrastructure Controllers
+    App\Infrastructure\Http\Controller\:
+        resource: '../src/Infrastructure/Http/Controller/'
+        tags: ['controller.service_arguments']
+
+    # Console Commands
+    App\Infrastructure\Console\:
+        resource: '../src/Infrastructure/Console/'
+        tags: ['console.command']
