@@ -205,20 +205,6 @@ docker-compose logs -f php    # View PHP container logs
 docker-compose restart        # Restart all containers
 ```
 
-## Environment Variables
-
-Key environment variables in `.env`:
-
-```env
-DATABASE_URL=postgresql://therapy_user:therapy_pass@postgres:5432/therapy_db
-JWT_PASSPHRASE=therapy_jwt_passphrase
-JWT_TOKEN_TTL=3600
-MAILER_DSN=smtp://mailhog:1025
-APP_FRONTEND_URL=http://localhost:3000
-INVITATION_TOKEN_TTL=86400
-PASSWORD_RESET_TOKEN_TTL=3600
-```
-
 ## Troubleshooting
 
 ### "Connection refused" errors
