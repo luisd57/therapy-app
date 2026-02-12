@@ -32,3 +32,7 @@ Product-Requirements.md
 
 # Personal scripts
 *.bat
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

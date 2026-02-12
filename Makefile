@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell composer sf db-create db-migrate db-diff cache-clear test init
+.PHONY: help build up down restart logs shell composer sf db-create db-migrate db-diff cache-clear test test-unit test-integration test-db-setup init
 
 # Default target
 help:
@@ -61,7 +61,21 @@ cache-clear:
 
 # Tests
 test:
-	docker-compose exec php php bin/phpunit
+	docker-compose exec php vendor/bin/phpunit
+
+test-unit:
+	docker-compose exec php vendor/bin/phpunit --testsuite=Unit
+
+test-integration:
+	docker-compose exec php vendor/bin/phpunit --testsuite=Integration
+
+test-db-create:
+	docker-compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+
+test-db-migrate:
+	docker-compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
+test-db-setup: test-db-create test-db-migrate
 
 # Initialize project
 init:

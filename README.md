@@ -179,6 +179,284 @@ After inviting a patient:
 3. The registration URL contains the token: `http://localhost:3000/register?token=YOUR_TOKEN_HERE`
 4. Copy the token value and set it in Postman's `invitation_token` variable
 
+## Testing
+
+The project has a comprehensive test suite with **203 tests (373 assertions)** covering:
+
+- **Unit Tests**: Pure logic tests for domain entities, value objects, and handlers. No database required.
+- **Integration Tests**: Repository and API endpoint tests with real database interactions.
+- **Transaction Isolation**: All integration tests run in transactions that rollback automatically, keeping the test database clean.
+
+### First Time Setup (Test Database)
+
+Create and migrate the test database (only needed once, or after `docker-compose down -v`):
+
+**Windows** (direct docker-compose commands):
+
+```powershell
+docker-compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+docker-compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+```
+
+**Mac/Linux** (using Makefile):
+
+```bash
+make test-db-setup
+```
+
+> The test database persists between container restarts. Only re-run if you delete Docker volumes or add new migrations.
+
+### Running Tests
+
+#### Run All Tests
+
+**Windows**:
+
+```powershell
+docker-compose exec php vendor/bin/phpunit
+```
+
+**Mac/Linux**:
+
+```bash
+make test
+```
+
+#### Run by Suite
+
+**Unit tests only (fast, no DB needed)**:
+
+```powershell
+# Windows
+docker-compose exec php vendor/bin/phpunit --testsuite=Unit
+
+# Mac/Linux
+make test-unit
+```
+
+**Integration tests only (requires test DB)**:
+
+```powershell
+# Windows
+docker-compose exec php vendor/bin/phpunit --testsuite=Integration
+
+# Mac/Linux
+make test-integration
+```
+
+#### Run Specific Test File
+
+```powershell
+docker-compose exec php vendor/bin/phpunit tests/Unit/Domain/Entity/UserTest.php
+docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/AuthControllerTest.php
+```
+
+#### Run Specific Test Method
+
+Using `--filter` (accepts regex, so partial names work):
+
+```powershell
+docker-compose exec php vendor/bin/phpunit --filter=testTherapistLoginSuccess
+docker-compose exec php vendor/bin/phpunit --filter=testFullLogin  # matches testFullLoginThenAccessProtectedResourceFlow
+```
+
+### Test Structure
+
+```
+tests/
+├── Helper/
+│   ├── DomainTestHelper.php      # Factory methods for test fixtures
+│   ├── IntegrationTestCase.php   # Base class for repository tests
+│   └── ApiTestCase.php           # Base class for API/controller tests
+├── Unit/                         # no database needed
+│   ├── Domain/
+│   │   ├── Entity/               # Entity behavior tests
+│   │   ├── ValueObject/          # Value object validation tests
+│   │   └── Exception/            # Domain exception tests
+│   └── Application/
+│       └── Handler/              # Use case handler tests (with mocks)
+└── Integration/                  # requires test database
+    └── Infrastructure/
+        ├── Persistence/Doctrine/Repository/  # Repository integration tests
+        └── Http/Controller/Api/              # API endpoint tests
+```
+
+### Writing Unit Tests
+
+#### Domain Entity Tests
+
+Use `DomainTestHelper` factory methods for creating test fixtures:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Domain\Entity;
+
+use App\Tests\Helper\DomainTestHelper;
+use PHPUnit\Framework\TestCase;
+
+final class UserTest extends TestCase
+{
+    public function testTherapistCreatedAsActive(): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+
+        $this->assertTrue($therapist->isActive());
+        $this->assertTrue($therapist->getRole()->isTherapist());
+    }
+
+    public function testPatientCreatedAsInactive(): void
+    {
+        $patient = DomainTestHelper::createPatient();
+
+        $this->assertFalse($patient->isActive());
+        $this->assertTrue($patient->getRole()->isPatient());
+    }
+}
+```
+
+#### Handler Unit Tests
+
+Use PHPUnit's `createMock()` for dependencies:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Application\Handler;
+
+use App\Application\User\Handler\LoginHandler;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\Service\PasswordHasherInterface;
+use App\Infrastructure\Security\JwtTokenGenerator;
+use App\Tests\Helper\DomainTestHelper;
+use PHPUnit\Framework\TestCase;
+
+final class LoginHandlerTest extends TestCase
+{
+    public function testTherapistLoginSuccess(): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+
+        $userRepo = $this->createMock(UserRepositoryInterface::class);
+        $userRepo->method('findByEmail')->willReturn($therapist);
+
+        $hasher = $this->createMock(PasswordHasherInterface::class);
+        $hasher->method('verify')->willReturn(true);
+
+        $tokenGen = $this->createMock(JwtTokenGenerator::class);
+        $tokenGen->method('generate')->willReturn('mock.jwt.token');
+
+        $handler = new LoginHandler($userRepo, $hasher, $tokenGen);
+        $result = $handler->handle($input);
+
+        $this->assertNotEmpty($result->token);
+        $this->assertEquals('mock.jwt.token', $result->token);
+    }
+}
+```
+
+### Writing Integration Tests
+
+#### Repository Tests
+
+Extend `IntegrationTestCase` for automatic transaction wrapping:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Repository;
+
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\IntegrationTestCase;
+
+final class DoctrineUserRepositoryTest extends IntegrationTestCase
+{
+    private UserRepositoryInterface $repository;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->repository = self::getContainer()->get(UserRepositoryInterface::class);
+    }
+
+    public function testSaveAndFindById(): void
+    {
+        $user = DomainTestHelper::createTherapist();
+
+        $this->repository->save($user);
+        $found = $this->repository->findById($user->getId());
+
+        $this->assertNotNull($found);
+        $this->assertEquals($user->getEmail()->getValue(), $found->getEmail()->getValue());
+    }
+}
+```
+
+> **Transaction isolation**: Each test runs in a database transaction that rolls back in `tearDown()`. No test data persists between tests.
+
+#### API/Controller Tests
+
+Extend `ApiTestCase` for HTTP client + authentication helpers:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration\Infrastructure\Http\Controller\Api;
+
+use App\Tests\Helper\ApiTestCase;
+
+final class TherapistControllerTest extends ApiTestCase
+{
+    public function testMeAuthenticatedReturns200(): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('GET', '/api/therapist/me', [], $token);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertEquals('therapist@test.com', $data['data']['email']);
+    }
+
+    public function testMeUnauthenticatedReturns401(): void
+    {
+        $this->jsonRequest('GET', '/api/therapist/me');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+}
+```
+
+> **Auth helpers**: `createTherapistAndGetToken()` and `createPatientAndGetToken()` seed data directly via repositories (not API endpoints) for isolation, then call the login endpoint to get a real JWT token.
+
+### Key Testing Patterns
+
+**Transaction Isolation**
+- All integration tests run in database transactions
+- Transactions are automatically rolled back in `tearDown()`
+- No test data persists between tests
+- Test database remains clean
+
+**Test Helpers**
+- `DomainTestHelper`: Factory methods for creating domain objects in any state (active/inactive users, valid/expired/used tokens, boundary conditions)
+- `IntegrationTestCase`: Automatic transaction wrapping for repository tests
+- `ApiTestCase`: Transaction wrapping + HTTP client helpers + JWT auth token generation
+
+**Kernel Reboot Disabled**
+- `ApiTestCase` calls `$this->client->disableReboot()` to keep the same Symfony kernel across multiple HTTP requests
+- This ensures transaction isolation works correctly with JWT authentication
+- Without this, each request would get a new EntityManager that can't see uncommitted transaction data
+
 ## Console Commands
 
 ```powershell
@@ -208,6 +486,7 @@ docker-compose restart        # Restart all containers
 ## Troubleshooting
 
 ### "Connection refused" errors
+
 ```powershell
 # Ensure containers are running
 docker-compose ps
@@ -217,6 +496,7 @@ docker-compose restart
 ```
 
 ### JWT Token errors
+
 ```powershell
 # Regenerate JWT keys
 docker-compose exec php bash
@@ -227,6 +507,7 @@ exit
 ```
 
 ### Database errors
+
 ```powershell
 # Reset database
 docker-compose exec php php bin/console doctrine:database:drop --force
@@ -235,6 +516,7 @@ docker-compose exec php php bin/console doctrine:migrations:migrate --no-interac
 ```
 
 ### Cache issues
+
 ```powershell
 docker-compose exec php php bin/console cache:clear
 docker-compose exec php php bin/console cache:warmup
@@ -268,7 +550,6 @@ therapy-app/
 │   ├── Application/          # Use cases
 │   ├── Domain/               # Business logic
 │   └── Infrastructure/       # External concerns
-├── .env                       # Environment variables
 ├── docker-compose.yml         # Docker Compose config
 ├── Makefile                   # Make commands
 └── run.bat                    # Windows batch commands
