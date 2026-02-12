@@ -78,7 +78,6 @@ class UserEntity implements UserInterface, PasswordAuthenticatedUserInterface
     {
     }
 
-    // Getters
     public function getId(): string
     {
         return $this->id;
@@ -154,7 +153,6 @@ class UserEntity implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->updatedAt;
     }
 
-    // Setters
     public function setId(string $id): void
     {
         $this->id = $id;

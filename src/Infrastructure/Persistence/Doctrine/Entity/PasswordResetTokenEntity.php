@@ -37,7 +37,6 @@ class PasswordResetTokenEntity
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
-    // Getters
     public function getId(): string
     {
         return $this->id;
@@ -73,7 +72,6 @@ class PasswordResetTokenEntity
         return $this->usedAt;
     }
 
-    // Setters
     public function setId(string $id): void
     {
         $this->id = $id;
