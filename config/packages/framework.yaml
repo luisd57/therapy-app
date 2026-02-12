@@ -2,10 +2,6 @@
 framework:
     secret: '%env(APP_SECRET)%'
     
-    # Enable PHP attributes for routing
-    annotations:
-        enabled: false
-    
     http_method_override: false
     handle_all_throwables: true
     

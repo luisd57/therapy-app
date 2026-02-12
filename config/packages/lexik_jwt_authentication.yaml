@@ -6,7 +6,7 @@ lexik_jwt_authentication:
     token_ttl: '%env(int:JWT_TOKEN_TTL)%'
     
     # Optional customizations
-    user_identity_field: email
+    user_id_claim: email
     
     token_extractors:
         authorization_header:
