@@ -51,6 +51,15 @@ src/
     └── Console/              # CLI commands
 ```
 
+### Reconstitution Pattern
+
+Domain entities use `reconstitute()` static factory methods to create objects in a specific state without going through business logic constructors. This serves two purposes:
+
+- **Doctrine hydration**: Rebuilding entities from database rows
+- **Testing**: Creating entities in controlled states (expired tokens, inactive users, etc.)
+
+`reconstitute()` must **never** be called in handlers or controllers. If you see it outside of repository implementations or test helpers, it's a code smell.
+
 ## Prerequisites
 
 - Docker Desktop for Windows
