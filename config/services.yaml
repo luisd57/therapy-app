@@ -9,6 +9,14 @@ services:
         autowire: true
         autoconfigure: true
 
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Domain/'
+            - '../src/Application/*/DTO/'
+            - '../src/Infrastructure/Persistence/Doctrine/Entity/'
+            - '../src/Kernel.php'
+
     # Domain Interfaces -> Infrastructure Implementations
     App\Domain\User\Repository\UserRepositoryInterface:
         class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineUserRepository
@@ -31,28 +39,13 @@ services:
     App\Application\User\Handler\JwtTokenGeneratorInterface:
         class: App\Infrastructure\Security\JwtTokenGenerator
 
-    # Application Handlers
-    App\Application\User\Handler\:
-        resource: '../src/Application/User/Handler/'
-
-    # Invite Patient Handler needs specific configuration
+    # Handlers with specific configuration
     App\Application\User\Handler\InvitePatientHandler:
         arguments:
             $frontendUrl: '%app.frontend_url%'
             $invitationTtl: '%app.invitation_ttl%'
 
-    # Request Password Reset Handler needs specific configuration
     App\Application\User\Handler\RequestPasswordResetHandler:
         arguments:
             $frontendUrl: '%app.frontend_url%'
             $passwordResetTtl: '%app.password_reset_ttl%'
-
-    # Infrastructure Controllers
-    App\Infrastructure\Http\Controller\:
-        resource: '../src/Infrastructure/Http/Controller/'
-        tags: ['controller.service_arguments']
-
-    # Console Commands
-    App\Infrastructure\Console\:
-        resource: '../src/Infrastructure/Console/'
-        tags: ['console.command']
