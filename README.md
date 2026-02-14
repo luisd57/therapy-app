@@ -1,6 +1,6 @@
 # Therapy App - Authentication & User Management
 
-A Symfony 7.1 application implementing Pure Hexagonal Architecture with PostgreSQL for a therapy practice management system.
+A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreSQL for a therapy practice management system.
 
 ## Features Implemented
 
@@ -35,14 +35,16 @@ src/
 │
 ├── Application/               # Use cases / Application services
 │   └── User/
-│       ├── Command/          # Command objects
 │       ├── Handler/          # Use case handlers
-│       └── DTO/              # Data transfer objects
+│       └── DTO/
+│           ├── Input/        # Input DTOs received by handlers
+│           └── Output/       # Output DTOs returned by handlers
 │
 └── Infrastructure/            # External concerns (adapters)
     ├── Persistence/
     │   └── Doctrine/
     │       ├── Entity/       # Doctrine entity mappings
+    │       ├── Mapper/       # Domain ↔ Doctrine entity mapping
     │       └── Repository/   # Repository implementations
     ├── Security/             # Password hasher, Token generator, JWT
     ├── Email/                # Email sender implementation
@@ -121,8 +123,9 @@ docker-compose exec php php bin/console cache:clear
 ### Step 7: Verify Installation
 
 Open your browser and navigate to:
-- **API Health Check**: http://localhost:8080/api/health
-- **MailHog** (email testing): http://localhost:8025
+
+- **API Health Check**: <http://localhost:8080/api/health>
+- **MailHog** (email testing): <http://localhost:8025>
 
 ## API Endpoints
 
@@ -171,7 +174,7 @@ Open your browser and navigate to:
 3. **Therapist Login** - Get JWT token (auto-saved to variable)
 4. **Get Therapist Profile** - Verify authentication works
 5. **Invite Patient** - Send invitation email
-6. **Check MailHog** - Get invitation token from email (http://localhost:8025)
+6. **Check MailHog** - Get invitation token from email (<http://localhost:8025>)
 7. **Set invitation_token variable** - Copy token from email link
 8. **Validate Invitation** - Verify token is valid
 9. **Register Patient** - Activate patient account
@@ -183,14 +186,15 @@ Open your browser and navigate to:
 ### Getting the Invitation Token
 
 After inviting a patient:
-1. Go to http://localhost:8025 (MailHog)
+
+1. Go to <http://localhost:8025> (MailHog)
 2. Find the invitation email
 3. The registration URL contains the token: `http://localhost:3000/register?token=YOUR_TOKEN_HERE`
 4. Copy the token value and set it in Postman's `invitation_token` variable
 
 ## Testing
 
-The project has a comprehensive test suite with **203 tests (373 assertions)** covering:
+The project has a comprehensive test suite covering unit and integration tests:
 
 - **Unit Tests**: Pure logic tests for domain entities, value objects, and handlers. No database required.
 - **Integration Tests**: Repository and API endpoint tests with real database interactions.
@@ -328,7 +332,7 @@ final class UserTest extends TestCase
 
 #### Handler Unit Tests
 
-Use PHPUnit's `createMock()` for dependencies:
+Use PHPUnit's `createMock()` with intersection types for dependencies, wired in `setUp()`:
 
 ```php
 <?php
@@ -337,33 +341,46 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Application\Handler;
 
+use App\Application\User\Handler\JwtTokenGeneratorInterface;
 use App\Application\User\Handler\LoginHandler;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
-use App\Infrastructure\Security\JwtTokenGenerator;
 use App\Tests\Helper\DomainTestHelper;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class LoginHandlerTest extends TestCase
 {
-    public function testTherapistLoginSuccess(): void
+    private UserRepositoryInterface&MockObject $userRepository;
+    private PasswordHasherInterface&MockObject $passwordHasher;
+    private JwtTokenGeneratorInterface&MockObject $jwtTokenGenerator;
+    private LoginHandler $handler;
+
+    protected function setUp(): void
     {
-        $therapist = DomainTestHelper::createTherapist();
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
+        $this->jwtTokenGenerator = $this->createMock(JwtTokenGeneratorInterface::class);
+        $this->handler = new LoginHandler(
+            $this->userRepository,
+            $this->passwordHasher,
+            $this->jwtTokenGenerator,
+        );
+    }
 
-        $userRepo = $this->createMock(UserRepositoryInterface::class);
-        $userRepo->method('findByEmail')->willReturn($therapist);
+    public function testHandleTherapistLoginSuccess(): void
+    {
+        $therapist = DomainTestHelper::createReconstitutedTherapist();
 
-        $hasher = $this->createMock(PasswordHasherInterface::class);
-        $hasher->method('verify')->willReturn(true);
+        $this->userRepository->method('findByEmail')->willReturn($therapist);
+        $this->passwordHasher->method('verify')->willReturn(true);
+        $this->jwtTokenGenerator->method('generate')->willReturn('jwt-token-123');
 
-        $tokenGen = $this->createMock(JwtTokenGenerator::class);
-        $tokenGen->method('generate')->willReturn('mock.jwt.token');
+        $result = $this->handler->handleTherapistLogin('therapist@example.com', 'password');
 
-        $handler = new LoginHandler($userRepo, $hasher, $tokenGen);
-        $result = $handler->handle($input);
-
-        $this->assertNotEmpty($result->token);
-        $this->assertEquals('mock.jwt.token', $result->token);
+        $this->assertSame('jwt-token-123', $result->token);
+        $this->assertSame('therapist@example.com', $result->user->email);
+        $this->assertSame('ROLE_THERAPIST', $result->user->role);
     }
 }
 ```
@@ -382,6 +399,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Repository;
 
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\ValueObject\UserRole;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 
@@ -398,12 +416,30 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
     public function testSaveAndFindById(): void
     {
         $user = DomainTestHelper::createTherapist();
-
         $this->repository->save($user);
+
         $found = $this->repository->findById($user->getId());
 
         $this->assertNotNull($found);
-        $this->assertEquals($user->getEmail()->getValue(), $found->getEmail()->getValue());
+        $this->assertTrue($user->getId()->equals($found->getId()));
+        $this->assertSame('therapist@example.com', $found->getEmail()->getValue());
+    }
+
+    public function testFindActivePatientsExcludesInactivePatientsAndTherapists(): void
+    {
+        $therapist = DomainTestHelper::createTherapist(email: 'act-t@example.com');
+        $activePatient = DomainTestHelper::createActivePatient(email: 'act-ap@example.com');
+        $inactivePatient = DomainTestHelper::createPatient(email: 'act-ip@example.com');
+        $this->repository->save($therapist);
+        $this->repository->save($activePatient);
+        $this->repository->save($inactivePatient);
+
+        $result = $this->repository->findActivePatients();
+
+        $emails = $result->map(fn($u) => $u->getEmail()->getValue())->toArray();
+        $this->assertContains('act-ap@example.com', $emails);
+        $this->assertNotContains('act-t@example.com', $emails);
+        $this->assertNotContains('act-ip@example.com', $emails);
     }
 }
 ```
@@ -421,11 +457,36 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Api;
 
+use App\Domain\User\Entity\User;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\Service\PasswordHasherInterface;
+use App\Domain\User\ValueObject\Email;
+use App\Domain\User\ValueObject\UserId;
 use App\Tests\Helper\ApiTestCase;
 
-final class TherapistControllerTest extends ApiTestCase
+final class AuthControllerTest extends ApiTestCase
 {
-    public function testMeAuthenticatedReturns200(): void
+    public function testTherapistLoginSuccess(): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->assertNotEmpty($token);
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testTherapistLoginWrongPasswordReturns401(): void
+    {
+        $this->seedTherapist();
+
+        $this->jsonRequest('POST', '/api/auth/therapist/login', [
+            'email' => 'therapist@test.com',
+            'password' => 'wrongpassword',
+        ]);
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testFullLoginThenAccessProtectedResourceFlow(): void
     {
         $token = $this->createTherapistAndGetToken();
 
@@ -434,34 +495,44 @@ final class TherapistControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEquals('therapist@test.com', $data['data']['email']);
+        $this->assertSame('therapist@test.com', $data['data']['email']);
     }
 
-    public function testMeUnauthenticatedReturns401(): void
+    private function seedTherapist(): void
     {
-        $this->jsonRequest('GET', '/api/therapist/me');
+        $hasher = self::getContainer()->get(PasswordHasherInterface::class);
+        $repo = self::getContainer()->get(UserRepositoryInterface::class);
 
-        $this->assertResponseStatusCodeSame(401);
+        $therapist = User::createTherapist(
+            id: UserId::generate(),
+            email: Email::fromString('therapist@test.com'),
+            fullName: 'Test Therapist',
+            hashedPassword: $hasher->hash('password123'),
+        );
+        $repo->save($therapist);
     }
 }
 ```
 
-> **Auth helpers**: `createTherapistAndGetToken()` and `createPatientAndGetToken()` seed data directly via repositories (not API endpoints) for isolation, then call the login endpoint to get a real JWT token.
+> **Auth helpers**: `createTherapistAndGetToken()` and `createPatientAndGetToken()` seed data directly via repositories (not API endpoints) for isolation, then call the login endpoint to get a real JWT token. For tests that need a user without a token, use private `seedTherapist()`/`seedInvitation()` methods that persist directly via the container's repositories.
 
 ### Key Testing Patterns
 
 **Transaction Isolation**
+
 - All integration tests run in database transactions
 - Transactions are automatically rolled back in `tearDown()`
 - No test data persists between tests
 - Test database remains clean
 
 **Test Helpers**
+
 - `DomainTestHelper`: Factory methods for creating domain objects in any state (active/inactive users, valid/expired/used tokens, boundary conditions)
 - `IntegrationTestCase`: Automatic transaction wrapping for repository tests
 - `ApiTestCase`: Transaction wrapping + HTTP client helpers + JWT auth token generation
 
 **Kernel Reboot Disabled**
+
 - `ApiTestCase` calls `$this->client->disableReboot()` to keep the same Symfony kernel across multiple HTTP requests
 - This ensures transaction isolation works correctly with JWT authentication
 - Without this, each request would get a new EntityManager that can't see uncommitted transaction data
@@ -535,9 +606,9 @@ docker-compose exec php php bin/console cache:warmup
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| API | http://localhost:8080 | Main API |
+| API | <http://localhost:8080> | Main API |
 | PostgreSQL | localhost:5432 | Database |
-| MailHog UI | http://localhost:8025 | Email testing interface |
+| MailHog UI | <http://localhost:8025> | Email testing interface |
 | MailHog SMTP | localhost:1025 | SMTP server |
 
 ## Project Structure
