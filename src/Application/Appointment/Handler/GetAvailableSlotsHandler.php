@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Appointment\Handler;
+
+use App\Application\Appointment\DTO\Input\GetAvailableSlotsInputDTO;
+use App\Application\Appointment\DTO\Output\AvailableSlotsDTO;
+use App\Application\Appointment\DTO\Output\TimeSlotDTO;
+use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
+use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
+use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
+use App\Domain\Appointment\Service\AvailabilityComputerInterface;
+use App\Domain\Appointment\Service\AvailabilityContext;
+use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+
+final readonly class GetAvailableSlotsHandler
+{
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private TherapistScheduleRepositoryInterface $scheduleRepository,
+        private ScheduleExceptionRepositoryInterface $exceptionRepository,
+        private AppointmentRepositoryInterface $appointmentRepository,
+        private SlotLockRepositoryInterface $slotLockRepository,
+        private AvailabilityComputerInterface $availabilityComputer,
+        private int $appointmentDurationMinutes,
+    ) {
+    }
+
+    public function handle(GetAvailableSlotsInputDTO $input): AvailableSlotsDTO
+    {
+        $therapist = $this->userRepository->findSingleTherapist();
+        $therapistId = $therapist->getId();
+
+        $from = new DateTimeImmutable($input->from);
+        $to = new DateTimeImmutable($input->to . ' 23:59:59');
+        $modalityFilter = $input->modality !== null
+            ? AppointmentModality::from($input->modality)
+            : null;
+
+        $schedules = $this->scheduleRepository->findActiveByTherapist($therapistId);
+        $exceptions = $this->exceptionRepository->findByTherapistAndDateRange(
+            $therapistId,
+            $from,
+            $to,
+        );
+        $blockingAppointments = $this->appointmentRepository->findBlockingByDateRange($from, $to);
+        // Active locks are not passed here to keep the public availability endpoint
+        // showing all slots not yet booked. Lock-level filtering happens in real-time
+        // on the frontend.
+        $activeLocks = new ArrayCollection();
+
+        $context = new AvailabilityContext(
+            schedules: $schedules,
+            exceptions: $exceptions,
+            blockingAppointments: $blockingAppointments,
+            activeLocks: $activeLocks,
+        );
+
+        $availableSlots = $this->availabilityComputer->computeAvailableSlots(
+            context: $context,
+            from: $from,
+            to: $to,
+            slotDurationMinutes: $this->appointmentDurationMinutes,
+            modalityFilter: $modalityFilter,
+        );
+
+        $slotsByDate = [];
+        foreach ($availableSlots as $slot) {
+            $date = $slot->getStartTime()->format('Y-m-d');
+            $slotsByDate[$date][] = TimeSlotDTO::fromValueObject($slot);
+        }
+
+        return new AvailableSlotsDTO(
+            from: $input->from,
+            to: $input->to,
+            modality: $input->modality,
+            slotsByDate: $slotsByDate,
+            totalSlots: $availableSlots->count(),
+        );
+    }
+}

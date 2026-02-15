@@ -16,7 +16,7 @@ security:
         
         # Public endpoints (no auth required)
         api_public:
-            pattern: ^/api($|/$|/health|/auth)
+            pattern: ^/api($|/$|/health|/auth|/appointments)
             stateless: true
             security: false
 
@@ -39,7 +39,11 @@ security:
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/therapist/setup, roles: PUBLIC_ACCESS }
         
+        # Public appointment endpoints
+        - { path: ^/api/appointments, roles: PUBLIC_ACCESS }
+
         # Protected endpoints
+        - { path: ^/api/therapist/schedule, roles: ROLE_THERAPIST }
         - { path: ^/api/therapist, roles: ROLE_THERAPIST }
         - { path: ^/api/patient, roles: ROLE_PATIENT }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

@@ -31,4 +31,15 @@ interface UserRepositoryInterface
     public function findActivePatients(): ArrayCollection;
 
     public function delete(User $user): void;
+
+    /**
+     * Returns the single therapist user in the system.
+     *
+     * Unlike other repository methods that return null for missing entities,
+     * this method throws because the existence of exactly one therapist is a
+     * system invariant for this single-therapist application.
+     *
+     * @throws \RuntimeException if zero or more than one therapist exists
+     */
+    public function findSingleTherapist(): User;
 }

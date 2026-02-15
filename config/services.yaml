@@ -3,6 +3,8 @@ parameters:
     app.frontend_url: '%env(APP_FRONTEND_URL)%'
     app.invitation_ttl: '%env(int:INVITATION_TOKEN_TTL)%'
     app.password_reset_ttl: '%env(int:PASSWORD_RESET_TOKEN_TTL)%'
+    app.appointment_duration_minutes: '%env(int:APPOINTMENT_DURATION_MINUTES)%'
+    app.slot_lock_ttl: '%env(int:SLOT_LOCK_TTL)%'
 
 services:
     _defaults:
@@ -49,3 +51,36 @@ services:
         arguments:
             $frontendUrl: '%app.frontend_url%'
             $passwordResetTtl: '%app.password_reset_ttl%'
+
+    # Appointment Domain Interfaces -> Infrastructure Implementations
+    App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineTherapistScheduleRepository
+
+    App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineScheduleExceptionRepository
+
+    App\Domain\Appointment\Repository\AppointmentRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineAppointmentRepository
+
+    App\Domain\Appointment\Repository\SlotLockRepositoryInterface:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineSlotLockRepository
+
+    App\Domain\Appointment\Service\AvailabilityComputerInterface:
+        class: App\Domain\Appointment\Service\AvailabilityComputer
+
+    App\Domain\Appointment\Service\AppointmentEmailSenderInterface:
+        class: App\Infrastructure\Email\AppointmentEmailSender
+
+    # Appointment Handlers with specific configuration
+    App\Application\Appointment\Handler\GetAvailableSlotsHandler:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+
+    App\Application\Appointment\Handler\LockSlotHandler:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+            $slotLockTtl: '%app.slot_lock_ttl%'
+
+    App\Application\Appointment\Handler\RequestAppointmentHandler:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'

@@ -91,6 +91,21 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return new ArrayCollection($users);
     }
 
+    public function findSingleTherapist(): User
+    {
+        $therapists = $this->findByRole(UserRole::THERAPIST);
+
+        if ($therapists->count() === 0) {
+            throw new \RuntimeException('No therapist found in the system.');
+        }
+
+        if ($therapists->count() > 1) {
+            throw new \RuntimeException('Multiple therapists found. Expected exactly one.');
+        }
+
+        return $therapists->first();
+    }
+
     public function delete(User $user): void
     {
         $entity = $this->repository->find($user->getId()->getValue());

@@ -1,4 +1,4 @@
-# Therapy App - Authentication & User Management
+# Therapy App API
 
 A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreSQL for a therapy practice management system.
 
@@ -20,6 +20,24 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
   - Password reset flow via email
   - Profile management (phone, address)
 
+### 2. Public Appointment Request System (Scheduling Domain)
+
+- **Availability Interface**
+  - Real-time available slots computed from therapist schedule
+  - Modality filtering (Online / In-Person)
+  - Slot locking with TTL to prevent double-requests
+
+- **Appointment Requests**
+  - Intake form submission (name, ID, phone, email, location)
+  - Automatic acknowledgment email to requester
+  - Instant alert email to therapist
+
+- **Therapist Schedule Management**
+  - Recurring weekly availability blocks (configurable per day)
+  - Modality support per block (online, in-person, or both)
+  - Schedule exceptions / blockers (holidays, personal time)
+  - Overlap validation (time-based, regardless of modality)
+
 ## Architecture
 
 ```
@@ -31,11 +49,22 @@ src/
 │   │   ├── Repository/       # Repository interfaces (ports)
 │   │   ├── Service/          # Domain service interfaces
 │   │   └── Exception/        # Domain exceptions
+│   ├── Appointment/
+│   │   ├── Entity/           # Appointment, TherapistSchedule, ScheduleException, SlotLock
+│   │   ├── ValueObject/      # AppointmentId, AppointmentStatus, AppointmentModality, TimeSlot, WeekDay
+│   │   ├── Repository/       # Repository interfaces (ports)
+│   │   ├── Service/          # AvailabilityComputer, service interfaces
+│   │   └── Exception/        # Domain exceptions
 │   └── Exception/
 │
 ├── Application/               # Use cases / Application services
-│   └── User/
-│       ├── Handler/          # Use case handlers
+│   ├── User/
+│   │   ├── Handler/          # Use case handlers
+│   │   └── DTO/
+│   │       ├── Input/        # Input DTOs received by handlers
+│   │       └── Output/       # Output DTOs returned by handlers
+│   └── Appointment/
+│       ├── Handler/          # Schedule, availability, appointment handlers
 │       └── DTO/
 │           ├── Input/        # Input DTOs received by handlers
 │           └── Output/       # Output DTOs returned by handlers
@@ -142,6 +171,9 @@ Open your browser and navigate to:
 | POST | `/api/auth/register` | Register patient (activate) |
 | POST | `/api/auth/password/forgot` | Request password reset |
 | POST | `/api/auth/password/reset` | Reset password |
+| GET | `/api/appointments/available-slots` | Browse available time slots |
+| POST | `/api/appointments/lock-slot` | Temporarily hold a slot |
+| POST | `/api/appointments/request` | Submit appointment request |
 
 ### Protected Endpoints (Therapist)
 
@@ -151,6 +183,13 @@ Open your browser and navigate to:
 | GET | `/api/therapist/patients` | List all patients |
 | POST | `/api/therapist/patients/invite` | Invite a patient |
 | GET | `/api/therapist/invitations` | List pending invitations |
+| GET | `/api/therapist/schedule` | List schedule blocks |
+| POST | `/api/therapist/schedule` | Create schedule block |
+| PUT | `/api/therapist/schedule/{id}` | Update schedule block |
+| DELETE | `/api/therapist/schedule/{id}` | Delete schedule block |
+| GET | `/api/therapist/schedule/exceptions` | List schedule exceptions |
+| POST | `/api/therapist/schedule/exceptions` | Add schedule exception |
+| DELETE | `/api/therapist/schedule/exceptions/{id}` | Remove exception |
 
 ### Protected Endpoints (Patient)
 
@@ -173,15 +212,20 @@ Open your browser and navigate to:
 2. **Create Therapist** - Set up initial admin account
 3. **Therapist Login** - Get JWT token (auto-saved to variable)
 4. **Get Therapist Profile** - Verify authentication works
-5. **Invite Patient** - Send invitation email
-6. **Check MailHog** - Get invitation token from email (<http://localhost:8025>)
-7. **Set invitation_token variable** - Copy token from email link
-8. **Validate Invitation** - Verify token is valid
-9. **Register Patient** - Activate patient account
-10. **Patient Login** - Get patient JWT token
-11. **Get Patient Profile** - Verify patient auth works
-12. **Update Patient Profile** - Test profile updates
-13. **List Patients** - Verify therapist can see patients
+5. **Create Schedule** - Set up weekly availability blocks
+6. **Invite Patient** - Send invitation email
+7. **Check MailHog** - Get invitation token from email (<http://localhost:8025>)
+8. **Set invitation_token variable** - Copy token from email link
+9. **Validate Invitation** - Verify token is valid
+10. **Register Patient** - Activate patient account
+11. **Patient Login** - Get patient JWT token
+12. **Get Patient Profile** - Verify patient auth works
+13. **Update Patient Profile** - Test profile updates
+14. **List Patients** - Verify therapist can see patients
+15. **Browse Available Slots** - Query public availability
+16. **Lock Slot** - Temporarily hold a slot
+17. **Submit Appointment Request** - Complete the intake form
+18. **Check MailHog** - Verify acknowledgment + therapist alert emails
 
 ### Getting the Invitation Token
 
@@ -285,6 +329,7 @@ tests/
 │   ├── Domain/
 │   │   ├── Entity/               # Entity behavior tests
 │   │   ├── ValueObject/          # Value object validation tests
+│   │   ├── Service/              # Domain service tests (AvailabilityComputer)
 │   │   └── Exception/            # Domain exception tests
 │   └── Application/
 │       └── Handler/              # Use case handler tests (with mocks)
@@ -545,6 +590,9 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 
 # Clean up expired tokens
 docker-compose exec php php bin/console app:cleanup-tokens
+
+# Clean up expired slot locks
+docker-compose exec php php bin/console app:cleanup-slot-locks
 ```
 
 ## Development Commands
@@ -605,7 +653,7 @@ docker-compose exec php php bin/console cache:warmup
 ## Services
 
 | Service | URL | Description |
-|---------|-----|-------------|
+|---------|-----|-------------| 
 | API | <http://localhost:8080> | Main API |
 | PostgreSQL | localhost:5432 | Database |
 | MailHog UI | <http://localhost:8025> | Email testing interface |

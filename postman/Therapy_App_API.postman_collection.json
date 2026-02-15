@@ -1,165 +1,367 @@
 {
   "info": {
     "name": "Therapy App API",
-    "description": "API endpoints for Authentication & User Management",
+    "description": "API endpoints for Authentication, User Management & Appointment Scheduling",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {"key": "base_url", "value": "http://localhost:8080/api"},
     {"key": "therapist_token", "value": ""},
     {"key": "patient_token", "value": ""},
-    {"key": "invitation_token", "value": ""}
+    {"key": "invitation_token", "value": ""},
+    {"key": "schedule_id", "value": ""},
+    {"key": "exception_id", "value": ""},
+    {"key": "lock_token", "value": ""}
   ],
   "item": [
     {
-      "name": "1. Health Check",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/health"
-      }
-    },
-    {
-      "name": "2. Create Therapist (Setup)",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+      "name": "Auth & User Management",
+      "item": [
+        {
+          "name": "1. Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          }
         },
-        "url": "{{base_url}}/therapist/setup"
-      }
-    },
-    {
-      "name": "3. Therapist Login",
-      "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"]}}],
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+        {
+          "name": "2. Create Therapist (Setup)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+            },
+            "url": "{{base_url}}/therapist/setup"
+          }
         },
-        "url": "{{base_url}}/auth/therapist/login"
-      }
-    },
-    {
-      "name": "4. Get Therapist Profile",
-      "request": {
-        "method": "GET",
-        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
-        "url": "{{base_url}}/therapist/me"
-      }
-    },
-    {
-      "name": "5. Invite Patient",
-      "request": {
-        "method": "POST",
-        "header": [
-          {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-          {"key": "Content-Type", "value": "application/json"}
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+        {
+          "name": "3. Therapist Login",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+            },
+            "url": "{{base_url}}/auth/therapist/login"
+          }
         },
-        "url": "{{base_url}}/therapist/patients/invite"
-      }
-    },
-    {
-      "name": "6. List Pending Invitations",
-      "request": {
-        "method": "GET",
-        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
-        "url": "{{base_url}}/therapist/invitations"
-      }
-    },
-    {
-      "name": "7. Validate Invitation (use token from email)",
-      "request": {
-        "method": "GET",
-        "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
-      }
-    },
-    {
-      "name": "8. Register Patient",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\"}"
+        {
+          "name": "4. Get Therapist Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/me"
+          }
         },
-        "url": "{{base_url}}/auth/register"
-      }
-    },
-    {
-      "name": "9. Patient Login",
-      "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"]}}],
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
+        {
+          "name": "5. Invite Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+            },
+            "url": "{{base_url}}/therapist/patients/invite"
+          }
         },
-        "url": "{{base_url}}/auth/patient/login"
-      }
-    },
-    {
-      "name": "10. Get Patient Profile",
-      "request": {
-        "method": "GET",
-        "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
-        "url": "{{base_url}}/patient/me"
-      }
-    },
-    {
-      "name": "11. Update Patient Profile",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {"key": "Authorization", "value": "Bearer {{patient_token}}"},
-          {"key": "Content-Type", "value": "application/json"}
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
+        {
+          "name": "6. List Pending Invitations",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/invitations"
+          }
         },
-        "url": "{{base_url}}/patient/profile"
-      }
-    },
-    {
-      "name": "12. List Patients (as Therapist)",
-      "request": {
-        "method": "GET",
-        "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
-        "url": "{{base_url}}/therapist/patients"
-      }
-    },
-    {
-      "name": "13. Request Password Reset",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"email\":\"patient@example.com\"}"
+        {
+          "name": "7. Validate Invitation (use token from email)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
+          }
         },
-        "url": "{{base_url}}/auth/password/forgot"
-      }
+        {
+          "name": "8. Register Patient",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\"}"
+            },
+            "url": "{{base_url}}/auth/register"
+          }
+        },
+        {
+          "name": "9. Patient Login",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
+            },
+            "url": "{{base_url}}/auth/patient/login"
+          }
+        },
+        {
+          "name": "10. Get Patient Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "url": "{{base_url}}/patient/me"
+          }
+        },
+        {
+          "name": "11. Update Patient Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
+            },
+            "url": "{{base_url}}/patient/profile"
+          }
+        },
+        {
+          "name": "12. List Patients (as Therapist)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/patients"
+          }
+        },
+        {
+          "name": "13. Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"patient@example.com\"}"
+            },
+            "url": "{{base_url}}/auth/password/forgot"
+          }
+        },
+        {
+          "name": "14. Reset Password (use token from email)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
+            },
+            "url": "{{base_url}}/auth/password/reset"
+          }
+        }
+      ]
     },
     {
-      "name": "14. Reset Password (use token from email)",
-      "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
+      "name": "Therapist Schedule Management",
+      "description": "Requires therapist authentication. Run '3. Therapist Login' first to set the token.",
+      "item": [
+        {
+          "name": "1. Create Schedule Block (Monday 09:00-13:00)",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('schedule_id',pm.response.json().data.schedule.id);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"day_of_week\":1,\"start_time\":\"09:00\",\"end_time\":\"13:00\",\"supports_online\":true,\"supports_in_person\":true}"
+            },
+            "url": "{{base_url}}/therapist/schedule"
+          }
         },
-        "url": "{{base_url}}/auth/password/reset"
-      }
+        {
+          "name": "2. Create Schedule Block (Monday 14:00-18:00)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"day_of_week\":1,\"start_time\":\"14:00\",\"end_time\":\"18:00\",\"supports_online\":true,\"supports_in_person\":false}"
+            },
+            "url": "{{base_url}}/therapist/schedule"
+          }
+        },
+        {
+          "name": "3. Create Schedule Block (Wednesday 10:00-17:00)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"day_of_week\":3,\"start_time\":\"10:00\",\"end_time\":\"17:00\",\"supports_online\":true,\"supports_in_person\":true}"
+            },
+            "url": "{{base_url}}/therapist/schedule"
+          }
+        },
+        {
+          "name": "4. List All Schedule Blocks",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/schedule"
+          }
+        },
+        {
+          "name": "5. Update Schedule Block",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"day_of_week\":1,\"start_time\":\"08:00\",\"end_time\":\"12:00\",\"supports_online\":true,\"supports_in_person\":true}"
+            },
+            "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+          }
+        },
+        {
+          "name": "6. Delete Schedule Block",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+          }
+        },
+        {
+          "name": "7. Add Schedule Exception (Day Off)",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('exception_id',pm.response.json().data.exception.id);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+            },
+            "url": "{{base_url}}/therapist/schedule/exceptions"
+          }
+        },
+        {
+          "name": "8. Add Schedule Exception (Partial Block)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"start_date_time\":\"2026-03-18T09:00:00\",\"end_date_time\":\"2026-03-18T12:00:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
+            },
+            "url": "{{base_url}}/therapist/schedule/exceptions"
+          }
+        },
+        {
+          "name": "9. List Schedule Exceptions",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/schedule/exceptions?from=2026-03-01&to=2026-03-31"
+          }
+        },
+        {
+          "name": "10. Remove Schedule Exception",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Appointments",
+      "description": "Public endpoints (no authentication required). Requires therapist schedule to be configured first.",
+      "item": [
+        {
+          "name": "1. Get Available Slots (Week View)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+          }
+        },
+        {
+          "name": "2. Get Available Slots (Single Day)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-01"
+          }
+        },
+        {
+          "name": "3. Get Available Slots (Filtered by Modality)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07&modality=ONLINE"
+          }
+        },
+        {
+          "name": "4. Lock a Slot",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('lock_token',pm.response.json().data.lock_token);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+            },
+            "url": "{{base_url}}/appointments/lock-slot"
+          }
+        },
+        {
+          "name": "5. Request Appointment (with Lock Token)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+            },
+            "url": "{{base_url}}/appointments/request"
+          }
+        },
+        {
+          "name": "6. Request Appointment (without Lock Token)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"IN_PERSON\",\"full_name\":\"Carlos Rodriguez\",\"phone\":\"+584142345678\",\"email\":\"carlos@example.com\",\"city\":\"Caracas\",\"country\":\"Venezuela\"}"
+            },
+            "url": "{{base_url}}/appointments/request"
+          }
+        }
+      ]
     }
   ]
 }

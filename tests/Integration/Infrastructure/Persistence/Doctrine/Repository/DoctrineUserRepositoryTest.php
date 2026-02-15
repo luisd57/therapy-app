@@ -121,4 +121,34 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
 
         $this->assertNull($this->repository->findById($user->getId()));
     }
+
+    public function testFindSingleTherapistReturnsSingleTherapist(): void
+    {
+        $therapist = DomainTestHelper::createTherapist(email: 'single-therapist@example.com');
+        $this->repository->save($therapist);
+
+        $found = $this->repository->findSingleTherapist();
+
+        $this->assertTrue($therapist->getId()->equals($found->getId()));
+        $this->assertSame('single-therapist@example.com', $found->getEmail()->getValue());
+    }
+
+    public function testFindSingleTherapistThrowsWhenNoTherapistExists(): void
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->repository->findSingleTherapist();
+    }
+
+    public function testFindSingleTherapistThrowsWhenMultipleTherapistsExist(): void
+    {
+        $therapist1 = DomainTestHelper::createTherapist(email: 'therapist1@example.com');
+        $therapist2 = DomainTestHelper::createTherapist(email: 'therapist2@example.com');
+        $this->repository->save($therapist1);
+        $this->repository->save($therapist2);
+
+        $this->expectException(\RuntimeException::class);
+
+        $this->repository->findSingleTherapist();
+    }
 }
