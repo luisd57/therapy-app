@@ -16,18 +16,19 @@ services:
         exclude:
             - '../src/Domain/'
             - '../src/Application/*/DTO/'
-            - '../src/Infrastructure/Persistence/Doctrine/Entity/'
+            - '../src/Infrastructure/Persistence/Doctrine/User/Entity/'
+            - '../src/Infrastructure/Persistence/Doctrine/Appointment/Entity/'
             - '../src/Kernel.php'
 
     # Domain Interfaces -> Infrastructure Implementations
     App\Domain\User\Repository\UserRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineUserRepository
+        class: App\Infrastructure\Persistence\Doctrine\User\Repository\DoctrineUserRepository
 
     App\Domain\User\Repository\InvitationTokenRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineInvitationTokenRepository
+        class: App\Infrastructure\Persistence\Doctrine\User\Repository\DoctrineInvitationTokenRepository
 
     App\Domain\User\Repository\PasswordResetTokenRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrinePasswordResetTokenRepository
+        class: App\Infrastructure\Persistence\Doctrine\User\Repository\DoctrinePasswordResetTokenRepository
 
     App\Domain\User\Service\PasswordHasherInterface:
         class: App\Infrastructure\Security\BcryptPasswordHasher
@@ -36,7 +37,7 @@ services:
         class: App\Infrastructure\Security\SecureTokenGenerator
 
     App\Domain\User\Service\EmailSenderInterface:
-        class: App\Infrastructure\Email\SymfonyEmailSender
+        class: App\Infrastructure\Email\User\SymfonyEmailSender
 
     App\Application\User\Handler\JwtTokenGeneratorInterface:
         class: App\Infrastructure\Security\JwtTokenGenerator
@@ -54,22 +55,22 @@ services:
 
     # Appointment Domain Interfaces -> Infrastructure Implementations
     App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineTherapistScheduleRepository
+        class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineTherapistScheduleRepository
 
     App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineScheduleExceptionRepository
+        class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineScheduleExceptionRepository
 
     App\Domain\Appointment\Repository\AppointmentRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineAppointmentRepository
+        class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineAppointmentRepository
 
     App\Domain\Appointment\Repository\SlotLockRepositoryInterface:
-        class: App\Infrastructure\Persistence\Doctrine\Repository\DoctrineSlotLockRepository
+        class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineSlotLockRepository
 
     App\Domain\Appointment\Service\AvailabilityComputerInterface:
         class: App\Domain\Appointment\Service\AvailabilityComputer
 
     App\Domain\Appointment\Service\AppointmentEmailSenderInterface:
-        class: App\Infrastructure\Email\AppointmentEmailSender
+        class: App\Infrastructure\Email\Appointment\AppointmentEmailSender
 
     # Appointment Handlers with specific configuration
     App\Application\Appointment\Handler\GetAvailableSlotsHandler:

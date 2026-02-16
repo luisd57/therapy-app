@@ -6,7 +6,7 @@ namespace App\Infrastructure\Security;
 
 use App\Application\User\Handler\JwtTokenGeneratorInterface;
 use App\Domain\User\Entity\User;
-use App\Infrastructure\Persistence\Doctrine\Mapper\UserMapper;
+use App\Infrastructure\Persistence\Doctrine\User\Mapper\UserMapper;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 final readonly class JwtTokenGenerator implements JwtTokenGeneratorInterface

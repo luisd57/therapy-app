@@ -1,5 +1,5 @@
 ###> symfony/framework-bundle ###
-# Environment variables (ALL of them)
+# Environment variables
 .env
 .env.local
 /.env.*.local
@@ -26,10 +26,10 @@ https://github.com/luisd57/therapy-app
 # OS
 .DS_Store
 Thumbs.db
-# Project documentation (keep private)
+# Project documentation
 CLAUDE.md
 Product-Requirements.md
-
+.claude
 # Personal scripts
 *.bat
 ###> phpunit/phpunit ###

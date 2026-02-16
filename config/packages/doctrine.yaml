@@ -8,12 +8,18 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
-            App:
+            User:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Entity'
-                prefix: 'App\Infrastructure\Persistence\Doctrine\Entity'
-                alias: App
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/User/Entity'
+                prefix: 'App\Infrastructure\Persistence\Doctrine\User\Entity'
+                alias: User
+            Appointment:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Appointment/Entity'
+                prefix: 'App\Infrastructure\Persistence\Doctrine\Appointment\Entity'
+                alias: Appointment
 
 when@test:
     doctrine:

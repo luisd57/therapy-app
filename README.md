@@ -72,14 +72,26 @@ src/
 └── Infrastructure/            # External concerns (adapters)
     ├── Persistence/
     │   └── Doctrine/
-    │       ├── Entity/       # Doctrine entity mappings
-    │       ├── Mapper/       # Domain ↔ Doctrine entity mapping
-    │       └── Repository/   # Repository implementations
+    │       ├── User/
+    │       │   ├── Entity/       # Doctrine entity mappings
+    │       │   ├── Mapper/       # Domain ↔ Doctrine entity mapping
+    │       │   └── Repository/   # Repository implementations
+    │       └── Appointment/
+    │           ├── Entity/
+    │           ├── Mapper/
+    │           └── Repository/
     ├── Security/             # Password hasher, Token generator, JWT
-    ├── Email/                # Email sender implementation
+    ├── Email/
+    │   ├── User/             # User email sender (invitations, password reset, welcome)
+    │   └── Appointment/      # Appointment email sender (acknowledgment, alert)
     ├── Http/
-    │   └── Controller/       # API controllers
-    └── Console/              # CLI commands
+    │   └── Controller/Api/
+    │       ├── User/         # Auth, Patient, Therapist controllers
+    │       ├── Appointment/  # Public appointments, Schedule management
+    │       └── HealthController.php
+    └── Console/
+        ├── User/             # create-therapist, cleanup-tokens
+        └── Appointment/      # cleanup-slot-locks
 ```
 
 ### Reconstitution Pattern
@@ -304,8 +316,8 @@ make test-integration
 #### Run Specific Test File
 
 ```powershell
-docker-compose exec php vendor/bin/phpunit tests/Unit/Domain/Entity/UserTest.php
-docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/AuthControllerTest.php
+docker-compose exec php vendor/bin/phpunit tests/Unit/Domain/User/Entity/UserTest.php
+docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/User/AuthControllerTest.php
 ```
 
 #### Run Specific Test Method
@@ -327,16 +339,25 @@ tests/
 │   └── ApiTestCase.php           # Base class for API/controller tests
 ├── Unit/                         # no database needed
 │   ├── Domain/
-│   │   ├── Entity/               # Entity behavior tests
-│   │   ├── ValueObject/          # Value object validation tests
+│   │   ├── User/
+│   │   │   ├── Entity/           # User, InvitationToken, PasswordResetToken tests
+│   │   │   └── ValueObject/      # UserId, Email, Phone, Address, UserRole tests
+│   │   ├── Appointment/
+│   │   │   ├── Entity/           # Appointment, Schedule, Exception, SlotLock tests
+│   │   │   └── ValueObject/      # AppointmentId, Status, Modality, TimeSlot, WeekDay tests
 │   │   ├── Service/              # Domain service tests (AvailabilityComputer)
 │   │   └── Exception/            # Domain exception tests
 │   └── Application/
-│       └── Handler/              # Use case handler tests (with mocks)
+│       ├── User/Handler/         # User use case handler tests (with mocks)
+│       └── Appointment/Handler/  # Appointment handler tests (with mocks)
 └── Integration/                  # requires test database
     └── Infrastructure/
-        ├── Persistence/Doctrine/Repository/  # Repository integration tests
-        └── Http/Controller/Api/              # API endpoint tests
+        ├── Persistence/Doctrine/
+        │   ├── User/Repository/          # User repository integration tests
+        │   └── Appointment/Repository/   # Appointment repository integration tests
+        └── Http/Controller/Api/
+            ├── User/                     # Auth, Patient, Therapist controller tests
+            └── Appointment/              # Public appointment, Schedule controller tests
 ```
 
 ### Writing Unit Tests
@@ -350,7 +371,7 @@ Use `DomainTestHelper` factory methods for creating test fixtures:
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Entity;
+namespace App\Tests\Unit\Domain\User\Entity;
 
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\TestCase;
@@ -384,7 +405,7 @@ Use PHPUnit's `createMock()` with intersection types for dependencies, wired in 
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Application\Handler;
+namespace App\Tests\Unit\Application\User\Handler;
 
 use App\Application\User\Handler\JwtTokenGeneratorInterface;
 use App\Application\User\Handler\LoginHandler;
@@ -441,7 +462,7 @@ Extend `IntegrationTestCase` for automatic transaction wrapping:
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Repository;
+namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\UserRole;
@@ -500,7 +521,7 @@ Extend `ApiTestCase` for HTTP client + authentication helpers:
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Infrastructure\Http\Controller\Api;
+namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\User;
 
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
