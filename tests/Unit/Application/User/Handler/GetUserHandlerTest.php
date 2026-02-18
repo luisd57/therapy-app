@@ -31,7 +31,7 @@ final class GetUserHandlerTest extends TestCase
             ->method('findById')
             ->willReturn($user);
 
-        $result = ($this->handler)($userId);
+        $result = $this->handler->__invoke($userId);
 
         $this->assertSame($userId, $result->id);
         $this->assertSame('therapist@example.com', $result->email);
@@ -44,6 +44,6 @@ final class GetUserHandlerTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-        ($this->handler)('019510ab-1234-7000-8000-000000000001');
+        $this->handler->__invoke('019510ab-1234-7000-8000-000000000001');
     }
 }

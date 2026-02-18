@@ -62,7 +62,7 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
             to: '2025-06-30',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertCount(2, $result);
 

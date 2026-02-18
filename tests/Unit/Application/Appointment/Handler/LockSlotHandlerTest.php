@@ -54,7 +54,7 @@ final class LockSlotHandlerTest extends TestCase
             modality: 'ONLINE',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('generated-lock-token', $result->lockToken);
         $this->assertNotEmpty($result->slotStartTime);
@@ -89,6 +89,6 @@ final class LockSlotHandlerTest extends TestCase
         );
 
         $this->expectException(SlotNotAvailableException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 }

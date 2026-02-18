@@ -51,7 +51,7 @@ final class SetTherapistScheduleHandlerTest extends TestCase
             supportsInPerson: false,
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame(1, $result->dayOfWeek);
         $this->assertSame('Monday', $result->dayName);
@@ -96,6 +96,6 @@ final class SetTherapistScheduleHandlerTest extends TestCase
         );
 
         $this->expectException(ScheduleConflictException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 }

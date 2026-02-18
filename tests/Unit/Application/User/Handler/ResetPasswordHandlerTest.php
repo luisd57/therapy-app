@@ -50,7 +50,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->userRepository->expects($this->once())->method('save');
         $this->resetTokenRepository->expects($this->once())->method('save');
 
-        ($this->handler)(new ResetPasswordInputDTO(token: 'valid-reset', newPassword: 'newpass123'));
+        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'valid-reset', newPassword: 'newpass123'));
 
         $this->assertSame('new_hashed_pw', $user->getPassword());
     }
@@ -60,7 +60,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->resetTokenRepository->method('findByToken')->willReturn(null);
 
         $this->expectException(InvalidTokenException::class);
-        ($this->handler)(new ResetPasswordInputDTO(token: 'bad', newPassword: 'pass'));
+        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'bad', newPassword: 'pass'));
     }
 
     public function testHandleTokenAlreadyUsedThrowsInvalidTokenException(): void
@@ -69,7 +69,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->resetTokenRepository->method('findByToken')->willReturn($token);
 
         $this->expectException(InvalidTokenException::class);
-        ($this->handler)(new ResetPasswordInputDTO(token: 'used', newPassword: 'pass'));
+        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'used', newPassword: 'pass'));
     }
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
@@ -78,7 +78,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->resetTokenRepository->method('findByToken')->willReturn($token);
 
         $this->expectException(InvalidTokenException::class);
-        ($this->handler)(new ResetPasswordInputDTO(token: 'expired', newPassword: 'pass'));
+        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'expired', newPassword: 'pass'));
     }
 
     public function testHandleUserNotFoundThrowsUserNotFoundException(): void
@@ -88,6 +88,6 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->userRepository->method('findById')->willReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-        ($this->handler)(new ResetPasswordInputDTO(token: 'valid', newPassword: 'pass'));
+        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'valid', newPassword: 'pass'));
     }
 }

@@ -55,7 +55,7 @@ final class InvitePatientHandlerTest extends TestCase
             therapistId: UserId::generate()->getValue(),
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('newpatient@example.com', $result->email);
         $this->assertSame('New Patient', $result->patientName);
@@ -73,7 +73,7 @@ final class InvitePatientHandlerTest extends TestCase
         );
 
         $this->expectException(UserAlreadyExistsException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 
     public function testHandleExistingValidInvitationReturnsExistingDTO(): void
@@ -94,7 +94,7 @@ final class InvitePatientHandlerTest extends TestCase
             therapistId: UserId::generate()->getValue(),
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('patient@example.com', $result->email);
     }
@@ -120,6 +120,6 @@ final class InvitePatientHandlerTest extends TestCase
             therapistId: UserId::generate()->getValue(),
         );
 
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 }

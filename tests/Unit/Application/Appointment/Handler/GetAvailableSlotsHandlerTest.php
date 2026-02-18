@@ -99,7 +99,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             to: '2025-06-02',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('2025-06-02', $result->from);
         $this->assertSame('2025-06-02', $result->to);
@@ -139,7 +139,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             modality: 'ONLINE',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('ONLINE', $result->modality);
         $this->assertSame(0, $result->totalSlots);

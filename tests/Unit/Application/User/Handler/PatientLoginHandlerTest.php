@@ -41,7 +41,7 @@ final class PatientLoginHandlerTest extends TestCase
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->jwtTokenGenerator->method('generate')->willReturn('jwt-token-456');
 
-        $result = ($this->handler)(new PatientLoginInputDTO('patient@example.com', 'password'));
+        $result = $this->handler->__invoke(new PatientLoginInputDTO('patient@example.com', 'password'));
 
         $this->assertSame('jwt-token-456', $result->token);
         $this->assertSame('ROLE_PATIENT', $result->user->role);
@@ -53,6 +53,6 @@ final class PatientLoginHandlerTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn($therapist);
 
         $this->expectException(InvalidCredentialsException::class);
-        ($this->handler)(new PatientLoginInputDTO('therapist@example.com', 'password'));
+        $this->handler->__invoke(new PatientLoginInputDTO('therapist@example.com', 'password'));
     }
 }

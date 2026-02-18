@@ -41,7 +41,7 @@ final class AddScheduleExceptionHandlerTest extends TestCase
             isAllDay: true,
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('Personal day off', $result->reason);
         $this->assertTrue($result->isAllDay);

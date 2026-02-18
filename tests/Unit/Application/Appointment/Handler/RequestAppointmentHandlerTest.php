@@ -136,7 +136,7 @@ final class RequestAppointmentHandlerTest extends TestCase
 
         $input = $this->createInputDTO();
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('ONLINE', $result->modality);
         $this->assertSame('REQUESTED', $result->status);
@@ -185,7 +185,7 @@ final class RequestAppointmentHandlerTest extends TestCase
 
         $input = $this->createInputDTO('valid-lock-token');
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('REQUESTED', $result->status);
         $this->assertSame('Jane Doe', $result->fullName);
@@ -205,7 +205,7 @@ final class RequestAppointmentHandlerTest extends TestCase
         $input = $this->createInputDTO('invalid-token');
 
         $this->expectException(InvalidLockTokenException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 
     public function testHandleSlotNotAvailableThrowsException(): void
@@ -240,6 +240,6 @@ final class RequestAppointmentHandlerTest extends TestCase
         $input = $this->createInputDTO();
 
         $this->expectException(SlotNotAvailableException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 }

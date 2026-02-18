@@ -57,7 +57,7 @@ final class RemoveScheduleExceptionHandlerTest extends TestCase
             therapistId: $therapistId->getValue(),
         );
 
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 
     public function testHandleNotFoundThrowsScheduleConflictException(): void
@@ -78,6 +78,6 @@ final class RemoveScheduleExceptionHandlerTest extends TestCase
         );
 
         $this->expectException(ScheduleConflictException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 }

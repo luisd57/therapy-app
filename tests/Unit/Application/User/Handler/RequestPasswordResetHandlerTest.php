@@ -49,7 +49,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->resetTokenRepository->expects($this->once())->method('save');
         $this->emailSender->expects($this->once())->method('sendPasswordReset');
 
-        ($this->handler)(new RequestPasswordResetInputDTO(email: 'active@example.com'));
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'active@example.com'));
     }
 
     public function testHandleNonExistentUserSilentlyReturnsNoEmailSent(): void
@@ -59,7 +59,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->resetTokenRepository->expects($this->never())->method('save');
 
         // Should NOT throw any exception
-        ($this->handler)(new RequestPasswordResetInputDTO(email: 'nonexistent@example.com'));
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'nonexistent@example.com'));
     }
 
     public function testHandleInactiveUserSilentlyReturnsNoEmailSent(): void
@@ -71,7 +71,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->resetTokenRepository->expects($this->never())->method('save');
 
         // Should NOT throw any exception
-        ($this->handler)(new RequestPasswordResetInputDTO(email: 'inactive@example.com'));
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'inactive@example.com'));
     }
 
     public function testHandleInvalidatesOldTokensBeforeCreatingNew(): void
@@ -86,7 +86,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
             ->method('invalidateAllForUser')
             ->with($this->callback(fn($id) => $id->equals($user->getId())));
 
-        ($this->handler)(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
     }
 
     public function testHandleGeneratesCorrectResetUrl(): void
@@ -104,6 +104,6 @@ final class RequestPasswordResetHandlerTest extends TestCase
                 $this->stringContains('http://localhost:3000/reset-password?token=my-reset-token'),
             );
 
-        ($this->handler)(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
     }
 }

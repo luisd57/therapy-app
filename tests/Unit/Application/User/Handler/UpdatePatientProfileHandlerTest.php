@@ -34,7 +34,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
             phone: '+1234567890',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('+1234567890', $result->phone);
         $this->assertNull($result->address);
@@ -55,7 +55,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
             state: 'IL',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertNull($result->phone);
         $this->assertNotNull($result->address);
@@ -75,7 +75,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
             country: 'USA',
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertSame('+9876543210', $result->phone);
         $this->assertNotNull($result->address);
@@ -92,7 +92,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
         );
 
         $this->expectException(UserNotFoundException::class);
-        ($this->handler)($input);
+        $this->handler->__invoke($input);
     }
 
     public function testHandlePartialAddressDoesNotCreateAddress(): void
@@ -107,7 +107,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
             // country is missing, so address should NOT be created
         );
 
-        $result = ($this->handler)($input);
+        $result = $this->handler->__invoke($input);
 
         $this->assertNull($result->address);
     }

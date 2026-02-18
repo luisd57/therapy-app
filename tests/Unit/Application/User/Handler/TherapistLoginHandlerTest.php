@@ -42,7 +42,7 @@ final class TherapistLoginHandlerTest extends TestCase
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->jwtTokenGenerator->method('generate')->willReturn('jwt-token-123');
 
-        $result = ($this->handler)(new TherapistLoginInputDTO('therapist@example.com', 'password'));
+        $result = $this->handler->__invoke(new TherapistLoginInputDTO('therapist@example.com', 'password'));
 
         $this->assertSame('jwt-token-123', $result->token);
         $this->assertSame('therapist@example.com', $result->user->email);
@@ -54,7 +54,7 @@ final class TherapistLoginHandlerTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn(null);
 
         $this->expectException(InvalidCredentialsException::class);
-        ($this->handler)(new TherapistLoginInputDTO('unknown@example.com', 'password'));
+        $this->handler->__invoke(new TherapistLoginInputDTO('unknown@example.com', 'password'));
     }
 
     public function testWrongRoleThrowsInvalidCredentials(): void
@@ -63,7 +63,7 @@ final class TherapistLoginHandlerTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn($patient);
 
         $this->expectException(InvalidCredentialsException::class);
-        ($this->handler)(new TherapistLoginInputDTO('patient@example.com', 'password'));
+        $this->handler->__invoke(new TherapistLoginInputDTO('patient@example.com', 'password'));
     }
 
     public function testInactiveUserThrowsUserNotActive(): void
@@ -85,7 +85,7 @@ final class TherapistLoginHandlerTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn($inactiveTherapist);
 
         $this->expectException(UserNotActiveException::class);
-        ($this->handler)(new TherapistLoginInputDTO('inactive@example.com', 'password'));
+        $this->handler->__invoke(new TherapistLoginInputDTO('inactive@example.com', 'password'));
     }
 
     public function testWrongPasswordThrowsInvalidCredentials(): void
@@ -95,6 +95,6 @@ final class TherapistLoginHandlerTest extends TestCase
         $this->passwordHasher->method('verify')->willReturn(false);
 
         $this->expectException(InvalidCredentialsException::class);
-        ($this->handler)(new TherapistLoginInputDTO('therapist@example.com', 'wrong-password'));
+        $this->handler->__invoke(new TherapistLoginInputDTO('therapist@example.com', 'wrong-password'));
     }
 }

@@ -43,7 +43,7 @@ final class CreateTherapistConsoleCommand extends Command
         $password = $input->getArgument('password');
 
         try {
-            $user = ($this->handler)(new CreateTherapistInputDTO(
+            $user = $this->handler->__invoke(new CreateTherapistInputDTO(
                 email: $email,
                 fullName: $name,
                 password: $password,
