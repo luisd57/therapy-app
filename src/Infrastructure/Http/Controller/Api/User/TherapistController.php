@@ -38,7 +38,7 @@ final class TherapistController extends AbstractController
         }
 
         try {
-            $user = $handler->handle(new CreateTherapistInputDTO(
+            $user = ($handler)(new CreateTherapistInputDTO(
                 email: $data['email'],
                 fullName: $data['full_name'],
                 password: $data['password'],
@@ -48,8 +48,8 @@ final class TherapistController extends AbstractController
                 'user' => $user->toArray(),
                 'message' => 'Therapist account created successfully.',
             ]);
-        } catch (UserAlreadyExistsException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 409);
+        } catch (UserAlreadyExistsException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 409);
         }
     }
 
@@ -60,7 +60,7 @@ final class TherapistController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $user = $handler->handle($currentUser->getId());
+        $user = ($handler)($currentUser->getId());
 
         return $this->success($user->toArray());
     }
@@ -69,7 +69,7 @@ final class TherapistController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function listPatients(ListPatientsHandler $handler): JsonResponse
     {
-        $patients = $handler->handle();
+        $patients = ($handler)();
 
         return $this->success([
             'patients' => $patients->map(fn($dto) => $dto->toArray())->toArray(),
@@ -92,7 +92,7 @@ final class TherapistController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $invitation = $handler->handle(new InvitePatientInputDTO(
+            $invitation = ($handler)(new InvitePatientInputDTO(
                 email: $data['email'],
                 patientName: $data['patient_name'],
                 therapistId: $currentUser->getId(),
@@ -102,8 +102,8 @@ final class TherapistController extends AbstractController
                 'invitation' => $invitation->toArray(),
                 'message' => 'Invitation sent successfully.',
             ]);
-        } catch (UserAlreadyExistsException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 409);
+        } catch (UserAlreadyExistsException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 409);
         }
     }
 
@@ -111,7 +111,7 @@ final class TherapistController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function listInvitations(ListInvitationsHandler $handler): JsonResponse
     {
-        $invitations = $handler->handle();
+        $invitations = ($handler)();
 
         return $this->success([
             'invitations' => $invitations->map(fn($dto) => $dto->toArray())->toArray(),

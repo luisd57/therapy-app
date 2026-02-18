@@ -5,7 +5,7 @@ declare (strict_types = 1);
 namespace App\Application\User\Handler;
 
 use App\Application\User\DTO\Input\ActivatePatientInputDTO;
-use App\Application\User\DTO\Output\UserDTO;
+use App\Application\User\DTO\Output\UserOutputDTO;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
@@ -23,9 +23,9 @@ final readonly class ActivatePatientHandler
         private EmailSenderInterface $emailSender,
     ) {}
 
-    public function handle(ActivatePatientInputDTO $input): UserDTO
+    public function __invoke(ActivatePatientInputDTO $dto): UserOutputDTO
     {
-        $invitation = $this->invitationRepository->findByToken($input->token);
+        $invitation = $this->invitationRepository->findByToken($dto->token);
 
         if ($invitation === null) {
             throw InvalidTokenException::notFound();
@@ -47,7 +47,7 @@ final readonly class ActivatePatientHandler
         );
 
         // Activate with password
-        $hashedPassword = $this->passwordHasher->hash($input->password);
+        $hashedPassword = $this->passwordHasher->hash($dto->password);
         $user->activate($hashedPassword);
 
         // Mark invitation as used
@@ -63,6 +63,6 @@ final readonly class ActivatePatientHandler
             userName: $user->getFullName(),
         );
 
-        return UserDTO::fromEntity($user);
+        return UserOutputDTO::fromEntity($user);
     }
 }

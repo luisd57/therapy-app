@@ -31,7 +31,7 @@ final class ListInvitationsHandlerTest extends TestCase
             ->method('findPendingInvitations')
             ->willReturn(new ArrayCollection([$inv1, $inv2]));
 
-        $result = $this->handler->handle();
+        $result = ($this->handler)();
 
         $this->assertCount(2, $result);
         $this->assertSame('p1@example.com', $result->get(0)->email);
@@ -45,7 +45,7 @@ final class ListInvitationsHandlerTest extends TestCase
             ->method('findPendingInvitations')
             ->willReturn(new ArrayCollection());
 
-        $result = $this->handler->handle();
+        $result = ($this->handler)();
 
         $this->assertCount(0, $result);
     }

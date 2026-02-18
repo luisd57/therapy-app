@@ -29,11 +29,11 @@ final class PatientController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $user = $handler->handle($currentUser->getId());
+            $user = ($handler)($currentUser->getId());
 
             return $this->success($user->toArray());
-        } catch (UserNotFoundException $e) {
-            return $this->notFound($e->getMessage());
+        } catch (UserNotFoundException $exception) {
+            return $this->notFound($exception->getMessage());
         }
     }
 
@@ -51,7 +51,7 @@ final class PatientController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $user = $handler->handle(new UpdatePatientProfileInputDTO(
+            $user = ($handler)(new UpdatePatientProfileInputDTO(
                 userId: $currentUser->getId(),
                 phone: $data['phone'] ?? null,
                 street: $data['address']['street'] ?? null,
@@ -65,10 +65,10 @@ final class PatientController extends AbstractController
                 'user' => $user->toArray(),
                 'message' => 'Profile updated successfully.',
             ]);
-        } catch (UserNotFoundException $e) {
-            return $this->notFound($e->getMessage());
-        } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 'VALIDATION_ERROR', 422);
+        } catch (UserNotFoundException $exception) {
+            return $this->notFound($exception->getMessage());
+        } catch (\InvalidArgumentException $exception) {
+            return $this->error($exception->getMessage(), 'VALIDATION_ERROR', 422);
         }
     }
 

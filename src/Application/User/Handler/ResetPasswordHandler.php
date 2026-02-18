@@ -19,9 +19,9 @@ final readonly class ResetPasswordHandler
         private PasswordHasherInterface $passwordHasher,
     ) {}
 
-    public function handle(ResetPasswordInputDTO $input): void
+    public function __invoke(ResetPasswordInputDTO $dto): void
     {
-        $resetToken = $this->resetTokenRepository->findByToken($input->token);
+        $resetToken = $this->resetTokenRepository->findByToken($dto->token);
 
         if ($resetToken === null) {
             throw InvalidTokenException::notFound();
@@ -42,7 +42,7 @@ final readonly class ResetPasswordHandler
         }
 
         // Update password
-        $hashedPassword = $this->passwordHasher->hash($input->newPassword);
+        $hashedPassword = $this->passwordHasher->hash($dto->newPassword);
         $user->updatePassword($hashedPassword);
 
         // Mark token as used

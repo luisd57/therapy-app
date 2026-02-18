@@ -16,13 +16,13 @@ final readonly class RemoveScheduleExceptionHandler
     ) {
     }
 
-    public function handle(RemoveScheduleExceptionInputDTO $input): void
+    public function __invoke(RemoveScheduleExceptionInputDTO $dto): void
     {
-        $id = ExceptionId::fromString($input->exceptionId);
+        $id = ExceptionId::fromString($dto->exceptionId);
         $exception = $this->exceptionRepository->findById($id);
 
         if ($exception === null) {
-            throw ScheduleConflictException::exceptionNotFound($input->exceptionId);
+            throw ScheduleConflictException::exceptionNotFound($dto->exceptionId);
         }
 
         $this->exceptionRepository->delete($exception);

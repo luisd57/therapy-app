@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Appointment\Handler;
 
-use App\Application\Appointment\DTO\Output\TherapistScheduleDTO;
+use App\Application\Appointment\DTO\Output\TherapistScheduleOutputDTO;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\User\ValueObject\UserId;
@@ -18,9 +18,9 @@ final readonly class GetTherapistScheduleHandler
     }
 
     /**
-     * @return ArrayCollection<int, TherapistScheduleDTO>
+     * @return ArrayCollection<int, TherapistScheduleOutputDTO>
      */
-    public function handle(string $therapistId): ArrayCollection
+    public function __invoke(string $therapistId): ArrayCollection
     {
         $schedules = $this->scheduleRepository->findActiveByTherapist(
             UserId::fromString($therapistId),
@@ -28,7 +28,7 @@ final readonly class GetTherapistScheduleHandler
 
         return new ArrayCollection(
             $schedules->map(
-                fn (TherapistSchedule $s) => TherapistScheduleDTO::fromEntity($s),
+                fn (TherapistSchedule $schedule) => TherapistScheduleOutputDTO::fromEntity($schedule),
             )->toArray(),
         );
     }

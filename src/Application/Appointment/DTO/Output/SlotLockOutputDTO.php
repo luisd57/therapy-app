@@ -7,7 +7,7 @@ namespace App\Application\Appointment\DTO\Output;
 use App\Domain\Appointment\Entity\SlotLock;
 use DateTimeInterface;
 
-final readonly class SlotLockDTO
+final readonly class SlotLockOutputDTO
 {
     public function __construct(
         public string $lockToken,

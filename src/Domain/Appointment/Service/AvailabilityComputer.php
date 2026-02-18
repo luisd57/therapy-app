@@ -31,9 +31,9 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
             $weekDay = WeekDay::fromDateTimeImmutable($current);
 
             $daySchedules = $context->schedules->filter(
-                fn (TherapistSchedule $s) => $s->getDayOfWeek() === $weekDay
-                    && $s->isActive()
-                    && ($modalityFilter === null || $s->supportsModality($modalityFilter)),
+                fn (TherapistSchedule $schedule) => $schedule->getDayOfWeek() === $weekDay
+                    && $schedule->isActive()
+                    && ($modalityFilter === null || $schedule->supportsModality($modalityFilter)),
             );
 
             foreach ($daySchedules as $schedule) {
@@ -83,7 +83,7 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
     private function isBlockedByException(TimeSlot $slot, ArrayCollection $exceptions): bool
     {
         return $exceptions->exists(
-            fn (int $_, ScheduleException $ex) => $ex->overlapsTimeSlot($slot),
+            fn (int $_index, ScheduleException $exception) => $exception->overlapsTimeSlot($slot),
         );
     }
 
@@ -93,8 +93,8 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
     private function isOccupiedByAppointment(TimeSlot $slot, ArrayCollection $appointments): bool
     {
         return $appointments->exists(
-            fn (int $_, Appointment $appt) => $appt->blocksSlot()
-                && $appt->getTimeSlot()->overlaps($slot),
+            fn (int $_index, Appointment $appointment) => $appointment->blocksSlot()
+                && $appointment->getTimeSlot()->overlaps($slot),
         );
     }
 
@@ -104,8 +104,8 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
     private function isHeldByLock(TimeSlot $slot, ArrayCollection $locks): bool
     {
         return $locks->exists(
-            fn (int $_, SlotLock $lock) => $lock->isActive()
-                && $lock->getTimeSlot()->overlaps($slot),
+            fn (int $_index, SlotLock $slotLock) => $slotLock->isActive()
+                && $slotLock->getTimeSlot()->overlaps($slot),
         );
     }
 }

@@ -7,7 +7,7 @@ namespace App\Application\Appointment\DTO\Output;
 use App\Domain\Appointment\Entity\ScheduleException;
 use DateTimeInterface;
 
-final readonly class ScheduleExceptionDTO
+final readonly class ScheduleExceptionOutputDTO
 {
     public function __construct(
         public string $id,

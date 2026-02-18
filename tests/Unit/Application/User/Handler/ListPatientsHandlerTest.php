@@ -31,7 +31,7 @@ final class ListPatientsHandlerTest extends TestCase
             ->method('findActivePatients')
             ->willReturn(new ArrayCollection([$patient1, $patient2]));
 
-        $result = $this->handler->handle();
+        $result = ($this->handler)();
 
         $this->assertCount(2, $result);
         $this->assertSame('p1@example.com', $result->get(0)->email);
@@ -44,7 +44,7 @@ final class ListPatientsHandlerTest extends TestCase
             ->method('findActivePatients')
             ->willReturn(new ArrayCollection());
 
-        $result = $this->handler->handle();
+        $result = ($this->handler)();
 
         $this->assertCount(0, $result);
     }

@@ -7,7 +7,7 @@ namespace App\Application\Appointment\DTO\Output;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use DateTimeInterface;
 
-final readonly class TimeSlotDTO
+final readonly class TimeSlotOutputDTO
 {
     public function __construct(
         public string $startTime,

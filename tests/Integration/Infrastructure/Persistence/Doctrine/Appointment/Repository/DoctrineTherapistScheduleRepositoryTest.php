@@ -85,7 +85,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findActiveByTherapist($this->therapistId);
 
-        $ids = $results->map(fn(TherapistSchedule $s) => $s->getId()->getValue())->toArray();
+        $ids = $results->map(fn(TherapistSchedule $schedule) => $schedule->getId()->getValue())->toArray();
         $this->assertContains($activeSchedule->getId()->getValue(), $ids);
         $this->assertNotContains($inactiveSchedule->getId()->getValue(), $ids);
     }
@@ -112,7 +112,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findActiveByTherapistAndDay($this->therapistId, WeekDay::MONDAY);
 
-        $ids = $results->map(fn(TherapistSchedule $s) => $s->getId()->getValue())->toArray();
+        $ids = $results->map(fn(TherapistSchedule $schedule) => $schedule->getId()->getValue())->toArray();
         $this->assertContains($mondaySchedule->getId()->getValue(), $ids);
         $this->assertNotContains($tuesdaySchedule->getId()->getValue(), $ids);
     }

@@ -6,7 +6,7 @@ namespace App\Application\User\DTO\Output;
 
 use App\Domain\User\ValueObject\Address;
 
-final readonly class AddressDTO
+final readonly class AddressOutputDTO
 {
     public function __construct(
         public string $street,

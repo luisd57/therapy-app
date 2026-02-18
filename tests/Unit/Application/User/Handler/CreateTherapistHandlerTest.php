@@ -37,7 +37,7 @@ final class CreateTherapistHandlerTest extends TestCase
             password: 'securepass',
         );
 
-        $result = $this->handler->handle($input);
+        $result = ($this->handler)($input);
 
         $this->assertSame('dr@example.com', $result->email);
         $this->assertSame('Dr. Test', $result->fullName);
@@ -56,7 +56,7 @@ final class CreateTherapistHandlerTest extends TestCase
         );
 
         $this->expectException(UserAlreadyExistsException::class);
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 
     public function testHandleSuccessHashesPassword(): void
@@ -74,6 +74,6 @@ final class CreateTherapistHandlerTest extends TestCase
             password: 'securepass',
         );
 
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 }

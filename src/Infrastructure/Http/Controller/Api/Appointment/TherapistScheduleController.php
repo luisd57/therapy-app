@@ -38,7 +38,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $schedules = $handler->handle($currentUser->getId());
+        $schedules = ($handler)($currentUser->getId());
 
         return $this->success([
             'schedules' => $schedules->map(fn ($dto) => $dto->toArray())->toArray(),
@@ -60,7 +60,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $result = $handler->handle(new SetTherapistScheduleInputDTO(
+            $result = ($handler)(new SetTherapistScheduleInputDTO(
                 therapistId: $currentUser->getId(),
                 dayOfWeek: (int) $data['day_of_week'],
                 startTime: $data['start_time'],
@@ -73,8 +73,8 @@ final class TherapistScheduleController extends AbstractController
                 'schedule' => $result->toArray(),
                 'message' => 'Schedule block created successfully.',
             ]);
-        } catch (ScheduleConflictException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 409);
+        } catch (ScheduleConflictException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 409);
         }
     }
 
@@ -92,7 +92,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $result = $handler->handle(new UpdateTherapistScheduleInputDTO(
+            $result = ($handler)(new UpdateTherapistScheduleInputDTO(
                 scheduleId: $id,
                 therapistId: $currentUser->getId(),
                 dayOfWeek: (int) $data['day_of_week'],
@@ -106,8 +106,8 @@ final class TherapistScheduleController extends AbstractController
                 'schedule' => $result->toArray(),
                 'message' => 'Schedule block updated successfully.',
             ]);
-        } catch (ScheduleConflictException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), $this->isNotFound($e) ? 404 : 409);
+        } catch (ScheduleConflictException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), $this->isNotFound($exception) ? 404 : 409);
         }
     }
 
@@ -118,14 +118,14 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $handler->handle(new DeleteTherapistScheduleInputDTO(
+            ($handler)(new DeleteTherapistScheduleInputDTO(
                 scheduleId: $id,
                 therapistId: $currentUser->getId(),
             ));
 
             return $this->noContent();
-        } catch (ScheduleConflictException $e) {
-            return $this->notFound($e->getMessage());
+        } catch (ScheduleConflictException $exception) {
+            return $this->notFound($exception->getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $exceptions = $handler->handle(new ListScheduleExceptionsInputDTO(
+        $exceptions = ($handler)(new ListScheduleExceptionsInputDTO(
             therapistId: $currentUser->getId(),
             from: $from,
             to: $to,
@@ -168,7 +168,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $result = $handler->handle(new AddScheduleExceptionInputDTO(
+        $result = ($handler)(new AddScheduleExceptionInputDTO(
             therapistId: $currentUser->getId(),
             startDateTime: $data['start_date_time'],
             endDateTime: $data['end_date_time'],
@@ -189,14 +189,14 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $handler->handle(new RemoveScheduleExceptionInputDTO(
+            ($handler)(new RemoveScheduleExceptionInputDTO(
                 exceptionId: $id,
                 therapistId: $currentUser->getId(),
             ));
 
             return $this->noContent();
-        } catch (ScheduleConflictException $e) {
-            return $this->notFound($e->getMessage());
+        } catch (ScheduleConflictException $exception) {
+            return $this->notFound($exception->getMessage());
         }
     }
 
@@ -307,8 +307,8 @@ final class TherapistScheduleController extends AbstractController
         }
     }
 
-    private function isNotFound(ScheduleConflictException $e): bool
+    private function isNotFound(ScheduleConflictException $scheduleConflictException): bool
     {
-        return str_contains($e->getMessage(), 'not found');
+        return str_contains($scheduleConflictException->getMessage(), 'not found');
     }
 }

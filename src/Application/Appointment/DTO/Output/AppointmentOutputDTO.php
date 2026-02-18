@@ -7,7 +7,7 @@ namespace App\Application\Appointment\DTO\Output;
 use App\Domain\Appointment\Entity\Appointment;
 use DateTimeInterface;
 
-final readonly class AppointmentDTO
+final readonly class AppointmentOutputDTO
 {
     public function __construct(
         public string $id,

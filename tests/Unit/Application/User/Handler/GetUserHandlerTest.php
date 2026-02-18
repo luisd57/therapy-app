@@ -22,7 +22,7 @@ final class GetUserHandlerTest extends TestCase
         $this->handler = new GetUserHandler($this->userRepository);
     }
 
-    public function testHandleUserFoundReturnsUserDTO(): void
+    public function testHandleUserFoundReturnsUserOutputDTO(): void
     {
         $user = DomainTestHelper::createTherapist();
         $userId = $user->getId()->getValue();
@@ -31,7 +31,7 @@ final class GetUserHandlerTest extends TestCase
             ->method('findById')
             ->willReturn($user);
 
-        $result = $this->handler->handle($userId);
+        $result = ($this->handler)($userId);
 
         $this->assertSame($userId, $result->id);
         $this->assertSame('therapist@example.com', $result->email);
@@ -44,6 +44,6 @@ final class GetUserHandlerTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(UserNotFoundException::class);
-        $this->handler->handle('019510ab-1234-7000-8000-000000000001');
+        ($this->handler)('019510ab-1234-7000-8000-000000000001');
     }
 }

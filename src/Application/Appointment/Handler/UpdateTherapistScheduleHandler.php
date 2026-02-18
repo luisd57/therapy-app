@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\UpdateTherapistScheduleInputDTO;
-use App\Application\Appointment\DTO\Output\TherapistScheduleDTO;
+use App\Application\Appointment\DTO\Output\TherapistScheduleOutputDTO;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\ValueObject\ScheduleId;
@@ -19,20 +19,20 @@ final readonly class UpdateTherapistScheduleHandler
     ) {
     }
 
-    public function handle(UpdateTherapistScheduleInputDTO $input): TherapistScheduleDTO
+    public function __invoke(UpdateTherapistScheduleInputDTO $dto): TherapistScheduleOutputDTO
     {
-        $scheduleId = ScheduleId::fromString($input->scheduleId);
+        $scheduleId = ScheduleId::fromString($dto->scheduleId);
         $schedule = $this->scheduleRepository->findById($scheduleId);
 
         if ($schedule === null) {
-            throw ScheduleConflictException::scheduleNotFound($input->scheduleId);
+            throw ScheduleConflictException::scheduleNotFound($dto->scheduleId);
         }
 
-        $dayOfWeek = WeekDay::from($input->dayOfWeek);
+        $dayOfWeek = WeekDay::from($dto->dayOfWeek);
 
         // Check for overlaps, excluding self
         $existingSchedules = $this->scheduleRepository->findActiveByTherapistAndDay(
-            UserId::fromString($input->therapistId),
+            UserId::fromString($dto->therapistId),
             $dayOfWeek,
         );
 
@@ -42,8 +42,8 @@ final readonly class UpdateTherapistScheduleHandler
             }
 
             if ($this->timesOverlap(
-                $input->startTime,
-                $input->endTime,
+                $dto->startTime,
+                $dto->endTime,
                 $existing->getStartTime(),
                 $existing->getEndTime(),
             )) {
@@ -53,15 +53,15 @@ final readonly class UpdateTherapistScheduleHandler
 
         $schedule->update(
             dayOfWeek: $dayOfWeek,
-            startTime: $input->startTime,
-            endTime: $input->endTime,
-            supportsOnline: $input->supportsOnline,
-            supportsInPerson: $input->supportsInPerson,
+            startTime: $dto->startTime,
+            endTime: $dto->endTime,
+            supportsOnline: $dto->supportsOnline,
+            supportsInPerson: $dto->supportsInPerson,
         );
 
         $this->scheduleRepository->save($schedule);
 
-        return TherapistScheduleDTO::fromEntity($schedule);
+        return TherapistScheduleOutputDTO::fromEntity($schedule);
     }
 
     private function timesOverlap(

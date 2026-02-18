@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Controller\Api\User;
 
 use App\Application\User\DTO\Input\ActivatePatientInputDTO;
+use App\Application\User\DTO\Input\PatientLoginInputDTO;
 use App\Application\User\DTO\Input\RequestPasswordResetInputDTO;
 use App\Application\User\DTO\Input\ResetPasswordInputDTO;
+use App\Application\User\DTO\Input\TherapistLoginInputDTO;
 use App\Application\User\Handler\ActivatePatientHandler;
-use App\Application\User\Handler\LoginHandler;
+use App\Application\User\Handler\PatientLoginHandler;
 use App\Application\User\Handler\RequestPasswordResetHandler;
 use App\Application\User\Handler\ResetPasswordHandler;
+use App\Application\User\Handler\TherapistLoginHandler;
 use App\Application\User\Handler\ValidateInvitationHandler;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\InvalidTokenException;
@@ -33,7 +36,7 @@ final class AuthController extends AbstractController
     ) {}
 
     #[Route('/therapist/login', name: 'api_therapist_login', methods: ['POST'])]
-    public function therapistLogin(Request $request, LoginHandler $handler): JsonResponse
+    public function therapistLogin(Request $request, TherapistLoginHandler $handler): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
 
@@ -43,10 +46,10 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $result = $handler->handleTherapistLogin(
+            $result = $handler(new TherapistLoginInputDTO(
                 email: $data['email'],
                 password: $data['password'],
-            );
+            ));
 
             return $this->success([
                 'token' => $result->token,
@@ -60,7 +63,7 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/patient/login', name: 'api_patient_login', methods: ['POST'])]
-    public function patientLogin(Request $request, LoginHandler $handler): JsonResponse
+    public function patientLogin(Request $request, PatientLoginHandler $handler): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
 
@@ -70,10 +73,10 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $result = $handler->handlePatientLogin(
+            $result = $handler(new PatientLoginInputDTO(
                 email: $data['email'],
                 password: $data['password'],
-            );
+            ));
 
             return $this->success([
                 'token' => $result->token,
@@ -90,11 +93,11 @@ final class AuthController extends AbstractController
     public function validateInvitation(string $token, ValidateInvitationHandler $handler): JsonResponse
     {
         try {
-            $invitation = $handler->handle($token);
+            $invitation = ($handler)($token);
 
             return $this->success($invitation->toArray());
-        } catch (InvalidTokenException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 400);
+        } catch (InvalidTokenException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
         }
     }
 
@@ -109,7 +112,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $user = $handler->handle(new ActivatePatientInputDTO(
+            $user = ($handler)(new ActivatePatientInputDTO(
                 token: $data['token'],
                 password: $data['password'],
             ));
@@ -118,8 +121,8 @@ final class AuthController extends AbstractController
                 'user' => $user->toArray(),
                 'message' => 'Account activated successfully. You can now log in.',
             ]);
-        } catch (InvalidTokenException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 400);
+        } catch (InvalidTokenException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
         }
     }
 
@@ -141,7 +144,7 @@ final class AuthController extends AbstractController
             return $this->validationError($errors);
         }
 
-        $handler->handle(new RequestPasswordResetInputDTO(email: $data['email']));
+        ($handler)(new RequestPasswordResetInputDTO(email: $data['email']));
 
         // Always return success to prevent email enumeration
         return $this->success([
@@ -160,7 +163,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $handler->handle(new ResetPasswordInputDTO(
+            ($handler)(new ResetPasswordInputDTO(
                 token: $data['token'],
                 newPassword: $data['password'],
             ));
@@ -168,8 +171,8 @@ final class AuthController extends AbstractController
             return $this->success([
                 'message' => 'Password has been reset successfully. You can now log in.',
             ]);
-        } catch (InvalidTokenException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 400);
+        } catch (InvalidTokenException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
         }
     }
 

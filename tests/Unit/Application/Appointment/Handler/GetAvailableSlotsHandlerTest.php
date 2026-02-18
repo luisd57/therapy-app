@@ -68,7 +68,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         );
     }
 
-    public function testHandleSuccessReturnsAvailableSlotsDTO(): void
+    public function testHandleSuccessReturnsAvailableSlotsOutputDTO(): void
     {
         $therapist = $this->createTherapist();
 
@@ -99,7 +99,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             to: '2025-06-02',
         );
 
-        $result = $this->handler->handle($input);
+        $result = ($this->handler)($input);
 
         $this->assertSame('2025-06-02', $result->from);
         $this->assertSame('2025-06-02', $result->to);
@@ -139,7 +139,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             modality: 'ONLINE',
         );
 
-        $result = $this->handler->handle($input);
+        $result = ($this->handler)($input);
 
         $this->assertSame('ONLINE', $result->modality);
         $this->assertSame(0, $result->totalSlots);

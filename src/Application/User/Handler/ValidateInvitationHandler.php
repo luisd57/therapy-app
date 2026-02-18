@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\Handler;
 
-use App\Application\User\DTO\Output\InvitationDTO;
+use App\Application\User\DTO\Output\InvitationOutputDTO;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 
@@ -15,7 +15,7 @@ final readonly class ValidateInvitationHandler
     ) {
     }
 
-    public function handle(string $token): InvitationDTO
+    public function __invoke(string $token): InvitationOutputDTO
     {
         $invitation = $this->invitationRepository->findByToken($token);
 
@@ -31,6 +31,6 @@ final readonly class ValidateInvitationHandler
             throw InvalidTokenException::expired();
         }
 
-        return InvitationDTO::fromEntity($invitation);
+        return InvitationOutputDTO::fromEntity($invitation);
     }
 }

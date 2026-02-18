@@ -90,7 +90,7 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
 
         $therapists = $this->repository->findByRole(UserRole::THERAPIST);
 
-        $emails = $therapists->map(fn($u) => $u->getEmail()->getValue())->toArray();
+        $emails = $therapists->map(fn($user) => $user->getEmail()->getValue())->toArray();
         $this->assertContains('role-t@example.com', $emails);
         $this->assertNotContains('role-p@example.com', $emails);
     }
@@ -106,7 +106,7 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
 
         $result = $this->repository->findActivePatients();
 
-        $emails = $result->map(fn($u) => $u->getEmail()->getValue())->toArray();
+        $emails = $result->map(fn($user) => $user->getEmail()->getValue())->toArray();
         $this->assertContains('act-ap@example.com', $emails);
         $this->assertNotContains('act-t@example.com', $emails);
         $this->assertNotContains('act-ip@example.com', $emails);

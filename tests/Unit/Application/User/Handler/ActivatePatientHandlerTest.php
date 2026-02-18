@@ -53,7 +53,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->emailSender->expects($this->once())->method('sendWelcome');
 
         $input = new ActivatePatientInputDTO(token: 'valid-token', password: 'securepass');
-        $result = $this->handler->handle($input);
+        $result = ($this->handler)($input);
 
         $this->assertSame('newpatient@example.com', $result->email);
         $this->assertSame('New Patient', $result->fullName);
@@ -66,7 +66,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn(null);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle(new ActivatePatientInputDTO(token: 'bad-token', password: 'pass'));
+        ($this->handler)(new ActivatePatientInputDTO(token: 'bad-token', password: 'pass'));
     }
 
     public function testHandleTokenAlreadyUsedThrowsInvalidTokenException(): void
@@ -75,7 +75,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle(new ActivatePatientInputDTO(token: 'used-token', password: 'pass'));
+        ($this->handler)(new ActivatePatientInputDTO(token: 'used-token', password: 'pass'));
     }
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
@@ -84,7 +84,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle(new ActivatePatientInputDTO(token: 'expired-token', password: 'pass'));
+        ($this->handler)(new ActivatePatientInputDTO(token: 'expired-token', password: 'pass'));
     }
 
     public function testHandleSuccessSendsWelcomeEmail(): void
@@ -106,6 +106,6 @@ final class ActivatePatientHandlerTest extends TestCase
             );
 
         $input = new ActivatePatientInputDTO(token: 'token', password: 'securepass');
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 }

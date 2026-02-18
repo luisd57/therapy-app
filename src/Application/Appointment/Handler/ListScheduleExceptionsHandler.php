@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\ListScheduleExceptionsInputDTO;
-use App\Application\Appointment\DTO\Output\ScheduleExceptionDTO;
+use App\Application\Appointment\DTO\Output\ScheduleExceptionOutputDTO;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\User\ValueObject\UserId;
@@ -20,19 +20,19 @@ final readonly class ListScheduleExceptionsHandler
     }
 
     /**
-     * @return ArrayCollection<int, ScheduleExceptionDTO>
+     * @return ArrayCollection<int, ScheduleExceptionOutputDTO>
      */
-    public function handle(ListScheduleExceptionsInputDTO $input): ArrayCollection
+    public function __invoke(ListScheduleExceptionsInputDTO $dto): ArrayCollection
     {
         $exceptions = $this->exceptionRepository->findByTherapistAndDateRange(
-            UserId::fromString($input->therapistId),
-            new DateTimeImmutable($input->from),
-            new DateTimeImmutable($input->to),
+            UserId::fromString($dto->therapistId),
+            new DateTimeImmutable($dto->from),
+            new DateTimeImmutable($dto->to),
         );
 
         return new ArrayCollection(
             $exceptions->map(
-                fn (ScheduleException $e) => ScheduleExceptionDTO::fromEntity($e),
+                fn (ScheduleException $scheduleException) => ScheduleExceptionOutputDTO::fromEntity($scheduleException),
             )->toArray(),
         );
     }

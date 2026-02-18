@@ -43,7 +43,7 @@ final class CreateTherapistConsoleCommand extends Command
         $password = $input->getArgument('password');
 
         try {
-            $user = $this->handler->handle(new CreateTherapistInputDTO(
+            $user = ($this->handler)(new CreateTherapistInputDTO(
                 email: $email,
                 fullName: $name,
                 password: $password,
@@ -55,11 +55,11 @@ final class CreateTherapistConsoleCommand extends Command
             ));
 
             return Command::SUCCESS;
-        } catch (UserAlreadyExistsException $e) {
-            $io->error($e->getMessage());
+        } catch (UserAlreadyExistsException $exception) {
+            $io->error($exception->getMessage());
             return Command::FAILURE;
-        } catch (\InvalidArgumentException $e) {
-            $io->error($e->getMessage());
+        } catch (\InvalidArgumentException $exception) {
+            $io->error($exception->getMessage());
             return Command::FAILURE;
         }
     }

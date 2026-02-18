@@ -6,7 +6,7 @@ namespace App\Application\User\DTO\Output;
 
 use App\Domain\User\Entity\User;
 
-final readonly class UserDTO
+final readonly class UserOutputDTO
 {
     public function __construct(
         public string $id,
@@ -15,7 +15,7 @@ final readonly class UserDTO
         public string $role,
         public bool $isActive,
         public ?string $phone,
-        public ?AddressDTO $address,
+        public ?AddressOutputDTO $address,
         public string $createdAt,
         public ?string $activatedAt,
     ) {
@@ -30,8 +30,8 @@ final readonly class UserDTO
             role: $user->getRole()->value,
             isActive: $user->isActive(),
             phone: $user->getPhone()?->getValue(),
-            address: $user->getAddress() 
-                ? AddressDTO::fromValueObject($user->getAddress()) 
+            address: $user->getAddress()
+                ? AddressOutputDTO::fromValueObject($user->getAddress())
                 : null,
             createdAt: $user->getCreatedAt()->format(\DateTimeInterface::ATOM),
             activatedAt: $user->getActivatedAt()?->format(\DateTimeInterface::ATOM),

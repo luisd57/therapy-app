@@ -36,7 +36,7 @@ final class PublicAppointmentController extends AbstractController
 
         $modality = $request->query->get('modality');
 
-        $result = $handler->handle(new GetAvailableSlotsInputDTO(
+        $result = ($handler)(new GetAvailableSlotsInputDTO(
             from: $from,
             to: $to,
             modality: $modality,
@@ -56,14 +56,14 @@ final class PublicAppointmentController extends AbstractController
         }
 
         try {
-            $result = $handler->handle(new LockSlotInputDTO(
+            $result = ($handler)(new LockSlotInputDTO(
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
             ));
 
             return $this->created($result->toArray());
-        } catch (SlotNotAvailableException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 409);
+        } catch (SlotNotAvailableException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 409);
         }
     }
 
@@ -78,7 +78,7 @@ final class PublicAppointmentController extends AbstractController
         }
 
         try {
-            $result = $handler->handle(new RequestAppointmentInputDTO(
+            $result = ($handler)(new RequestAppointmentInputDTO(
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
                 fullName: $data['full_name'],
@@ -93,10 +93,10 @@ final class PublicAppointmentController extends AbstractController
                 'appointment' => $result->toArray(),
                 'message' => 'Your appointment request has been submitted. You will receive a confirmation email shortly.',
             ]);
-        } catch (SlotNotAvailableException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 409);
-        } catch (InvalidLockTokenException $e) {
-            return $this->error($e->getMessage(), $e->getErrorCode(), 400);
+        } catch (SlotNotAvailableException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 409);
+        } catch (InvalidLockTokenException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 400);
         }
     }
 

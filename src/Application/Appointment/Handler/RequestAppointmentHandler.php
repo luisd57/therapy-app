@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\RequestAppointmentInputDTO;
-use App\Application\Appointment\DTO\Output\AppointmentDTO;
+use App\Application\Appointment\DTO\Output\AppointmentOutputDTO;
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
@@ -39,17 +39,17 @@ final readonly class RequestAppointmentHandler
     ) {
     }
 
-    public function handle(RequestAppointmentInputDTO $input): AppointmentDTO
+    public function __invoke(RequestAppointmentInputDTO $dto): AppointmentOutputDTO
     {
-        $startTime = new DateTimeImmutable($input->slotStartTime);
-        $modality = AppointmentModality::from($input->modality);
-        $email = Email::fromString($input->email);
-        $phone = Phone::fromString($input->phone);
+        $startTime = new DateTimeImmutable($dto->slotStartTime);
+        $modality = AppointmentModality::from($dto->modality);
+        $email = Email::fromString($dto->email);
+        $phone = Phone::fromString($dto->phone);
         $timeSlot = TimeSlot::create($startTime, $this->appointmentDurationMinutes);
 
         // If a lock token is provided, validate and consume it
-        if ($input->lockToken !== null) {
-            $lock = $this->slotLockRepository->findByLockToken($input->lockToken);
+        if ($dto->lockToken !== null) {
+            $lock = $this->slotLockRepository->findByLockToken($dto->lockToken);
 
             if ($lock === null || $lock->isExpired()) {
                 throw new InvalidLockTokenException();
@@ -72,11 +72,11 @@ final readonly class RequestAppointmentHandler
             id: AppointmentId::generate(),
             timeSlot: $timeSlot,
             modality: $modality,
-            fullName: $input->fullName,
+            fullName: $dto->fullName,
             email: $email,
             phone: $phone,
-            city: $input->city,
-            country: $input->country,
+            city: $dto->city,
+            country: $dto->country,
         );
 
         $this->appointmentRepository->save($appointment);
@@ -84,7 +84,7 @@ final readonly class RequestAppointmentHandler
         // Send acknowledgment to requester
         $this->emailSender->sendRequestAcknowledgment(
             to: $email,
-            fullName: $input->fullName,
+            fullName: $dto->fullName,
             appointmentTime: $startTime,
             modality: $modality,
         );
@@ -93,12 +93,12 @@ final readonly class RequestAppointmentHandler
         $therapist = $this->userRepository->findSingleTherapist();
         $this->emailSender->sendNewRequestAlertToTherapist(
             therapistEmail: $therapist->getEmail(),
-            requesterName: $input->fullName,
+            requesterName: $dto->fullName,
             appointmentTime: $startTime,
             modality: $modality,
         );
 
-        return AppointmentDTO::fromEntity($appointment);
+        return AppointmentOutputDTO::fromEntity($appointment);
     }
 
     private function verifySlotAvailable(
@@ -136,7 +136,7 @@ final readonly class RequestAppointmentHandler
         );
 
         $isAvailable = $availableSlots->exists(
-            fn (int $_, TimeSlot $s) => $s->getStartTime() == $startTime,
+            fn (int $_index, TimeSlot $timeSlot) => $timeSlot->getStartTime() == $startTime,
         );
 
         if (!$isAvailable) {

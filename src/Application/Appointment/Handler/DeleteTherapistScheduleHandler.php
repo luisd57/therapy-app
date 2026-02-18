@@ -16,13 +16,13 @@ final readonly class DeleteTherapistScheduleHandler
     ) {
     }
 
-    public function handle(DeleteTherapistScheduleInputDTO $input): void
+    public function __invoke(DeleteTherapistScheduleInputDTO $dto): void
     {
-        $id = ScheduleId::fromString($input->scheduleId);
+        $id = ScheduleId::fromString($dto->scheduleId);
         $schedule = $this->scheduleRepository->findById($id);
 
         if ($schedule === null) {
-            throw ScheduleConflictException::scheduleNotFound($input->scheduleId);
+            throw ScheduleConflictException::scheduleNotFound($dto->scheduleId);
         }
 
         $this->scheduleRepository->delete($schedule);

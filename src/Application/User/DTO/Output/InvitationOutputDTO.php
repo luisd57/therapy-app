@@ -6,7 +6,7 @@ namespace App\Application\User\DTO\Output;
 
 use App\Domain\User\Entity\InvitationToken;
 
-final readonly class InvitationDTO
+final readonly class InvitationOutputDTO
 {
     public function __construct(
         public string $id,

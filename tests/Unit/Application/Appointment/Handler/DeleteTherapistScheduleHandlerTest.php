@@ -61,7 +61,7 @@ final class DeleteTherapistScheduleHandlerTest extends TestCase
             therapistId: UserId::generate()->getValue(),
         );
 
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 
     public function testHandleNotFoundThrowsScheduleConflictException(): void
@@ -82,6 +82,6 @@ final class DeleteTherapistScheduleHandlerTest extends TestCase
         );
 
         $this->expectException(ScheduleConflictException::class);
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 }

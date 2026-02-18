@@ -101,7 +101,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             new DateTimeImmutable('2026-06-02 23:59:59'),
         );
 
-        $ids = $results->map(fn(Appointment $a) => $a->getId()->getValue())->toArray();
+        $ids = $results->map(fn(Appointment $appointment) => $appointment->getId()->getValue())->toArray();
         $this->assertContains($requested->getId()->getValue(), $ids);
         $this->assertContains($confirmed->getId()->getValue(), $ids);
         $this->assertNotContains($completed->getId()->getValue(), $ids);
@@ -125,7 +125,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findByStatus(AppointmentStatus::REQUESTED);
 
-        $ids = $results->map(fn(Appointment $a) => $a->getId()->getValue())->toArray();
+        $ids = $results->map(fn(Appointment $appointment) => $appointment->getId()->getValue())->toArray();
         $this->assertContains($requested->getId()->getValue(), $ids);
         $this->assertNotContains($confirmed->getId()->getValue(), $ids);
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\AddScheduleExceptionInputDTO;
-use App\Application\Appointment\DTO\Output\ScheduleExceptionDTO;
+use App\Application\Appointment\DTO\Output\ScheduleExceptionOutputDTO;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\ValueObject\ExceptionId;
@@ -19,23 +19,23 @@ final readonly class AddScheduleExceptionHandler
     ) {
     }
 
-    public function handle(AddScheduleExceptionInputDTO $input): ScheduleExceptionDTO
+    public function __invoke(AddScheduleExceptionInputDTO $dto): ScheduleExceptionOutputDTO
     {
-        $therapistId = UserId::fromString($input->therapistId);
-        $startDateTime = new DateTimeImmutable($input->startDateTime);
-        $endDateTime = new DateTimeImmutable($input->endDateTime);
+        $therapistId = UserId::fromString($dto->therapistId);
+        $startDateTime = new DateTimeImmutable($dto->startDateTime);
+        $endDateTime = new DateTimeImmutable($dto->endDateTime);
 
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapistId: $therapistId,
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
-            reason: $input->reason,
-            isAllDay: $input->isAllDay,
+            reason: $dto->reason,
+            isAllDay: $dto->isAllDay,
         );
 
         $this->exceptionRepository->save($exception);
 
-        return ScheduleExceptionDTO::fromEntity($exception);
+        return ScheduleExceptionOutputDTO::fromEntity($exception);
     }
 }

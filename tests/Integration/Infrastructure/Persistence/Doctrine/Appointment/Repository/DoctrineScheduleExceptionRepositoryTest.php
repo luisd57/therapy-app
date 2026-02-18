@@ -83,7 +83,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             new DateTimeImmutable('2026-04-30 23:59:59'),
         );
 
-        $ids = $results->map(fn(ScheduleException $e) => $e->getId()->getValue())->toArray();
+        $ids = $results->map(fn(ScheduleException $scheduleException) => $scheduleException->getId()->getValue())->toArray();
         $this->assertContains($inRange->getId()->getValue(), $ids);
         $this->assertNotContains($outOfRange->getId()->getValue(), $ids);
     }

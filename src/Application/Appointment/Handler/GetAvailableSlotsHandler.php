@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\GetAvailableSlotsInputDTO;
-use App\Application\Appointment\DTO\Output\AvailableSlotsDTO;
-use App\Application\Appointment\DTO\Output\TimeSlotDTO;
+use App\Application\Appointment\DTO\Output\AvailableSlotsOutputDTO;
+use App\Application\Appointment\DTO\Output\TimeSlotOutputDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
@@ -31,15 +31,15 @@ final readonly class GetAvailableSlotsHandler
     ) {
     }
 
-    public function handle(GetAvailableSlotsInputDTO $input): AvailableSlotsDTO
+    public function __invoke(GetAvailableSlotsInputDTO $dto): AvailableSlotsOutputDTO
     {
         $therapist = $this->userRepository->findSingleTherapist();
         $therapistId = $therapist->getId();
 
-        $from = new DateTimeImmutable($input->from);
-        $to = new DateTimeImmutable($input->to . ' 23:59:59');
-        $modalityFilter = $input->modality !== null
-            ? AppointmentModality::from($input->modality)
+        $from = new DateTimeImmutable($dto->from);
+        $to = new DateTimeImmutable($dto->to . ' 23:59:59');
+        $modalityFilter = $dto->modality !== null
+            ? AppointmentModality::from($dto->modality)
             : null;
 
         $schedules = $this->scheduleRepository->findActiveByTherapist($therapistId);
@@ -72,13 +72,13 @@ final readonly class GetAvailableSlotsHandler
         $slotsByDate = [];
         foreach ($availableSlots as $slot) {
             $date = $slot->getStartTime()->format('Y-m-d');
-            $slotsByDate[$date][] = TimeSlotDTO::fromValueObject($slot);
+            $slotsByDate[$date][] = TimeSlotOutputDTO::fromValueObject($slot);
         }
 
-        return new AvailableSlotsDTO(
-            from: $input->from,
-            to: $input->to,
-            modality: $input->modality,
+        return new AvailableSlotsOutputDTO(
+            from: $dto->from,
+            to: $dto->to,
+            modality: $dto->modality,
             slotsByDate: $slotsByDate,
             totalSlots: $availableSlots->count(),
         );

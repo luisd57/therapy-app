@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\Handler;
 
 use App\Application\User\DTO\Input\CreateTherapistInputDTO;
-use App\Application\User\DTO\Output\UserDTO;
+use App\Application\User\DTO\Output\UserOutputDTO;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
@@ -20,25 +20,25 @@ final readonly class CreateTherapistHandler
         private PasswordHasherInterface $passwordHasher,
     ) {}
 
-    public function handle(CreateTherapistInputDTO $input): UserDTO
+    public function __invoke(CreateTherapistInputDTO $dto): UserOutputDTO
     {
-        $email = Email::fromString($input->email);
+        $email = Email::fromString($dto->email);
 
         if ($this->userRepository->existsByEmail($email)) {
-            throw new UserAlreadyExistsException($input->email);
+            throw new UserAlreadyExistsException($dto->email);
         }
 
-        $hashedPassword = $this->passwordHasher->hash($input->password);
+        $hashedPassword = $this->passwordHasher->hash($dto->password);
 
         $user = User::createTherapist(
             id: UserId::generate(),
             email: $email,
-            fullName: $input->fullName,
+            fullName: $dto->fullName,
             hashedPassword: $hashedPassword,
         );
 
         $this->userRepository->save($user);
 
-        return UserDTO::fromEntity($user);
+        return UserOutputDTO::fromEntity($user);
     }
 }

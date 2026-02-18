@@ -28,9 +28,9 @@ final readonly class RequestPasswordResetHandler
      * Note: Always returns void to prevent email enumeration attacks.
      * Even if the user doesn't exist, we don't reveal this information.
      */
-    public function handle(RequestPasswordResetInputDTO $input): void
+    public function __invoke(RequestPasswordResetInputDTO $dto): void
     {
-        $email = Email::fromString($input->email);
+        $email = Email::fromString($dto->email);
         $user = $this->userRepository->findByEmail($email);
 
         // Silently return if user doesn't exist (prevents email enumeration)

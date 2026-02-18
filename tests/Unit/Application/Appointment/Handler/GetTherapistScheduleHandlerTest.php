@@ -63,7 +63,7 @@ final class GetTherapistScheduleHandlerTest extends TestCase
             ->method('findActiveByTherapist')
             ->willReturn(new ArrayCollection([$schedule1, $schedule2]));
 
-        $result = $this->handler->handle($therapistId->getValue());
+        $result = ($this->handler)($therapistId->getValue());
 
         $this->assertCount(2, $result);
 

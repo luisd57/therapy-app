@@ -6,7 +6,7 @@ namespace App\Application\Appointment\DTO\Output;
 
 use App\Domain\Appointment\Entity\TherapistSchedule;
 
-final readonly class TherapistScheduleDTO
+final readonly class TherapistScheduleOutputDTO
 {
     public function __construct(
         public string $id,

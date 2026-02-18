@@ -71,7 +71,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
             supportsInPerson: true,
         );
 
-        $result = $this->handler->handle($input);
+        $result = ($this->handler)($input);
 
         $this->assertSame(2, $result->dayOfWeek);
         $this->assertSame('Tuesday', $result->dayName);
@@ -99,7 +99,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         );
 
         $this->expectException(ScheduleConflictException::class);
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 
     public function testHandleOverlapExcludingSelfThrowsScheduleConflictException(): void
@@ -156,6 +156,6 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         );
 
         $this->expectException(ScheduleConflictException::class);
-        $this->handler->handle($input);
+        ($this->handler)($input);
     }
 }

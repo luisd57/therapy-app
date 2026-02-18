@@ -22,7 +22,7 @@ final class ValidateInvitationHandlerTest extends TestCase
         $this->handler = new ValidateInvitationHandler($this->invitationRepository);
     }
 
-    public function testHandleValidTokenReturnsInvitationDTO(): void
+    public function testHandleValidTokenReturnsInvitationOutputDTO(): void
     {
         $invitation = DomainTestHelper::createValidInvitation(
             token: 'valid-token',
@@ -32,7 +32,7 @@ final class ValidateInvitationHandlerTest extends TestCase
 
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
-        $result = $this->handler->handle('valid-token');
+        $result = ($this->handler)('valid-token');
 
         $this->assertSame('patient@example.com', $result->email);
         $this->assertSame('Test Patient', $result->patientName);
@@ -44,7 +44,7 @@ final class ValidateInvitationHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn(null);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle('nonexistent-token');
+        ($this->handler)('nonexistent-token');
     }
 
     public function testHandleTokenAlreadyUsedThrowsInvalidTokenException(): void
@@ -53,7 +53,7 @@ final class ValidateInvitationHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle('used-token');
+        ($this->handler)('used-token');
     }
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
@@ -62,6 +62,6 @@ final class ValidateInvitationHandlerTest extends TestCase
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);
-        $this->handler->handle('expired-token');
+        ($this->handler)('expired-token');
     }
 }
