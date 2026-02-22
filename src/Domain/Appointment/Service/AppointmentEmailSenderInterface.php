@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Appointment\Service;
 
+use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 
 interface AppointmentEmailSenderInterface
 {
@@ -36,5 +38,15 @@ interface AppointmentEmailSenderInterface
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
+    ): void;
+
+    /**
+     * @param ArrayCollection<int, Appointment> $appointments
+     */
+    public function sendDailyAgendaToTherapist(
+        Email $therapistEmail,
+        string $therapistName,
+        DateTimeImmutable $date,
+        ArrayCollection $appointments,
     ): void;
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Email\Appointment;
 
+use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email as MimeEmail;
 
@@ -338,6 +340,158 @@ Request Details:
 - Modality: {$modality}
 
 Please log in to your dashboard to review and confirm or decline this request.
+TEXT;
+    }
+
+    /**
+     * @param ArrayCollection<int, Appointment> $appointments
+     */
+    public function sendDailyAgendaToTherapist(
+        Email $therapistEmail,
+        string $therapistName,
+        DateTimeImmutable $date,
+        ArrayCollection $appointments,
+    ): void {
+        $formattedDate = $date->format('l, F j, Y');
+
+        $email = (new MimeEmail())
+            ->from("{$this->fromName} <{$this->fromEmail}>")
+            ->to($therapistEmail->getValue())
+            ->subject("Daily Agenda — {$formattedDate}")
+            ->html($this->getDailyAgendaTemplate($therapistName, $formattedDate, $appointments))
+            ->text($this->getDailyAgendaTextTemplate($therapistName, $formattedDate, $appointments));
+
+        $this->mailer->send($email);
+    }
+
+    /**
+     * @param ArrayCollection<int, Appointment> $appointments
+     */
+    private function getDailyAgendaTemplate(
+        string $therapistName,
+        string $formattedDate,
+        ArrayCollection $appointments,
+    ): string {
+        $appointmentCount = $appointments->count();
+
+        if ($appointmentCount === 0) {
+            $tableHtml = '<p style="color: #666; font-style: italic;">No confirmed appointments for today.</p>';
+        } else {
+            $rows = '';
+            foreach ($appointments as $appointment) {
+                $time = $appointment->getTimeSlot()->getStartTime()->format('g:i A');
+                $name = htmlspecialchars($appointment->getFullName(), ENT_QUOTES, 'UTF-8');
+                $modality = $appointment->getModality()->getDisplayName();
+                $phone = htmlspecialchars($appointment->getPhone()->getValue(), ENT_QUOTES, 'UTF-8');
+                $payment = $appointment->isPaymentVerified() ? 'Verified' : 'Pending';
+                $paymentColor = $appointment->isPaymentVerified() ? '#2e7d32' : '#e65100';
+
+                $rows .= <<<HTML
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{$time}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{$name}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{$modality}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{$phone}</td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; color: {$paymentColor}; font-weight: bold;">{$payment}</td>
+                    </tr>
+                HTML;
+            }
+
+            $tableHtml = <<<HTML
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #f5f5f5;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Time</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Patient</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Modality</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Phone</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {$rows}
+                    </tbody>
+                </table>
+            HTML;
+        }
+
+        $summary = $appointmentCount === 1
+            ? '1 confirmed appointment'
+            : "{$appointmentCount} confirmed appointments";
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #1565c0; color: white; padding: 20px; border-radius: 4px 4px 0 0; }
+        .content { padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0;">Daily Agenda</h1>
+            <p style="margin: 5px 0 0;">{$formattedDate}</p>
+        </div>
+        <div class="content">
+            <p>Good morning, {$therapistName}!</p>
+            <p>You have <strong>{$summary}</strong> for today.</p>
+            {$tableHtml}
+        </div>
+        <div class="footer">
+            <p>This is an automated daily agenda summary from Therapy App.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * @param ArrayCollection<int, Appointment> $appointments
+     */
+    private function getDailyAgendaTextTemplate(
+        string $therapistName,
+        string $formattedDate,
+        ArrayCollection $appointments,
+    ): string {
+        $appointmentCount = $appointments->count();
+        $summary = $appointmentCount === 1
+            ? '1 confirmed appointment'
+            : "{$appointmentCount} confirmed appointments";
+
+        if ($appointmentCount === 0) {
+            $listText = 'No confirmed appointments for today.';
+        } else {
+            $lines = [];
+            foreach ($appointments as $appointment) {
+                $time = $appointment->getTimeSlot()->getStartTime()->format('g:i A');
+                $name = $appointment->getFullName();
+                $modality = $appointment->getModality()->getDisplayName();
+                $phone = $appointment->getPhone()->getValue();
+                $payment = $appointment->isPaymentVerified() ? 'Verified' : 'Pending';
+
+                $lines[] = "- {$time} | {$name} | {$modality} | {$phone} | Payment: {$payment}";
+            }
+            $listText = implode("\n", $lines);
+        }
+
+        return <<<TEXT
+Daily Agenda — {$formattedDate}
+
+Good morning, {$therapistName}!
+
+You have {$summary} for today.
+
+{$listText}
+
+---
+This is an automated daily agenda summary from Therapy App.
 TEXT;
     }
 }

@@ -36,5 +36,12 @@ interface AppointmentRepositoryInterface
      */
     public function findAll(): ArrayCollection;
 
+    /**
+     * Returns confirmed appointments whose start_time falls on the given date, ordered by start_time ASC.
+     *
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findConfirmedByDate(DateTimeImmutable $date): ArrayCollection;
+
     public function delete(Appointment $appointment): void;
 }

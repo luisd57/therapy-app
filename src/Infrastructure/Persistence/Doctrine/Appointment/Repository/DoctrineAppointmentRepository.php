@@ -106,6 +106,35 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
         return new ArrayCollection($appointments);
     }
 
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findConfirmedByDate(DateTimeImmutable $date): ArrayCollection
+    {
+        $dayStart = $date->setTime(0, 0);
+        $dayEnd = $date->modify('+1 day')->setTime(0, 0);
+
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('a')
+            ->from(AppointmentEntity::class, 'a')
+            ->where('a.status = :status')
+            ->andWhere('a.startTime >= :dayStart')
+            ->andWhere('a.startTime < :dayEnd')
+            ->setParameter('status', AppointmentStatus::CONFIRMED->value)
+            ->setParameter('dayStart', $dayStart)
+            ->setParameter('dayEnd', $dayEnd)
+            ->orderBy('a.startTime', 'ASC');
+
+        $entities = $qb->getQuery()->getResult();
+
+        $appointments = array_map(
+            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($appointments);
+    }
+
     public function delete(Appointment $appointment): void
     {
         $entity = $this->repository->find($appointment->getId()->getValue());

@@ -91,7 +91,7 @@ src/
     │       └── HealthController.php
     └── Console/
         ├── User/             # create-therapist, cleanup-tokens
-        └── Appointment/      # cleanup-slot-locks
+        └── Appointment/      # cleanup-slot-locks, send-daily-agenda
 ```
 
 ### Reconstitution Pattern
@@ -623,6 +623,10 @@ docker-compose exec php php bin/console app:cleanup-tokens
 
 # Clean up expired slot locks
 docker-compose exec php php bin/console app:cleanup-slot-locks
+
+# Send daily agenda email (defaults to today, or specify a date)
+docker-compose exec php php bin/console app:send-daily-agenda
+docker-compose exec php php bin/console app:send-daily-agenda 2026-06-01
 ```
 
 ## Development Commands
