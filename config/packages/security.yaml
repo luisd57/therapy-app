@@ -50,6 +50,7 @@ security:
         - { path: ^/api/appointments(/|$), roles: PUBLIC_ACCESS }
 
         # Protected endpoints
+        - { path: ^/api/therapist/appointments, roles: ROLE_THERAPIST }
         - { path: ^/api/therapist/schedule, roles: ROLE_THERAPIST }
         - { path: ^/api/therapist, roles: ROLE_THERAPIST }
         - { path: ^/api/patient, roles: ROLE_PATIENT }

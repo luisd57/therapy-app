@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Application\Appointment\Handler;
+
+use App\Application\Appointment\DTO\Input\CancelAppointmentInputDTO;
+use App\Application\Appointment\Handler\CancelAppointmentHandler;
+use App\Domain\Appointment\Exception\AppointmentNotFoundException;
+use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
+use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Tests\Helper\DomainTestHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class CancelAppointmentHandlerTest extends TestCase
+{
+    private AppointmentRepositoryInterface&MockObject $appointmentRepository;
+    private AppointmentEmailSenderInterface&MockObject $emailSender;
+    private CancelAppointmentHandler $handler;
+
+    protected function setUp(): void
+    {
+        $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
+        $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
+        $this->handler = new CancelAppointmentHandler($this->appointmentRepository, $this->emailSender);
+    }
+
+    public function testCancelRequestedAppointment(): void
+    {
+        $id = AppointmentId::generate();
+        $appointment = DomainTestHelper::createRequestedAppointment(id: $id);
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($appointment);
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('save');
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendCancellationToPatient');
+
+        $result = $this->handler->__invoke(new CancelAppointmentInputDTO(
+            appointmentId: $id->getValue(),
+        ));
+
+        $this->assertSame('CANCELLED', $result->status);
+    }
+
+    public function testCancelConfirmedAppointment(): void
+    {
+        $id = AppointmentId::generate();
+        $appointment = DomainTestHelper::createConfirmedAppointment(id: $id);
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($appointment);
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('save');
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendCancellationToPatient');
+
+        $result = $this->handler->__invoke(new CancelAppointmentInputDTO(
+            appointmentId: $id->getValue(),
+        ));
+
+        $this->assertSame('CANCELLED', $result->status);
+    }
+
+    public function testCancelNonExistentAppointmentThrowsException(): void
+    {
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn(null);
+
+        $this->expectException(AppointmentNotFoundException::class);
+
+        $this->handler->__invoke(new CancelAppointmentInputDTO(
+            appointmentId: AppointmentId::generate()->getValue(),
+        ));
+    }
+}

@@ -203,6 +203,13 @@ Open your browser and navigate to:
 | GET | `/api/therapist/schedule/exceptions` | List schedule exceptions |
 | POST | `/api/therapist/schedule/exceptions` | Add schedule exception |
 | DELETE | `/api/therapist/schedule/exceptions/{id}` | Remove exception |
+| GET | `/api/therapist/appointments` | List appointments (optional `?status=` filter) |
+| GET | `/api/therapist/appointments/{id}` | Get appointment details |
+| POST | `/api/therapist/appointments` | Book appointment (manual creation) |
+| POST | `/api/therapist/appointments/{id}/confirm` | Confirm appointment |
+| POST | `/api/therapist/appointments/{id}/complete` | Complete appointment |
+| POST | `/api/therapist/appointments/{id}/cancel` | Cancel appointment |
+| PATCH | `/api/therapist/appointments/{id}/payment` | Update payment verification |
 
 ### Protected Endpoints (Patient)
 

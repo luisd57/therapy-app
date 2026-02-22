@@ -156,6 +156,170 @@ TEXT;
 HTML;
     }
 
+    public function sendConfirmationToPatient(
+        Email $to,
+        string $fullName,
+        DateTimeImmutable $appointmentTime,
+        AppointmentModality $modality,
+    ): void {
+        $formattedDate = $appointmentTime->format('l, F j, Y');
+        $formattedTime = $appointmentTime->format('g:i A');
+        $modalityLabel = $modality->getDisplayName();
+
+        $email = (new MimeEmail())
+            ->from("{$this->fromName} <{$this->fromEmail}>")
+            ->to($to->getValue())
+            ->subject('Your Appointment Has Been Confirmed')
+            ->html($this->getConfirmationTemplate($fullName, $formattedDate, $formattedTime, $modalityLabel))
+            ->text($this->getConfirmationTextTemplate($fullName, $formattedDate, $formattedTime, $modalityLabel));
+
+        $this->mailer->send($email);
+    }
+
+    public function sendCancellationToPatient(
+        Email $to,
+        string $fullName,
+        DateTimeImmutable $appointmentTime,
+        AppointmentModality $modality,
+    ): void {
+        $formattedDate = $appointmentTime->format('l, F j, Y');
+        $formattedTime = $appointmentTime->format('g:i A');
+        $modalityLabel = $modality->getDisplayName();
+
+        $email = (new MimeEmail())
+            ->from("{$this->fromName} <{$this->fromEmail}>")
+            ->to($to->getValue())
+            ->subject('Your Appointment Has Been Cancelled')
+            ->html($this->getCancellationTemplate($fullName, $formattedDate, $formattedTime, $modalityLabel))
+            ->text($this->getCancellationTextTemplate($fullName, $formattedDate, $formattedTime, $modalityLabel));
+
+        $this->mailer->send($email);
+    }
+
+    private function getConfirmationTemplate(
+        string $fullName,
+        string $date,
+        string $time,
+        string $modality,
+    ): string {
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .details { background-color: #e8f5e9; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Appointment Confirmed</h1>
+        <p>Dear {$fullName},</p>
+        <p>Your appointment has been confirmed. Please see the details below.</p>
+        <div class="details">
+            <p><strong>Date:</strong> {$date}</p>
+            <p><strong>Time:</strong> {$time}</p>
+            <p><strong>Modality:</strong> {$modality}</p>
+        </div>
+        <p>If you need to make any changes, please contact us as soon as possible.</p>
+        <div class="footer">
+            <p>Thank you for choosing our services.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    private function getConfirmationTextTemplate(
+        string $fullName,
+        string $date,
+        string $time,
+        string $modality,
+    ): string {
+        return <<<TEXT
+Appointment Confirmed
+
+Dear {$fullName},
+
+Your appointment has been confirmed. Please see the details below.
+
+Appointment Details:
+- Date: {$date}
+- Time: {$time}
+- Modality: {$modality}
+
+If you need to make any changes, please contact us as soon as possible.
+
+Thank you for choosing our services.
+TEXT;
+    }
+
+    private function getCancellationTemplate(
+        string $fullName,
+        string $date,
+        string $time,
+        string $modality,
+    ): string {
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .details { background-color: #ffebee; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Appointment Cancelled</h1>
+        <p>Dear {$fullName},</p>
+        <p>We regret to inform you that your appointment has been cancelled.</p>
+        <div class="details">
+            <p><strong>Date:</strong> {$date}</p>
+            <p><strong>Time:</strong> {$time}</p>
+            <p><strong>Modality:</strong> {$modality}</p>
+        </div>
+        <p>If you have any questions or would like to schedule a new appointment, please don't hesitate to reach out.</p>
+        <div class="footer">
+            <p>We apologize for any inconvenience.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    private function getCancellationTextTemplate(
+        string $fullName,
+        string $date,
+        string $time,
+        string $modality,
+    ): string {
+        return <<<TEXT
+Appointment Cancelled
+
+Dear {$fullName},
+
+We regret to inform you that your appointment has been cancelled.
+
+Appointment Details:
+- Date: {$date}
+- Time: {$time}
+- Modality: {$modality}
+
+If you have any questions or would like to schedule a new appointment, please don't hesitate to reach out.
+
+We apologize for any inconvenience.
+TEXT;
+    }
+
     private function getTherapistAlertTextTemplate(
         string $requesterName,
         string $date,

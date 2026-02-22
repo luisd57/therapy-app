@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Helper;
 
+use App\Domain\Appointment\Entity\Appointment;
+use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Entity\User;
@@ -122,6 +127,57 @@ final class DomainTestHelper
             createdAt: $now,
             activatedAt: null,
             updatedAt: $now,
+        );
+    }
+
+    public static function createRequestedAppointment(
+        ?AppointmentId $id = null,
+        ?DateTimeImmutable $startTime = null,
+        AppointmentModality $modality = AppointmentModality::ONLINE,
+        string $fullName = 'John Doe',
+        string $email = 'john@example.com',
+        string $phone = '+1234567890',
+        string $city = 'New York',
+        string $country = 'USA',
+        ?UserId $patientId = null,
+    ): Appointment {
+        return Appointment::request(
+            id: $id ?? AppointmentId::generate(),
+            timeSlot: TimeSlot::create($startTime ?? new DateTimeImmutable('+1 day 10:00'), 50),
+            modality: $modality,
+            fullName: $fullName,
+            email: Email::fromString($email),
+            phone: Phone::fromString($phone),
+            city: $city,
+            country: $country,
+            patientId: $patientId,
+        );
+    }
+
+    public static function createConfirmedAppointment(
+        ?AppointmentId $id = null,
+        ?DateTimeImmutable $startTime = null,
+        AppointmentModality $modality = AppointmentModality::ONLINE,
+        string $fullName = 'John Doe',
+        string $email = 'john@example.com',
+        string $phone = '+1234567890',
+        string $city = 'New York',
+        string $country = 'USA',
+        ?UserId $patientId = null,
+    ): Appointment {
+        return Appointment::reconstitute(
+            id: $id ?? AppointmentId::generate(),
+            timeSlot: TimeSlot::create($startTime ?? new DateTimeImmutable('+1 day 10:00'), 50),
+            modality: $modality,
+            status: AppointmentStatus::CONFIRMED,
+            fullName: $fullName,
+            email: Email::fromString($email),
+            phone: Phone::fromString($phone),
+            city: $city,
+            country: $country,
+            patientId: $patientId,
+            createdAt: new DateTimeImmutable(),
+            updatedAt: new DateTimeImmutable(),
         );
     }
 

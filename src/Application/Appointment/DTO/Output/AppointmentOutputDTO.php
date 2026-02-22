@@ -20,7 +20,10 @@ final readonly class AppointmentOutputDTO
         public string $phone,
         public string $city,
         public string $country,
+        public ?string $patientId,
+        public bool $paymentVerified,
         public string $createdAt,
+        public string $updatedAt,
     ) {
     }
 
@@ -37,7 +40,10 @@ final readonly class AppointmentOutputDTO
             phone: $appointment->getPhone()->getValue(),
             city: $appointment->getCity(),
             country: $appointment->getCountry(),
+            patientId: $appointment->getPatientId()?->getValue(),
+            paymentVerified: $appointment->isPaymentVerified(),
             createdAt: $appointment->getCreatedAt()->format(DateTimeInterface::ATOM),
+            updatedAt: $appointment->getUpdatedAt()->format(DateTimeInterface::ATOM),
         );
     }
 
@@ -57,7 +63,10 @@ final readonly class AppointmentOutputDTO
             'phone' => $this->phone,
             'city' => $this->city,
             'country' => $this->country,
+            'patient_id' => $this->patientId,
+            'payment_verified' => $this->paymentVerified,
             'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
         ];
     }
 }

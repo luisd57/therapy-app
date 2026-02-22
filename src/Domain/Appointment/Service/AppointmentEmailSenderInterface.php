@@ -23,4 +23,18 @@ interface AppointmentEmailSenderInterface
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
     ): void;
+
+    public function sendConfirmationToPatient(
+        Email $to,
+        string $fullName,
+        DateTimeImmutable $appointmentTime,
+        AppointmentModality $modality,
+    ): void;
+
+    public function sendCancellationToPatient(
+        Email $to,
+        string $fullName,
+        DateTimeImmutable $appointmentTime,
+        AppointmentModality $modality,
+    ): void;
 }

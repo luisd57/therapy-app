@@ -18,6 +18,7 @@ class Appointment
 {
     private AppointmentStatus $status;
     private DateTimeImmutable $updatedAt;
+    private bool $paymentVerified = false;
 
     public function __construct(
         private readonly AppointmentId $id,
@@ -72,6 +73,47 @@ class Appointment
         );
     }
 
+    public static function book(
+        AppointmentId $id,
+        TimeSlot $timeSlot,
+        AppointmentModality $modality,
+        string $fullName,
+        Email $email,
+        Phone $phone,
+        string $city,
+        string $country,
+        ?UserId $patientId = null,
+    ): self {
+        if (trim($fullName) === '') {
+            throw new \InvalidArgumentException('Full name is required.');
+        }
+
+        if (trim($city) === '') {
+            throw new \InvalidArgumentException('City is required.');
+        }
+
+        if (trim($country) === '') {
+            throw new \InvalidArgumentException('Country is required.');
+        }
+
+        $appointment = new self(
+            id: $id,
+            timeSlot: $timeSlot,
+            modality: $modality,
+            fullName: trim($fullName),
+            email: $email,
+            phone: $phone,
+            city: trim($city),
+            country: trim($country),
+            patientId: $patientId,
+            createdAt: new DateTimeImmutable(),
+        );
+
+        $appointment->status = AppointmentStatus::CONFIRMED;
+
+        return $appointment;
+    }
+
     public function confirm(): void
     {
         $this->transitionTo(AppointmentStatus::CONFIRMED);
@@ -95,6 +137,23 @@ class Appointment
 
         $this->status = $newStatus;
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function markPaymentVerified(): void
+    {
+        $this->paymentVerified = true;
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function markPaymentUnverified(): void
+    {
+        $this->paymentVerified = false;
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function isPaymentVerified(): bool
+    {
+        return $this->paymentVerified;
     }
 
     public function blocksSlot(): bool
@@ -175,6 +234,7 @@ class Appointment
         ?UserId $patientId,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
+        bool $paymentVerified = false,
     ): self {
         $appointment = new self(
             id: $id,
@@ -191,6 +251,7 @@ class Appointment
 
         $appointment->status = $status;
         $appointment->updatedAt = $updatedAt;
+        $appointment->paymentVerified = $paymentVerified;
 
         return $appointment;
     }

@@ -1,0 +1,282 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\Appointment;
+
+use App\Domain\Appointment\Entity\Appointment;
+use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\ValueObject\TimeSlot;
+use App\Domain\User\ValueObject\Email;
+use App\Domain\User\ValueObject\Phone;
+use App\Tests\Helper\ApiTestCase;
+use DateTimeImmutable;
+
+final class TherapistAppointmentControllerTest extends ApiTestCase
+{
+    private string $therapistToken;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->therapistToken = $this->createTherapistAndGetToken();
+    }
+
+    private function createTestAppointment(string $status = 'REQUESTED'): Appointment
+    {
+        $appointment = Appointment::request(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day 10:00'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'Test Patient',
+            email: Email::fromString('patient@test.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: 'USA',
+        );
+
+        if ($status === 'CONFIRMED') {
+            $appointment->confirm();
+        }
+
+        $repo = self::getContainer()->get(AppointmentRepositoryInterface::class);
+        $repo->save($appointment);
+
+        return $appointment;
+    }
+
+    // ── List appointments ─────────────────────────────────────────────
+
+    public function testListAllAppointments(): void
+    {
+        $this->createTestAppointment();
+
+        $this->jsonRequest('GET', '/api/therapist/appointments', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertArrayHasKey('appointments', $data['data']);
+        $this->assertArrayHasKey('count', $data['data']);
+        $this->assertGreaterThanOrEqual(1, $data['data']['count']);
+    }
+
+    public function testListAppointmentsByStatus(): void
+    {
+        $this->createTestAppointment('REQUESTED');
+
+        $this->jsonRequest('GET', '/api/therapist/appointments?status=REQUESTED', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertGreaterThanOrEqual(1, $data['data']['count']);
+
+        foreach ($data['data']['appointments'] as $appointment) {
+            $this->assertSame('REQUESTED', $appointment['status']);
+        }
+    }
+
+    public function testListAppointmentsWithInvalidStatus(): void
+    {
+        $this->jsonRequest('GET', '/api/therapist/appointments?status=INVALID', [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertFalse($data['success']);
+    }
+
+    public function testListAppointmentsRequiresAuth(): void
+    {
+        $this->jsonRequest('GET', '/api/therapist/appointments');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    // ── Show appointment ──────────────────────────────────────────────
+
+    public function testShowAppointment(): void
+    {
+        $appointment = $this->createTestAppointment();
+
+        $this->jsonRequest('GET', '/api/therapist/appointments/' . $appointment->getId()->getValue(), [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame($appointment->getId()->getValue(), $data['data']['appointment']['id']);
+        $this->assertSame('Test Patient', $data['data']['appointment']['full_name']);
+        $this->assertArrayHasKey('payment_verified', $data['data']['appointment']);
+        $this->assertArrayHasKey('updated_at', $data['data']['appointment']);
+    }
+
+    public function testShowNonExistentAppointment(): void
+    {
+        $this->jsonRequest('GET', '/api/therapist/appointments/' . AppointmentId::generate()->getValue(), [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // ── Confirm appointment ───────────────────────────────────────────
+
+    public function testConfirmAppointment(): void
+    {
+        $appointment = $this->createTestAppointment('REQUESTED');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/confirm', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('CONFIRMED', $data['data']['appointment']['status']);
+        $this->assertSame('Appointment confirmed successfully.', $data['data']['message']);
+    }
+
+    public function testConfirmAlreadyConfirmedAppointment(): void
+    {
+        $appointment = $this->createTestAppointment('CONFIRMED');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/confirm', [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    public function testConfirmNonExistentAppointment(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . AppointmentId::generate()->getValue() . '/confirm', [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // ── Complete appointment ──────────────────────────────────────────
+
+    public function testCompleteAppointment(): void
+    {
+        $appointment = $this->createTestAppointment('CONFIRMED');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/complete', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('COMPLETED', $data['data']['appointment']['status']);
+    }
+
+    public function testCompleteRequestedAppointment(): void
+    {
+        $appointment = $this->createTestAppointment('REQUESTED');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/complete', [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    // ── Cancel appointment ────────────────────────────────────────────
+
+    public function testCancelAppointment(): void
+    {
+        $appointment = $this->createTestAppointment('REQUESTED');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/cancel', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('CANCELLED', $data['data']['appointment']['status']);
+    }
+
+    // ── Book appointment ──────────────────────────────────────────────
+
+    public function testBookAppointment(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('CONFIRMED', $data['data']['appointment']['status']);
+        $this->assertSame('Walk-in Patient', $data['data']['appointment']['full_name']);
+        $this->assertSame('Appointment booked successfully.', $data['data']['message']);
+    }
+
+    public function testBookAppointmentWithMissingFields(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'modality' => 'ONLINE',
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertFalse($data['success']);
+    }
+
+    public function testBookAppointmentWithInvalidModality(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00',
+            'modality' => 'INVALID',
+            'full_name' => 'Test',
+            'phone' => '+1234567890',
+            'email' => 'test@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    // ── Payment status ────────────────────────────────────────────────
+
+    public function testUpdatePaymentStatus(): void
+    {
+        $appointment = $this->createTestAppointment();
+
+        $this->jsonRequest('PATCH', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/payment', [
+            'payment_verified' => true,
+        ], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertTrue($data['data']['appointment']['payment_verified']);
+    }
+
+    public function testUpdatePaymentStatusWithMissingField(): void
+    {
+        $appointment = $this->createTestAppointment();
+
+        $this->jsonRequest('PATCH', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/payment', [], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testUpdatePaymentStatusForNonExistentAppointment(): void
+    {
+        $this->jsonRequest('PATCH', '/api/therapist/appointments/' . AppointmentId::generate()->getValue() . '/payment', [
+            'payment_verified' => true,
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    // ── Patient role cannot access ────────────────────────────────────
+
+    public function testPatientCannotAccessTherapistAppointments(): void
+    {
+        $patientToken = $this->createPatientAndGetToken();
+
+        $this->jsonRequest('GET', '/api/therapist/appointments', [], $patientToken);
+
+        $this->assertResponseStatusCodeSame(403);
+    }
+}

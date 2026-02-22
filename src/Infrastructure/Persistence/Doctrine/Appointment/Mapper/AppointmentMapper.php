@@ -35,6 +35,7 @@ final class AppointmentMapper
             patientId: $patientId,
             createdAt: $entity->getCreatedAt(),
             updatedAt: $entity->getUpdatedAt(),
+            paymentVerified: $entity->isPaymentVerified(),
         );
     }
 
@@ -57,6 +58,7 @@ final class AppointmentMapper
         $entity->setPatientId($appointment->getPatientId()?->getValue());
         $entity->setCreatedAt($appointment->getCreatedAt());
         $entity->setUpdatedAt($appointment->getUpdatedAt());
+        $entity->setPaymentVerified($appointment->isPaymentVerified());
 
         return $entity;
     }

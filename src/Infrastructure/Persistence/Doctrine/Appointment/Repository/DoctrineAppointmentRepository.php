@@ -91,6 +91,21 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
         return new ArrayCollection($appointments);
     }
 
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findAll(): ArrayCollection
+    {
+        $entities = $this->repository->findBy([], ['createdAt' => 'DESC']);
+
+        $appointments = array_map(
+            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
+            $entities
+        );
+
+        return new ArrayCollection($appointments);
+    }
+
     public function delete(Appointment $appointment): void
     {
         $entity = $this->repository->find($appointment->getId()->getValue());

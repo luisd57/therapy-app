@@ -290,6 +290,110 @@ final class AppointmentTest extends TestCase
         $this->assertFalse($appointment->blocksSlot());
     }
 
+    // --- book() factory ---
+
+    public function testBookSetsConfirmedStatus(): void
+    {
+        $appointment = Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: 'USA',
+        );
+
+        $this->assertSame(AppointmentStatus::CONFIRMED, $appointment->getStatus());
+    }
+
+    public function testBookWithPatientId(): void
+    {
+        $patientId = UserId::generate();
+
+        $appointment = Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::IN_PERSON,
+            fullName: 'Jane Smith',
+            email: Email::fromString('jane@example.com'),
+            phone: Phone::fromString('+9876543210'),
+            city: 'Los Angeles',
+            country: 'USA',
+            patientId: $patientId,
+        );
+
+        $this->assertTrue($patientId->equals($appointment->getPatientId()));
+        $this->assertSame(AppointmentStatus::CONFIRMED, $appointment->getStatus());
+    }
+
+    public function testBookWithEmptyFullNameThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Full name is required.');
+
+        Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: '',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: 'USA',
+        );
+    }
+
+    // --- paymentVerified ---
+
+    public function testPaymentVerifiedDefaultsToFalse(): void
+    {
+        $appointment = $this->createRequestedAppointment();
+
+        $this->assertFalse($appointment->isPaymentVerified());
+    }
+
+    public function testMarkPaymentVerified(): void
+    {
+        $appointment = $this->createRequestedAppointment();
+
+        $appointment->markPaymentVerified();
+
+        $this->assertTrue($appointment->isPaymentVerified());
+    }
+
+    public function testMarkPaymentUnverified(): void
+    {
+        $appointment = $this->createRequestedAppointment();
+        $appointment->markPaymentVerified();
+
+        $appointment->markPaymentUnverified();
+
+        $this->assertFalse($appointment->isPaymentVerified());
+    }
+
+    public function testReconstituteWithPaymentVerified(): void
+    {
+        $appointment = Appointment::reconstitute(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            status: AppointmentStatus::CONFIRMED,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: 'USA',
+            patientId: null,
+            createdAt: new DateTimeImmutable(),
+            updatedAt: new DateTimeImmutable(),
+            paymentVerified: true,
+        );
+
+        $this->assertTrue($appointment->isPaymentVerified());
+    }
+
     // --- reconstitute ---
 
     public function testReconstituteRestoresAllProperties(): void

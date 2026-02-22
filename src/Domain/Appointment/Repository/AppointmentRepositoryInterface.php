@@ -31,5 +31,10 @@ interface AppointmentRepositoryInterface
      */
     public function findByStatus(AppointmentStatus $status): ArrayCollection;
 
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findAll(): ArrayCollection;
+
     public function delete(Appointment $appointment): void;
 }

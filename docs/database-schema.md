@@ -157,6 +157,7 @@ The core business entity. Tracks appointment requests from submission through co
 | `city` | VARCHAR(100) | NO | Requester's city |
 | `country` | VARCHAR(100) | NO | Requester's country |
 | `patient_id` | UUID | YES | Logical FK to `users.id`. NULL for public (unauthenticated) requests |
+| `payment_verified` | BOOLEAN | NO | Whether payment (Zelle/Pago Movil) has been verified by the therapist. Default `FALSE` |
 | `created_at` | TIMESTAMP | NO | Immutable |
 | `updated_at` | TIMESTAMP | NO | Last status change |
 

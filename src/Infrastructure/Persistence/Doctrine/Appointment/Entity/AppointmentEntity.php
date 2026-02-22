@@ -55,6 +55,9 @@ class AppointmentEntity
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $updatedAt;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $paymentVerified = false;
+
     public function getId(): string
     {
         return $this->id;
@@ -183,5 +186,15 @@ class AppointmentEntity
     public function setUpdatedAt(DateTimeImmutable $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
+    }
+
+    public function isPaymentVerified(): bool
+    {
+        return $this->paymentVerified;
+    }
+
+    public function setPaymentVerified(bool $paymentVerified): void
+    {
+        $this->paymentVerified = $paymentVerified;
     }
 }

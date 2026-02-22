@@ -11,7 +11,8 @@
     {"key": "invitation_token", "value": ""},
     {"key": "schedule_id", "value": ""},
     {"key": "exception_id", "value": ""},
-    {"key": "lock_token", "value": ""}
+    {"key": "lock_token", "value": ""},
+    {"key": "appointment_id", "value": ""}
   ],
   "item": [
     {
@@ -367,6 +368,106 @@
               "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"IN_PERSON\",\"full_name\":\"Carlos Rodriguez\",\"phone\":\"+584142345678\",\"email\":\"carlos@example.com\",\"city\":\"Caracas\",\"country\":\"Venezuela\"}"
             },
             "url": "{{base_url}}/appointments/request"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Therapist Appointment Management",
+      "description": "Requires therapist authentication. Run '3. Therapist Login' first. Submit a public appointment request first to have data to work with.",
+      "item": [
+        {
+          "name": "1. List All Appointments",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments"
+          }
+        },
+        {
+          "name": "2. List Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments?status=REQUESTED"
+          }
+        },
+        {
+          "name": "3. Get Appointment Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
+          }
+        },
+        {
+          "name": "4. Confirm Appointment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
+          }
+        },
+        {
+          "name": "5. Complete Appointment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
+          }
+        },
+        {
+          "name": "6. Cancel Appointment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
+          }
+        },
+        {
+          "name": "7. Book Appointment (Manual)",
+          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('appointment_id',pm.response.json().data.appointment.id);}"]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T10:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Walk-in Patient\",\"phone\":\"+584141234567\",\"email\":\"walkin@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\"}"
+            },
+            "url": "{{base_url}}/therapist/appointments"
+          }
+        },
+        {
+          "name": "8. Update Payment Status (Verify)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"payment_verified\":true}"
+            },
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
+          }
+        },
+        {
+          "name": "9. Update Payment Status (Unverify)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"payment_verified\":false}"
+            },
+            "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
           }
         }
       ]

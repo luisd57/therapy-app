@@ -101,3 +101,7 @@ services:
     App\Application\Appointment\Handler\RequestAppointmentHandler:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+
+    App\Application\Appointment\Handler\BookAppointmentHandler:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
