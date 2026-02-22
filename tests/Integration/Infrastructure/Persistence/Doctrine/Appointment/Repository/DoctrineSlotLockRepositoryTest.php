@@ -37,7 +37,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
 
         $this->assertNotNull($found);
         $this->assertTrue($lock->getId()->equals($found->getId()));
-        $this->assertSame('test-lock-token-123', $found->getLockToken());
+        $this->assertSame(hash('sha256', 'test-lock-token-123'), $found->getLockToken());
         $this->assertSame(AppointmentModality::ONLINE, $found->getModality());
     }
 

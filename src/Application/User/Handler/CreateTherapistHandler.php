@@ -7,11 +7,13 @@ namespace App\Application\User\Handler;
 use App\Application\User\DTO\Input\CreateTherapistInputDTO;
 use App\Application\User\DTO\Output\UserOutputDTO;
 use App\Domain\User\Entity\User;
+use App\Domain\User\Exception\TherapistAlreadyExistsException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\UserRole;
 
 final readonly class CreateTherapistHandler
 {
@@ -22,6 +24,11 @@ final readonly class CreateTherapistHandler
 
     public function __invoke(CreateTherapistInputDTO $dto): UserOutputDTO
     {
+        $existingTherapists = $this->userRepository->findByRole(UserRole::THERAPIST);
+        if (!$existingTherapists->isEmpty()) {
+            throw new TherapistAlreadyExistsException();
+        }
+
         $email = Email::fromString($dto->email);
 
         if ($this->userRepository->existsByEmail($email)) {

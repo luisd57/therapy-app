@@ -36,7 +36,7 @@ final class PublicAppointmentController extends AbstractController
 
         $modality = $request->query->get('modality');
 
-        $result = ($handler)(new GetAvailableSlotsInputDTO(
+        $result = $handler->__invoke(new GetAvailableSlotsInputDTO(
             from: $from,
             to: $to,
             modality: $modality,
@@ -56,7 +56,7 @@ final class PublicAppointmentController extends AbstractController
         }
 
         try {
-            $result = ($handler)(new LockSlotInputDTO(
+            $result = $handler->__invoke(new LockSlotInputDTO(
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
             ));
@@ -78,7 +78,7 @@ final class PublicAppointmentController extends AbstractController
         }
 
         try {
-            $result = ($handler)(new RequestAppointmentInputDTO(
+            $result = $handler->__invoke(new RequestAppointmentInputDTO(
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
                 fullName: $data['full_name'],
@@ -89,8 +89,12 @@ final class PublicAppointmentController extends AbstractController
                 lockToken: $data['lock_token'] ?? null,
             ));
 
+            $publicData = array_intersect_key($result->toArray(), array_flip([
+                'id', 'start_time', 'end_time', 'modality', 'status', 'created_at',
+            ]));
+
             return $this->created([
-                'appointment' => $result->toArray(),
+                'appointment' => $publicData,
                 'message' => 'Your appointment request has been submitted. You will receive a confirmation email shortly.',
             ]);
         } catch (SlotNotAvailableException $exception) {
@@ -201,12 +205,7 @@ final class PublicAppointmentController extends AbstractController
 
     private function isValidDateTime(string $dateTime): bool
     {
-        try {
-            new \DateTimeImmutable($dateTime);
-
-            return true;
-        } catch (\Exception) {
-            return false;
-        }
+        return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s', $dateTime) !== false
+            || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $dateTime) !== false;
     }
 }

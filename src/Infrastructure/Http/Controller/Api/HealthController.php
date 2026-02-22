@@ -18,25 +18,19 @@ final class HealthController extends AbstractController
     #[Route('/health', name: 'api_health', methods: ['GET'])]
     public function health(EntityManagerInterface $entityManager): JsonResponse
     {
-        $checks = [
-            'api' => true,
-            'database' => false,
-        ];
+        $databaseOk = false;
 
         try {
             $entityManager->getConnection()->executeQuery('SELECT 1');
-            $checks['database'] = true;
+            $databaseOk = true;
         } catch (\Exception) {
-            $checks['database'] = false;
+            // Database unreachable
         }
 
-        $status = $checks['database'] ? 200 : 503;
-
         return new JsonResponse([
-            'status' => $checks['database'] ? 'healthy' : 'unhealthy',
-            'checks' => $checks,
+            'status' => $databaseOk ? 'healthy' : 'unhealthy',
             'timestamp' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-        ], $status);
+        ], $databaseOk ? 200 : 503);
     }
 
     #[Route('/', name: 'api_index', methods: ['GET'])]

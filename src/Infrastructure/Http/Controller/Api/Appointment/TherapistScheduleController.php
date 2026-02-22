@@ -38,7 +38,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $schedules = ($handler)($currentUser->getId());
+        $schedules = $handler->__invoke($currentUser->getId());
 
         return $this->success([
             'schedules' => $schedules->map(fn ($dto) => $dto->toArray())->toArray(),
@@ -60,7 +60,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $result = ($handler)(new SetTherapistScheduleInputDTO(
+            $result = $handler->__invoke(new SetTherapistScheduleInputDTO(
                 therapistId: $currentUser->getId(),
                 dayOfWeek: (int) $data['day_of_week'],
                 startTime: $data['start_time'],
@@ -92,7 +92,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $result = ($handler)(new UpdateTherapistScheduleInputDTO(
+            $result = $handler->__invoke(new UpdateTherapistScheduleInputDTO(
                 scheduleId: $id,
                 therapistId: $currentUser->getId(),
                 dayOfWeek: (int) $data['day_of_week'],
@@ -118,7 +118,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            ($handler)(new DeleteTherapistScheduleInputDTO(
+            $handler->__invoke(new DeleteTherapistScheduleInputDTO(
                 scheduleId: $id,
                 therapistId: $currentUser->getId(),
             ));
@@ -143,7 +143,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $exceptions = ($handler)(new ListScheduleExceptionsInputDTO(
+        $exceptions = $handler->__invoke(new ListScheduleExceptionsInputDTO(
             therapistId: $currentUser->getId(),
             from: $from,
             to: $to,
@@ -168,7 +168,7 @@ final class TherapistScheduleController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $result = ($handler)(new AddScheduleExceptionInputDTO(
+        $result = $handler->__invoke(new AddScheduleExceptionInputDTO(
             therapistId: $currentUser->getId(),
             startDateTime: $data['start_date_time'],
             endDateTime: $data['end_date_time'],
@@ -189,7 +189,7 @@ final class TherapistScheduleController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            ($handler)(new RemoveScheduleExceptionInputDTO(
+            $handler->__invoke(new RemoveScheduleExceptionInputDTO(
                 exceptionId: $id,
                 therapistId: $currentUser->getId(),
             ));
@@ -298,13 +298,8 @@ final class TherapistScheduleController extends AbstractController
 
     private function isValidDateTime(string $dateTime): bool
     {
-        try {
-            new \DateTimeImmutable($dateTime);
-
-            return true;
-        } catch (\Exception) {
-            return false;
-        }
+        return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s', $dateTime) !== false
+            || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $dateTime) !== false;
     }
 
     private function isNotFound(ScheduleConflictException $scheduleConflictException): bool

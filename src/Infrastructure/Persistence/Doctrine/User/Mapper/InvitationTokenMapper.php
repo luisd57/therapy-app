@@ -34,7 +34,7 @@ final class InvitationTokenMapper
         }
 
         $entity->setId($token->getId()->getValue());
-        $entity->setToken($token->getToken());
+        $entity->setToken(hash('sha256', $token->getToken()));
         $entity->setEmail($token->getEmail()->getValue());
         $entity->setPatientName($token->getPatientName());
         $entity->setInvitedBy($token->getInvitedBy()->getValue());

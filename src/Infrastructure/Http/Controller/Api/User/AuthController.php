@@ -18,6 +18,7 @@ use App\Application\User\Handler\ValidateInvitationHandler;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotActiveException;
+use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -46,7 +47,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $result = $handler(new TherapistLoginInputDTO(
+            $result = $handler->__invoke(new TherapistLoginInputDTO(
                 email: $data['email'],
                 password: $data['password'],
             ));
@@ -73,7 +74,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $result = $handler(new PatientLoginInputDTO(
+            $result = $handler->__invoke(new PatientLoginInputDTO(
                 email: $data['email'],
                 password: $data['password'],
             ));
@@ -93,11 +94,14 @@ final class AuthController extends AbstractController
     public function validateInvitation(string $token, ValidateInvitationHandler $handler): JsonResponse
     {
         try {
-            $invitation = ($handler)($token);
+            $invitation = $handler->__invoke($token);
 
-            return $this->success($invitation->toArray());
+            $publicData = $invitation->toArray();
+            unset($publicData['email']);
+
+            return $this->success($publicData);
         } catch (InvalidTokenException $exception) {
-            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
+            return $this->error($this->mapTokenErrorMessage($exception), $exception->getErrorCode(), 400);
         }
     }
 
@@ -112,7 +116,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            $user = ($handler)(new ActivatePatientInputDTO(
+            $user = $handler->__invoke(new ActivatePatientInputDTO(
                 token: $data['token'],
                 password: $data['password'],
             ));
@@ -122,7 +126,7 @@ final class AuthController extends AbstractController
                 'message' => 'Account activated successfully. You can now log in.',
             ]);
         } catch (InvalidTokenException $exception) {
-            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
+            return $this->error($this->mapTokenErrorMessage($exception), $exception->getErrorCode(), 400);
         }
     }
 
@@ -144,7 +148,7 @@ final class AuthController extends AbstractController
             return $this->validationError($errors);
         }
 
-        ($handler)(new RequestPasswordResetInputDTO(email: $data['email']));
+        $handler->__invoke(new RequestPasswordResetInputDTO(email: $data['email']));
 
         // Always return success to prevent email enumeration
         return $this->success([
@@ -163,7 +167,7 @@ final class AuthController extends AbstractController
         }
 
         try {
-            ($handler)(new ResetPasswordInputDTO(
+            $handler->__invoke(new ResetPasswordInputDTO(
                 token: $data['token'],
                 newPassword: $data['password'],
             ));
@@ -172,7 +176,7 @@ final class AuthController extends AbstractController
                 'message' => 'Password has been reset successfully. You can now log in.',
             ]);
         } catch (InvalidTokenException $exception) {
-            return $this->error($exception->getMessage(), $exception->getErrorCode(),400);
+            return $this->error($this->mapTokenErrorMessage($exception), $exception->getErrorCode(), 400);
         }
     }
 
@@ -183,10 +187,13 @@ final class AuthController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['email'])) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email format';
+        $emailViolations = $this->validator->validate($data['email'] ?? '', [
+            new Assert\NotBlank(message: 'Email is required'),
+            new Assert\Email(message: 'Invalid email format'),
+        ]);
+
+        if (count($emailViolations) > 0) {
+            $errors['email'] = $emailViolations[0]->getMessage();
         }
 
         if (empty($data['password'])) {
@@ -213,7 +220,7 @@ final class AuthController extends AbstractController
             $errors['password'] = 'Password must be at least 8 characters';
         }
 
-        if (!empty($data['password_confirmation']) && $data['password'] !== $data['password_confirmation']) {
+        if (($data['password'] ?? '') !== ($data['password_confirmation'] ?? '')) {
             $errors['password_confirmation'] = 'Passwords do not match';
         }
 
@@ -238,5 +245,47 @@ final class AuthController extends AbstractController
         }
 
         return $errors;
+    }
+
+    #[Route('/logout', name: 'api_logout', methods: ['POST'])]
+    public function logout(
+        Request $request,
+        JwtBlocklistInterface $jwtBlocklist,
+        \Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface $jwtTokenManager,
+        \Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface $jwtEncoder,
+    ): JsonResponse {
+        $authHeader = $request->headers->get('Authorization', '');
+        $token = str_starts_with($authHeader, 'Bearer ') ? substr($authHeader, 7) : '';
+
+        if ($token === '') {
+            return $this->error('No token provided', 'NO_TOKEN', 400);
+        }
+
+        try {
+            $payload = $jwtEncoder->decode($token);
+            $jti = $payload['jti'] ?? null;
+
+            if ($jti === null) {
+                return $this->error('Token has no JTI claim', 'INVALID_TOKEN', 400);
+            }
+
+            $exp = $payload['exp'] ?? 0;
+            $ttlSeconds = max(0, $exp - time());
+            $jwtBlocklist->revoke($jti, $ttlSeconds);
+
+            return $this->success(['message' => 'Successfully logged out.']);
+        } catch (\Exception) {
+            return $this->error('Invalid token', 'INVALID_TOKEN', 400);
+        }
+    }
+
+    private function mapTokenErrorMessage(InvalidTokenException $invalidTokenException): string
+    {
+        return match ($invalidTokenException->getErrorCode()) {
+            'TOKEN_EXPIRED' => 'Token has expired.',
+            'TOKEN_ALREADY_USED' => 'Token has already been used.',
+            'TOKEN_NOT_FOUND' => 'Invalid token.',
+            default => 'Invalid token.',
+        };
     }
 }

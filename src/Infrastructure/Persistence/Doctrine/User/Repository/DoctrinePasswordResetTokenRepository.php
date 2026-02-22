@@ -47,7 +47,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
 
     public function findByToken(string $token): ?PasswordResetToken
     {
-        $entity = $this->repository->findOneBy(['token' => $token]);
+        $entity = $this->repository->findOneBy(['token' => hash('sha256', $token)]);
 
         return $entity !== null ? PasswordResetTokenMapper::toDomain($entity) : null;
     }

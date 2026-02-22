@@ -6,9 +6,11 @@ namespace App\Tests\Unit\Application\User\Handler;
 
 use App\Application\User\DTO\Input\CreateTherapistInputDTO;
 use App\Application\User\Handler\CreateTherapistHandler;
+use App\Domain\User\Exception\TherapistAlreadyExistsException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -27,6 +29,7 @@ final class CreateTherapistHandlerTest extends TestCase
 
     public function testHandleSuccessCreatesTherapistAndReturnsDTO(): void
     {
+        $this->userRepository->method('findByRole')->willReturn(new ArrayCollection());
         $this->userRepository->method('existsByEmail')->willReturn(false);
         $this->passwordHasher->method('hash')->willReturn('hashed_pw');
         $this->userRepository->expects($this->once())->method('save');
@@ -45,8 +48,24 @@ final class CreateTherapistHandlerTest extends TestCase
         $this->assertTrue($result->isActive);
     }
 
+    public function testHandleTherapistAlreadyExistsThrowsException(): void
+    {
+        $therapist = \App\Tests\Helper\DomainTestHelper::createTherapist();
+        $this->userRepository->method('findByRole')->willReturn(new ArrayCollection([$therapist]));
+
+        $input = new CreateTherapistInputDTO(
+            email: 'dr@example.com',
+            fullName: 'Dr. Second',
+            password: 'securepass',
+        );
+
+        $this->expectException(TherapistAlreadyExistsException::class);
+        $this->handler->__invoke($input);
+    }
+
     public function testHandleDuplicateEmailThrowsUserAlreadyExistsException(): void
     {
+        $this->userRepository->method('findByRole')->willReturn(new ArrayCollection());
         $this->userRepository->method('existsByEmail')->willReturn(true);
 
         $input = new CreateTherapistInputDTO(
@@ -61,6 +80,7 @@ final class CreateTherapistHandlerTest extends TestCase
 
     public function testHandleSuccessHashesPassword(): void
     {
+        $this->userRepository->method('findByRole')->willReturn(new ArrayCollection());
         $this->userRepository->method('existsByEmail')->willReturn(false);
         $this->passwordHasher
             ->expects($this->once())

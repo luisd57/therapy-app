@@ -27,7 +27,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $found = $this->repository->findByToken('save-reset-test');
 
         $this->assertNotNull($found);
-        $this->assertSame('save-reset-test', $found->getToken());
+        $this->assertSame(hash('sha256', 'save-reset-test'), $found->getToken());
     }
 
     public function testFindByTokenNonExistentReturnsNull(): void

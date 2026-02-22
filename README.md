@@ -183,6 +183,7 @@ Open your browser and navigate to:
 | POST | `/api/auth/register` | Register patient (activate) |
 | POST | `/api/auth/password/forgot` | Request password reset |
 | POST | `/api/auth/password/reset` | Reset password |
+| POST | `/api/auth/logout` | Revoke JWT token (requires auth) |
 | GET | `/api/appointments/available-slots` | Browse available time slots |
 | POST | `/api/appointments/lock-slot` | Temporarily hold a slot |
 | POST | `/api/appointments/request` | Submit appointment request |
@@ -238,6 +239,7 @@ Open your browser and navigate to:
 16. **Lock Slot** - Temporarily hold a slot
 17. **Submit Appointment Request** - Complete the intake form
 18. **Check MailHog** - Verify acknowledgment + therapist alert emails
+19. **Logout** - Revoke the JWT token
 
 ### Getting the Invitation Token
 
@@ -679,6 +681,7 @@ docker-compose exec php php bin/console cache:warmup
 | PostgreSQL | localhost:5432 | Database |
 | MailHog UI | <http://localhost:8025> | Email testing interface |
 | MailHog SMTP | localhost:1025 | SMTP server |
+| Redis | localhost:6379 | JWT blocklist & cache |
 
 ## Project Structure
 

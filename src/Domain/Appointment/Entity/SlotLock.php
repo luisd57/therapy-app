@@ -52,7 +52,7 @@ class SlotLock
 
     public function matchesToken(string $token): bool
     {
-        return $this->lockToken === $token;
+        return hash_equals($this->lockToken, $token);
     }
 
     public function getId(): SlotLockId

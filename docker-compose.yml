@@ -11,6 +11,7 @@ services:
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
     depends_on:
       - postgres
+      - redis
     networks:
       - therapy_network
     environment:
@@ -50,6 +51,14 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+    networks:
+      - therapy_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: therapy_redis
+    ports:
+      - "6379:6379"
     networks:
       - therapy_network
 

@@ -94,7 +94,7 @@
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\"}"
+              "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\",\"password_confirmation\":\"PatientPass123!\"}"
             },
             "url": "{{base_url}}/auth/register"
           }
@@ -165,6 +165,14 @@
               "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
             },
             "url": "{{base_url}}/auth/password/reset"
+          }
+        },
+        {
+          "name": "15. Logout (Revoke Token)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "url": "{{base_url}}/auth/logout"
           }
         }
       ]

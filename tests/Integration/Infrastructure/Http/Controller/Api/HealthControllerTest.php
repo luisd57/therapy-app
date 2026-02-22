@@ -24,8 +24,6 @@ final class HealthControllerTest extends WebTestCase
         $data = json_decode($this->client->getResponse()->getContent(), true);
 
         $this->assertSame('healthy', $data['status']);
-        $this->assertTrue($data['checks']['api']);
-        $this->assertTrue($data['checks']['database']);
     }
 
     public function testHealthResponseContainsTimestamp(): void

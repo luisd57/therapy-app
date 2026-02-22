@@ -48,7 +48,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
 
     public function findByToken(string $token): ?InvitationToken
     {
-        $entity = $this->repository->findOneBy(['token' => $token]);
+        $entity = $this->repository->findOneBy(['token' => hash('sha256', $token)]);
 
         return $entity !== null ? InvitationTokenMapper::toDomain($entity) : null;
     }

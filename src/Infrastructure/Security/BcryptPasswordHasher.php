@@ -6,6 +6,11 @@ namespace App\Infrastructure\Security;
 
 use App\Domain\User\Service\PasswordHasherInterface;
 
+/**
+ * Single source of truth for password hashing in this application.
+ * The Symfony native password_hashers config in security.yaml is intentionally unused;
+ * all hashing flows through this domain-level adapter.
+ */
 final class BcryptPasswordHasher implements PasswordHasherInterface
 {
     public function __construct(

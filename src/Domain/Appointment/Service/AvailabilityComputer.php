@@ -37,18 +37,12 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
             );
 
             foreach ($daySchedules as $schedule) {
-                $blockStart = DateTimeImmutable::createFromFormat(
-                    'Y-m-d H:i',
-                    $current->format('Y-m-d') . ' ' . $schedule->getStartTime(),
+                $blockStart = new DateTimeImmutable(
+                    $current->format('Y-m-d') . 'T' . $schedule->getStartTime() . ':00',
                 );
-                $blockEnd = DateTimeImmutable::createFromFormat(
-                    'Y-m-d H:i',
-                    $current->format('Y-m-d') . ' ' . $schedule->getEndTime(),
+                $blockEnd = new DateTimeImmutable(
+                    $current->format('Y-m-d') . 'T' . $schedule->getEndTime() . ':00',
                 );
-
-                if ($blockStart === false || $blockEnd === false) {
-                    continue;
-                }
 
                 $slotStart = $blockStart;
                 while ($slotStart->modify("+{$slotDurationMinutes} minutes") <= $blockEnd) {

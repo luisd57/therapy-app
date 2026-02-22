@@ -60,7 +60,7 @@ Time-limited tokens for patient registration invitations.
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | UUID | NO | PK |
-| `token` | VARCHAR(255) | NO | Unique random string, used in registration URL |
+| `token` | VARCHAR(255) | NO | SHA-256 hash of the unique random token. Raw token is only returned at creation time |
 | `email` | VARCHAR(255) | NO | Invited patient's email |
 | `patient_name` | VARCHAR(255) | NO | Display name set by therapist |
 | `invited_by` | UUID | NO | Logical FK to `users.id` (the therapist) |
@@ -80,7 +80,7 @@ Time-limited tokens for the "Forgot Password" flow.
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | UUID | NO | PK |
-| `token` | VARCHAR(255) | NO | Unique random string, used in reset URL |
+| `token` | VARCHAR(255) | NO | SHA-256 hash of the unique random token. Raw token is only returned at creation time |
 | `user_id` | UUID | NO | Logical FK to `users.id` |
 | `is_used` | BOOLEAN | NO | Marked TRUE after password is reset |
 | `created_at` | TIMESTAMP | NO | Immutable |
@@ -196,7 +196,7 @@ Ephemeral records for temporary slot reservation during the appointment request 
 | `start_time` | TIMESTAMP | NO | Locked slot start (from `TimeSlot` VO) |
 | `end_time` | TIMESTAMP | NO | Locked slot end |
 | `modality` | VARCHAR(20) | NO | `ONLINE` or `IN_PERSON` |
-| `lock_token` | VARCHAR(255) | NO | Unique opaque string returned to the client |
+| `lock_token` | VARCHAR(255) | NO | SHA-256 hash of the lock token. Raw token is only returned at creation time |
 | `created_at` | TIMESTAMP | NO | Immutable |
 | `expires_at` | TIMESTAMP | NO | `created_at + SLOT_LOCK_TTL` |
 

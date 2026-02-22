@@ -58,7 +58,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
 
     public function findByLockToken(string $lockToken): ?SlotLock
     {
-        $entity = $this->repository->findOneBy(['lockToken' => $lockToken]);
+        $entity = $this->repository->findOneBy(['lockToken' => hash('sha256', $lockToken)]);
 
         return $entity !== null ? SlotLockMapper::toDomain($entity) : null;
     }

@@ -34,7 +34,7 @@ final class SlotLockMapper
         $entity->setStartTime($slotLock->getTimeSlot()->getStartTime());
         $entity->setEndTime($slotLock->getTimeSlot()->getEndTime());
         $entity->setModality($slotLock->getModality()->value);
-        $entity->setLockToken($slotLock->getLockToken());
+        $entity->setLockToken(hash('sha256', $slotLock->getLockToken()));
         $entity->setCreatedAt($slotLock->getCreatedAt());
         $entity->setExpiresAt($slotLock->getExpiresAt());
 

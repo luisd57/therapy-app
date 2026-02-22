@@ -102,6 +102,7 @@ final class AuthControllerTest extends ApiTestCase
         $this->jsonRequest('POST', '/api/auth/register', [
             'token' => $invitation->getToken(),
             'password' => 'securepass123',
+            'password_confirmation' => 'securepass123',
         ]);
 
         $this->assertResponseStatusCodeSame(201);

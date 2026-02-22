@@ -27,7 +27,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $found = $this->repository->findById($invitation->getId());
 
         $this->assertNotNull($found);
-        $this->assertSame('save-test-token', $found->getToken());
+        $this->assertSame(hash('sha256', 'save-test-token'), $found->getToken());
     }
 
     public function testFindByTokenExistingReturnsDomainEntity(): void
@@ -96,10 +96,10 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
         $pending = $this->repository->findPendingInvitations();
 
-        $tokens = $pending->map(fn($inv) => $inv->getToken())->toArray();
-        $this->assertContains('pending-valid', $tokens);
-        $this->assertNotContains('pending-expired', $tokens);
-        $this->assertNotContains('pending-used', $tokens);
+        $emails = $pending->map(fn($inv) => $inv->getEmail()->getValue())->toArray();
+        $this->assertContains('pv@example.com', $emails);
+        $this->assertNotContains('pe@example.com', $emails);
+        $this->assertNotContains('pu@example.com', $emails);
     }
 
     public function testDeleteExpiredRemovesExpiredAndReturnsCount(): void

@@ -31,7 +31,7 @@ final class PasswordResetTokenMapper
         }
 
         $entity->setId($token->getId()->getValue());
-        $entity->setToken($token->getToken());
+        $entity->setToken(hash('sha256', $token->getToken()));
         $entity->setUserId($token->getUserId()->getValue());
         $entity->setIsUsed($token->isUsed());
         $entity->setCreatedAt($token->getCreatedAt());

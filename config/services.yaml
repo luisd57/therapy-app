@@ -42,6 +42,22 @@ services:
     App\Application\User\Handler\JwtTokenGeneratorInterface:
         class: App\Infrastructure\Security\JwtTokenGenerator
 
+    App\Infrastructure\Http\EventSubscriber\RateLimitSubscriber:
+        arguments:
+            $apiLoginLimiter: '@limiter.api_login'
+            $apiPublicLimiter: '@limiter.api_public'
+
+    App\Domain\User\Service\JwtBlocklistInterface:
+        class: App\Infrastructure\Security\RedisJwtBlocklist
+
+    App\Infrastructure\Security\JwtCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+
+    App\Infrastructure\Security\JwtDecodedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_decoded, method: onJWTDecoded }
+
     # Handlers with specific configuration
     App\Application\User\Handler\InvitePatientHandler:
         arguments:

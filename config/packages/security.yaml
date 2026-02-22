@@ -14,9 +14,15 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         
+        # Logout requires authentication
+        api_logout:
+            pattern: ^/api/auth/logout
+            stateless: true
+            jwt: ~
+
         # Public endpoints (no auth required)
         api_public:
-            pattern: ^/api($|/$|/health|/auth|/appointments)
+            pattern: ^/api($|/$|/health|/auth|/appointments(/|$))
             stateless: true
             security: false
 
@@ -36,11 +42,12 @@ security:
         # Public endpoints
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
         - { path: ^/api/$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/therapist/setup, roles: PUBLIC_ACCESS }
         
         # Public appointment endpoints
-        - { path: ^/api/appointments, roles: PUBLIC_ACCESS }
+        - { path: ^/api/appointments(/|$), roles: PUBLIC_ACCESS }
 
         # Protected endpoints
         - { path: ^/api/therapist/schedule, roles: ROLE_THERAPIST }
