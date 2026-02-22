@@ -31,9 +31,12 @@ final class InvitationTokenTest extends TestCase
 
     public function testCreateExpiresAtIsInFuture(): void
     {
+        $beforeCreate = new DateTimeImmutable();
         $invitation = DomainTestHelper::createValidInvitation(ttlSeconds: 86400);
+        $afterCreate = new DateTimeImmutable();
 
-        $this->assertGreaterThan(new DateTimeImmutable(), $invitation->getExpiresAt());
+        $this->assertGreaterThanOrEqual($beforeCreate->modify('+86400 seconds'), $invitation->getExpiresAt());
+        $this->assertLessThanOrEqual($afterCreate->modify('+86400 seconds'), $invitation->getExpiresAt());
     }
 
     public function testUseValidTokenMarksAsUsed(): void

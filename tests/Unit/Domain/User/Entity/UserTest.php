@@ -66,7 +66,6 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createTherapist();
         $oldUpdatedAt = $user->getUpdatedAt();
 
-        usleep(1000);
         $user->updatePassword('new_hashed_password');
 
         $this->assertSame('new_hashed_password', $user->getPassword());

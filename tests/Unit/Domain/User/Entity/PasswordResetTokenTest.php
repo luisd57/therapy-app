@@ -29,9 +29,12 @@ final class PasswordResetTokenTest extends TestCase
 
     public function testCreateExpiresAtIsInFuture(): void
     {
+        $beforeCreate = new DateTimeImmutable();
         $token = DomainTestHelper::createValidPasswordResetToken(ttlSeconds: 3600);
+        $afterCreate = new DateTimeImmutable();
 
-        $this->assertGreaterThan(new DateTimeImmutable(), $token->getExpiresAt());
+        $this->assertGreaterThanOrEqual($beforeCreate->modify('+3600 seconds'), $token->getExpiresAt());
+        $this->assertLessThanOrEqual($afterCreate->modify('+3600 seconds'), $token->getExpiresAt());
     }
 
     public function testUseValidTokenMarksAsUsed(): void
