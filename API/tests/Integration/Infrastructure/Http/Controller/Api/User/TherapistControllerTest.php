@@ -13,7 +13,7 @@ final class TherapistControllerTest extends ApiTestCase
         $this->jsonRequest('POST', '/api/therapist/setup', [
             'email' => 'newtherapist@test.com',
             'full_name' => 'Dr. New',
-            'password' => 'securepass123',
+            'password' => 'Secure1!pass',
         ]);
 
         $this->assertResponseStatusCodeSame(201);
@@ -27,13 +27,13 @@ final class TherapistControllerTest extends ApiTestCase
         $this->jsonRequest('POST', '/api/therapist/setup', [
             'email' => 'dup@test.com',
             'full_name' => 'Dr. First',
-            'password' => 'securepass123',
+            'password' => 'Secure1!pass',
         ]);
 
         $this->jsonRequest('POST', '/api/therapist/setup', [
             'email' => 'dup@test.com',
             'full_name' => 'Dr. Second',
-            'password' => 'securepass123',
+            'password' => 'Secure1!pass',
         ]);
 
         $this->assertResponseStatusCodeSame(409);

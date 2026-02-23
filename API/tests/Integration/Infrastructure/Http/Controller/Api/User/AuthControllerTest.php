@@ -27,7 +27,7 @@ final class AuthControllerTest extends ApiTestCase
     public function testTherapistLoginMissingEmailReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/therapist/login', [
-            'password' => 'password123',
+            'password' => 'Password1!',
         ]);
 
         $this->assertResponseStatusCodeSame(422);
@@ -51,7 +51,7 @@ final class AuthControllerTest extends ApiTestCase
     {
         $this->jsonRequest('POST', '/api/auth/therapist/login', [
             'email' => 'nonexistent@test.com',
-            'password' => 'password123',
+            'password' => 'Password1!',
         ]);
 
         $this->assertResponseStatusCodeSame(401);
@@ -71,7 +71,7 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->jsonRequest('POST', '/api/auth/patient/login', [
             'email' => 'therapist@test.com',
-            'password' => 'password123',
+            'password' => 'Password1!',
         ]);
 
         $this->assertResponseStatusCodeSame(401);
@@ -101,8 +101,8 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->jsonRequest('POST', '/api/auth/register', [
             'token' => $invitation->getToken(),
-            'password' => 'securepass123',
-            'password_confirmation' => 'securepass123',
+            'password' => 'Secure1!pass',
+            'password_confirmation' => 'Secure1!pass',
         ]);
 
         $this->assertResponseStatusCodeSame(201);
@@ -114,7 +114,7 @@ final class AuthControllerTest extends ApiTestCase
     public function testRegisterMissingTokenReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/register', [
-            'password' => 'securepass123',
+            'password' => 'Secure1!pass',
         ]);
 
         $this->assertResponseStatusCodeSame(422);
@@ -163,7 +163,7 @@ final class AuthControllerTest extends ApiTestCase
     public function testResetPasswordMissingTokenReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/password/reset', [
-            'password' => 'newpassword123',
+            'password' => 'NewPass1!',
         ]);
 
         $this->assertResponseStatusCodeSame(422);
@@ -173,7 +173,7 @@ final class AuthControllerTest extends ApiTestCase
     {
         $this->jsonRequest('POST', '/api/auth/password/reset', [
             'token' => 'bad-token',
-            'password' => 'newpassword123',
+            'password' => 'NewPass1!',
         ]);
 
         $this->assertResponseStatusCodeSame(400);
@@ -201,7 +201,7 @@ final class AuthControllerTest extends ApiTestCase
             id: UserId::generate(),
             email: Email::fromString('therapist@test.com'),
             fullName: 'Test Therapist',
-            hashedPassword: $hasher->hash('password123'),
+            hashedPassword: $hasher->hash('Password1!'),
         );
         $repo->save($therapist);
     }

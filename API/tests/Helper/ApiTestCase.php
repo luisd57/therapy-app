@@ -54,7 +54,7 @@ abstract class ApiTestCase extends WebTestCase
 
     protected function createTherapistAndGetToken(
         string $email = 'therapist@test.com',
-        string $password = 'password123',
+        string $password = 'Password1!',
     ): string {
         $hasher = self::getContainer()->get(PasswordHasherInterface::class);
         $repo = self::getContainer()->get(UserRepositoryInterface::class);
@@ -79,7 +79,7 @@ abstract class ApiTestCase extends WebTestCase
 
     protected function createPatientAndGetToken(
         string $email = 'patient@test.com',
-        string $password = 'patient123password',
+        string $password = 'Patient1!',
     ): string {
         $hasher = self::getContainer()->get(PasswordHasherInterface::class);
         $repo = self::getContainer()->get(UserRepositoryInterface::class);

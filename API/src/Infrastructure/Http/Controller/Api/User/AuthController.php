@@ -20,6 +20,7 @@ use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotActiveException;
 use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Validation\PasswordValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -216,8 +217,11 @@ final class AuthController extends AbstractController
 
         if (empty($data['password'])) {
             $errors['password'] = 'Password is required';
-        } elseif (strlen($data['password']) < 8) {
-            $errors['password'] = 'Password must be at least 8 characters';
+        } else {
+            $passwordError = PasswordValidator::validate($data['password']);
+            if ($passwordError !== null) {
+                $errors['password'] = $passwordError;
+            }
         }
 
         if (($data['password'] ?? '') !== ($data['password_confirmation'] ?? '')) {
@@ -240,8 +244,11 @@ final class AuthController extends AbstractController
 
         if (empty($data['password'])) {
             $errors['password'] = 'Password is required';
-        } elseif (strlen($data['password']) < 8) {
-            $errors['password'] = 'Password must be at least 8 characters';
+        } else {
+            $passwordError = PasswordValidator::validate($data['password']);
+            if ($passwordError !== null) {
+                $errors['password'] = $passwordError;
+            }
         }
 
         return $errors;
