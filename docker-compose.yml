@@ -62,6 +62,23 @@ services:
     networks:
       - therapy_network
 
+  cron:
+    build:
+      context: ./API
+      dockerfile: docker/cron/Dockerfile
+    container_name: therapy_cron
+    volumes:
+      - ./API:/var/www/html
+      - ./API/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - therapy_network
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=postgresql://therapy_user:therapy_pass@postgres:5432/therapy_db?serverVersion=16&charset=utf8
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: therapy_pgadmin

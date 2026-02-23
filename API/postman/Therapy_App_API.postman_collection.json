@@ -5,14 +5,38 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {"key": "base_url", "value": "http://localhost:8080/api"},
-    {"key": "therapist_token", "value": ""},
-    {"key": "patient_token", "value": ""},
-    {"key": "invitation_token", "value": ""},
-    {"key": "schedule_id", "value": ""},
-    {"key": "exception_id", "value": ""},
-    {"key": "lock_token", "value": ""},
-    {"key": "appointment_id", "value": ""}
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "therapist_token",
+      "value": ""
+    },
+    {
+      "key": "patient_token",
+      "value": ""
+    },
+    {
+      "key": "invitation_token",
+      "value": ""
+    },
+    {
+      "key": "schedule_id",
+      "value": ""
+    },
+    {
+      "key": "exception_id",
+      "value": ""
+    },
+    {
+      "key": "lock_token",
+      "value": ""
+    },
+    {
+      "key": "appointment_id",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -23,158 +47,1056 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/health"
-          }
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/health"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2026-02-23T10:00:00+00:00\"\n}"
+            },
+            {
+              "name": "Unhealthy",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/health"
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"unhealthy\",\n  \"timestamp\": \"2026-02-23T10:00:00+00:00\"\n}"
+            }
+          ]
         },
         {
           "name": "2. Create Therapist (Setup)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
             },
             "url": "{{base_url}}/therapist/setup"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/therapist/setup"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"email\": \"therapist@example.com\",\n      \"full_name\": \"Dr. Jane Smith\",\n      \"role\": \"ROLE_THERAPIST\",\n      \"is_active\": true,\n      \"phone\": null,\n      \"address\": null,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Therapist account created successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Therapist Already Exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/therapist/setup"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"THERAPIST_ALREADY_EXISTS\",\n    \"message\": \"A therapist account already exists\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/therapist/setup"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"email\": \"This value should not be blank.\",\n      \"password\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "3. Therapist Login",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
             },
             "url": "{{base_url}}/auth/therapist/login"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/auth/therapist/login"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTFiMmMzZDQtZTVmNi03ODkwLWFiY2QtZWYxMjM0NTY3ODkwIiwicm9sZSI6IlJPTEVfVEhFUkFQSVNUIiwiZXhwIjoxNzA5MTAwMDAwfQ.signature\",\n    \"user\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"email\": \"therapist@example.com\",\n      \"full_name\": \"Dr. Jane Smith\",\n      \"role\": \"ROLE_THERAPIST\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Medical Center\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Invalid Credentials",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/auth/therapist/login"
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_CREDENTIALS\",\n    \"message\": \"Invalid email or password\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"therapist@example.com\",\"password\":\"SecurePass123!\"}"
+                },
+                "url": "{{base_url}}/auth/therapist/login"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"email\": \"This value should not be blank.\",\n      \"password\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "4. Get Therapist Profile",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/me"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/me"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"email\": \"therapist@example.com\",\n    \"full_name\": \"Dr. Jane Smith\",\n    \"role\": \"ROLE_THERAPIST\",\n    \"is_active\": true,\n    \"phone\": \"+584141234567\",\n    \"address\": {\n      \"street\": \"123 Medical Center\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"postal_code\": \"5101\",\n      \"state\": \"Merida\"\n    },\n    \"created_at\": \"2026-02-23T10:00:00+00:00\",\n    \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "5. Invite Patient",
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
             },
             "url": "{{base_url}}/therapist/patients/invite"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+                },
+                "url": "{{base_url}}/therapist/patients/invite"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"invitation\": {\n      \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n      \"email\": \"patient@example.com\",\n      \"patient_name\": \"John Doe\",\n      \"status\": \"pending\",\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"expires_at\": \"2026-03-09T10:00:00+00:00\"\n    },\n    \"message\": \"Invitation sent successfully.\"\n  }\n}"
+            },
+            {
+              "name": "User Already Exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+                },
+                "url": "{{base_url}}/therapist/patients/invite"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"USER_ALREADY_EXISTS\",\n    \"message\": \"User with this email already exists\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\",\"patient_name\":\"John Doe\"}"
+                },
+                "url": "{{base_url}}/therapist/patients/invite"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"email\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "6. List Pending Invitations",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/invitations"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/invitations"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"invitations\": [\n      {\n        \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n        \"email\": \"patient@example.com\",\n        \"patient_name\": \"John Doe\",\n        \"status\": \"pending\",\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"expires_at\": \"2026-03-09T10:00:00+00:00\"\n      }\n    ],\n    \"count\": 1\n  }\n}"
+            }
+          ]
         },
         {
           "name": "7. Validate Invitation (use token from email)",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n    \"patient_name\": \"John Doe\",\n    \"status\": \"pending\",\n    \"created_at\": \"2026-02-23T10:00:00+00:00\",\n    \"expires_at\": \"2026-03-09T10:00:00+00:00\"\n  }\n}"
+            },
+            {
+              "name": "Token Expired",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"TOKEN_EXPIRED\",\n    \"message\": \"Token has expired.\"\n  }\n}"
+            },
+            {
+              "name": "Token Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"TOKEN_NOT_FOUND\",\n    \"message\": \"Invalid token.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "8. Register Patient",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\",\"password_confirmation\":\"PatientPass123!\"}"
             },
             "url": "{{base_url}}/auth/register"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\",\"password_confirmation\":\"PatientPass123!\"}"
+                },
+                "url": "{{base_url}}/auth/register"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"email\": \"patient@example.com\",\n      \"full_name\": \"John Doe\",\n      \"role\": \"ROLE_PATIENT\",\n      \"is_active\": true,\n      \"phone\": null,\n      \"address\": null,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Account activated successfully. You can now log in.\"\n  }\n}"
+            },
+            {
+              "name": "Token Already Used",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\",\"password_confirmation\":\"PatientPass123!\"}"
+                },
+                "url": "{{base_url}}/auth/register"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"TOKEN_ALREADY_USED\",\n    \"message\": \"Token has already been used.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"token\":\"{{invitation_token}}\",\"password\":\"PatientPass123!\",\"password_confirmation\":\"PatientPass123!\"}"
+                },
+                "url": "{{base_url}}/auth/register"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"password_confirmation\": \"Passwords do not match.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "9. Patient Login",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
             },
             "url": "{{base_url}}/auth/patient/login"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
+                },
+                "url": "{{base_url}}/auth/patient/login"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTFiMmMzZDQtZTVmNi03ODkwLWFiY2QtZWYxMjM0NTY3ODkwIiwicm9sZSI6IlJPTEVfVEhFUkFQSVNUIiwiZXhwIjoxNzA5MTAwMDAwfQ.signature\",\n    \"user\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"email\": \"patient@example.com\",\n      \"full_name\": \"John Doe\",\n      \"role\": \"ROLE_PATIENT\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Invalid Credentials",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\",\"password\":\"PatientPass123!\"}"
+                },
+                "url": "{{base_url}}/auth/patient/login"
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_CREDENTIALS\",\n    \"message\": \"Invalid email or password\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "10. Get Patient Profile",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{patient_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              }
+            ],
             "url": "{{base_url}}/patient/me"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/patient/me"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n    \"email\": \"patient@example.com\",\n    \"full_name\": \"John Doe\",\n    \"role\": \"ROLE_PATIENT\",\n    \"is_active\": true,\n    \"phone\": \"+584141234567\",\n    \"address\": {\n      \"street\": \"123 Main St\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"postal_code\": \"5101\",\n      \"state\": \"Merida\"\n    },\n    \"created_at\": \"2026-02-23T10:00:00+00:00\",\n    \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "11. Update Patient Profile",
           "request": {
             "method": "PUT",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
             },
             "url": "{{base_url}}/patient/profile"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
+                },
+                "url": "{{base_url}}/patient/profile"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"email\": \"patient@example.com\",\n      \"full_name\": \"John Doe\",\n      \"role\": \"ROLE_PATIENT\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Profile updated successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"phone\":\"+584141234567\",\"address\":{\"street\":\"123 Main St\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"state\":\"Merida\",\"postal_code\":\"5101\"}}"
+                },
+                "url": "{{base_url}}/patient/profile"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"phone\": \"Invalid phone number format.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "12. List Patients (as Therapist)",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/patients"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/patients"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"patients\": [\n      {\n        \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n        \"email\": \"patient@example.com\",\n        \"full_name\": \"John Doe\",\n        \"role\": \"ROLE_PATIENT\",\n        \"is_active\": true,\n        \"phone\": \"+584141234567\",\n        \"address\": {\n          \"street\": \"123 Main St\",\n          \"city\": \"Merida\",\n          \"country\": \"Venezuela\",\n          \"postal_code\": \"5101\",\n          \"state\": \"Merida\"\n        },\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n      }\n    ],\n    \"count\": 1\n  }\n}"
+            }
+          ]
         },
         {
           "name": "13. Request Password Reset",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"email\":\"patient@example.com\"}"
             },
             "url": "{{base_url}}/auth/password/forgot"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\"}"
+                },
+                "url": "{{base_url}}/auth/password/forgot"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"If an account with that email exists, a password reset link has been sent.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"patient@example.com\"}"
+                },
+                "url": "{{base_url}}/auth/password/forgot"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"email\": \"This value is not a valid email address.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "14. Reset Password (use token from email)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
             },
             "url": "{{base_url}}/auth/password/reset"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
+                },
+                "url": "{{base_url}}/auth/password/reset"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Password has been reset successfully. You can now log in.\"\n  }\n}"
+            },
+            {
+              "name": "Token Expired",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"token\":\"RESET_TOKEN_FROM_EMAIL\",\"password\":\"NewPassword123!\"}"
+                },
+                "url": "{{base_url}}/auth/password/reset"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"TOKEN_EXPIRED\",\n    \"message\": \"Token has expired.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "15. Logout (Revoke Token)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/auth/logout"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/auth/logout"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Successfully logged out.\"\n  }\n}"
+            },
+            {
+              "name": "No Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/auth/logout"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NO_TOKEN\",\n    \"message\": \"No token provided\"\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -184,127 +1106,690 @@
       "item": [
         {
           "name": "1. Create Schedule Block (Monday 09:00-13:00)",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('schedule_id',pm.response.json().data.schedule.id);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===201){pm.collectionVariables.set('schedule_id',pm.response.json().data.schedule.id);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"day_of_week\":1,\"start_time\":\"09:00\",\"end_time\":\"13:00\",\"supports_online\":true,\"supports_in_person\":true}"
             },
             "url": "{{base_url}}/therapist/schedule"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"09:00\",\"end_time\":\"13:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"schedule\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"day_of_week\": 1,\n      \"day_name\": \"Monday\",\n      \"start_time\": \"09:00\",\n      \"end_time\": \"13:00\",\n      \"supports_online\": true,\n      \"supports_in_person\": true,\n      \"is_active\": true\n    },\n    \"message\": \"Schedule block created successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Schedule Conflict",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"09:00\",\"end_time\":\"13:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SCHEDULE_CONFLICT\",\n    \"message\": \"This schedule block overlaps with an existing block on Monday.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"09:00\",\"end_time\":\"13:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"day_of_week\": \"This value should be between 1 and 7.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "2. Create Schedule Block (Monday 14:00-18:00)",
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"day_of_week\":1,\"start_time\":\"14:00\",\"end_time\":\"18:00\",\"supports_online\":true,\"supports_in_person\":false}"
             },
             "url": "{{base_url}}/therapist/schedule"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"14:00\",\"end_time\":\"18:00\",\"supports_online\":true,\"supports_in_person\":false}"
+                },
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"schedule\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"day_of_week\": 1,\n      \"day_name\": \"Monday\",\n      \"start_time\": \"14:00\",\n      \"end_time\": \"18:00\",\n      \"supports_online\": true,\n      \"supports_in_person\": false,\n      \"is_active\": true\n    },\n    \"message\": \"Schedule block created successfully.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "3. Create Schedule Block (Wednesday 10:00-17:00)",
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"day_of_week\":3,\"start_time\":\"10:00\",\"end_time\":\"17:00\",\"supports_online\":true,\"supports_in_person\":true}"
             },
             "url": "{{base_url}}/therapist/schedule"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":3,\"start_time\":\"10:00\",\"end_time\":\"17:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"schedule\": {\n      \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n      \"day_of_week\": 3,\n      \"day_name\": \"Wednesday\",\n      \"start_time\": \"10:00\",\n      \"end_time\": \"17:00\",\n      \"supports_online\": true,\n      \"supports_in_person\": true,\n      \"is_active\": true\n    },\n    \"message\": \"Schedule block created successfully.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "4. List All Schedule Blocks",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/schedule"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"schedules\": [\n      {\n        \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n        \"day_of_week\": 1,\n        \"day_name\": \"Monday\",\n        \"start_time\": \"09:00\",\n        \"end_time\": \"13:00\",\n        \"supports_online\": true,\n        \"supports_in_person\": true,\n        \"is_active\": true\n      },\n      {\n        \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n        \"day_of_week\": 1,\n        \"day_name\": \"Monday\",\n        \"start_time\": \"14:00\",\n        \"end_time\": \"18:00\",\n        \"supports_online\": true,\n        \"supports_in_person\": false,\n        \"is_active\": true\n      },\n      {\n        \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n        \"day_of_week\": 3,\n        \"day_name\": \"Wednesday\",\n        \"start_time\": \"10:00\",\n        \"end_time\": \"17:00\",\n        \"supports_online\": true,\n        \"supports_in_person\": true,\n        \"is_active\": true\n      }\n    ],\n    \"count\": 3\n  }\n}"
+            }
+          ]
         },
         {
           "name": "5. Update Schedule Block",
           "request": {
             "method": "PUT",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"day_of_week\":1,\"start_time\":\"08:00\",\"end_time\":\"12:00\",\"supports_online\":true,\"supports_in_person\":true}"
             },
             "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"08:00\",\"end_time\":\"12:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"schedule\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"day_of_week\": 1,\n      \"day_name\": \"Monday\",\n      \"start_time\": \"08:00\",\n      \"end_time\": \"12:00\",\n      \"supports_online\": true,\n      \"supports_in_person\": true,\n      \"is_active\": true\n    },\n    \"message\": \"Schedule block updated successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"08:00\",\"end_time\":\"12:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            },
+            {
+              "name": "Schedule Conflict",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"day_of_week\":1,\"start_time\":\"08:00\",\"end_time\":\"12:00\",\"supports_online\":true,\"supports_in_person\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SCHEDULE_CONFLICT\",\n    \"message\": \"This schedule block overlaps with an existing block on Monday.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "6. Delete Schedule Block",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "7. Add Schedule Exception (Day Off)",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('exception_id',pm.response.json().data.exception.id);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===201){pm.collectionVariables.set('exception_id',pm.response.json().data.exception.id);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
             },
             "url": "{{base_url}}/therapist/schedule/exceptions"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule/exceptions"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"exception\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_date_time\": \"2026-03-16T00:00:00+00:00\",\n      \"end_date_time\": \"2026-03-16T23:59:59+00:00\",\n      \"reason\": \"Personal day off\",\n      \"is_all_day\": true,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Schedule exception created successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+                },
+                "url": "{{base_url}}/therapist/schedule/exceptions"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"end_date_time\": \"End date must be after start date.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "8. Add Schedule Exception (Partial Block)",
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"start_date_time\":\"2026-03-18T09:00:00\",\"end_date_time\":\"2026-03-18T12:00:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
             },
             "url": "{{base_url}}/therapist/schedule/exceptions"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"start_date_time\":\"2026-03-18T09:00:00\",\"end_date_time\":\"2026-03-18T12:00:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
+                },
+                "url": "{{base_url}}/therapist/schedule/exceptions"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"exception\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"start_date_time\": \"2026-03-18T09:00:00+00:00\",\n      \"end_date_time\": \"2026-03-18T12:00:00+00:00\",\n      \"reason\": \"Doctor appointment\",\n      \"is_all_day\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Schedule exception created successfully.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "9. List Schedule Exceptions",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/schedule/exceptions?from=2026-03-01&to=2026-03-31"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule/exceptions?from=2026-03-01&to=2026-03-31"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"exceptions\": [\n      {\n        \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n        \"start_date_time\": \"2026-03-16T00:00:00+00:00\",\n        \"end_date_time\": \"2026-03-16T23:59:59+00:00\",\n        \"reason\": \"Personal day off\",\n        \"is_all_day\": true,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\"\n      },\n      {\n        \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n        \"start_date_time\": \"2026-03-18T09:00:00+00:00\",\n        \"end_date_time\": \"2026-03-18T12:00:00+00:00\",\n        \"reason\": \"Doctor appointment\",\n        \"is_all_day\": false,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\"\n      }\n    ],\n    \"count\": 2\n  }\n}"
+            }
+          ]
         },
         {
           "name": "10. Remove Schedule Exception",
           "request": {
             "method": "DELETE",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -317,58 +1802,351 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-07\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T11:00:00+00:00\",\n          \"end_time\": \"2026-06-01T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T12:00:00+00:00\",\n          \"end_time\": \"2026-06-01T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ],\n      \"2026-06-03\": [\n        {\n          \"start_time\": \"2026-06-03T10:00:00+00:00\",\n          \"end_time\": \"2026-06-03T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T11:00:00+00:00\",\n          \"end_time\": \"2026-06-03T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T12:00:00+00:00\",\n          \"end_time\": \"2026-06-03T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T13:00:00+00:00\",\n          \"end_time\": \"2026-06-03T13:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 8\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"from\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "2. Get Available Slots (Single Day)",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-01"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-01"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-01\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T11:00:00+00:00\",\n          \"end_time\": \"2026-06-01T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T12:00:00+00:00\",\n          \"end_time\": \"2026-06-01T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 4\n  }\n}"
+            }
+          ]
         },
         {
           "name": "3. Get Available Slots (Filtered by Modality)",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07&modality=ONLINE"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07&modality=ONLINE"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-07\",\n    \"modality\": \"ONLINE\",\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 2\n  }\n}"
+            }
+          ]
         },
         {
           "name": "4. Lock a Slot",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('lock_token',pm.response.json().data.lock_token);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===201){pm.collectionVariables.set('lock_token',pm.response.json().data.lock_token);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
             },
             "url": "{{base_url}}/appointments/lock-slot"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                },
+                "url": "{{base_url}}/appointments/lock-slot"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"lock_token\": \"lock_a1b2c3d4e5f67890\",\n    \"slot_start_time\": \"2026-06-01T09:00:00+00:00\",\n    \"slot_end_time\": \"2026-06-01T09:50:00+00:00\",\n    \"expires_at\": \"2026-06-01T09:10:00+00:00\"\n  }\n}"
+            },
+            {
+              "name": "Slot Not Available",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                },
+                "url": "{{base_url}}/appointments/lock-slot"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SLOT_NOT_AVAILABLE\",\n    \"message\": \"The requested time slot is no longer available.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "5. Request Appointment (with Lock Token)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
             },
             "url": "{{base_url}}/appointments/request"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                },
+                "url": "{{base_url}}/appointments/request"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"created_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Your appointment request has been submitted. You will receive a confirmation email shortly.\"\n  }\n}"
+            },
+            {
+              "name": "Slot Not Available",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                },
+                "url": "{{base_url}}/appointments/request"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SLOT_NOT_AVAILABLE\",\n    \"message\": \"The requested time slot is no longer available.\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Lock Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                },
+                "url": "{{base_url}}/appointments/request"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_LOCK_TOKEN\",\n    \"message\": \"The provided lock token is invalid or has expired.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "6. Request Appointment (without Lock Token)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"IN_PERSON\",\"full_name\":\"Carlos Rodriguez\",\"phone\":\"+584142345678\",\"email\":\"carlos@example.com\",\"city\":\"Caracas\",\"country\":\"Venezuela\"}"
             },
             "url": "{{base_url}}/appointments/request"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"IN_PERSON\",\"full_name\":\"Carlos Rodriguez\",\"phone\":\"+584142345678\",\"email\":\"carlos@example.com\",\"city\":\"Caracas\",\"country\":\"Venezuela\"}"
+                },
+                "url": "{{base_url}}/appointments/request"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:50:00+00:00\",\n      \"end_time\": \"2026-06-01T10:40:00+00:00\",\n      \"modality\": \"IN_PERSON\",\n      \"status\": \"REQUESTED\",\n      \"created_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Your appointment request has been submitted. You will receive a confirmation email shortly.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"IN_PERSON\",\"full_name\":\"Carlos Rodriguez\",\"phone\":\"+584142345678\",\"email\":\"carlos@example.com\",\"city\":\"Caracas\",\"country\":\"Venezuela\"}"
+                },
+                "url": "{{base_url}}/appointments/request"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"full_name\": \"This value should not be blank.\",\n      \"phone\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -381,30 +2159,201 @@
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
             },
             "url": "{{base_url}}/patient/appointments"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                },
+                "url": "{{base_url}}/patient/appointments"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"patient_id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\"\n    },\n    \"message\": \"Your appointment request has been submitted. You will receive a confirmation email shortly.\"\n  }\n}"
+            },
+            {
+              "name": "Slot Not Available",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                },
+                "url": "{{base_url}}/patient/appointments"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SLOT_NOT_AVAILABLE\",\n    \"message\": \"The requested time slot is no longer available.\"\n  }\n}"
+            },
+            {
+              "name": "Incomplete Profile",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                },
+                "url": "{{base_url}}/patient/appointments"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INCOMPLETE_PROFILE\",\n    \"message\": \"Please complete your profile (phone and address) before booking an appointment.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "2. Request Appointment with Lock Token (as Patient)",
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patient_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"ONLINE\",\"lock_token\":\"{{lock_token}}\"}"
             },
             "url": "{{base_url}}/patient/appointments"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"ONLINE\",\"lock_token\":\"{{lock_token}}\"}"
+                },
+                "url": "{{base_url}}/patient/appointments"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:50:00+00:00\",\n      \"end_time\": \"2026-06-01T10:40:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"patient_id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\"\n    },\n    \"message\": \"Your appointment request has been submitted. You will receive a confirmation email shortly.\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Lock Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{patient_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"ONLINE\",\"lock_token\":\"{{lock_token}}\"}"
+                },
+                "url": "{{base_url}}/patient/appointments"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_LOCK_TOKEN\",\n    \"message\": \"The provided lock token is invalid or has expired.\"\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -416,95 +2365,609 @@
           "name": "1. List All Appointments",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointments\": [\n      {\n        \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"modality\": \"ONLINE\",\n        \"status\": \"REQUESTED\",\n        \"full_name\": \"Maria Garcia\",\n        \"email\": \"maria@example.com\",\n        \"phone\": \"+584141234567\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"patient_id\": null,\n        \"payment_verified\": false,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n      },\n      {\n        \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n        \"start_time\": \"2026-06-01T10:00:00+00:00\",\n        \"end_time\": \"2026-06-01T10:50:00+00:00\",\n        \"modality\": \"ONLINE\",\n        \"status\": \"CONFIRMED\",\n        \"full_name\": \"Walk-in Patient\",\n        \"email\": \"walkin@example.com\",\n        \"phone\": \"+584141234567\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"patient_id\": null,\n        \"payment_verified\": true,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n      },\n      {\n        \"id\": \"c3d4e5f6-a7b8-9012-cdef-123456789012\",\n        \"start_time\": \"2026-06-03T10:00:00+00:00\",\n        \"end_time\": \"2026-06-03T10:50:00+00:00\",\n        \"modality\": \"IN_PERSON\",\n        \"status\": \"COMPLETED\",\n        \"full_name\": \"Carlos Rodriguez\",\n        \"email\": \"carlos@example.com\",\n        \"phone\": \"+584142345678\",\n        \"city\": \"Caracas\",\n        \"country\": \"Venezuela\",\n        \"patient_id\": null,\n        \"payment_verified\": true,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n      }\n    ],\n    \"count\": 3\n  }\n}"
+            }
+          ]
         },
         {
           "name": "2. List Pending Requests",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments?status=REQUESTED"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments?status=REQUESTED"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointments\": [\n      {\n        \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"modality\": \"ONLINE\",\n        \"status\": \"REQUESTED\",\n        \"full_name\": \"Maria Garcia\",\n        \"email\": \"maria@example.com\",\n        \"phone\": \"+584141234567\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"patient_id\": null,\n        \"payment_verified\": false,\n        \"created_at\": \"2026-02-23T10:00:00+00:00\",\n        \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n      }\n    ],\n    \"count\": 1\n  }\n}"
+            }
+          ]
         },
         {
           "name": "3. Get Appointment Details",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "4. Confirm Appointment",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"CONFIRMED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T10:30:00+00:00\"\n    },\n    \"message\": \"Appointment confirmed successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Status Transition",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_STATUS_TRANSITION\",\n    \"message\": \"Cannot confirm an appointment with status COMPLETED.\"\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "5. Complete Appointment",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"COMPLETED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T11:00:00+00:00\"\n    },\n    \"message\": \"Appointment completed successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Status Transition",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_STATUS_TRANSITION\",\n    \"message\": \"Cannot complete an appointment with status REQUESTED.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "6. Cancel Appointment",
           "request": {
             "method": "POST",
-            "header": [{"key": "Authorization", "value": "Bearer {{therapist_token}}"}],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              }
+            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"CANCELLED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T11:00:00+00:00\"\n    },\n    \"message\": \"Appointment cancelled successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Status Transition",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  }
+                ],
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_STATUS_TRANSITION\",\n    \"message\": \"Cannot cancel an appointment with status COMPLETED.\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "7. Book Appointment (Manual)",
-          "event": [{"listen": "test", "script": {"exec": ["if(pm.response.code===201){pm.collectionVariables.set('appointment_id',pm.response.json().data.appointment.id);}"]}}],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if(pm.response.code===201){pm.collectionVariables.set('appointment_id',pm.response.json().data.appointment.id);}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"slot_start_time\":\"2026-06-01T10:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Walk-in Patient\",\"phone\":\"+584141234567\",\"email\":\"walkin@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\"}"
             },
             "url": "{{base_url}}/therapist/appointments"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T10:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Walk-in Patient\",\"phone\":\"+584141234567\",\"email\":\"walkin@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\"}"
+                },
+                "url": "{{base_url}}/therapist/appointments"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T10:00:00+00:00\",\n      \"end_time\": \"2026-06-01T10:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"CONFIRMED\",\n      \"full_name\": \"Walk-in Patient\",\n      \"email\": \"walkin@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Appointment booked successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Slot Not Available",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T10:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Walk-in Patient\",\"phone\":\"+584141234567\",\"email\":\"walkin@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\"}"
+                },
+                "url": "{{base_url}}/therapist/appointments"
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SLOT_NOT_AVAILABLE\",\n    \"message\": \"The requested time slot is no longer available.\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"slot_start_time\":\"2026-06-01T10:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Walk-in Patient\",\"phone\":\"+584141234567\",\"email\":\"walkin@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\"}"
+                },
+                "url": "{{base_url}}/therapist/appointments"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"slot_start_time\": \"This value should not be blank.\",\n      \"full_name\": \"This value should not be blank.\"\n    }\n  }\n}"
+            }
+          ]
         },
         {
           "name": "8. Update Payment Status (Verify)",
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"payment_verified\":true}"
             },
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"payment_verified\":true}"
+                },
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": true,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T10:30:00+00:00\"\n    },\n    \"message\": \"Payment status updated successfully.\"\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"payment_verified\":true}"
+                },
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Resource not found\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "9. Update Payment Status (Unverify)",
           "request": {
             "method": "PATCH",
             "header": [
-              {"key": "Authorization", "value": "Bearer {{therapist_token}}"},
-              {"key": "Content-Type", "value": "application/json"}
+              {
+                "key": "Authorization",
+                "value": "Bearer {{therapist_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\"payment_verified\":false}"
             },
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{therapist_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"payment_verified\":false}"
+                },
+                "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/payment"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"appointment\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"start_time\": \"2026-06-01T09:00:00+00:00\",\n      \"end_time\": \"2026-06-01T09:50:00+00:00\",\n      \"modality\": \"ONLINE\",\n      \"status\": \"REQUESTED\",\n      \"full_name\": \"Maria Garcia\",\n      \"email\": \"maria@example.com\",\n      \"phone\": \"+584141234567\",\n      \"city\": \"Merida\",\n      \"country\": \"Venezuela\",\n      \"patient_id\": null,\n      \"payment_verified\": false,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"updated_at\": \"2026-02-23T10:30:00+00:00\"\n    },\n    \"message\": \"Payment status updated successfully.\"\n  }\n}"
+            }
+          ]
         }
       ]
     }

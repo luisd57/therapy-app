@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell composer sf db-create db-migrate db-diff cache-clear test test-unit test-integration test-db-setup init
+.PHONY: help build up down restart logs shell composer sf db-create db-migrate db-diff cache-clear test test-unit test-integration test-db-setup init cron-logs cron-test
 
 # Default target
 help:
@@ -16,6 +16,8 @@ help:
 	@echo "  make db-diff     - Generate migration from entities"
 	@echo "  make cache-clear - Clear Symfony cache"
 	@echo "  make test        - Run PHPUnit tests"
+	@echo "  make cron-logs   - View cron container logs"
+	@echo "  make cron-test   - Run all cron commands manually"
 	@echo "  make init        - Initialize new Symfony project"
 
 # Docker commands
@@ -76,6 +78,15 @@ test-db-migrate:
 	docker-compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
 test-db-setup: test-db-create test-db-migrate
+
+# Cron
+cron-logs:
+	docker-compose logs -f cron
+
+cron-test:
+	docker-compose exec cron php bin/console app:cleanup-slot-locks
+	docker-compose exec cron php bin/console app:send-daily-agenda
+	docker-compose exec cron php bin/console app:cleanup-tokens
 
 # Initialize project
 init:
