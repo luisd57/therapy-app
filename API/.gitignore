@@ -1,0 +1,39 @@
+###> symfony/framework-bundle ###
+# Environment variables
+.env
+.env.local
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+###< symfony/phpunit-bridge ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+# Project documentation
+CLAUDE.md
+Product-Requirements.md
+Product-brainstorm-with-client.md
+.claude
+# Personal scripts
+*.bat
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

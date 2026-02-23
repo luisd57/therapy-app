@@ -1,39 +1,17 @@
-###> symfony/framework-bundle ###
-# Environment variables
-.env
-.env.local
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/var/
-/vendor/
-###< symfony/framework-bundle ###
-
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-###< symfony/phpunit-bridge ###
-
-###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
-###< lexik/jwt-authentication-bundle ###
-
+cosas/
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
-https://github.com/luisd57/therapy-app
+
 # OS
 .DS_Store
 Thumbs.db
-# Project documentation
+
+# Claude
 CLAUDE.md
-Product-Requirements.md
-Product-brainstorm-with-client.md
-.claude
+.claude/
+
 # Personal scripts
 *.bat
-###> phpunit/phpunit ###
-/phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
