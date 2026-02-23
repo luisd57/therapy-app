@@ -88,6 +88,14 @@ services:
     App\Domain\Appointment\Service\AppointmentEmailSenderInterface:
         class: App\Infrastructure\Email\Appointment\AppointmentEmailSender
 
+    # Appointment Application Service
+    App\Application\Appointment\Service\AppointmentRequestService:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+
+    App\Application\Appointment\Service\AppointmentRequestServiceInterface:
+        alias: App\Application\Appointment\Service\AppointmentRequestService
+
     # Appointment Handlers with specific configuration
     App\Application\Appointment\Handler\GetAvailableSlotsHandler:
         arguments:
@@ -97,10 +105,6 @@ services:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
             $slotLockTtl: '%app.slot_lock_ttl%'
-
-    App\Application\Appointment\Handler\RequestAppointmentHandler:
-        arguments:
-            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
 
     App\Application\Appointment\Handler\BookAppointmentHandler:
         arguments:

@@ -373,6 +373,42 @@
       ]
     },
     {
+      "name": "Patient Appointments",
+      "description": "Requires patient authentication. Run '9. Patient Login' and '11. Update Patient Profile' first.",
+      "item": [
+        {
+          "name": "1. Request Appointment (as Patient)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+            },
+            "url": "{{base_url}}/patient/appointments"
+          }
+        },
+        {
+          "name": "2. Request Appointment with Lock Token (as Patient)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{patient_token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:50:00\",\"modality\":\"ONLINE\",\"lock_token\":\"{{lock_token}}\"}"
+            },
+            "url": "{{base_url}}/patient/appointments"
+          }
+        }
+      ]
+    },
+    {
       "name": "Therapist Appointment Management",
       "description": "Requires therapist authentication. Run '3. Therapist Login' first. Submit a public appointment request first to have data to work with.",
       "item": [
