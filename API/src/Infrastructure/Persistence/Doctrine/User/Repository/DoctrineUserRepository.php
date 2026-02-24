@@ -91,6 +91,45 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return new ArrayCollection($users);
     }
 
+    /**
+     * @return ArrayCollection<int, User>
+     */
+    public function findActivePatientsPaginated(int $offset, int $limit): ArrayCollection
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('u')
+            ->from(UserEntity::class, 'u')
+            ->where('u.role = :role')
+            ->andWhere('u.isActive = :isActive')
+            ->setParameter('role', UserRole::PATIENT->value)
+            ->setParameter('isActive', true)
+            ->orderBy('u.createdAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $entities = $qb->getQuery()->getResult();
+
+        $users = array_map(
+            fn(UserEntity $entity) => UserMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($users);
+    }
+
+    public function countActivePatients(): int
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('COUNT(u.id)')
+            ->from(UserEntity::class, 'u')
+            ->where('u.role = :role')
+            ->andWhere('u.isActive = :isActive')
+            ->setParameter('role', UserRole::PATIENT->value)
+            ->setParameter('isActive', true);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     public function findSingleTherapist(): User
     {
         $therapists = $this->findByRole(UserRole::THERAPIST);

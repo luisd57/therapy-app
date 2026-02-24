@@ -59,8 +59,10 @@ final class TherapistAppointmentControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('appointments', $data['data']);
-        $this->assertArrayHasKey('count', $data['data']);
-        $this->assertGreaterThanOrEqual(1, $data['data']['count']);
+        $this->assertArrayHasKey('pagination', $data['data']);
+        $this->assertGreaterThanOrEqual(1, $data['data']['pagination']['total']);
+        $this->assertSame(1, $data['data']['pagination']['page']);
+        $this->assertSame(20, $data['data']['pagination']['limit']);
     }
 
     public function testListAppointmentsByStatus(): void
@@ -72,11 +74,50 @@ final class TherapistAppointmentControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertGreaterThanOrEqual(1, $data['data']['count']);
+        $this->assertGreaterThanOrEqual(1, $data['data']['pagination']['total']);
 
         foreach ($data['data']['appointments'] as $appointment) {
             $this->assertSame('REQUESTED', $appointment['status']);
         }
+    }
+
+    public function testListAppointmentsWithPaginationParams(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $this->createTestAppointment();
+        }
+
+        $this->jsonRequest('GET', '/api/therapist/appointments?page=1&limit=2', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertSame(1, $data['data']['pagination']['page']);
+        $this->assertSame(2, $data['data']['pagination']['limit']);
+        $this->assertCount(2, $data['data']['appointments']);
+        $this->assertGreaterThanOrEqual(3, $data['data']['pagination']['total']);
+    }
+
+    public function testListAppointmentsPaginationWithStatusFilter(): void
+    {
+        $this->createTestAppointment('REQUESTED');
+        $this->createTestAppointment('REQUESTED');
+
+        $this->jsonRequest('GET', '/api/therapist/appointments?status=REQUESTED&page=1&limit=1', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertCount(1, $data['data']['appointments']);
+        $this->assertSame(1, $data['data']['pagination']['limit']);
+        $this->assertGreaterThanOrEqual(2, $data['data']['pagination']['total']);
+    }
+
+    public function testListAppointmentsLimitCappedAt100(): void
+    {
+        $this->jsonRequest('GET', '/api/therapist/appointments?limit=200', [], $this->therapistToken);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertSame(100, $data['data']['pagination']['limit']);
     }
 
     public function testListAppointmentsWithInvalidStatus(): void

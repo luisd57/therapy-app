@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Controller\Api\User;
 
+use App\Application\Shared\DTO\PaginationInputDTO;
 use App\Application\User\DTO\Input\InvitePatientInputDTO;
+use App\Application\User\DTO\Input\ListPatientsInputDTO;
 use App\Application\User\Handler\GetUserHandler;
 use App\Application\User\Handler\InvitePatientHandler;
 use App\Application\User\Handler\ListInvitationsHandler;
@@ -36,13 +38,20 @@ final class TherapistController extends AbstractController
     }
 
     #[Route('/patients', name: 'api_therapist_list_patients', methods: ['GET'])]
-    public function listPatients(ListPatientsHandler $handler): JsonResponse
+    public function listPatients(Request $request, ListPatientsHandler $handler): JsonResponse
     {
-        $patients = $handler->__invoke();
+        $pagination = new PaginationInputDTO(
+            page: $request->query->getInt('page') ?: null,
+            limit: $request->query->getInt('limit') ?: null,
+        );
+
+        $result = $handler->__invoke(new ListPatientsInputDTO(
+            pagination: $pagination,
+        ));
 
         return $this->success([
-            'patients' => $patients->map(fn ($dto) => $dto->toArray())->toArray(),
-            'count' => $patients->count(),
+            'patients' => $result->items->map(fn ($dto) => $dto->toArray())->toArray(),
+            'pagination' => $result->toMeta(),
         ]);
     }
 

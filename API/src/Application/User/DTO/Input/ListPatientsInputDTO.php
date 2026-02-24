@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Appointment\DTO\Input;
+namespace App\Application\User\DTO\Input;
 
 use App\Application\Shared\DTO\PaginationInputDTO;
 
-final readonly class ListAppointmentsInputDTO
+final readonly class ListPatientsInputDTO
 {
     public function __construct(
-        public ?string $status = null,
         public PaginationInputDTO $pagination = new PaginationInputDTO(),
     ) {
     }

@@ -30,6 +30,13 @@ interface UserRepositoryInterface
      */
     public function findActivePatients(): ArrayCollection;
 
+    /**
+     * @return ArrayCollection<int, User>
+     */
+    public function findActivePatientsPaginated(int $offset, int $limit): ArrayCollection;
+
+    public function countActivePatients(): int;
+
     public function delete(User $user): void;
 
     /**

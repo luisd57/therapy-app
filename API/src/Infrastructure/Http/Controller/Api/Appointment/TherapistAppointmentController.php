@@ -11,6 +11,7 @@ use App\Application\Appointment\DTO\Input\ConfirmAppointmentInputDTO;
 use App\Application\Appointment\DTO\Input\GetAppointmentInputDTO;
 use App\Application\Appointment\DTO\Input\ListAppointmentsInputDTO;
 use App\Application\Appointment\DTO\Input\UpdatePaymentStatusInputDTO;
+use App\Application\Shared\DTO\PaginationInputDTO;
 use App\Application\Appointment\Handler\BookAppointmentHandler;
 use App\Application\Appointment\Handler\CancelAppointmentHandler;
 use App\Application\Appointment\Handler\CompleteAppointmentHandler;
@@ -45,13 +46,19 @@ final class TherapistAppointmentController extends AbstractController
             }
         }
 
-        $appointments = $handler->__invoke(new ListAppointmentsInputDTO(
+        $pagination = new PaginationInputDTO(
+            page: $request->query->getInt('page') ?: null,
+            limit: $request->query->getInt('limit') ?: null,
+        );
+
+        $result = $handler->__invoke(new ListAppointmentsInputDTO(
             status: ($status !== null && $status !== '') ? $status : null,
+            pagination: $pagination,
         ));
 
         return $this->success([
-            'appointments' => $appointments->map(fn ($dto) => $dto->toArray())->toArray(),
-            'count' => $appointments->count(),
+            'appointments' => $result->items->map(fn ($dto) => $dto->toArray())->toArray(),
+            'pagination' => $result->toMeta(),
         ]);
     }
 

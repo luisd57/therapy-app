@@ -37,6 +37,20 @@ interface AppointmentRepositoryInterface
     public function findAll(): ArrayCollection;
 
     /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findAllPaginated(int $offset, int $limit): ArrayCollection;
+
+    public function countAll(): int;
+
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findByStatusPaginated(AppointmentStatus $status, int $offset, int $limit): ArrayCollection;
+
+    public function countByStatus(AppointmentStatus $status): int;
+
+    /**
      * Returns confirmed appointments whose start_time falls on the given date, ordered by start_time ASC.
      *
      * @return ArrayCollection<int, Appointment>

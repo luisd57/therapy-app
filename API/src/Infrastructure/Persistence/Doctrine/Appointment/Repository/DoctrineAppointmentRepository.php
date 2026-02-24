@@ -109,6 +109,72 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     /**
      * @return ArrayCollection<int, Appointment>
      */
+    public function findAllPaginated(int $offset, int $limit): ArrayCollection
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('a')
+            ->from(AppointmentEntity::class, 'a')
+            ->orderBy('a.createdAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $entities = $qb->getQuery()->getResult();
+
+        $appointments = array_map(
+            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($appointments);
+    }
+
+    public function countAll(): int
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('COUNT(a.id)')
+            ->from(AppointmentEntity::class, 'a');
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findByStatusPaginated(AppointmentStatus $status, int $offset, int $limit): ArrayCollection
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('a')
+            ->from(AppointmentEntity::class, 'a')
+            ->where('a.status = :status')
+            ->setParameter('status', $status->value)
+            ->orderBy('a.createdAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+
+        $entities = $qb->getQuery()->getResult();
+
+        $appointments = array_map(
+            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($appointments);
+    }
+
+    public function countByStatus(AppointmentStatus $status): int
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('COUNT(a.id)')
+            ->from(AppointmentEntity::class, 'a')
+            ->where('a.status = :status')
+            ->setParameter('status', $status->value);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
     public function findConfirmedByDate(DateTimeImmutable $date): ArrayCollection
     {
         $dayStart = $date->setTime(0, 0);
