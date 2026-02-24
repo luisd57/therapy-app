@@ -57,7 +57,8 @@ final class RateLimitSubscriber implements EventSubscriberInterface
     {
         return match ($route) {
             'api_therapist_login', 'api_patient_login' => $this->apiLoginLimiter->create($clientIp),
-            'api_forgot_password', 'api_lock_slot', 'api_request_appointment' => $this->apiPublicLimiter->create($clientIp),
+            'api_forgot_password', 'api_lock_slot', 'api_request_appointment',
+            'api_validate_invitation', 'api_register', 'api_reset_password' => $this->apiPublicLimiter->create($clientIp),
             default => null,
         };
     }

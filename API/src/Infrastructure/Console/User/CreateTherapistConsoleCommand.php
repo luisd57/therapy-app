@@ -7,6 +7,7 @@ namespace App\Infrastructure\Console\User;
 use App\Application\User\DTO\Input\CreateTherapistInputDTO;
 use App\Application\User\Handler\CreateTherapistHandler;
 use App\Domain\User\Exception\UserAlreadyExistsException;
+use App\Infrastructure\Http\Validation\PasswordValidator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -41,6 +42,12 @@ final class CreateTherapistConsoleCommand extends Command
         $email = $input->getArgument('email');
         $name = $input->getArgument('name');
         $password = $input->getArgument('password');
+
+        $passwordError = PasswordValidator::validate($password);
+        if ($passwordError !== null) {
+            $io->error($passwordError);
+            return Command::FAILURE;
+        }
 
         try {
             $user = $this->handler->__invoke(new CreateTherapistInputDTO(

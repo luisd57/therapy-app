@@ -57,11 +57,11 @@ final class DomainExceptionTest extends TestCase
         $this->assertCount(3, array_unique($codes));
     }
 
-    public function testUserAlreadyExistsExceptionIncludesEmailInMessage(): void
+    public function testUserAlreadyExistsExceptionHasStaticMessage(): void
     {
-        $exception = new UserAlreadyExistsException('test@example.com');
+        $exception = new UserAlreadyExistsException();
         $this->assertInstanceOf(DomainException::class, $exception);
-        $this->assertStringContainsString('test@example.com', $exception->getMessage());
+        $this->assertStringContainsString('already exists', $exception->getMessage());
         $this->assertNotEmpty($exception->getErrorCode());
     }
 

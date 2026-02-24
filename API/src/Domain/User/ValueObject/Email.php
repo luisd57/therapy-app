@@ -16,7 +16,7 @@ final readonly class Email
         $normalized = strtolower(trim($value));
         
         if (!filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException("Invalid email format: {$value}");
+            throw new \InvalidArgumentException('Invalid email format.');
         }
 
         return new self($normalized);

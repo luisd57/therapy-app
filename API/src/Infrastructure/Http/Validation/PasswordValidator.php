@@ -11,8 +11,8 @@ final class PasswordValidator
      */
     public static function validate(string $password): ?string
     {
-        if (strlen($password) < 8 || strlen($password) > 16) {
-            return 'Password must be between 8 and 16 characters';
+        if (strlen($password) < 8 || strlen($password) > 72) {
+            return 'Password must be between 8 and 72 characters';
         }
         if (!preg_match('/[A-Z]/', $password)) {
             return 'Password must contain at least one uppercase letter';

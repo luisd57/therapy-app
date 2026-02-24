@@ -8,10 +8,10 @@ use App\Domain\Exception\DomainException;
 
 final class UserAlreadyExistsException extends DomainException
 {
-    public function __construct(string $email)
+    public function __construct()
     {
         parent::__construct(
-            message: "User with email {$email} already exists.",
+            message: 'A user with this email already exists.',
             errorCode: 'USER_ALREADY_EXISTS',
         );
     }

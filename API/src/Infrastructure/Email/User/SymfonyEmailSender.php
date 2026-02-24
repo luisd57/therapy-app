@@ -56,6 +56,9 @@ final readonly class SymfonyEmailSender implements EmailSenderInterface
 
     private function getInvitationTemplate(string $patientName, string $registrationUrl): string
     {
+        $patientName = htmlspecialchars($patientName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $registrationUrl = htmlspecialchars($registrationUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -102,6 +105,8 @@ TEXT;
 
     private function getPasswordResetTemplate(string $resetUrl): string
     {
+        $resetUrl = htmlspecialchars($resetUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -148,6 +153,8 @@ TEXT;
 
     private function getWelcomeTemplate(string $userName): string
     {
+        $userName = htmlspecialchars($userName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>

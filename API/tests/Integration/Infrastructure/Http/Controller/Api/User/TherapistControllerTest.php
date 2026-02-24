@@ -8,57 +8,6 @@ use App\Tests\Helper\ApiTestCase;
 
 final class TherapistControllerTest extends ApiTestCase
 {
-    public function testSetupSuccessReturns201(): void
-    {
-        $this->jsonRequest('POST', '/api/therapist/setup', [
-            'email' => 'newtherapist@test.com',
-            'full_name' => 'Dr. New',
-            'password' => 'Secure1!pass',
-        ]);
-
-        $this->assertResponseStatusCodeSame(201);
-        $data = $this->getResponseData();
-        $this->assertTrue($data['success']);
-        $this->assertSame('newtherapist@test.com', $data['data']['user']['email']);
-    }
-
-    public function testSetupDuplicateEmailReturns409(): void
-    {
-        $this->jsonRequest('POST', '/api/therapist/setup', [
-            'email' => 'dup@test.com',
-            'full_name' => 'Dr. First',
-            'password' => 'Secure1!pass',
-        ]);
-
-        $this->jsonRequest('POST', '/api/therapist/setup', [
-            'email' => 'dup@test.com',
-            'full_name' => 'Dr. Second',
-            'password' => 'Secure1!pass',
-        ]);
-
-        $this->assertResponseStatusCodeSame(409);
-    }
-
-    public function testSetupMissingFieldsReturns422(): void
-    {
-        $this->jsonRequest('POST', '/api/therapist/setup', [
-            'email' => 'missing@test.com',
-        ]);
-
-        $this->assertResponseStatusCodeSame(422);
-    }
-
-    public function testSetupShortPasswordReturns422(): void
-    {
-        $this->jsonRequest('POST', '/api/therapist/setup', [
-            'email' => 'short@test.com',
-            'full_name' => 'Dr. Short',
-            'password' => 'short',
-        ]);
-
-        $this->assertResponseStatusCodeSame(422);
-    }
-
     public function testMeAuthenticatedReturns200(): void
     {
         $token = $this->createTherapistAndGetToken();

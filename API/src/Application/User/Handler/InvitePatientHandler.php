@@ -33,7 +33,7 @@ final readonly class InvitePatientHandler
 
         // Check if user already exists
         if ($this->userRepository->existsByEmail($email)) {
-            throw new UserAlreadyExistsException($dto->email);
+            throw new UserAlreadyExistsException();
         }
 
         // Check if there's already a valid invitation

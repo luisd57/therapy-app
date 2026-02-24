@@ -26,12 +26,6 @@ security:
             stateless: true
             security: false
 
-        # Therapist setup endpoint (should be secured in production)
-        api_setup:
-            pattern: ^/api/therapist/setup
-            stateless: true
-            security: false
-
         # Protected API endpoints
         api:
             pattern: ^/api
@@ -44,8 +38,6 @@ security:
         - { path: ^/api/$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
-        - { path: ^/api/therapist/setup, roles: PUBLIC_ACCESS }
-        
         # Public appointment endpoints
         - { path: ^/api/appointments(/|$), roles: PUBLIC_ACCESS }
 

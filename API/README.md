@@ -176,7 +176,6 @@ Open your browser and navigate to:
 |--------|----------|-------------|
 | GET | `/api/health` | Health check |
 | GET | `/api/` | API info |
-| POST | `/api/therapist/setup` | Create initial therapist |
 | POST | `/api/auth/therapist/login` | Therapist login |
 | POST | `/api/auth/patient/login` | Patient login |
 | GET | `/api/auth/invitation/validate/{token}` | Validate invitation |
@@ -229,7 +228,7 @@ Open your browser and navigate to:
 ### Testing Flow
 
 1. **Health Check** - Verify API is running
-2. **Create Therapist** - Set up initial admin account
+2. **Create Therapist** - Run `docker-compose exec php php bin/console app:create-therapist` to set up initial admin account
 3. **Therapist Login** - Get JWT token (auto-saved to variable)
 4. **Get Therapist Profile** - Verify authentication works
 5. **Create Schedule** - Set up weekly availability blocks
@@ -663,8 +662,8 @@ docker-compose restart
 # Regenerate JWT keys
 docker-compose exec php bash
 mkdir -p config/jwt
-openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:therapy_jwt_passphrase
-openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:therapy_jwt_passphrase
+openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:YOUR_JWT_PASSPHRASE
+openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:YOUR_JWT_PASSPHRASE
 exit
 ```
 

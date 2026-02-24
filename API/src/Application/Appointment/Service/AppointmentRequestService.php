@@ -64,6 +64,12 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
                 throw new InvalidLockTokenException();
             }
 
+            // Verify the lock matches the slot being booked
+            if ($lock->getTimeSlot()->getStartTime() != $startTime
+                || $lock->getModality() !== $appointmentModality) {
+                throw new InvalidLockTokenException();
+            }
+
             $this->slotLockRepository->delete($lock);
         }
 

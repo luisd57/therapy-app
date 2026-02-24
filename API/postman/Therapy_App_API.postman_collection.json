@@ -86,107 +86,7 @@
           ]
         },
         {
-          "name": "2. Create Therapist (Setup)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
-            },
-            "url": "{{base_url}}/therapist/setup"
-          },
-          "response": [
-            {
-              "name": "Success",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
-                },
-                "url": "{{base_url}}/therapist/setup"
-              },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"email\": \"therapist@example.com\",\n      \"full_name\": \"Dr. Jane Smith\",\n      \"role\": \"ROLE_THERAPIST\",\n      \"is_active\": true,\n      \"phone\": null,\n      \"address\": null,\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    },\n    \"message\": \"Therapist account created successfully.\"\n  }\n}"
-            },
-            {
-              "name": "Therapist Already Exists",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
-                },
-                "url": "{{base_url}}/therapist/setup"
-              },
-              "status": "Conflict",
-              "code": 409,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"THERAPIST_ALREADY_EXISTS\",\n    \"message\": \"A therapist account already exists\"\n  }\n}"
-            },
-            {
-              "name": "Validation Error",
-              "originalRequest": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\"email\":\"therapist@example.com\",\"full_name\":\"Dr. Jane Smith\",\"password\":\"SecurePass123!\"}"
-                },
-                "url": "{{base_url}}/therapist/setup"
-              },
-              "status": "Unprocessable Entity",
-              "code": 422,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"email\": \"This value should not be blank.\",\n      \"password\": \"This value should not be blank.\"\n    }\n  }\n}"
-            }
-          ]
-        },
-        {
-          "name": "3. Therapist Login",
+          "name": "2. Therapist Login",
           "event": [
             {
               "listen": "test",
@@ -296,7 +196,7 @@
           ]
         },
         {
-          "name": "4. Get Therapist Profile",
+          "name": "3. Get Therapist Profile",
           "request": {
             "method": "GET",
             "header": [
@@ -334,7 +234,7 @@
           ]
         },
         {
-          "name": "5. Invite Patient",
+          "name": "4. Invite Patient",
           "request": {
             "method": "POST",
             "header": [
@@ -450,7 +350,7 @@
           ]
         },
         {
-          "name": "6. List Pending Invitations",
+          "name": "5. List Pending Invitations",
           "request": {
             "method": "GET",
             "header": [
@@ -488,7 +388,7 @@
           ]
         },
         {
-          "name": "7. Validate Invitation (use token from email)",
+          "name": "6. Validate Invitation (use token from email)",
           "request": {
             "method": "GET",
             "url": "{{base_url}}/auth/invitation/validate/{{invitation_token}}"
@@ -548,7 +448,7 @@
           ]
         },
         {
-          "name": "8. Register Patient",
+          "name": "7. Register Patient",
           "request": {
             "method": "POST",
             "header": [
@@ -648,7 +548,7 @@
           ]
         },
         {
-          "name": "9. Patient Login",
+          "name": "8. Patient Login",
           "event": [
             {
               "listen": "test",
@@ -731,7 +631,7 @@
           ]
         },
         {
-          "name": "10. Get Patient Profile",
+          "name": "9. Get Patient Profile",
           "request": {
             "method": "GET",
             "header": [
@@ -769,7 +669,7 @@
           ]
         },
         {
-          "name": "11. Update Patient Profile",
+          "name": "10. Update Patient Profile",
           "request": {
             "method": "PUT",
             "header": [
@@ -854,7 +754,7 @@
           ]
         },
         {
-          "name": "12. List Patients (as Therapist)",
+          "name": "11. List Patients (as Therapist)",
           "request": {
             "method": "GET",
             "header": [
@@ -892,7 +792,7 @@
           ]
         },
         {
-          "name": "13. Request Password Reset",
+          "name": "12. Request Password Reset",
           "request": {
             "method": "POST",
             "header": [
@@ -965,7 +865,7 @@
           ]
         },
         {
-          "name": "14. Reset Password (use token from email)",
+          "name": "13. Reset Password (use token from email)",
           "request": {
             "method": "POST",
             "header": [
@@ -1038,7 +938,7 @@
           ]
         },
         {
-          "name": "15. Logout (Revoke Token)",
+          "name": "14. Logout (Revoke Token)",
           "request": {
             "method": "POST",
             "header": [

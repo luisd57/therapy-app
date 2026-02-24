@@ -204,22 +204,32 @@ final class TherapistAppointmentController extends AbstractController
 
         if (empty($data['full_name'])) {
             $errors['full_name'] = 'Full name is required';
+        } elseif (mb_strlen($data['full_name']) > 255) {
+            $errors['full_name'] = 'Full name must not exceed 255 characters';
         }
 
         if (empty($data['phone'])) {
             $errors['phone'] = 'Phone is required';
+        } elseif (mb_strlen($data['phone']) > 50) {
+            $errors['phone'] = 'Phone must not exceed 50 characters';
         }
 
         if (empty($data['email'])) {
             $errors['email'] = 'Email is required';
+        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Invalid email format';
         }
 
         if (empty($data['city'])) {
             $errors['city'] = 'City is required';
+        } elseif (mb_strlen($data['city']) > 255) {
+            $errors['city'] = 'City must not exceed 255 characters';
         }
 
         if (empty($data['country'])) {
             $errors['country'] = 'Country is required';
+        } elseif (mb_strlen($data['country']) > 255) {
+            $errors['country'] = 'Country must not exceed 255 characters';
         }
 
         return $errors;

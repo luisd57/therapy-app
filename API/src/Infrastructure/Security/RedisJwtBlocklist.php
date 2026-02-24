@@ -28,6 +28,6 @@ final class RedisJwtBlocklist implements JwtBlocklistInterface
 
     private function cacheKey(string $jti): string
     {
-        return 'jwt_revoked_' . $jti;
+        return 'therapy_jwt_revoked_' . $jti;
     }
 }

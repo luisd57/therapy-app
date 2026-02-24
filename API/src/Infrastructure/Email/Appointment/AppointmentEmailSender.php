@@ -68,6 +68,8 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         string $time,
         string $modality,
     ): string {
+        $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -130,6 +132,8 @@ TEXT;
         string $time,
         string $modality,
     ): string {
+        $requesterName = htmlspecialchars($requesterName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -204,6 +208,8 @@ HTML;
         string $time,
         string $modality,
     ): string {
+        $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -266,6 +272,8 @@ TEXT;
         string $time,
         string $modality,
     ): string {
+        $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html>

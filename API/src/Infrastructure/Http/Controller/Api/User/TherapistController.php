@@ -101,6 +101,8 @@ final class TherapistController extends AbstractController
 
         if (empty($data['patient_name'])) {
             $errors['patient_name'] = 'Patient name is required';
+        } elseif (mb_strlen($data['patient_name']) > 255) {
+            $errors['patient_name'] = 'Patient name must not exceed 255 characters';
         }
 
         return $errors;

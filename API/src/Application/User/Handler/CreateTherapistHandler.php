@@ -32,7 +32,7 @@ final readonly class CreateTherapistHandler
         $email = Email::fromString($dto->email);
 
         if ($this->userRepository->existsByEmail($email)) {
-            throw new UserAlreadyExistsException($dto->email);
+            throw new UserAlreadyExistsException();
         }
 
         $hashedPassword = $this->passwordHasher->hash($dto->password);

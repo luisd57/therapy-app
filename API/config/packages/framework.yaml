@@ -1,7 +1,9 @@
 # config/packages/framework.yaml
 framework:
     secret: '%env(APP_SECRET)%'
-    
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-proto']
+
     http_method_override: false
     handle_all_throwables: true
     
