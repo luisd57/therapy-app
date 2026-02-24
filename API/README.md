@@ -103,6 +103,40 @@ Domain entities use `reconstitute()` static factory methods to create objects in
 
 `reconstitute()` must **never** be called in handlers or controllers. If you see it outside of repository implementations or test helpers, it's a code smell.
 
+## Security Hardening
+
+### Authentication & Secrets
+
+- JWT with `jti`-based revocation via Redis blocklist (`POST /api/auth/logout`)
+- Therapist creation is CLI-only (`app:create-therapist`) — no HTTP endpoint exposed
+- Passwords hashed with bcrypt (cost 12), policy enforced at 8–72 characters in both HTTP and CLI flows
+- Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` — must be replaced before deploying
+
+### Input Validation & Output Encoding
+
+- Max-length validation on all user-supplied text fields (`full_name` 255, `phone` 50, `city` 255, `country` 255)
+- Email format validation on therapist-created appointments
+- HTML output escaping (`htmlspecialchars`) applied in all email templates to prevent XSS
+- Domain exceptions use static messages — no user input is reflected in error responses
+
+### Rate Limiting
+
+- **Login**: 5 requests/min per IP
+- **Public endpoints**: 10 requests/min per IP — covers forgot-password, lock-slot, request-appointment, validate-invitation, register, reset-password
+- Client IP detection respects `TRUSTED_PROXIES` for correct behavior behind reverse proxies
+
+### Infrastructure
+
+- **Nginx**: `server_tokens off`, `client_max_body_size 2M`, hidden file access blocked (`location ~ /\.`)
+- **PHP**: `expose_php = Off`, `display_errors = Off`, upload limits set to 2M
+- **Redis**: password-protected (`--requirepass`), bound to `127.0.0.1`
+- **PostgreSQL**: bound to `127.0.0.1`
+- **Security headers** (via `SecurityHeadersSubscriber`): HSTS, CSP (`default-src 'none'; frame-ancestors 'none'`), X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+
+### Slot Lock Validation
+
+- Lock tokens are verified against the submitted time slot and modality, preventing reuse of a lock acquired for a different slot
+
 ## Prerequisites
 
 - Docker Desktop for Windows
