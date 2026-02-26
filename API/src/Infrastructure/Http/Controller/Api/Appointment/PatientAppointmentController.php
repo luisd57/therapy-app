@@ -10,18 +10,28 @@ use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\User\Exception\IncompleteProfileException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ValidationHelperTrait;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/patient/appointments')]
 #[IsGranted('ROLE_PATIENT')]
 final class PatientAppointmentController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidationHelperTrait;
+    use ValidatesRequestTrait;
+
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+    ) {}
 
     #[Route('', name: 'api_patient_request_appointment', methods: ['POST'])]
     public function requestAppointment(
@@ -71,24 +81,25 @@ final class PatientAppointmentController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['slot_start_time'])) {
-            $errors['slot_start_time'] = 'Slot start time is required';
+        $slotViolations = $this->validator->validate($data['slot_start_time'] ?? '', [
+            new Assert\NotBlank(message: 'Slot start time is required'),
+        ]);
+
+        if (count($slotViolations) > 0) {
+            $errors['slot_start_time'] = $slotViolations[0]->getMessage();
         } elseif (!$this->isValidDateTime($data['slot_start_time'])) {
             $errors['slot_start_time'] = 'Slot start time must be a valid ISO-8601 datetime';
         }
 
-        if (empty($data['modality'])) {
-            $errors['modality'] = 'Modality is required';
-        } elseif (!in_array($data['modality'], ['ONLINE', 'IN_PERSON'], true)) {
-            $errors['modality'] = 'Modality must be ONLINE or IN_PERSON';
+        $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
+            new Assert\NotBlank(message: 'Modality is required'),
+            new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
+        ]);
+
+        if (count($modalityViolations) > 0) {
+            $errors['modality'] = $modalityViolations[0]->getMessage();
         }
 
         return $errors;
-    }
-
-    private function isValidDateTime(string $dateTime): bool
-    {
-        return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s', $dateTime) !== false
-            || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $dateTime) !== false;
     }
 }

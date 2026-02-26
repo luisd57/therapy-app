@@ -13,15 +13,25 @@ use App\Application\Appointment\Handler\RequestAppointmentHandler;
 use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ValidationHelperTrait;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/appointments')]
 final class PublicAppointmentController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidationHelperTrait;
+    use ValidatesRequestTrait;
+
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+    ) {}
 
     #[Route('/available-slots', name: 'api_available_slots', methods: ['GET'])]
     public function availableSlots(Request $request, GetAvailableSlotsHandler $handler): JsonResponse
@@ -111,14 +121,22 @@ final class PublicAppointmentController extends AbstractController
     {
         $errors = [];
 
-        if ($from === '') {
-            $errors['from'] = 'From date is required';
+        $fromViolations = $this->validator->validate($from, [
+            new Assert\NotBlank(message: 'From date is required'),
+        ]);
+
+        if (count($fromViolations) > 0) {
+            $errors['from'] = $fromViolations[0]->getMessage();
         } elseif (!$this->isValidDate($from)) {
             $errors['from'] = 'From date must be a valid date (YYYY-MM-DD)';
         }
 
-        if ($to === '') {
-            $errors['to'] = 'To date is required';
+        $toViolations = $this->validator->validate($to, [
+            new Assert\NotBlank(message: 'To date is required'),
+        ]);
+
+        if (count($toViolations) > 0) {
+            $errors['to'] = $toViolations[0]->getMessage();
         } elseif (!$this->isValidDate($to)) {
             $errors['to'] = 'To date must be a valid date (YYYY-MM-DD)';
         }
@@ -137,16 +155,23 @@ final class PublicAppointmentController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['slot_start_time'])) {
-            $errors['slot_start_time'] = 'Slot start time is required';
+        $slotViolations = $this->validator->validate($data['slot_start_time'] ?? '', [
+            new Assert\NotBlank(message: 'Slot start time is required'),
+        ]);
+
+        if (count($slotViolations) > 0) {
+            $errors['slot_start_time'] = $slotViolations[0]->getMessage();
         } elseif (!$this->isValidDateTime($data['slot_start_time'])) {
             $errors['slot_start_time'] = 'Slot start time must be a valid ISO-8601 datetime';
         }
 
-        if (empty($data['modality'])) {
-            $errors['modality'] = 'Modality is required';
-        } elseif (!in_array($data['modality'], ['ONLINE', 'IN_PERSON'], true)) {
-            $errors['modality'] = 'Modality must be ONLINE or IN_PERSON';
+        $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
+            new Assert\NotBlank(message: 'Modality is required'),
+            new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
+        ]);
+
+        if (count($modalityViolations) > 0) {
+            $errors['modality'] = $modalityViolations[0]->getMessage();
         }
 
         return $errors;
@@ -159,61 +184,70 @@ final class PublicAppointmentController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['slot_start_time'])) {
-            $errors['slot_start_time'] = 'Slot start time is required';
+        $slotViolations = $this->validator->validate($data['slot_start_time'] ?? '', [
+            new Assert\NotBlank(message: 'Slot start time is required'),
+        ]);
+
+        if (count($slotViolations) > 0) {
+            $errors['slot_start_time'] = $slotViolations[0]->getMessage();
         } elseif (!$this->isValidDateTime($data['slot_start_time'])) {
             $errors['slot_start_time'] = 'Slot start time must be a valid ISO-8601 datetime';
         }
 
-        if (empty($data['modality'])) {
-            $errors['modality'] = 'Modality is required';
-        } elseif (!in_array($data['modality'], ['ONLINE', 'IN_PERSON'], true)) {
-            $errors['modality'] = 'Modality must be ONLINE or IN_PERSON';
+        $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
+            new Assert\NotBlank(message: 'Modality is required'),
+            new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
+        ]);
+
+        if (count($modalityViolations) > 0) {
+            $errors['modality'] = $modalityViolations[0]->getMessage();
         }
 
-        if (empty($data['full_name'])) {
-            $errors['full_name'] = 'Full name is required';
-        } elseif (mb_strlen($data['full_name']) > 255) {
-            $errors['full_name'] = 'Full name must not exceed 255 characters';
+        $nameViolations = $this->validator->validate($data['full_name'] ?? '', [
+            new Assert\NotBlank(message: 'Full name is required'),
+            new Assert\Length(max: 255, maxMessage: 'Full name must not exceed 255 characters'),
+        ]);
+
+        if (count($nameViolations) > 0) {
+            $errors['full_name'] = $nameViolations[0]->getMessage();
         }
 
-        if (empty($data['phone'])) {
-            $errors['phone'] = 'Phone number is required';
-        } elseif (mb_strlen($data['phone']) > 50) {
-            $errors['phone'] = 'Phone number must not exceed 50 characters';
+        $phoneViolations = $this->validator->validate($data['phone'] ?? '', [
+            new Assert\NotBlank(message: 'Phone number is required'),
+            new Assert\Length(max: 50, maxMessage: 'Phone number must not exceed 50 characters'),
+        ]);
+
+        if (count($phoneViolations) > 0) {
+            $errors['phone'] = $phoneViolations[0]->getMessage();
         }
 
-        if (empty($data['email'])) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email format';
+        $emailViolations = $this->validator->validate($data['email'] ?? '', [
+            new Assert\NotBlank(message: 'Email is required'),
+            new Assert\Email(message: 'Invalid email format'),
+        ]);
+
+        if (count($emailViolations) > 0) {
+            $errors['email'] = $emailViolations[0]->getMessage();
         }
 
-        if (empty($data['city'])) {
-            $errors['city'] = 'City is required';
-        } elseif (mb_strlen($data['city']) > 255) {
-            $errors['city'] = 'City must not exceed 255 characters';
+        $cityViolations = $this->validator->validate($data['city'] ?? '', [
+            new Assert\NotBlank(message: 'City is required'),
+            new Assert\Length(max: 255, maxMessage: 'City must not exceed 255 characters'),
+        ]);
+
+        if (count($cityViolations) > 0) {
+            $errors['city'] = $cityViolations[0]->getMessage();
         }
 
-        if (empty($data['country'])) {
-            $errors['country'] = 'Country is required';
-        } elseif (mb_strlen($data['country']) > 255) {
-            $errors['country'] = 'Country must not exceed 255 characters';
+        $countryViolations = $this->validator->validate($data['country'] ?? '', [
+            new Assert\NotBlank(message: 'Country is required'),
+            new Assert\Length(max: 255, maxMessage: 'Country must not exceed 255 characters'),
+        ]);
+
+        if (count($countryViolations) > 0) {
+            $errors['country'] = $countryViolations[0]->getMessage();
         }
 
         return $errors;
-    }
-
-    private function isValidDate(string $date): bool
-    {
-        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        return $parsed !== false && $parsed->format('Y-m-d') === $date;
-    }
-
-    private function isValidDateTime(string $dateTime): bool
-    {
-        return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s', $dateTime) !== false
-            || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $dateTime) !== false;
     }
 }

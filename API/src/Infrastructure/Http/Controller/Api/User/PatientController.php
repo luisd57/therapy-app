@@ -9,18 +9,26 @@ use App\Application\User\Handler\GetUserHandler;
 use App\Application\User\Handler\UpdatePatientProfileHandler;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/patient')]
 #[IsGranted('ROLE_PATIENT')]
 final class PatientController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidatesRequestTrait;
+
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+    ) {}
 
     #[Route('/me', name: 'api_patient_me', methods: ['GET'])]
     public function me(GetUserHandler $handler): JsonResponse
@@ -29,7 +37,7 @@ final class PatientController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $user = ($handler)($currentUser->getId());
+            $user = $handler->__invoke($currentUser->getId());
 
             return $this->success($user->toArray());
         } catch (UserNotFoundException $exception) {
@@ -51,7 +59,7 @@ final class PatientController extends AbstractController
         $currentUser = $this->getUser();
 
         try {
-            $user = ($handler)(new UpdatePatientProfileInputDTO(
+            $user = $handler->__invoke(new UpdatePatientProfileInputDTO(
                 userId: $currentUser->getId(),
                 phone: $data['phone'] ?? null,
                 street: $data['address']['street'] ?? null,
@@ -82,8 +90,17 @@ final class PatientController extends AbstractController
         // Phone validation (if provided)
         if (isset($data['phone']) && !empty($data['phone'])) {
             $phone = preg_replace('/[^0-9+]/', '', $data['phone']);
-            if (strlen($phone) < 7 || strlen($phone) > 20) {
-                $errors['phone'] = 'Phone number must be between 7 and 20 digits';
+            $phoneViolations = $this->validator->validate($phone, [
+                new Assert\Length(
+                    min: 7,
+                    max: 20,
+                    minMessage: 'Phone number must be between 7 and 20 digits',
+                    maxMessage: 'Phone number must be between 7 and 20 digits',
+                ),
+            ]);
+
+            if (count($phoneViolations) > 0) {
+                $errors['phone'] = $phoneViolations[0]->getMessage();
             }
         }
 

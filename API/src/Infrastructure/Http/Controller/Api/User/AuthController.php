@@ -20,7 +20,8 @@ use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotActiveException;
 use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
-use App\Infrastructure\Http\Validation\PasswordValidator;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
+use App\Infrastructure\Http\Validation\PasswordStrength;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class AuthController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidatesRequestTrait;
 
     public function __construct(
         private readonly ValidatorInterface $validator,
@@ -57,10 +59,12 @@ final class AuthController extends AbstractController
                 'token' => $result->token,
                 'user' => $result->user->toArray(),
             ]);
-        } catch (InvalidCredentialsException) {
-            return $this->error('Invalid email or password', 'INVALID_CREDENTIALS', 401);
-        } catch (UserNotActiveException) {
-            return $this->error('Account is not active', 'USER_NOT_ACTIVE', 401);
+        } catch (InvalidCredentialsException $exception) {
+            // Intentionally hardcoded: don't leak whether email or password was wrong
+            return $this->error('Invalid email or password', $exception->getErrorCode(), 401);
+        } catch (UserNotActiveException $exception) {
+            // Intentionally hardcoded: consistent generic message for security
+            return $this->error('Account is not active', $exception->getErrorCode(), 401);
         }
     }
 
@@ -84,10 +88,12 @@ final class AuthController extends AbstractController
                 'token' => $result->token,
                 'user' => $result->user->toArray(),
             ]);
-        } catch (InvalidCredentialsException) {
-            return $this->error('Invalid email or password', 'INVALID_CREDENTIALS', 401);
-        } catch (UserNotActiveException) {
-            return $this->error('Account is not active', 'USER_NOT_ACTIVE', 401);
+        } catch (InvalidCredentialsException $exception) {
+            // Intentionally hardcoded: don't leak whether email or password was wrong
+            return $this->error('Invalid email or password', $exception->getErrorCode(), 401);
+        } catch (UserNotActiveException $exception) {
+            // Intentionally hardcoded: consistent generic message for security
+            return $this->error('Account is not active', $exception->getErrorCode(), 401);
         }
     }
 
@@ -146,6 +152,7 @@ final class AuthController extends AbstractController
             foreach ($violations as $violation) {
                 $errors['email'] = $violation->getMessage();
             }
+
             return $this->validationError($errors);
         }
 
@@ -197,8 +204,12 @@ final class AuthController extends AbstractController
             $errors['email'] = $emailViolations[0]->getMessage();
         }
 
-        if (empty($data['password'])) {
-            $errors['password'] = 'Password is required';
+        $passwordViolations = $this->validator->validate($data['password'] ?? '', [
+            new Assert\NotBlank(message: 'Password is required'),
+        ]);
+
+        if (count($passwordViolations) > 0) {
+            $errors['password'] = $passwordViolations[0]->getMessage();
         }
 
         return $errors;
@@ -211,17 +222,21 @@ final class AuthController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['token'])) {
-            $errors['token'] = 'Invitation token is required';
+        $tokenViolations = $this->validator->validate($data['token'] ?? '', [
+            new Assert\NotBlank(message: 'Invitation token is required'),
+        ]);
+
+        if (count($tokenViolations) > 0) {
+            $errors['token'] = $tokenViolations[0]->getMessage();
         }
 
-        if (empty($data['password'])) {
-            $errors['password'] = 'Password is required';
-        } else {
-            $passwordError = PasswordValidator::validate($data['password']);
-            if ($passwordError !== null) {
-                $errors['password'] = $passwordError;
-            }
+        $passwordViolations = $this->validator->validate($data['password'] ?? '', [
+            new Assert\NotBlank(message: 'Password is required'),
+            new PasswordStrength(),
+        ]);
+
+        if (count($passwordViolations) > 0) {
+            $errors['password'] = $passwordViolations[0]->getMessage();
         }
 
         if (($data['password'] ?? '') !== ($data['password_confirmation'] ?? '')) {
@@ -238,17 +253,21 @@ final class AuthController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['token'])) {
-            $errors['token'] = 'Reset token is required';
+        $tokenViolations = $this->validator->validate($data['token'] ?? '', [
+            new Assert\NotBlank(message: 'Reset token is required'),
+        ]);
+
+        if (count($tokenViolations) > 0) {
+            $errors['token'] = $tokenViolations[0]->getMessage();
         }
 
-        if (empty($data['password'])) {
-            $errors['password'] = 'Password is required';
-        } else {
-            $passwordError = PasswordValidator::validate($data['password']);
-            if ($passwordError !== null) {
-                $errors['password'] = $passwordError;
-            }
+        $passwordViolations = $this->validator->validate($data['password'] ?? '', [
+            new Assert\NotBlank(message: 'Password is required'),
+            new PasswordStrength(),
+        ]);
+
+        if (count($passwordViolations) > 0) {
+            $errors['password'] = $passwordViolations[0]->getMessage();
         }
 
         return $errors;

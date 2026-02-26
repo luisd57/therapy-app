@@ -19,7 +19,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:create-therapist',
     description: 'Create the initial therapist account',
 )]
-final class CreateTherapistConsoleCommand extends Command
+final class CreateTherapistCommand extends Command
 {
     public function __construct(
         private readonly CreateTherapistHandler $handler,

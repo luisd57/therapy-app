@@ -27,6 +27,8 @@ final class HealthController extends AbstractController
             // Database unreachable
         }
 
+        // Intentionally bypasses ApiResponseTrait envelope for compatibility with
+        // health check probes and load balancers that expect a simple status response.
         return new JsonResponse([
             'status' => $databaseOk ? 'healthy' : 'unhealthy',
             'timestamp' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),

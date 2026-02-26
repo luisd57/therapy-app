@@ -19,18 +19,28 @@ use App\Application\Appointment\Handler\SetTherapistScheduleHandler;
 use App\Application\Appointment\Handler\UpdateTherapistScheduleHandler;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ValidationHelperTrait;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/therapist/schedule')]
 #[IsGranted('ROLE_THERAPIST')]
 final class TherapistScheduleController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidationHelperTrait;
+    use ValidatesRequestTrait;
+
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+    ) {}
 
     #[Route('', name: 'api_therapist_schedule_list', methods: ['GET'])]
     public function listSchedules(GetTherapistScheduleHandler $handler): JsonResponse
@@ -107,7 +117,9 @@ final class TherapistScheduleController extends AbstractController
                 'message' => 'Schedule block updated successfully.',
             ]);
         } catch (ScheduleConflictException $exception) {
-            return $this->error($exception->getMessage(), $exception->getErrorCode(), $this->isNotFound($exception) ? 404 : 409);
+            $status = str_contains($exception->getErrorCode(), 'NOT_FOUND') ? 404 : 409;
+
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), $status);
         }
     }
 
@@ -209,20 +221,32 @@ final class TherapistScheduleController extends AbstractController
 
         if (!isset($data['day_of_week'])) {
             $errors['day_of_week'] = 'Day of week is required';
-        } elseif (!is_numeric($data['day_of_week']) || (int) $data['day_of_week'] < 1 || (int) $data['day_of_week'] > 7) {
-            $errors['day_of_week'] = 'Day of week must be between 1 (Monday) and 7 (Sunday)';
+        } else {
+            $dayViolations = $this->validator->validate($data['day_of_week'], [
+                new Assert\Range(min: 1, max: 7, notInRangeMessage: 'Day of week must be between 1 (Monday) and 7 (Sunday)'),
+            ]);
+
+            if (!is_numeric($data['day_of_week']) || count($dayViolations) > 0) {
+                $errors['day_of_week'] = 'Day of week must be between 1 (Monday) and 7 (Sunday)';
+            }
         }
 
-        if (empty($data['start_time'])) {
-            $errors['start_time'] = 'Start time is required';
-        } elseif (!$this->isValidTimeFormat($data['start_time'])) {
-            $errors['start_time'] = 'Start time must be in HH:MM format';
+        $startViolations = $this->validator->validate($data['start_time'] ?? '', [
+            new Assert\NotBlank(message: 'Start time is required'),
+            new Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'Start time must be in HH:MM format'),
+        ]);
+
+        if (count($startViolations) > 0) {
+            $errors['start_time'] = $startViolations[0]->getMessage();
         }
 
-        if (empty($data['end_time'])) {
-            $errors['end_time'] = 'End time is required';
-        } elseif (!$this->isValidTimeFormat($data['end_time'])) {
-            $errors['end_time'] = 'End time must be in HH:MM format';
+        $endViolations = $this->validator->validate($data['end_time'] ?? '', [
+            new Assert\NotBlank(message: 'End time is required'),
+            new Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'End time must be in HH:MM format'),
+        ]);
+
+        if (count($endViolations) > 0) {
+            $errors['end_time'] = $endViolations[0]->getMessage();
         }
 
         if (empty($errors['start_time']) && empty($errors['end_time']) && ($data['start_time'] ?? '') >= ($data['end_time'] ?? '')) {
@@ -239,14 +263,22 @@ final class TherapistScheduleController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['start_date_time'])) {
-            $errors['start_date_time'] = 'Start date/time is required';
+        $startViolations = $this->validator->validate($data['start_date_time'] ?? '', [
+            new Assert\NotBlank(message: 'Start date/time is required'),
+        ]);
+
+        if (count($startViolations) > 0) {
+            $errors['start_date_time'] = $startViolations[0]->getMessage();
         } elseif (!$this->isValidDateTime($data['start_date_time'])) {
             $errors['start_date_time'] = 'Start date/time must be a valid ISO-8601 datetime';
         }
 
-        if (empty($data['end_date_time'])) {
-            $errors['end_date_time'] = 'End date/time is required';
+        $endViolations = $this->validator->validate($data['end_date_time'] ?? '', [
+            new Assert\NotBlank(message: 'End date/time is required'),
+        ]);
+
+        if (count($endViolations) > 0) {
+            $errors['end_date_time'] = $endViolations[0]->getMessage();
         } elseif (!$this->isValidDateTime($data['end_date_time'])) {
             $errors['end_date_time'] = 'End date/time must be a valid ISO-8601 datetime';
         }
@@ -265,14 +297,22 @@ final class TherapistScheduleController extends AbstractController
     {
         $errors = [];
 
-        if ($from === '') {
-            $errors['from'] = 'From date is required';
+        $fromViolations = $this->validator->validate($from, [
+            new Assert\NotBlank(message: 'From date is required'),
+        ]);
+
+        if (count($fromViolations) > 0) {
+            $errors['from'] = $fromViolations[0]->getMessage();
         } elseif (!$this->isValidDate($from)) {
             $errors['from'] = 'From date must be a valid date (YYYY-MM-DD)';
         }
 
-        if ($to === '') {
-            $errors['to'] = 'To date is required';
+        $toViolations = $this->validator->validate($to, [
+            new Assert\NotBlank(message: 'To date is required'),
+        ]);
+
+        if (count($toViolations) > 0) {
+            $errors['to'] = $toViolations[0]->getMessage();
         } elseif (!$this->isValidDate($to)) {
             $errors['to'] = 'To date must be a valid date (YYYY-MM-DD)';
         }
@@ -282,28 +322,5 @@ final class TherapistScheduleController extends AbstractController
         }
 
         return $errors;
-    }
-
-    private function isValidTimeFormat(string $time): bool
-    {
-        return (bool) preg_match('/^\d{2}:\d{2}$/', $time);
-    }
-
-    private function isValidDate(string $date): bool
-    {
-        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
-
-        return $parsed !== false && $parsed->format('Y-m-d') === $date;
-    }
-
-    private function isValidDateTime(string $dateTime): bool
-    {
-        return \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s', $dateTime) !== false
-            || \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $dateTime) !== false;
-    }
-
-    private function isNotFound(ScheduleConflictException $scheduleConflictException): bool
-    {
-        return str_contains($scheduleConflictException->getMessage(), 'not found');
     }
 }

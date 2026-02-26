@@ -12,19 +12,28 @@ use App\Application\User\Handler\InvitePatientHandler;
 use App\Application\User\Handler\ListInvitationsHandler;
 use App\Application\User\Handler\ListPatientsHandler;
 use App\Domain\User\Exception\UserAlreadyExistsException;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/therapist')]
 #[IsGranted('ROLE_THERAPIST')]
 final class TherapistController extends AbstractController
 {
     use ApiResponseTrait;
+    use ValidatesRequestTrait;
+
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+    ) {}
 
     #[Route('/me', name: 'api_therapist_me', methods: ['GET'])]
     public function me(GetUserHandler $handler): JsonResponse
@@ -32,9 +41,13 @@ final class TherapistController extends AbstractController
         /** @var UserEntity $currentUser */
         $currentUser = $this->getUser();
 
-        $user = $handler->__invoke($currentUser->getId());
+        try {
+            $user = $handler->__invoke($currentUser->getId());
 
-        return $this->success($user->toArray());
+            return $this->success($user->toArray());
+        } catch (UserNotFoundException $exception) {
+            return $this->notFound($exception->getMessage());
+        }
     }
 
     #[Route('/patients', name: 'api_therapist_list_patients', methods: ['GET'])]
@@ -102,16 +115,22 @@ final class TherapistController extends AbstractController
     {
         $errors = [];
 
-        if (empty($data['email'])) {
-            $errors['email'] = 'Email is required';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Invalid email format';
+        $emailViolations = $this->validator->validate($data['email'] ?? '', [
+            new Assert\NotBlank(message: 'Email is required'),
+            new Assert\Email(message: 'Invalid email format'),
+        ]);
+
+        if (count($emailViolations) > 0) {
+            $errors['email'] = $emailViolations[0]->getMessage();
         }
 
-        if (empty($data['patient_name'])) {
-            $errors['patient_name'] = 'Patient name is required';
-        } elseif (mb_strlen($data['patient_name']) > 255) {
-            $errors['patient_name'] = 'Patient name must not exceed 255 characters';
+        $nameViolations = $this->validator->validate($data['patient_name'] ?? '', [
+            new Assert\NotBlank(message: 'Patient name is required'),
+            new Assert\Length(max: 255, maxMessage: 'Patient name must not exceed 255 characters'),
+        ]);
+
+        if (count($nameViolations) > 0) {
+            $errors['patient_name'] = $nameViolations[0]->getMessage();
         }
 
         return $errors;

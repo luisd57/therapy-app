@@ -28,7 +28,7 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
   - Slot locking with TTL to prevent double-requests
 
 - **Appointment Requests**
-  - Intake form submission (name, ID, phone, email, location)
+  - Intake form submission (full name, phone, email, city, country)
   - Automatic acknowledgment email to requester
   - Instant alert email to therapist
 
@@ -216,10 +216,15 @@ Open your browser and navigate to:
 | POST | `/api/auth/register` | Register patient (activate) |
 | POST | `/api/auth/password/forgot` | Request password reset |
 | POST | `/api/auth/password/reset` | Reset password |
-| POST | `/api/auth/logout` | Revoke JWT token (requires auth) |
 | GET | `/api/appointments/available-slots` | Browse available time slots |
 | POST | `/api/appointments/lock-slot` | Temporarily hold a slot |
 | POST | `/api/appointments/request` | Submit appointment request |
+
+### Authenticated Endpoints (Any Role)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/logout` | Revoke JWT token |
 
 ### Protected Endpoints (Therapist)
 
@@ -250,6 +255,7 @@ Open your browser and navigate to:
 |--------|----------|-------------|
 | GET | `/api/patient/me` | Get patient profile |
 | PUT | `/api/patient/profile` | Update profile |
+| POST | `/api/patient/appointments` | Request appointment (self-booking) |
 
 ## Testing with Postman
 
@@ -662,22 +668,6 @@ docker-compose exec php php bin/console app:send-daily-agenda
 docker-compose exec php php bin/console app:send-daily-agenda 2026-06-01
 ```
 
-## Development Commands
-
-```powershell
-# Using run.bat (Windows)
-run.bat up              # Start containers
-run.bat down            # Stop containers
-run.bat shell           # Enter PHP container
-run.bat db-migrate      # Run migrations
-run.bat cache-clear     # Clear Symfony cache
-run.bat sf cache:clear  # Run any Symfony command
-
-# Using docker-compose directly
-docker-compose logs -f php    # View PHP container logs
-docker-compose restart        # Restart all containers
-```
-
 ## Troubleshooting
 
 ### "Connection refused" errors
@@ -748,7 +738,6 @@ therapy-app/
 │   └── Infrastructure/       # External concerns
 ├── docker-compose.yml         # Docker Compose config
 ├── Makefile                   # Make commands
-└── run.bat                    # Windows batch commands
 ```
 
 ## License
