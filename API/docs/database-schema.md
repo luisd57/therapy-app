@@ -167,7 +167,7 @@ The core business entity. Tracks appointment requests from submission through co
 
 - **Why store contact info directly instead of referencing `users`?** Public appointment requests come from unauthenticated visitors who may not have an account. The contact fields are denormalized intentionally — they capture the requester's info at submission time, independent of any user record.
 - **`patient_id` is nullable**: NULL for public requests. Can be linked to a `users` record later if the requester creates an account or is matched to an existing patient.
-- **`idx_appointment_blocking` composite index**: Optimized for the most frequent query — `findBlockingByDateRange` — which filters `WHERE status IN ('REQUESTED','CONFIRMED') AND start_time < :to AND end_time > :from`. This query runs on every available-slots request and every appointment submission.
+- **`idx_appointment_blocking` composite index**: Optimized for availability queries. The public slot browser uses `findConfirmedByDateRange` (only CONFIRMED appointments block visible slots). The booking service also uses `findConfirmedByDateRange` to allow multiple REQUESTED appointments for the same slot. The index covers both query patterns efficiently.
 
 **Status lifecycle**:
 
@@ -182,14 +182,14 @@ CANCELLED      CANCELLED
 - `CONFIRMED`: Therapist manually approves after verifying payment.
 - `COMPLETED`: Session took place.
 - `CANCELLED`: Rejected or cancelled at any pre-completion stage.
-- Both `REQUESTED` and `CONFIRMED` **block** a slot (prevent double-booking).
+- Only `CONFIRMED` appointments **block** a slot (hide it from the public slot browser). Multiple `REQUESTED` appointments can coexist on the same slot — the therapist resolves conflicts manually.
 - `COMPLETED` and `CANCELLED` are terminal states — no further transitions.
 
 ---
 
 ### `slot_locks`
 
-Ephemeral records for temporary slot reservation during the appointment request flow. See [Slot Lock Token Flow](../Product-Requirements.md#slot-lock-token-flow) for the full explanation.
+Ephemeral records for optional concurrency hints during the appointment request flow. Locks prevent two visitors from holding simultaneous lock tokens on the same slot, but do **not** hide slots from the browser. See [Slot Lock Token Flow](../Product-Requirements.md#slot-lock-token-flow) for the full explanation.
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
@@ -206,7 +206,7 @@ Ephemeral records for temporary slot reservation during the appointment request 
 **Design notes**:
 
 - **No FK to users**: Locks are created by unauthenticated visitors. There's no user to reference.
-- **TTL-based expiry**: The `expires_at` column is checked at query time (`WHERE expires_at > NOW()`). Expired locks are invisible to the availability computer but remain in the DB until the cleanup command runs.
+- **TTL-based expiry**: The `expires_at` column is checked at query time (`WHERE expires_at > NOW()`). Expired locks remain in the DB until the cleanup command runs.
 - **Cleanup**: `php bin/console app:cleanup-slot-locks` deletes all rows where `expires_at < NOW()`. Should be scheduled every ~15 minutes.
 - **One active lock per slot**: `findActiveByTimeSlot` returns the first non-expired lock overlapping a time range. If one exists, the lock-slot endpoint returns 409.
 

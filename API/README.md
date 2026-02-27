@@ -25,7 +25,7 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
 - **Availability Interface**
   - Real-time available slots computed from therapist schedule
   - Modality filtering (Online / In-Person)
-  - Slot locking with TTL to prevent double-requests
+  - Optional slot locking with TTL (concurrency hint, does not hide slots)
 
 - **Appointment Requests**
   - Intake form submission (full name, phone, email, city, country)
@@ -136,6 +136,7 @@ Domain entities use `reconstitute()` static factory methods to create objects in
 ### Slot Lock Validation
 
 - Lock tokens are verified against the submitted time slot and modality, preventing reuse of a lock acquired for a different slot
+- Locks are an optional concurrency hint — they do **not** hide slots from the public browser. Only CONFIRMED appointments and schedule exceptions affect slot visibility
 
 ## Prerequisites (this section shouldn't be here)
 
