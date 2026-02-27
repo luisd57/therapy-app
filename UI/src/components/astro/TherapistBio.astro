@@ -1,0 +1,28 @@
+---
+import { getEntry } from 'astro:content';
+
+const entry = await getEntry('site', 'therapist');
+const { Content } = await entry.render();
+const { name, credentials, photo } = entry.data;
+---
+
+<section class="py-16 px-4">
+  <div class="mx-auto max-w-3xl text-center">
+    {
+      photo && (
+        <img
+          src={photo}
+          alt={name}
+          class="mx-auto mb-6 h-40 w-40 rounded-full object-cover shadow-md"
+        />
+      )
+    }
+    <h1 class="text-4xl font-bold text-neutral-900">{name}</h1>
+    {credentials && (
+      <p class="mt-2 text-lg text-brand-600 font-medium">{credentials}</p>
+    )}
+    <div class="mt-6 text-lg leading-relaxed text-neutral-700 prose prose-lg mx-auto">
+      <Content />
+    </div>
+  </div>
+</section>

@@ -9,6 +9,7 @@ use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\Appointment\Entity\SlotLockEntity;
 use App\Infrastructure\Persistence\Doctrine\Appointment\Mapper\SlotLockMapper;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
@@ -34,6 +35,33 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @return ArrayCollection<int, SlotLock>
+     */
+    public function findActiveByDateRange(
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): ArrayCollection {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('l')
+            ->from(SlotLockEntity::class, 'l')
+            ->where('l.startTime < :to')
+            ->andWhere('l.endTime > :from')
+            ->andWhere('l.expiresAt > :now')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->setParameter('now', new DateTimeImmutable());
+
+        $entities = $qb->getQuery()->getResult();
+
+        $locks = array_map(
+            fn(SlotLockEntity $entity) => SlotLockMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($locks);
     }
 
     public function findActiveByTimeSlot(

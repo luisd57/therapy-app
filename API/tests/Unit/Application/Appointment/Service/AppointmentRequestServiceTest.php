@@ -93,7 +93,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $this->appointmentRepository
-            ->method('findBlockingByDateRange')
+            ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
         $matchingSlot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
@@ -232,7 +232,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $this->appointmentRepository
-            ->method('findBlockingByDateRange')
+            ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
         $this->availabilityComputer

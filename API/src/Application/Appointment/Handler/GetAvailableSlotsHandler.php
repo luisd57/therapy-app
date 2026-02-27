@@ -16,7 +16,6 @@ use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class GetAvailableSlotsHandler
 {
@@ -49,10 +48,7 @@ final readonly class GetAvailableSlotsHandler
             $to,
         );
         $blockingAppointments = $this->appointmentRepository->findBlockingByDateRange($from, $to);
-        // Active locks are not passed here to keep the public availability endpoint
-        // showing all slots not yet booked. Lock-level filtering happens in real-time
-        // on the frontend.
-        $activeLocks = new ArrayCollection();
+        $activeLocks = $this->slotLockRepository->findActiveByDateRange($from, $to);
 
         $context = new AvailabilityContext(
             schedules: $schedules,

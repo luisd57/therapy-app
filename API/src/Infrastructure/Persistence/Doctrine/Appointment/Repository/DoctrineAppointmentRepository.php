@@ -175,6 +175,33 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     /**
      * @return ArrayCollection<int, Appointment>
      */
+    public function findConfirmedByDateRange(
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): ArrayCollection {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('a')
+            ->from(AppointmentEntity::class, 'a')
+            ->where('a.status = :status')
+            ->andWhere('a.startTime < :to')
+            ->andWhere('a.endTime > :from')
+            ->setParameter('status', AppointmentStatus::CONFIRMED->value)
+            ->setParameter('from', $from)
+            ->setParameter('to', $to);
+
+        $entities = $qb->getQuery()->getResult();
+
+        $appointments = array_map(
+            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
+            $entities,
+        );
+
+        return new ArrayCollection($appointments);
+    }
+
+    /**
+     * @return ArrayCollection<int, Appointment>
+     */
     public function findConfirmedByDate(DateTimeImmutable $date): ArrayCollection
     {
         $dayStart = $date->setTime(0, 0);

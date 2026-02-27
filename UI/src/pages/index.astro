@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TherapistBio from '../components/astro/TherapistBio.astro';
+import ServicesList from '../components/astro/ServicesList.astro';
+import SectionHeading from '../components/astro/SectionHeading.astro';
+import AppointmentFlow from '../components/svelte/AppointmentFlow.svelte';
+---
+
+<BaseLayout>
+  <main>
+    <TherapistBio />
+    <ServicesList />
+
+    <section class="py-16 px-4 bg-neutral-50">
+      <div class="mx-auto max-w-6xl">
+        <SectionHeading
+          text="Agenda tu cita"
+          subtitle="Selecciona un horario disponible para solicitar tu cita"
+        />
+        <AppointmentFlow client:visible />
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-white border-t border-neutral-100 py-8 text-center text-sm text-neutral-500">
+    <p>&copy; {new Date().getFullYear()} — Todos los derechos reservados</p>
+  </footer>
+</BaseLayout>

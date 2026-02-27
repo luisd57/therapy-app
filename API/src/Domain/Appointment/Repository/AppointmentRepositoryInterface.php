@@ -51,6 +51,17 @@ interface AppointmentRepositoryInterface
     public function countByStatus(AppointmentStatus $status): int;
 
     /**
+     * Returns only CONFIRMED appointments that overlap the given date range.
+     * Used by AppointmentRequestService to allow multiple REQUESTED appointments for the same slot.
+     *
+     * @return ArrayCollection<int, Appointment>
+     */
+    public function findConfirmedByDateRange(
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): ArrayCollection;
+
+    /**
      * Returns confirmed appointments whose start_time falls on the given date, ordered by start_time ASC.
      *
      * @return ArrayCollection<int, Appointment>

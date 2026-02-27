@@ -79,6 +79,13 @@ test-db-migrate:
 
 test-db-setup: test-db-create test-db-migrate
 
+#Scheduler
+docker-compose exec php php bin/console app (fails if blocks already exist):
+    seed-schedule — creates schedule blocks
+
+docker-compose exec php php bin/console app  (deactivates existing blocks and reseeds):
+    seed-schedule --force
+
 # Cron
 cron-logs:
 	docker-compose logs -f cron

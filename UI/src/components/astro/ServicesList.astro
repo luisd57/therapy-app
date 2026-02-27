@@ -1,0 +1,17 @@
+---
+import { getEntry } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+
+const entry = await getEntry('site', 'services');
+const { Content } = await entry.render();
+const { title } = entry.data;
+---
+
+<section class="bg-white py-16 px-4">
+  <div class="mx-auto max-w-3xl">
+    <SectionHeading text={title ?? 'Servicios'} />
+    <div class="prose prose-lg mx-auto text-neutral-700 [&_ul]:list-none [&_ul]:pl-0 [&_li]:relative [&_li]:pl-6 [&_li]:before:content-['✦'] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:text-brand-500">
+      <Content />
+    </div>
+  </div>
+</section>

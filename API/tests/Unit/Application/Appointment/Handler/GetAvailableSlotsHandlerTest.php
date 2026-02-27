@@ -88,6 +88,10 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->method('findBlockingByDateRange')
             ->willReturn(new ArrayCollection());
 
+        $this->slotLockRepository
+            ->method('findActiveByDateRange')
+            ->willReturn(new ArrayCollection());
+
         $slot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
 
         $this->availabilityComputer
@@ -127,6 +131,10 @@ final class GetAvailableSlotsHandlerTest extends TestCase
 
         $this->appointmentRepository
             ->method('findBlockingByDateRange')
+            ->willReturn(new ArrayCollection());
+
+        $this->slotLockRepository
+            ->method('findActiveByDateRange')
             ->willReturn(new ArrayCollection());
 
         $this->availabilityComputer

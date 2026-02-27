@@ -73,14 +73,10 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             $this->slotLockRepository->delete($lock);
         }
 
-        // Verify the slot is still actually available.
-        //
-        // DESIGN NOTE: Locking is optional (?lockToken). Two users CAN submit
-        // REQUESTED appointments for the same slot. This is intentional — the
-        // therapist resolves conflicts manually during confirmation. The
-        // availability check below only verifies the slot falls within a valid
-        // schedule block and is not already CONFIRMED. Multiple REQUESTED
-        // appointments for the same slot are permitted by design.
+        // Verify the slot falls within a valid schedule block and is not already CONFIRMED.
+        // Only CONFIRMED appointments block new requests — multiple REQUESTED appointments
+        // for the same slot are permitted by design. The therapist resolves conflicts
+        // manually during confirmation.
         $this->verifySlotAvailable($startTime, $appointmentModality);
 
         $patientUserId = $patientId !== null ? UserId::fromString($patientId) : null;
@@ -133,7 +129,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             $dayStart,
             $dayEnd,
         );
-        $blockingAppointments = $this->appointmentRepository->findBlockingByDateRange(
+        $blockingAppointments = $this->appointmentRepository->findConfirmedByDateRange(
             $dayStart,
             $dayEnd,
         );

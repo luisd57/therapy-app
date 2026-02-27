@@ -1,0 +1,304 @@
+{
+  "handoff_date": "2026-02-27",
+  "project": "Therapy Practice Management System",
+  "session_summary": {
+    "what_was_done": [
+      "Evaluated Angular Material vs Astro+Svelte for public-facing UI — chose Astro (SEO/static) + Svelte (interactive islands) + Tailwind CSS",
+      "Implemented two API fixes to align slot lock behavior with business intent",
+      "Built the complete public landing page: therapist bio, services, slot browser, appointment request form, thank-you screen",
+      "Added Astro dev server to Docker Compose stack",
+      "All 473 API tests pass (317 unit + 156 integration)"
+    ],
+    "key_decisions_made": [
+      "Astro chosen over Angular for public pages — SEO performance, static content for therapist bio/services, Svelte islands for interactivity",
+      "Svelte 5 chosen for interactive islands — lightest-weight option with first-class Astro support, better than Angular (experimental Astro support)",
+      "Tailwind CSS for styling — shared tokens between Astro static components and Svelte islands",
+      "Slot locking is TRANSPARENT to visitors — no countdown timer, no expiry warnings. Lock is a silent UX optimization to reduce therapist's manual conflict resolution",
+      "Multiple REQUESTED appointments for the same slot are allowed by design — therapist resolves conflicts manually during confirmation",
+      "Locked slots are filtered from the available-slots API response — when Visitor1 locks a slot, Visitor2 won't see it on next refresh",
+      "The Angular Material discussion was for the THERAPIST DASHBOARD (future work), not the public pages"
+    ]
+  },
+
+  "api_changes": {
+    "test_results": "473 tests pass (317 unit + 156 integration)",
+    "test_command": "docker-compose exec php vendor/bin/phpunit",
+    "fixes": [
+      {
+        "name": "Fix 1: Filter locked slots from available-slots response",
+        "reason": "GetAvailableSlotsHandler was passing an empty activeLocks collection to AvailabilityComputer, so locked slots remained visible to all visitors. The code comment said 'lock-level filtering happens on the frontend' but the user wants the API to handle this.",
+        "files_modified": [
+          {
+            "path": "API/src/Domain/Appointment/Repository/SlotLockRepositoryInterface.php",
+            "change": "Added findActiveByDateRange(DateTimeImmutable $from, DateTimeImmutable $to): ArrayCollection method"
+          },
+          {
+            "path": "API/src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php",
+            "change": "Implemented findActiveByDateRange — DQL query: startTime < to AND endTime > from AND expiresAt > NOW()"
+          },
+          {
+            "path": "API/src/Application/Appointment/Handler/GetAvailableSlotsHandler.php",
+            "change": "Replaced empty ArrayCollection() with $this->slotLockRepository->findActiveByDateRange($from, $to). Removed unused ArrayCollection import."
+          },
+          {
+            "path": "API/tests/Unit/Application/Appointment/Handler/GetAvailableSlotsHandlerTest.php",
+            "change": "Added slotLockRepository->findActiveByDateRange mock stub returning empty ArrayCollection in both test methods"
+          }
+        ]
+      },
+      {
+        "name": "Fix 2: Allow multiple REQUESTED appointments for same slot",
+        "reason": "AppointmentRequestService.verifySlotAvailable() used findBlockingByDateRange() which returns REQUESTED+CONFIRMED appointments. This blocked a second REQUESTED appointment — contradicting the design intent. Only CONFIRMED appointments should block new requests.",
+        "files_modified": [
+          {
+            "path": "API/src/Domain/Appointment/Repository/AppointmentRepositoryInterface.php",
+            "change": "Added findConfirmedByDateRange(DateTimeImmutable $from, DateTimeImmutable $to): ArrayCollection method"
+          },
+          {
+            "path": "API/src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php",
+            "change": "Implemented findConfirmedByDateRange — DQL query: status = CONFIRMED AND startTime < to AND endTime > from"
+          },
+          {
+            "path": "API/src/Application/Appointment/Service/AppointmentRequestService.php",
+            "change": "Changed verifySlotAvailable() to use findConfirmedByDateRange() instead of findBlockingByDateRange(). Updated design comment."
+          },
+          {
+            "path": "API/tests/Unit/Application/Appointment/Service/AppointmentRequestServiceTest.php",
+            "change": "Replaced all findBlockingByDateRange mock stubs with findConfirmedByDateRange"
+          }
+        ]
+      }
+    ],
+    "important_semantic_split": "The slot browser (GetAvailableSlotsHandler) blocks on REQUESTED+CONFIRMED appointments. The appointment request validation (AppointmentRequestService) blocks on CONFIRMED only. This is intentional — visitors see slots with pending requests as unavailable, but the submission endpoint allows duplicate REQUESTED appointments."
+  },
+
+  "ui_implementation": {
+    "tech_stack": {
+      "framework": "Astro 5.7 (static output mode)",
+      "islands": "Svelte 5 (@astrojs/svelte 7)",
+      "styling": "Tailwind CSS 3.4 (@astrojs/tailwind 6)",
+      "language": "TypeScript (strict mode)",
+      "build_output": "Static HTML + 8.56 KB gzipped Svelte island JS"
+    },
+    "dev_server": {
+      "url": "http://localhost:4321",
+      "command": "docker-compose up astro",
+      "runs_in": "Docker container (node:22-alpine)"
+    },
+    "files": {
+      "config": [
+        {"path": "UI/package.json", "purpose": "Dependencies: astro, @astrojs/svelte, @astrojs/tailwind, svelte, tailwindcss"},
+        {"path": "UI/astro.config.mjs", "purpose": "Astro config: svelte + tailwind integrations, output=static"},
+        {"path": "UI/tailwind.config.mjs", "purpose": "Custom brand green color palette (50-900) + Inter font family"},
+        {"path": "UI/tsconfig.json", "purpose": "Extends astro/tsconfigs/strict, adds @/* path alias"},
+        {"path": "UI/.env", "purpose": "PUBLIC_API_BASE_URL=http://localhost:8080/api"},
+        {"path": "UI/.env.example", "purpose": "Template for .env"}
+      ],
+      "pages_and_layouts": [
+        {"path": "UI/src/pages/index.astro", "purpose": "Single landing page: TherapistBio + ServicesList + AppointmentFlow (client:visible)"},
+        {"path": "UI/src/layouts/BaseLayout.astro", "purpose": "HTML shell: lang=es, Inter font from Google Fonts, meta tags, Tailwind base styles"}
+      ],
+      "content_collections": [
+        {"path": "UI/src/content/config.ts", "purpose": "Astro content collection schema for 'site' (optional: title, name, credentials, photo)"},
+        {"path": "UI/src/content/site/therapist.md", "purpose": "Therapist bio: name='Dra. María González', credentials, photo path, markdown body"},
+        {"path": "UI/src/content/site/services.md", "purpose": "Services list: 8 therapy specialties as markdown bullets"}
+      ],
+      "static_components": [
+        {"path": "UI/src/components/astro/SectionHeading.astro", "purpose": "Reusable h2 heading with optional subtitle"},
+        {"path": "UI/src/components/astro/TherapistBio.astro", "purpose": "Reads therapist content entry, renders photo/name/credentials/bio"},
+        {"path": "UI/src/components/astro/ServicesList.astro", "purpose": "Reads services content entry, renders list with custom bullet styling"}
+      ],
+      "svelte_islands": [
+        {"path": "UI/src/components/svelte/AppointmentFlow.svelte", "purpose": "State machine orchestrator — owns 3-step flow: browsing → filling_form → success"},
+        {"path": "UI/src/components/svelte/SlotBrowser.svelte", "purpose": "Week grid with 7 date columns, modality toggle, prev/next nav, 30s auto-refresh, lock-on-click"},
+        {"path": "UI/src/components/svelte/SlotCard.svelte", "purpose": "Single clickable time slot button with loading spinner during lock"},
+        {"path": "UI/src/components/svelte/ModalityToggle.svelte", "purpose": "Three-way pill toggle: Todas / Online / Presencial"},
+        {"path": "UI/src/components/svelte/AppointmentForm.svelte", "purpose": "Intake form (5 fields), slot header display, per-field validation errors, INVALID_LOCK_TOKEN retry logic"},
+        {"path": "UI/src/components/svelte/ThankYou.svelte", "purpose": "Success screen with appointment summary and 'book another' button"},
+        {"path": "UI/src/components/svelte/ErrorBanner.svelte", "purpose": "Dismissable red error banner component"}
+      ],
+      "services_and_types": [
+        {"path": "UI/src/services/api.ts", "purpose": "Centralized API layer: apiRequest<T> wrapper, fetchAvailableSlots, lockSlot, requestAppointment"},
+        {"path": "UI/src/types/api.ts", "purpose": "TypeScript interfaces: SlotData, SlotsResponse, LockResponse, AppointmentResponse, ApiError class, Modality types"},
+        {"path": "UI/src/utils/dates.ts", "purpose": "Date helpers: getWeekStart/End, formatDate/Time, toDateParam, getWeekDates, getWeekdayName (locale=es-VE)"}
+      ]
+    },
+    "state_machine": {
+      "owner": "AppointmentFlow.svelte",
+      "steps": {
+        "browsing": {"shows": "SlotBrowser", "data": "errorMessage?: string"},
+        "filling_form": {"shows": "AppointmentForm", "data": "slot: SlotData, modality: Modality, lockData: LockResponse | null"},
+        "success": {"shows": "ThankYou", "data": "appointment: AppointmentSummary"}
+      },
+      "transitions": {
+        "browsing_to_filling_form": "User clicks slot → lock attempt → store lockData (or null if lock failed) → transition",
+        "filling_form_to_browsing": "User clicks back OR 409 SLOT_NOT_AVAILABLE on submit OR 400 INVALID_LOCK_TOKEN retry fails",
+        "filling_form_to_success": "Form submitted successfully (201)",
+        "success_to_browsing": "User clicks 'book another'"
+      }
+    },
+    "error_handling": {
+      "409_SLOT_NOT_AVAILABLE_on_lock": "Slot greyed out, refresh slots list, show error banner",
+      "409_SLOT_NOT_AVAILABLE_on_submit": "Return to browser with error message",
+      "400_INVALID_LOCK_TOKEN_on_submit": "Silently retry submission WITHOUT lock_token (lock expired but slot may still be free)",
+      "422_VALIDATION_ERROR": "Per-field inline error messages from error.details",
+      "network_error": "Generic 'connection error' banner"
+    },
+    "slot_locking_behavior": {
+      "user_experience": "Completely transparent — visitor never sees lock status, countdowns, or expiry warnings",
+      "on_click": "Silent POST to lock-slot. If 201: store lock_token, proceed to form. If 409: slot taken, refresh and let user pick another. If other error: proceed without lock.",
+      "on_submit": "lock_token passed if available. If INVALID_LOCK_TOKEN: retry without it. If slot truly taken: back to browser.",
+      "design_rationale": "Lock reduces duplicate requests (less manual work for therapist) but is optional. Two visitors CAN submit for the same slot — therapist resolves manually."
+    }
+  },
+
+  "docker_changes": {
+    "file": "docker-compose.yml",
+    "service_added": {
+      "name": "astro",
+      "image": "node:22-alpine",
+      "container_name": "therapy_astro",
+      "port": "4321:4321",
+      "volumes": ["./UI:/app", "astro_node_modules:/app/node_modules"],
+      "command": "sh -c 'npm install && npm run dev -- --host 0.0.0.0'",
+      "network": "therapy_network"
+    },
+    "volume_added": "astro_node_modules (named volume to avoid Windows/Linux node_modules conflicts)",
+    "all_services": ["php", "nginx", "postgres", "redis", "mailhog", "cron", "astro", "pgadmin"],
+    "cors_note": "API's APP_FRONTEND_URL env var must include http://localhost:4321 for local dev"
+  },
+
+  "business_rules_clarified": {
+    "slot_lock_semantics": {
+      "case_1": "Visitor1 selects a slot → lock acquired → Visitor2's next refresh of available-slots won't show that slot (API filters locked slots)",
+      "case_2": "If both visitors somehow submit for the same slot (race condition or no locks used), both get 201 REQUESTED. Therapist resolves the conflict manually on their dashboard.",
+      "lock_is_optional": "Appointments can be submitted without a lock_token. The lock is purely a UX optimization to reduce therapist workload.",
+      "lock_ttl": "600 seconds (10 min) by default. Expired locks are cleaned by app:cleanup-slot-locks cron command."
+    },
+    "appointment_blocking": {
+      "public_available_slots": "REQUESTED + CONFIRMED + active locks all block (slot won't appear)",
+      "appointment_request_submission": "Only CONFIRMED blocks. Multiple REQUESTED appointments for the same slot are permitted."
+    },
+    "no_countdown_timer": "The user explicitly rejected showing lock expiry countdown to visitors. The lock is invisible to them."
+  },
+
+  "git_status": {
+    "branch": "main",
+    "uncommitted_changes": {
+      "api_modified": [
+        "API/src/Application/Appointment/Handler/GetAvailableSlotsHandler.php",
+        "API/src/Application/Appointment/Service/AppointmentRequestService.php",
+        "API/src/Domain/Appointment/Repository/AppointmentRepositoryInterface.php",
+        "API/src/Domain/Appointment/Repository/SlotLockRepositoryInterface.php",
+        "API/src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php",
+        "API/src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php",
+        "API/tests/Unit/Application/Appointment/Handler/GetAvailableSlotsHandlerTest.php",
+        "API/tests/Unit/Application/Appointment/Service/AppointmentRequestServiceTest.php"
+      ],
+      "docker_modified": ["docker-compose.yml"],
+      "ui_new": "Entire UI/ directory is new (untracked)"
+    },
+    "nothing_committed_yet": true
+  },
+
+  "remaining_work": {
+    "immediate_next_steps": [
+      "Commit the current changes (API fixes + UI landing page + Docker)",
+      "Update UI/CLAUDE.md to reflect chosen tech stack (currently says TBD for everything)",
+      "Add therapist photo to UI/public/photos/therapist.jpg (referenced in content but file doesn't exist)"
+    ],
+    "public_pages_not_built": [
+      "Patient Registration page (POST /api/auth/register with invitation token)",
+      "Patient Login page (POST /api/auth/patient/login)",
+      "Forgot Password page (POST /api/auth/password/forgot)",
+      "Password Reset page (POST /api/auth/password/reset)"
+    ],
+    "patient_area_not_built": [
+      "Patient Profile view + edit (GET/PUT /api/patient/me, /api/patient/profile)",
+      "Authenticated appointment booking (POST /api/patient/appointments — pre-fills from JWT)"
+    ],
+    "therapist_dashboard_not_built": [
+      "Pending Requests Queue — REQUESTED appointments with Confirm/Cancel actions",
+      "All Appointments List — paginated table with status filter",
+      "Manual Appointment Creation — form for phone-booked patients",
+      "Schedule Manager — CRUD for recurring weekly blocks",
+      "Schedule Exception Manager — one-off date/time blocks",
+      "Patient Manager — list + invite functionality",
+      "Invitation List — sent invitations and their statuses",
+      "Therapist Profile — read-only view"
+    ],
+    "infrastructure_not_built": [
+      "JWT auth infrastructure (token storage, auth context, protected route guards, 401 redirect)",
+      "Separate therapist login page and patient login page",
+      "UI linting and formatting setup",
+      "UI testing framework",
+      "Production Dockerfile for UI (multi-stage: node build → nginx static serve)"
+    ],
+    "angular_material_consideration": "Angular Material was discussed as a good fit for the therapist dashboard (forms, tables, navigation, dialogs). The public pages use Astro+Svelte instead. The dashboard could be a separate Angular app or integrated differently — this decision is still open."
+  },
+
+  "known_issues": [
+    "UI/CLAUDE.md is outdated — says 'TBD' for framework, styling, state management. Needs updating to reflect Astro+Svelte+Tailwind.",
+    "Therapist photo referenced as /photos/therapist.jpg in content but the file doesn't exist in UI/public/photos/",
+    "No linting, formatting, or testing setup in the UI project",
+    "UI/src/utils/validation.ts was planned in the project structure but was never created (client-side validation not implemented)",
+    "UI/public/favicon.svg and UI/public/og-image.jpg were planned but not created",
+    "The ServicesList component uses a ✦ emoji as bullet points — may need to verify cross-browser rendering",
+    "Rate limit awareness: API allows 10 req/min on public endpoints. The 30s auto-refresh is well within limits but rapid modality toggling could theoretically hit it — no debounce implemented"
+  ],
+
+  "key_file_paths": {
+    "project_root_docs": {
+      "CLAUDE.md": "CLAUDE.md (project-level guidelines)",
+      "api_claude": "API/CLAUDE.md (API-specific guidelines)",
+      "ui_claude": "UI/CLAUDE.md (UI-specific guidelines — OUTDATED)",
+      "product_requirements": "API/Product-Requirements.md (feature specs)",
+      "database_schema": "API/docs/database-schema.md (entity relationships)",
+      "postman_collection": "API/postman/Therapy_App_API.postman_collection.json (API contract)"
+    },
+    "api_key_files": {
+      "available_slots_handler": "API/src/Application/Appointment/Handler/GetAvailableSlotsHandler.php",
+      "appointment_request_service": "API/src/Application/Appointment/Service/AppointmentRequestService.php",
+      "availability_computer": "API/src/Domain/Appointment/Service/AvailabilityComputer.php",
+      "availability_context": "API/src/Domain/Appointment/Service/AvailabilityContext.php",
+      "appointment_status": "API/src/Domain/Appointment/ValueObject/AppointmentStatus.php",
+      "slot_lock_entity": "API/src/Domain/Appointment/Entity/SlotLock.php",
+      "lock_slot_handler": "API/src/Application/Appointment/Handler/LockSlotHandler.php"
+    },
+    "ui_key_files": {
+      "landing_page": "UI/src/pages/index.astro",
+      "state_machine": "UI/src/components/svelte/AppointmentFlow.svelte",
+      "slot_browser": "UI/src/components/svelte/SlotBrowser.svelte",
+      "appointment_form": "UI/src/components/svelte/AppointmentForm.svelte",
+      "api_service": "UI/src/services/api.ts",
+      "types": "UI/src/types/api.ts",
+      "date_utils": "UI/src/utils/dates.ts"
+    },
+    "docker": "docker-compose.yml"
+  },
+
+  "api_endpoints_used_by_ui": {
+    "public_slots": {
+      "method": "GET",
+      "path": "/api/appointments/available-slots",
+      "params": "from (YYYY-MM-DD, required), to (YYYY-MM-DD, required), modality (ONLINE|IN_PERSON, optional)",
+      "response": "{ success: true, data: { from, to, modality, slots_by_date: { 'YYYY-MM-DD': [{ start_time, end_time, duration_minutes }] }, total_slots } }"
+    },
+    "lock_slot": {
+      "method": "POST",
+      "path": "/api/appointments/lock-slot",
+      "body": "{ slot_start_time: ISO-8601, modality: ONLINE|IN_PERSON }",
+      "response_201": "{ success: true, data: { lock_token, slot_start_time, slot_end_time, expires_at } }",
+      "response_409": "{ success: false, error: { code: 'SLOT_NOT_AVAILABLE', message: '...' } }"
+    },
+    "request_appointment": {
+      "method": "POST",
+      "path": "/api/appointments/request",
+      "body": "{ slot_start_time, modality, full_name, phone, email, city, country, lock_token? }",
+      "response_201": "{ success: true, data: { appointment: { id, start_time, end_time, modality, status, created_at }, message } }",
+      "response_409": "SLOT_NOT_AVAILABLE",
+      "response_400": "INVALID_LOCK_TOKEN",
+      "response_422": "VALIDATION_ERROR with details: { field_name: 'error message' }"
+    }
+  }
+}
