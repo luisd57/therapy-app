@@ -9,13 +9,13 @@ use App\Application\Appointment\DTO\Output\NextAvailableWeekOutputDTO;
 use App\Application\Appointment\DTO\Output\TimeSlotOutputDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class GetNextAvailableWeekHandler
 {
@@ -24,7 +24,6 @@ final readonly class GetNextAvailableWeekHandler
         private TherapistScheduleRepositoryInterface $scheduleRepository,
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AppointmentRepositoryInterface $appointmentRepository,
-        private SlotLockRepositoryInterface $slotLockRepository,
         private AvailabilityComputerInterface $availabilityComputer,
         private int $appointmentDurationMinutes,
         private int $maxLookaheadWeeks,
@@ -54,11 +53,7 @@ final readonly class GetNextAvailableWeekHandler
                 $weekStart,
                 $weekEnd,
             );
-            $blockingAppointments = $this->appointmentRepository->findBlockingByDateRange(
-                $weekStart,
-                $weekEnd,
-            );
-            $activeLocks = $this->slotLockRepository->findActiveByDateRange(
+            $confirmedAppointments = $this->appointmentRepository->findConfirmedByDateRange(
                 $weekStart,
                 $weekEnd,
             );
@@ -66,8 +61,8 @@ final readonly class GetNextAvailableWeekHandler
             $context = new AvailabilityContext(
                 schedules: $schedules,
                 exceptions: $exceptions,
-                blockingAppointments: $blockingAppointments,
-                activeLocks: $activeLocks,
+                blockingAppointments: $confirmedAppointments,
+                activeLocks: new ArrayCollection(),
             );
 
             $availableSlots = $this->availabilityComputer->computeAvailableSlots(

@@ -140,7 +140,7 @@
   {/if}
 
   <!-- Skeleton on initial load -->
-  {#if isInitialLoading}
+  {#if isInitialLoading || isLoading}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
       {#each Array(7) as _}
         <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 animate-pulse">
@@ -152,10 +152,6 @@
           </div>
         </div>
       {/each}
-    </div>
-  {:else if isLoading && Object.keys(slotsByDate).length === 0}
-    <div class="flex justify-center py-12">
-      <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
     </div>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">

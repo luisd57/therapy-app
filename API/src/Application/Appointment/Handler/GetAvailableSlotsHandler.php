@@ -9,13 +9,13 @@ use App\Application\Appointment\DTO\Output\AvailableSlotsOutputDTO;
 use App\Application\Appointment\DTO\Output\TimeSlotOutputDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class GetAvailableSlotsHandler
 {
@@ -24,7 +24,6 @@ final readonly class GetAvailableSlotsHandler
         private TherapistScheduleRepositoryInterface $scheduleRepository,
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AppointmentRepositoryInterface $appointmentRepository,
-        private SlotLockRepositoryInterface $slotLockRepository,
         private AvailabilityComputerInterface $availabilityComputer,
         private int $appointmentDurationMinutes,
     ) {
@@ -47,14 +46,13 @@ final readonly class GetAvailableSlotsHandler
             $from,
             $to,
         );
-        $blockingAppointments = $this->appointmentRepository->findBlockingByDateRange($from, $to);
-        $activeLocks = $this->slotLockRepository->findActiveByDateRange($from, $to);
+        $confirmedAppointments = $this->appointmentRepository->findConfirmedByDateRange($from, $to);
 
         $context = new AvailabilityContext(
             schedules: $schedules,
             exceptions: $exceptions,
-            blockingAppointments: $blockingAppointments,
-            activeLocks: $activeLocks,
+            blockingAppointments: $confirmedAppointments,
+            activeLocks: new ArrayCollection(),
         );
 
         $availableSlots = $this->availabilityComputer->computeAvailableSlots(

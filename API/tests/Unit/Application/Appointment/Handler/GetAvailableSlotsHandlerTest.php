@@ -8,7 +8,6 @@ use App\Application\Appointment\DTO\Input\GetAvailableSlotsInputDTO;
 use App\Application\Appointment\Handler\GetAvailableSlotsHandler;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\ValueObject\TimeSlot;
@@ -27,7 +26,6 @@ final class GetAvailableSlotsHandlerTest extends TestCase
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
-    private SlotLockRepositoryInterface&MockObject $slotLockRepository;
     private AvailabilityComputerInterface&MockObject $availabilityComputer;
     private GetAvailableSlotsHandler $handler;
 
@@ -37,7 +35,6 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
         $this->exceptionRepository = $this->createMock(ScheduleExceptionRepositoryInterface::class);
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
-        $this->slotLockRepository = $this->createMock(SlotLockRepositoryInterface::class);
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
 
         $this->handler = new GetAvailableSlotsHandler(
@@ -45,7 +42,6 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             $this->scheduleRepository,
             $this->exceptionRepository,
             $this->appointmentRepository,
-            $this->slotLockRepository,
             $this->availabilityComputer,
             50,
         );
@@ -85,11 +81,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $this->appointmentRepository
-            ->method('findBlockingByDateRange')
-            ->willReturn(new ArrayCollection());
-
-        $this->slotLockRepository
-            ->method('findActiveByDateRange')
+            ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
         $slot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
@@ -130,11 +122,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $this->appointmentRepository
-            ->method('findBlockingByDateRange')
-            ->willReturn(new ArrayCollection());
-
-        $this->slotLockRepository
-            ->method('findActiveByDateRange')
+            ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
         $this->availabilityComputer
