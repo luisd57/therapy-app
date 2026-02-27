@@ -137,7 +137,7 @@ Domain entities use `reconstitute()` static factory methods to create objects in
 
 - Lock tokens are verified against the submitted time slot and modality, preventing reuse of a lock acquired for a different slot
 
-## Prerequisites
+## Prerequisites (this section shouldn't be here)
 
 - Docker Desktop for Windows
 - Git (optional, for version control)
@@ -267,24 +267,8 @@ Open your browser and navigate to:
 
 ### Testing Flow
 
-1. **Health Check** - Verify API is running
-2. **Create Therapist** - Run `docker-compose exec php php bin/console app:create-therapist` to set up initial admin account
-3. **Therapist Login** - Get JWT token (auto-saved to variable)
-4. **Get Therapist Profile** - Verify authentication works
-5. **Create Schedule** - Set up weekly availability blocks
-6. **Invite Patient** - Send invitation email
-7. **Check MailHog** - Get invitation token from email (<http://localhost:8025>)
-8. **Set invitation_token variable** - Copy token from email link
-9. **Validate Invitation** - Verify token is valid
-10. **Register Patient** - Activate patient account
-11. **Patient Login** - Get patient JWT token
-12. **Get Patient Profile** - Verify patient auth works
-13. **Update Patient Profile** - Test profile updates
-14. **List Patients** - Verify therapist can see patients
-15. **Browse Available Slots** - Query public availability
-16. **Lock Slot** - Temporarily hold a slot
-17. **Submit Appointment Request** - Complete the intake form
-18. **Check MailHog** - Verify acknowledgment + therapist alert emails
+Run the collection sequentially
+
 19. **Logout** - Revoke the JWT token
 
 ### Getting the Invitation Token
