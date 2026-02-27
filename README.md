@@ -9,7 +9,7 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-Application web complète pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
+Application web (en développement) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
 
 Projet conçu comme un cas réel : la thérapeute vérifie les paiements manuellement (Zelle / Pago Móvil) et la communication patient se fait par email.
 
