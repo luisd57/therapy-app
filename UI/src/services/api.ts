@@ -2,6 +2,7 @@ import {
   ApiError,
   type ApiResponse,
   type SlotsResponse,
+  type NextAvailableWeekResponse,
   type LockResponse,
   type AppointmentResponse,
   type Modality,
@@ -52,6 +53,19 @@ export async function fetchAvailableSlots(params: {
 
   return apiRequest<SlotsResponse>(
     `/appointments/available-slots?${searchParams}`,
+  );
+}
+
+export async function fetchNextAvailableWeek(params: {
+  modality?: Modality;
+}): Promise<NextAvailableWeekResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.modality) {
+    searchParams.set('modality', params.modality);
+  }
+  const query = searchParams.toString();
+  return apiRequest<NextAvailableWeekResponse>(
+    `/appointments/next-available-week${query ? `?${query}` : ''}`,
   );
 }
 

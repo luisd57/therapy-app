@@ -101,6 +101,11 @@ services:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
 
+    App\Application\Appointment\Handler\GetNextAvailableWeekHandler:
+        arguments:
+            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+            $maxLookaheadWeeks: 12
+
     App\Application\Appointment\Handler\LockSlotHandler:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'

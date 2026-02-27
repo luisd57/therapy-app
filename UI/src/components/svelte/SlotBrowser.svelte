@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import type { SlotData, ModalityFilter, Modality, LockResponse } from '../../types/api';
+  import { onMount } from 'svelte';
+  import type { SlotData, ModalityFilter, Modality } from '../../types/api';
   import { ApiError } from '../../types/api';
-  import { fetchAvailableSlots, lockSlot } from '../../services/api';
+  import { fetchAvailableSlots, fetchNextAvailableWeek } from '../../services/api';
   import {
     getWeekStart,
     getWeekDates,
@@ -15,7 +15,7 @@
   import ErrorBanner from './ErrorBanner.svelte';
 
   interface Props {
-    onSlotSelected: (slot: SlotData, modality: Modality, lockData: LockResponse | null) => void;
+    onSlotSelected: (slot: SlotData, modality: Modality) => void;
     errorMessage?: string;
   }
 
@@ -25,13 +25,8 @@
   let modality: ModalityFilter = $state('ALL');
   let slotsByDate: Record<string, SlotData[]> = $state({});
   let isLoading = $state(false);
-  let lockingSlot: string | null = $state(null);
+  let isInitialLoading = $state(true);
   let error = $state(errorMessage);
-  let refreshInterval: ReturnType<typeof setInterval> | undefined;
-
-  const MAX_AUTO_ADVANCE_WEEKS = 4;
-  let isInitialLoad = true;
-  let autoAdvanceAttempts = 0;
 
   const weekDates = $derived(getWeekDates(weekStart));
 
@@ -48,16 +43,6 @@
         modality: modality === 'ALL' ? undefined : modality,
       });
 
-      if (isInitialLoad && response.total_slots === 0 && autoAdvanceAttempts < MAX_AUTO_ADVANCE_WEEKS) {
-        autoAdvanceAttempts++;
-        const d = new Date(weekStart);
-        d.setDate(d.getDate() + 7);
-        weekStart = d;
-        return loadSlots();
-      }
-
-      isInitialLoad = false;
-      autoAdvanceAttempts = 0;
       slotsByDate = response.slots_by_date;
     } catch (err) {
       if (err instanceof ApiError) {
@@ -88,31 +73,13 @@
 
   function onModalityChange(value: ModalityFilter) {
     modality = value;
+    if (isInitialLoading) return;
     loadSlots();
   }
 
-  async function handleSlotClick(slot: SlotData) {
+  function handleSlotClick(slot: SlotData) {
     const selectedModality: Modality = modality === 'ALL' ? 'ONLINE' : modality;
-    lockingSlot = slot.start_time;
-    error = '';
-
-    try {
-      const lockData = await lockSlot({
-        slot_start_time: slot.start_time,
-        modality: selectedModality,
-      });
-      onSlotSelected(slot, selectedModality, lockData);
-    } catch (err) {
-      if (err instanceof ApiError && err.code === 'SLOT_NOT_AVAILABLE') {
-        error = 'Este horario ya no está disponible. Por favor selecciona otro.';
-        await loadSlots();
-      } else {
-        // Lock failed for another reason — proceed without lock
-        onSlotSelected(slot, selectedModality, null);
-      }
-    } finally {
-      lockingSlot = null;
-    }
+    onSlotSelected(slot, selectedModality);
   }
 
   function isPastWeek(): boolean {
@@ -120,13 +87,24 @@
     return weekStart <= now;
   }
 
-  onMount(() => {
-    loadSlots();
-    refreshInterval = setInterval(loadSlots, 30000);
-  });
+  onMount(async () => {
+    try {
+      const response = await fetchNextAvailableWeek({
+        modality: modality === 'ALL' ? undefined : modality,
+      });
 
-  onDestroy(() => {
-    if (refreshInterval) clearInterval(refreshInterval);
+      if (response.found && response.week_start) {
+        // Parse date at noon to avoid timezone off-by-one
+        weekStart = new Date(response.week_start + 'T12:00:00');
+        slotsByDate = response.slots_by_date;
+      } else {
+        slotsByDate = {};
+      }
+    } catch (err) {
+      error = 'Error de conexión. Por favor intenta de nuevo.';
+    } finally {
+      isInitialLoading = false;
+    }
   });
 </script>
 
@@ -137,7 +115,7 @@
     <div class="flex items-center gap-2">
       <button
         onclick={prevWeek}
-        disabled={isPastWeek()}
+        disabled={isPastWeek() || isLoading || isInitialLoading}
         class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium
                hover:bg-neutral-50 disabled:opacity-30 disabled:cursor-not-allowed"
       >
@@ -148,7 +126,9 @@
       </span>
       <button
         onclick={nextWeek}
-        class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-50"
+        disabled={isLoading || isInitialLoading}
+        class="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium hover:bg-neutral-50
+               disabled:opacity-30 disabled:cursor-not-allowed"
       >
         Siguiente &rarr;
       </button>
@@ -159,8 +139,21 @@
     <ErrorBanner message={error} onDismiss={() => (error = '')} />
   {/if}
 
-  <!-- Slot Grid -->
-  {#if isLoading && Object.keys(slotsByDate).length === 0}
+  <!-- Skeleton on initial load -->
+  {#if isInitialLoading}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
+      {#each Array(7) as _}
+        <div class="rounded-xl border border-neutral-100 bg-neutral-50 p-3 animate-pulse">
+          <div class="mb-3 mx-auto h-3 w-12 rounded bg-neutral-200"></div>
+          <div class="mb-2 mx-auto h-2 w-8 rounded bg-neutral-200"></div>
+          <div class="mt-4 space-y-2">
+            <div class="h-10 rounded-lg bg-neutral-200"></div>
+            <div class="h-10 rounded-lg bg-neutral-200"></div>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {:else if isLoading && Object.keys(slotsByDate).length === 0}
     <div class="flex justify-center py-12">
       <div class="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"></div>
     </div>
@@ -170,7 +163,7 @@
         {@const daySlots = slotsByDate[dateStr] ?? []}
         <div class="rounded-xl border {daySlots.length > 0 ? 'border-neutral-200 bg-white' : 'border-neutral-100 bg-neutral-50'} p-3">
           <div class="mb-2 text-center">
-            <div class="text-xs font-medium uppercase text-neutral-500 capitalize">
+            <div class="text-xs font-medium capitalize text-neutral-500">
               {getWeekdayName(dateStr)}
             </div>
             <div class="text-sm font-semibold text-neutral-800">
@@ -183,7 +176,7 @@
                 <SlotCard
                   {slot}
                   onClick={() => handleSlotClick(slot)}
-                  isLoading={lockingSlot === slot.start_time}
+                  isLoading={false}
                 />
               {/each}
             </div>

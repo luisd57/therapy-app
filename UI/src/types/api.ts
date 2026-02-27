@@ -55,5 +55,14 @@ export interface AppointmentSummary {
   created_at: string;
 }
 
+export interface NextAvailableWeekResponse {
+  found: boolean;
+  week_start: string | null;
+  week_end: string | null;
+  modality: string | null;
+  slots_by_date: Record<string, SlotData[]>;
+  total_slots: number;
+}
+
 export type Modality = 'ONLINE' | 'IN_PERSON';
 export type ModalityFilter = Modality | 'ALL';

@@ -9,11 +9,12 @@
     slot: SlotData;
     modality: Modality;
     lockData: LockResponse | null;
+    lockWarning?: string;
     onSuccess: (appointment: AppointmentSummary) => void;
     onBack: (errorMessage?: string) => void;
   }
 
-  let { slot, modality, lockData, onSuccess, onBack }: Props = $props();
+  let { slot, modality, lockData, lockWarning, onSuccess, onBack }: Props = $props();
 
   let fullName = $state('');
   let phone = $state('');
@@ -113,6 +114,12 @@
   >
     &larr; Cambiar horario
   </button>
+
+  {#if lockWarning}
+    <div class="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-3 text-amber-800 text-sm">
+      {lockWarning}
+    </div>
+  {/if}
 
   {#if topError}
     <div class="mb-4">

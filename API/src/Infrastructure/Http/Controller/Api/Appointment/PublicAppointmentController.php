@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Http\Controller\Api\Appointment;
 
 use App\Application\Appointment\DTO\Input\GetAvailableSlotsInputDTO;
+use App\Application\Appointment\DTO\Input\GetNextAvailableWeekInputDTO;
 use App\Application\Appointment\DTO\Input\LockSlotInputDTO;
 use App\Application\Appointment\DTO\Input\RequestAppointmentInputDTO;
 use App\Application\Appointment\Handler\GetAvailableSlotsHandler;
+use App\Application\Appointment\Handler\GetNextAvailableWeekHandler;
 use App\Application\Appointment\Handler\LockSlotHandler;
 use App\Application\Appointment\Handler\RequestAppointmentHandler;
 use App\Domain\Appointment\Exception\InvalidLockTokenException;
@@ -49,6 +51,28 @@ final class PublicAppointmentController extends AbstractController
         $result = $handler->__invoke(new GetAvailableSlotsInputDTO(
             from: $from,
             to: $to,
+            modality: $modality,
+        ));
+
+        return $this->success($result->toArray());
+    }
+
+    #[Route('/next-available-week', name: 'api_next_available_week', methods: ['GET'])]
+    public function nextAvailableWeek(Request $request, GetNextAvailableWeekHandler $handler): JsonResponse
+    {
+        $modality = $request->query->get('modality');
+
+        if ($modality !== null) {
+            $modalityViolations = $this->validator->validate($modality, [
+                new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
+            ]);
+
+            if (count($modalityViolations) > 0) {
+                return $this->validationError(['modality' => $modalityViolations[0]->getMessage()]);
+            }
+        }
+
+        $result = $handler->__invoke(new GetNextAvailableWeekInputDTO(
             modality: $modality,
         ));
 

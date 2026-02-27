@@ -1793,7 +1793,84 @@
           ]
         },
         {
-          "name": "4. Lock a Slot",
+          "name": "4. Next Available Week",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/appointments/next-available-week"
+          },
+          "response": [
+            {
+              "name": "Success — Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/next-available-week"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01\",\n    \"week_end\": \"2026-06-07\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00-04:00\",\n          \"end_time\": \"2026-06-01T09:50:00-04:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00-04:00\",\n          \"end_time\": \"2026-06-01T10:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ],\n      \"2026-06-03\": [\n        {\n          \"start_time\": \"2026-06-03T10:00:00-04:00\",\n          \"end_time\": \"2026-06-03T10:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 3\n  }\n}"
+            },
+            {
+              "name": "Success — No Availability",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/next-available-week"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": false,\n    \"week_start\": null,\n    \"week_end\": null,\n    \"modality\": null,\n    \"slots_by_date\": {},\n    \"total_slots\": 0\n  }\n}"
+            },
+            {
+              "name": "With Modality Filter",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/next-available-week?modality=ONLINE"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01\",\n    \"week_end\": \"2026-06-07\",\n    \"modality\": \"ONLINE\",\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00-04:00\",\n          \"end_time\": \"2026-06-01T09:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 1\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{base_url}}/appointments/next-available-week?modality=INVALID"
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Validation failed\",\n    \"details\": {\n      \"modality\": \"Modality must be ONLINE or IN_PERSON\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "5. Lock a Slot",
           "event": [
             {
               "listen": "test",
@@ -1876,7 +1953,7 @@
           ]
         },
         {
-          "name": "5. Request Appointment (with Lock Token)",
+          "name": "6. Request Appointment (with Lock Token)",
           "request": {
             "method": "POST",
             "header": [
@@ -1976,7 +2053,7 @@
           ]
         },
         {
-          "name": "6. Request Appointment (without Lock Token)",
+          "name": "7. Request Appointment (without Lock Token)",
           "request": {
             "method": "POST",
             "header": [
