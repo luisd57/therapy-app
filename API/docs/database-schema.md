@@ -47,7 +47,7 @@ Stores both therapists and patients. Differentiated by `role`.
 
 **Design notes**:
 
-- Address is stored as flattened columns (not a JSON blob) — the Address value object maps to/from these 5 columns via the Doctrine mapper.
+- Address is stored as flattened columns (not a JSON blob) — the Address value object is mapped as a Doctrine `#[ORM\Embeddable]` directly on the User domain entity, with column prefix `address_`.
 - `password` is nullable because patients are created in an inactive state via invitation. They set a password during registration.
 - Single table for both roles avoids joins while the user count is small (single-therapist practice).
 

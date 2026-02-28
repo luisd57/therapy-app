@@ -77,8 +77,8 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 - **Value Objects** — Types immuables auto-validants (`Email`, `Phone`, `Address`, `TimeSlot`, `AppointmentStatus`…). Les enums PHP portent la logique métier (`canTransitionTo()`, `blocksSlot()`, `isTerminal()`).
 - **DTOs Input/Output** — `final readonly class` avec factory `fromEntity()` et `toArray()`. Séparation nette entre ce qui entre dans un handler et ce qui en sort.
 - **Repository Pattern** — Interfaces définies dans le Domain (ports), implémentées dans l'Infrastructure avec Doctrine (adapters). Aucune clé étrangère physique en base — l'intégrité référentielle est assurée par le domaine.
-- **Mappers bidirectionnels** — `toDomain()` / `toEntity()` pour convertir entre entités Doctrine et entités Domain, avec pattern upsert.
-- **Reconstitution Pattern** — Méthodes statiques `reconstitute()` sur les entités Domain pour l'hydratation depuis la base sans déclencher de logique métier. Utilisé uniquement par les repositories et les helpers de test.
+- **Custom DBAL Types** — Types Doctrine personnalisés (`EmailType`, `UserIdType`, `HashedStringType`…) pour convertir automatiquement entre Value Objects PHP et colonnes de base de données. Les entités Domain portent directement les attributs `#[ORM\Entity]` et `#[ORM\Column]` — pas de couche ORM séparée.
+- **Reconstitution Pattern** — Méthodes statiques `reconstitute()` sur les entités Domain pour créer des objets dans un état spécifique sans déclencher de logique métier. Utilisé uniquement par les helpers de test (`DomainTestHelper`, tests unitaires et d'intégration).
 - **Parameter Objects** — `AvailabilityContext` regroupe schedules, exceptions, appointments et locks pour éviter l'explosion de paramètres.
 
 ---
