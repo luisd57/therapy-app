@@ -12,7 +12,7 @@ use App\Domain\User\Exception\IncompleteProfileException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
 use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
+use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,12 +45,12 @@ final class PatientAppointmentController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $result = $handler->__invoke(new PatientRequestAppointmentInputDTO(
-                patientId: $currentUser->getId(),
+                patientId: $currentUser->getId()->getValue(),
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
                 lockToken: $data['lock_token'] ?? null,

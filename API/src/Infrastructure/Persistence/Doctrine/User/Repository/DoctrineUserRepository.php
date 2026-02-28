@@ -9,31 +9,25 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\UserId;
 use App\Domain\User\ValueObject\UserRole;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
-use App\Infrastructure\Persistence\Doctrine\User\Mapper\UserMapper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 final class DoctrineUserRepository implements UserRepositoryInterface
 {
-    /** @var EntityRepository<UserEntity> */
+    /** @var EntityRepository<User> */
     private EntityRepository $repository;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $entityManager->getRepository(UserEntity::class);
+        $this->repository = $entityManager->getRepository(User::class);
     }
 
     public function save(User $user): void
     {
-        $existingEntity = $this->repository->find($user->getId()->getValue());
-
-        $entity = UserMapper::toEntity($user, $existingEntity);
-
-        if ($existingEntity === null) {
-            $this->entityManager->persist($entity);
+        if (!$this->entityManager->contains($user)) {
+            $this->entityManager->persist($user);
         }
 
         $this->entityManager->flush();
@@ -41,16 +35,12 @@ final class DoctrineUserRepository implements UserRepositoryInterface
 
     public function findById(UserId $id): ?User
     {
-        $entity = $this->repository->find($id->getValue());
-
-        return $entity !== null ? UserMapper::toDomain($entity) : null;
+        return $this->entityManager->find(User::class, $id->getValue());
     }
 
     public function findByEmail(Email $email): ?User
     {
-        $entity = $this->repository->findOneBy(['email' => $email->getValue()]);
-
-        return $entity !== null ? UserMapper::toDomain($entity) : null;
+        return $this->repository->findOneBy(['email' => $email->getValue()]);
     }
 
     public function existsByEmail(Email $email): bool
@@ -63,14 +53,7 @@ final class DoctrineUserRepository implements UserRepositoryInterface
      */
     public function findByRole(UserRole $role): ArrayCollection
     {
-        $entities = $this->repository->findBy(['role' => $role->value]);
-
-        $users = array_map(
-            fn(UserEntity $entity) => UserMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($users);
+        return new ArrayCollection($this->repository->findBy(['role' => $role->value]));
     }
 
     /**
@@ -78,17 +61,10 @@ final class DoctrineUserRepository implements UserRepositoryInterface
      */
     public function findActivePatients(): ArrayCollection
     {
-        $entities = $this->repository->findBy([
+        return new ArrayCollection($this->repository->findBy([
             'role' => UserRole::PATIENT->value,
             'isActive' => true,
-        ]);
-
-        $users = array_map(
-            fn(UserEntity $entity) => UserMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($users);
+        ]));
     }
 
     /**
@@ -98,7 +74,7 @@ final class DoctrineUserRepository implements UserRepositoryInterface
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('u')
-            ->from(UserEntity::class, 'u')
+            ->from(User::class, 'u')
             ->where('u.role = :role')
             ->andWhere('u.isActive = :isActive')
             ->setParameter('role', UserRole::PATIENT->value)
@@ -107,21 +83,14 @@ final class DoctrineUserRepository implements UserRepositoryInterface
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
-        $entities = $qb->getQuery()->getResult();
-
-        $users = array_map(
-            fn(UserEntity $entity) => UserMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($users);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     public function countActivePatients(): int
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('COUNT(u.id)')
-            ->from(UserEntity::class, 'u')
+            ->from(User::class, 'u')
             ->where('u.role = :role')
             ->andWhere('u.isActive = :isActive')
             ->setParameter('role', UserRole::PATIENT->value)
@@ -147,10 +116,10 @@ final class DoctrineUserRepository implements UserRepositoryInterface
 
     public function delete(User $user): void
     {
-        $entity = $this->repository->find($user->getId()->getValue());
+        $managed = $this->entityManager->find(User::class, $user->getId()->getValue());
 
-        if ($entity !== null) {
-            $this->entityManager->remove($entity);
+        if ($managed !== null) {
+            $this->entityManager->remove($managed);
             $this->entityManager->flush();
         }
     }

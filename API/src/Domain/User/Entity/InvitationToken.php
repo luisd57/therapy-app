@@ -4,23 +4,38 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Entity;
 
+use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\TokenId;
 use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'invitation_tokens')]
 class InvitationToken
 {
+    #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isUsed = false;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'token_id')]
         private readonly TokenId $id,
+        #[ORM\Column(type: 'hashed_string', length: 255, unique: true)]
         private readonly string $token,
+        #[ORM\Column(type: 'email', length: 255)]
         private readonly Email $email,
+        #[ORM\Column(type: Types::STRING, length: 255)]
         private readonly string $patientName,
+        #[ORM\Column(type: 'user_id')]
         private readonly UserId $invitedBy,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }
@@ -34,7 +49,7 @@ class InvitationToken
         int $ttlSeconds,
     ): self {
         $now = new DateTimeImmutable();
-        
+
         return new self(
             id: $id,
             token: $token,

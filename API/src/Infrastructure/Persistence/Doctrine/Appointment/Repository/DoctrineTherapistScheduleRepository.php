@@ -9,31 +9,25 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\ValueObject\ScheduleId;
 use App\Domain\Appointment\ValueObject\WeekDay;
 use App\Domain\User\ValueObject\UserId;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Entity\TherapistScheduleEntity;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Mapper\TherapistScheduleMapper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepositoryInterface
 {
-    /** @var EntityRepository<TherapistScheduleEntity> */
+    /** @var EntityRepository<TherapistSchedule> */
     private EntityRepository $repository;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $entityManager->getRepository(TherapistScheduleEntity::class);
+        $this->repository = $entityManager->getRepository(TherapistSchedule::class);
     }
 
     public function save(TherapistSchedule $schedule): void
     {
-        $existingEntity = $this->repository->find($schedule->getId()->getValue());
-
-        $entity = TherapistScheduleMapper::toEntity($schedule, $existingEntity);
-
-        if ($existingEntity === null) {
-            $this->entityManager->persist($entity);
+        if (!$this->entityManager->contains($schedule)) {
+            $this->entityManager->persist($schedule);
         }
 
         $this->entityManager->flush();
@@ -41,9 +35,7 @@ final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepo
 
     public function findById(ScheduleId $id): ?TherapistSchedule
     {
-        $entity = $this->repository->find($id->getValue());
-
-        return $entity !== null ? TherapistScheduleMapper::toDomain($entity) : null;
+        return $this->entityManager->find(TherapistSchedule::class, $id->getValue());
     }
 
     /**
@@ -51,17 +43,10 @@ final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepo
      */
     public function findActiveByTherapist(UserId $therapistId): ArrayCollection
     {
-        $entities = $this->repository->findBy([
+        return new ArrayCollection($this->repository->findBy([
             'therapistId' => $therapistId->getValue(),
             'isActive' => true,
-        ]);
-
-        $schedules = array_map(
-            fn(TherapistScheduleEntity $entity) => TherapistScheduleMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($schedules);
+        ]));
     }
 
     /**
@@ -69,26 +54,19 @@ final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepo
      */
     public function findActiveByTherapistAndDay(UserId $therapistId, WeekDay $day): ArrayCollection
     {
-        $entities = $this->repository->findBy([
+        return new ArrayCollection($this->repository->findBy([
             'therapistId' => $therapistId->getValue(),
             'dayOfWeek' => $day->value,
             'isActive' => true,
-        ]);
-
-        $schedules = array_map(
-            fn(TherapistScheduleEntity $entity) => TherapistScheduleMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($schedules);
+        ]));
     }
 
     public function delete(TherapistSchedule $schedule): void
     {
-        $entity = $this->repository->find($schedule->getId()->getValue());
+        $managed = $this->entityManager->find(TherapistSchedule::class, $schedule->getId()->getValue());
 
-        if ($entity !== null) {
-            $this->entityManager->remove($entity);
+        if ($managed !== null) {
+            $this->entityManager->remove($managed);
             $this->entityManager->flush();
         }
     }

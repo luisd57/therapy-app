@@ -13,23 +13,46 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'appointments')]
+#[ORM\Index(columns: ['status'], name: 'idx_appointment_status')]
+#[ORM\Index(columns: ['start_time', 'end_time'], name: 'idx_appointment_time_range')]
+#[ORM\Index(columns: ['status', 'start_time', 'end_time'], name: 'idx_appointment_blocking')]
 class Appointment
 {
+    #[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentStatus::class)]
     private AppointmentStatus $status;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $updatedAt;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $paymentVerified = false;
 
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'appointment_id')]
         private readonly AppointmentId $id,
+        #[ORM\Embedded(class: TimeSlot::class, columnPrefix: false)]
         private readonly TimeSlot $timeSlot,
+        #[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]
         private readonly AppointmentModality $modality,
+        #[ORM\Column(type: Types::STRING, length: 255)]
         private readonly string $fullName,
+        #[ORM\Column(type: 'email', length: 255)]
         private readonly Email $email,
+        #[ORM\Column(type: 'phone', length: 50)]
         private readonly Phone $phone,
+        #[ORM\Column(type: Types::STRING, length: 100)]
         private readonly string $city,
+        #[ORM\Column(type: Types::STRING, length: 100)]
         private readonly string $country,
+        #[ORM\Column(type: 'user_id', nullable: true)]
         private readonly ?UserId $patientId,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->status = AppointmentStatus::REQUESTED;

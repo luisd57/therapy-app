@@ -8,16 +8,29 @@ use App\Domain\Appointment\ValueObject\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'schedule_exceptions')]
+#[ORM\Index(columns: ['therapist_id', 'start_date_time', 'end_date_time'], name: 'idx_exception_range')]
 class ScheduleException
 {
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'exception_id')]
         private readonly ExceptionId $id,
+        #[ORM\Column(type: 'user_id')]
         private readonly UserId $therapistId,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $startDateTime,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $endDateTime,
+        #[ORM\Column(type: Types::STRING, length: 500)]
         private readonly string $reason,
+        #[ORM\Column(type: Types::BOOLEAN)]
         private readonly bool $isAllDay,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
     ) {
     }

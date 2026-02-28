@@ -8,31 +8,25 @@ use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\ValueObject\TokenId;
 use App\Domain\User\ValueObject\UserId;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\PasswordResetTokenEntity;
-use App\Infrastructure\Persistence\Doctrine\User\Mapper\PasswordResetTokenMapper;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
 final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRepositoryInterface
 {
-    /** @var EntityRepository<PasswordResetTokenEntity> */
+    /** @var EntityRepository<PasswordResetToken> */
     private EntityRepository $repository;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $entityManager->getRepository(PasswordResetTokenEntity::class);
+        $this->repository = $entityManager->getRepository(PasswordResetToken::class);
     }
 
     public function save(PasswordResetToken $token): void
     {
-        $existingEntity = $this->repository->find($token->getId()->getValue());
-
-        $entity = PasswordResetTokenMapper::toEntity($token, $existingEntity);
-
-        if ($existingEntity === null) {
-            $this->entityManager->persist($entity);
+        if (!$this->entityManager->contains($token)) {
+            $this->entityManager->persist($token);
         }
 
         $this->entityManager->flush();
@@ -40,23 +34,19 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
 
     public function findById(TokenId $id): ?PasswordResetToken
     {
-        $entity = $this->repository->find($id->getValue());
-
-        return $entity !== null ? PasswordResetTokenMapper::toDomain($entity) : null;
+        return $this->entityManager->find(PasswordResetToken::class, $id->getValue());
     }
 
     public function findByToken(string $token): ?PasswordResetToken
     {
-        $entity = $this->repository->findOneBy(['token' => hash('sha256', $token)]);
-
-        return $entity !== null ? PasswordResetTokenMapper::toDomain($entity) : null;
+        return $this->repository->findOneBy(['token' => $token]);
     }
 
     public function findValidByUserId(UserId $userId): ?PasswordResetToken
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('t')
-            ->from(PasswordResetTokenEntity::class, 't')
+            ->from(PasswordResetToken::class, 't')
             ->where('t.userId = :userId')
             ->andWhere('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
@@ -64,17 +54,15 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->setParameter('now', new DateTimeImmutable())
             ->setMaxResults(1);
 
-        $entity = $qb->getQuery()->getOneOrNullResult();
-
-        return $entity !== null ? PasswordResetTokenMapper::toDomain($entity) : null;
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     public function delete(PasswordResetToken $token): void
     {
-        $entity = $this->repository->find($token->getId()->getValue());
+        $managed = $this->entityManager->find(PasswordResetToken::class, $token->getId()->getValue());
 
-        if ($entity !== null) {
-            $this->entityManager->remove($entity);
+        if ($managed !== null) {
+            $this->entityManager->remove($managed);
             $this->entityManager->flush();
         }
     }
@@ -82,7 +70,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
     public function deleteExpired(): int
     {
         $qb = $this->entityManager->createQueryBuilder();
-        $qb->delete(PasswordResetTokenEntity::class, 't')
+        $qb->delete(PasswordResetToken::class, 't')
             ->where('t.expiresAt < :now')
             ->setParameter('now', new DateTimeImmutable());
 
@@ -92,7 +80,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
     public function invalidateAllForUser(UserId $userId): void
     {
         $qb = $this->entityManager->createQueryBuilder();
-        $qb->update(PasswordResetTokenEntity::class, 't')
+        $qb->update(PasswordResetToken::class, 't')
             ->set('t.isUsed', 'true')
             ->set('t.usedAt', ':now')
             ->where('t.userId = :userId')

@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace App\Domain\Appointment\ValueObject;
 
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Embeddable]
 final readonly class TimeSlot
 {
     private function __construct(
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private DateTimeImmutable $startTime,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private DateTimeImmutable $endTime,
     ) {
     }

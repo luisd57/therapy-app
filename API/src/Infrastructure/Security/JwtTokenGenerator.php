@@ -6,7 +6,6 @@ namespace App\Infrastructure\Security;
 
 use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Domain\User\Entity\User;
-use App\Infrastructure\Persistence\Doctrine\User\Mapper\UserMapper;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 final readonly class JwtTokenGenerator implements JwtTokenGeneratorInterface
@@ -18,8 +17,6 @@ final readonly class JwtTokenGenerator implements JwtTokenGeneratorInterface
 
     public function generate(User $user): string
     {
-        $userEntity = UserMapper::toEntity($user);
-        
-        return $this->jwtManager->create($userEntity);
+        return $this->jwtManager->create($user);
     }
 }

@@ -10,7 +10,7 @@ use App\Application\User\Handler\UpdatePatientProfileHandler;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
+use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,11 +33,11 @@ final class PatientController extends AbstractController
     #[Route('/me', name: 'api_patient_me', methods: ['GET'])]
     public function me(GetUserHandler $handler): JsonResponse
     {
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
-            $user = $handler->__invoke($currentUser->getId());
+            $user = $handler->__invoke($currentUser->getId()->getValue());
 
             return $this->success($user->toArray());
         } catch (UserNotFoundException $exception) {
@@ -55,12 +55,12 @@ final class PatientController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $user = $handler->__invoke(new UpdatePatientProfileInputDTO(
-                userId: $currentUser->getId(),
+                userId: $currentUser->getId()->getValue(),
                 phone: $data['phone'] ?? null,
                 street: $data['address']['street'] ?? null,
                 city: $data['address']['city'] ?? null,

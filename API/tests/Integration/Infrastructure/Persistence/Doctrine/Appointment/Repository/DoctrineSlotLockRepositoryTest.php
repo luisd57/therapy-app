@@ -33,6 +33,8 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
         );
         $this->repository->save($lock);
 
+        $this->entityManager->clear();
+
         $found = $this->repository->findByLockToken('test-lock-token-123');
 
         $this->assertNotNull($found);

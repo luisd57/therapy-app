@@ -24,6 +24,8 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $token = DomainTestHelper::createValidPasswordResetToken(token: 'save-reset-test');
         $this->repository->save($token);
 
+        $this->entityManager->clear();
+
         $found = $this->repository->findByToken('save-reset-test');
 
         $this->assertNotNull($found);

@@ -7,17 +7,30 @@ namespace App\Domain\User\Entity;
 use App\Domain\User\ValueObject\TokenId;
 use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'password_reset_tokens')]
 class PasswordResetToken
 {
+    #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isUsed = false;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'token_id')]
         private readonly TokenId $id,
+        #[ORM\Column(type: 'hashed_string', length: 255, unique: true)]
         private readonly string $token,
+        #[ORM\Column(type: 'user_id')]
         private readonly UserId $userId,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }
@@ -29,7 +42,7 @@ class PasswordResetToken
         int $ttlSeconds,
     ): self {
         $now = new DateTimeImmutable();
-        
+
         return new self(
             id: $id,
             token: $token,

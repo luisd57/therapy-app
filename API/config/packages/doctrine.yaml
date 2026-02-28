@@ -3,6 +3,16 @@ doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
         profiling_collect_backtrace: '%kernel.debug%'
+        types:
+            email: App\Infrastructure\Persistence\Doctrine\Type\EmailType
+            phone: App\Infrastructure\Persistence\Doctrine\Type\PhoneType
+            user_id: App\Infrastructure\Persistence\Doctrine\Type\UserIdType
+            appointment_id: App\Infrastructure\Persistence\Doctrine\Type\AppointmentIdType
+            schedule_id: App\Infrastructure\Persistence\Doctrine\Type\ScheduleIdType
+            exception_id: App\Infrastructure\Persistence\Doctrine\Type\ExceptionIdType
+            slot_lock_id: App\Infrastructure\Persistence\Doctrine\Type\SlotLockIdType
+            token_id: App\Infrastructure\Persistence\Doctrine\Type\TokenIdType
+            hashed_string: App\Infrastructure\Persistence\Doctrine\Type\HashedStringType
     orm:
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
@@ -11,15 +21,27 @@ doctrine:
             User:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/User/Entity'
-                prefix: 'App\Infrastructure\Persistence\Doctrine\User\Entity'
+                dir: '%kernel.project_dir%/src/Domain/User/Entity'
+                prefix: 'App\Domain\User\Entity'
                 alias: User
+            UserValueObject:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/User/ValueObject'
+                prefix: 'App\Domain\User\ValueObject'
+                alias: UserValueObject
             Appointment:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Appointment/Entity'
-                prefix: 'App\Infrastructure\Persistence\Doctrine\Appointment\Entity'
+                dir: '%kernel.project_dir%/src/Domain/Appointment/Entity'
+                prefix: 'App\Domain\Appointment\Entity'
                 alias: Appointment
+            AppointmentValueObject:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Appointment/ValueObject'
+                prefix: 'App\Domain\Appointment\ValueObject'
+                alias: AppointmentValueObject
 
 when@test:
     doctrine:

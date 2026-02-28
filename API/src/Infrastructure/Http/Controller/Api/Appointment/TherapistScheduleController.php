@@ -21,7 +21,7 @@ use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
 use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
+use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,10 +45,10 @@ final class TherapistScheduleController extends AbstractController
     #[Route('', name: 'api_therapist_schedule_list', methods: ['GET'])]
     public function listSchedules(GetTherapistScheduleHandler $handler): JsonResponse
     {
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
-        $schedules = $handler->__invoke($currentUser->getId());
+        $schedules = $handler->__invoke($currentUser->getId()->getValue());
 
         return $this->success([
             'schedules' => $schedules->map(fn ($dto) => $dto->toArray())->toArray(),
@@ -66,12 +66,12 @@ final class TherapistScheduleController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $result = $handler->__invoke(new SetTherapistScheduleInputDTO(
-                therapistId: $currentUser->getId(),
+                therapistId: $currentUser->getId()->getValue(),
                 dayOfWeek: (int) $data['day_of_week'],
                 startTime: $data['start_time'],
                 endTime: $data['end_time'],
@@ -98,13 +98,13 @@ final class TherapistScheduleController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $result = $handler->__invoke(new UpdateTherapistScheduleInputDTO(
                 scheduleId: $id,
-                therapistId: $currentUser->getId(),
+                therapistId: $currentUser->getId()->getValue(),
                 dayOfWeek: (int) $data['day_of_week'],
                 startTime: $data['start_time'],
                 endTime: $data['end_time'],
@@ -126,13 +126,13 @@ final class TherapistScheduleController extends AbstractController
     #[Route('/{id}', name: 'api_therapist_schedule_delete', methods: ['DELETE'])]
     public function deleteSchedule(string $id, DeleteTherapistScheduleHandler $handler): JsonResponse
     {
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $handler->__invoke(new DeleteTherapistScheduleInputDTO(
                 scheduleId: $id,
-                therapistId: $currentUser->getId(),
+                therapistId: $currentUser->getId()->getValue(),
             ));
 
             return $this->noContent();
@@ -152,11 +152,11 @@ final class TherapistScheduleController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         $exceptions = $handler->__invoke(new ListScheduleExceptionsInputDTO(
-            therapistId: $currentUser->getId(),
+            therapistId: $currentUser->getId()->getValue(),
             from: $from,
             to: $to,
         ));
@@ -177,11 +177,11 @@ final class TherapistScheduleController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         $result = $handler->__invoke(new AddScheduleExceptionInputDTO(
-            therapistId: $currentUser->getId(),
+            therapistId: $currentUser->getId()->getValue(),
             startDateTime: $data['start_date_time'],
             endDateTime: $data['end_date_time'],
             reason: $data['reason'] ?? '',
@@ -197,13 +197,13 @@ final class TherapistScheduleController extends AbstractController
     #[Route('/exceptions/{id}', name: 'api_therapist_schedule_exceptions_delete', methods: ['DELETE'])]
     public function removeException(string $id, RemoveScheduleExceptionHandler $handler): JsonResponse
     {
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $handler->__invoke(new RemoveScheduleExceptionInputDTO(
                 exceptionId: $id,
-                therapistId: $currentUser->getId(),
+                therapistId: $currentUser->getId()->getValue(),
             ));
 
             return $this->noContent();

@@ -15,7 +15,7 @@ use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity;
+use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,11 +38,11 @@ final class TherapistController extends AbstractController
     #[Route('/me', name: 'api_therapist_me', methods: ['GET'])]
     public function me(GetUserHandler $handler): JsonResponse
     {
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
-            $user = $handler->__invoke($currentUser->getId());
+            $user = $handler->__invoke($currentUser->getId()->getValue());
 
             return $this->success($user->toArray());
         } catch (UserNotFoundException $exception) {
@@ -78,14 +78,14 @@ final class TherapistController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var UserEntity $currentUser */
+        /** @var User $currentUser */
         $currentUser = $this->getUser();
 
         try {
             $invitation = $handler->__invoke(new InvitePatientInputDTO(
                 email: $data['email'],
                 patientName: $data['patient_name'],
-                therapistId: $currentUser->getId(),
+                therapistId: $currentUser->getId()->getValue(),
             ));
 
             return $this->created([

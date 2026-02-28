@@ -8,15 +8,26 @@ use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'slot_locks')]
 class SlotLock
 {
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'slot_lock_id')]
         private readonly SlotLockId $id,
+        #[ORM\Embedded(class: TimeSlot::class, columnPrefix: false)]
         private readonly TimeSlot $timeSlot,
+        #[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]
         private readonly AppointmentModality $modality,
+        #[ORM\Column(type: 'hashed_string', length: 255, unique: true)]
         private readonly string $lockToken,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }

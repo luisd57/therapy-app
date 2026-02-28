@@ -6,8 +6,6 @@ namespace App\Infrastructure\Persistence\Doctrine\Appointment\Repository;
 
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Entity\SlotLockEntity;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Mapper\SlotLockMapper;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,23 +13,19 @@ use Doctrine\ORM\EntityRepository;
 
 final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
 {
-    /** @var EntityRepository<SlotLockEntity> */
+    /** @var EntityRepository<SlotLock> */
     private EntityRepository $repository;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $entityManager->getRepository(SlotLockEntity::class);
+        $this->repository = $entityManager->getRepository(SlotLock::class);
     }
 
     public function save(SlotLock $lock): void
     {
-        $existingEntity = $this->repository->find($lock->getId()->getValue());
-
-        $entity = SlotLockMapper::toEntity($lock, $existingEntity);
-
-        if ($existingEntity === null) {
-            $this->entityManager->persist($entity);
+        if (!$this->entityManager->contains($lock)) {
+            $this->entityManager->persist($lock);
         }
 
         $this->entityManager->flush();
@@ -46,22 +40,15 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
     ): ArrayCollection {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('l')
-            ->from(SlotLockEntity::class, 'l')
-            ->where('l.startTime < :to')
-            ->andWhere('l.endTime > :from')
+            ->from(SlotLock::class, 'l')
+            ->where('l.timeSlot.startTime < :to')
+            ->andWhere('l.timeSlot.endTime > :from')
             ->andWhere('l.expiresAt > :now')
             ->setParameter('from', $from)
             ->setParameter('to', $to)
             ->setParameter('now', new DateTimeImmutable());
 
-        $entities = $qb->getQuery()->getResult();
-
-        $locks = array_map(
-            fn(SlotLockEntity $entity) => SlotLockMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($locks);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     public function findActiveByTimeSlot(
@@ -70,33 +57,29 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
     ): ?SlotLock {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('l')
-            ->from(SlotLockEntity::class, 'l')
-            ->where('l.startTime < :end')
-            ->andWhere('l.endTime > :start')
+            ->from(SlotLock::class, 'l')
+            ->where('l.timeSlot.startTime < :end')
+            ->andWhere('l.timeSlot.endTime > :start')
             ->andWhere('l.expiresAt > :now')
             ->setParameter('start', $slotStart)
             ->setParameter('end', $slotEnd)
             ->setParameter('now', new DateTimeImmutable())
             ->setMaxResults(1);
 
-        $entity = $qb->getQuery()->getOneOrNullResult();
-
-        return $entity !== null ? SlotLockMapper::toDomain($entity) : null;
+        return $qb->getQuery()->getOneOrNullResult();
     }
 
     public function findByLockToken(string $lockToken): ?SlotLock
     {
-        $entity = $this->repository->findOneBy(['lockToken' => hash('sha256', $lockToken)]);
-
-        return $entity !== null ? SlotLockMapper::toDomain($entity) : null;
+        return $this->repository->findOneBy(['lockToken' => $lockToken]);
     }
 
     public function delete(SlotLock $lock): void
     {
-        $entity = $this->repository->find($lock->getId()->getValue());
+        $managed = $this->entityManager->find(SlotLock::class, $lock->getId()->getValue());
 
-        if ($entity !== null) {
-            $this->entityManager->remove($entity);
+        if ($managed !== null) {
+            $this->entityManager->remove($managed);
             $this->entityManager->flush();
         }
     }
@@ -104,7 +87,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
     public function deleteExpired(): int
     {
         $qb = $this->entityManager->createQueryBuilder();
-        $qb->delete(SlotLockEntity::class, 'l')
+        $qb->delete(SlotLock::class, 'l')
             ->where('l.expiresAt < :now')
             ->setParameter('now', new DateTimeImmutable());
 

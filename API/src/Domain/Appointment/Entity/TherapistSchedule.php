@@ -9,20 +9,37 @@ use App\Domain\Appointment\ValueObject\ScheduleId;
 use App\Domain\Appointment\ValueObject\WeekDay;
 use App\Domain\User\ValueObject\UserId;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Entity]
+#[ORM\Table(name: 'therapist_schedules')]
+#[ORM\Index(columns: ['therapist_id', 'day_of_week'], name: 'idx_schedule_therapist_day')]
 class TherapistSchedule
 {
+    #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isActive = true;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $updatedAt;
 
     public function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'schedule_id')]
         private readonly ScheduleId $id,
+        #[ORM\Column(type: 'user_id')]
         private readonly UserId $therapistId,
+        #[ORM\Column(type: Types::SMALLINT, enumType: WeekDay::class)]
         private WeekDay $dayOfWeek,
+        #[ORM\Column(type: Types::STRING, length: 5)]
         private string $startTime,
+        #[ORM\Column(type: Types::STRING, length: 5)]
         private string $endTime,
+        #[ORM\Column(type: Types::BOOLEAN)]
         private bool $supportsOnline,
+        #[ORM\Column(type: Types::BOOLEAN)]
         private bool $supportsInPerson,
+        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->updatedAt = $createdAt;

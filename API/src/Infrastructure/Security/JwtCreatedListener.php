@@ -12,6 +12,7 @@ final class JwtCreatedListener
     {
         $payload = $jwtCreatedEvent->getData();
         $payload['jti'] = bin2hex(random_bytes(16));
+        $payload['email'] = $jwtCreatedEvent->getUser()->getUserIdentifier();
         $jwtCreatedEvent->setData($payload);
     }
 }

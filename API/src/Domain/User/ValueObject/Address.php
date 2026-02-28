@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace App\Domain\User\ValueObject;
 
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Embeddable]
 final readonly class Address
 {
     private function __construct(
+        #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
         private string $street,
+        #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
         private string $city,
+        #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
         private string $country,
+        #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
         private ?string $postalCode = null,
+        #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
         private ?string $state = null,
     ) {
     }

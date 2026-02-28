@@ -24,6 +24,8 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $invitation = DomainTestHelper::createValidInvitation(token: 'save-test-token');
         $this->repository->save($invitation);
 
+        $this->entityManager->clear();
+
         $found = $this->repository->findById($invitation->getId());
 
         $this->assertNotNull($found);

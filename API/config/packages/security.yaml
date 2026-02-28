@@ -6,7 +6,7 @@ security:
     providers:
         app_user_provider:
             entity:
-                class: App\Infrastructure\Persistence\Doctrine\User\Entity\UserEntity
+                class: App\Domain\User\Entity\User
                 property: email
 
     firewalls:

@@ -8,8 +8,6 @@ use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\ValueObject\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentStatus;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Entity\AppointmentEntity;
-use App\Infrastructure\Persistence\Doctrine\Appointment\Mapper\AppointmentMapper;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,23 +15,19 @@ use Doctrine\ORM\EntityRepository;
 
 final class DoctrineAppointmentRepository implements AppointmentRepositoryInterface
 {
-    /** @var EntityRepository<AppointmentEntity> */
+    /** @var EntityRepository<Appointment> */
     private EntityRepository $repository;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
     ) {
-        $this->repository = $entityManager->getRepository(AppointmentEntity::class);
+        $this->repository = $entityManager->getRepository(Appointment::class);
     }
 
     public function save(Appointment $appointment): void
     {
-        $existingEntity = $this->repository->find($appointment->getId()->getValue());
-
-        $entity = AppointmentMapper::toEntity($appointment, $existingEntity);
-
-        if ($existingEntity === null) {
-            $this->entityManager->persist($entity);
+        if (!$this->entityManager->contains($appointment)) {
+            $this->entityManager->persist($appointment);
         }
 
         $this->entityManager->flush();
@@ -41,9 +35,7 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
 
     public function findById(AppointmentId $id): ?Appointment
     {
-        $entity = $this->repository->find($id->getValue());
-
-        return $entity !== null ? AppointmentMapper::toDomain($entity) : null;
+        return $this->entityManager->find(Appointment::class, $id->getValue());
     }
 
     /**
@@ -55,10 +47,10 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     ): ArrayCollection {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('a')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->where('a.status IN (:statuses)')
-            ->andWhere('a.startTime < :to')
-            ->andWhere('a.endTime > :from')
+            ->andWhere('a.timeSlot.startTime < :to')
+            ->andWhere('a.timeSlot.endTime > :from')
             ->setParameter('statuses', [
                 AppointmentStatus::REQUESTED->value,
                 AppointmentStatus::CONFIRMED->value,
@@ -66,14 +58,7 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
             ->setParameter('from', $from)
             ->setParameter('to', $to);
 
-        $entities = $qb->getQuery()->getResult();
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     /**
@@ -81,14 +66,7 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
      */
     public function findByStatus(AppointmentStatus $status): ArrayCollection
     {
-        $entities = $this->repository->findBy(['status' => $status->value]);
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($this->repository->findBy(['status' => $status->value]));
     }
 
     /**
@@ -96,14 +74,7 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
      */
     public function findAll(): ArrayCollection
     {
-        $entities = $this->repository->findBy([], ['createdAt' => 'DESC']);
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($this->repository->findBy([], ['createdAt' => 'DESC']));
     }
 
     /**
@@ -113,26 +84,19 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('a')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->orderBy('a.createdAt', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
-        $entities = $qb->getQuery()->getResult();
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     public function countAll(): int
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('COUNT(a.id)')
-            ->from(AppointmentEntity::class, 'a');
+            ->from(Appointment::class, 'a');
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
@@ -144,28 +108,21 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('a')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->where('a.status = :status')
             ->setParameter('status', $status->value)
             ->orderBy('a.createdAt', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
-        $entities = $qb->getQuery()->getResult();
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     public function countByStatus(AppointmentStatus $status): int
     {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('COUNT(a.id)')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->where('a.status = :status')
             ->setParameter('status', $status->value);
 
@@ -181,22 +138,15 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
     ): ArrayCollection {
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('a')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->where('a.status = :status')
-            ->andWhere('a.startTime < :to')
-            ->andWhere('a.endTime > :from')
+            ->andWhere('a.timeSlot.startTime < :to')
+            ->andWhere('a.timeSlot.endTime > :from')
             ->setParameter('status', AppointmentStatus::CONFIRMED->value)
             ->setParameter('from', $from)
             ->setParameter('to', $to);
 
-        $entities = $qb->getQuery()->getResult();
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     /**
@@ -209,31 +159,24 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
 
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('a')
-            ->from(AppointmentEntity::class, 'a')
+            ->from(Appointment::class, 'a')
             ->where('a.status = :status')
-            ->andWhere('a.startTime >= :dayStart')
-            ->andWhere('a.startTime < :dayEnd')
+            ->andWhere('a.timeSlot.startTime >= :dayStart')
+            ->andWhere('a.timeSlot.startTime < :dayEnd')
             ->setParameter('status', AppointmentStatus::CONFIRMED->value)
             ->setParameter('dayStart', $dayStart)
             ->setParameter('dayEnd', $dayEnd)
-            ->orderBy('a.startTime', 'ASC');
+            ->orderBy('a.timeSlot.startTime', 'ASC');
 
-        $entities = $qb->getQuery()->getResult();
-
-        $appointments = array_map(
-            fn(AppointmentEntity $entity) => AppointmentMapper::toDomain($entity),
-            $entities,
-        );
-
-        return new ArrayCollection($appointments);
+        return new ArrayCollection($qb->getQuery()->getResult());
     }
 
     public function delete(Appointment $appointment): void
     {
-        $entity = $this->repository->find($appointment->getId()->getValue());
+        $managed = $this->entityManager->find(Appointment::class, $appointment->getId()->getValue());
 
-        if ($entity !== null) {
-            $this->entityManager->remove($entity);
+        if ($managed !== null) {
+            $this->entityManager->remove($managed);
             $this->entityManager->flush();
         }
     }
