@@ -37,35 +37,40 @@ Projet conçu comme un cas réel : la thérapeute vérifie les paiements manuell
 
 ## Architecture Backend — Hexagonale (Ports & Adapters)
 
-Le backend suit une architecture hexagonale stricte en 3 couches, avec une règle de dépendance unidirectionnelle :
+Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, avec une règle de dépendance unidirectionnelle :
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Infrastructure                             │
-│                                                                 │
-│  Controllers ─────► Handlers ─────► Domain Entities             │
-│  (HTTP)             (Use Cases)     (Business Logic)            │
-│                                                                 │
-│  Doctrine Repos ◄── Repository      Repository                  │
-│  (Implementation)   Interfaces ◄─── Interfaces (Ports)          │
-│                     (Application)   (Domain)                    │
-│                                                                 │
-│  Email Senders ◄─── Email Service   Email Service               │
-│  (SMTP)             Interfaces ◄─── Interfaces (Ports)          │
-│                                                                 │
-│  ◄──────────────────────────────────────────────────────────►   │
-│  Infrastructure        Application           Domain             │
-│  (dépend de)      →   (dépend de)       →   (zéro dépendance)  │
-└─────────────────────────────────────────────────────────────────┘
+         Côté Driving                                      Côté Driven
+      (qui appelle l'app)                            (que l'app appelle)
+
+┌───────────────────┐    ┌───────────────────┐    ┌───────────────────────┐
+│  Infrastructure   │    │   Application     │    │       Domain          │
+│                   │    │                   │    │                       │
+│  HTTP Controllers ├───►│  Handlers         │    │  Entités              │
+│  CLI Commands     │    │  (Use Cases)      ├───►│  Value Objects        │
+│                   │    │                   │    │  Services métier      │
+│                   │    │  DTOs             │    │  Exceptions           │
+│                   │    │  Input / Output   │    │                       │
+│                   │    └─────────┬─────────┘    │  Ports (Interfaces)   │
+│                   │              │               │  ├─ Repositories     │
+│  Adaptateurs      │              │ dépend de     │  └─ Services         │
+│  ├─ Doctrine Repos◄─────────────┼───────────────┤                       │
+│  ├─ Email Senders │              ▼               │                       │
+│  ├─ Security      │        implémente            │  (zéro dépendance    │
+│  └─ Redis         │         les ports            │   framework)         │
+└───────────────────┘                              └───────────────────────┘
+
+              Infrastructure ──► Application ──► Domain
+                   (la dépendance pointe toujours vers l'intérieur)
 ```
 
 ### Couches
 
 | Couche | Rôle | Contenu |
 | ------ | ---- | ------- |
-| **Domain** | Logique métier pure, aucune dépendance externe | Entités, Value Objects, interfaces Repository, exceptions, `AvailabilityComputer` |
-| **Application** | Orchestration des cas d'usage | 32 Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
-| **Infrastructure** | Adaptateurs techniques | Controllers HTTP, repositories Doctrine, envoi d'emails, commandes CLI, event subscribers |
+| **Domain** | Logique métier pure, aucune dépendance framework | Entités, Value Objects, interfaces Repository et Service (ports driven), services métier, exceptions |
+| **Application** | Orchestration des cas d'usage | 33 Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
+| **Infrastructure** | Adaptateurs techniques (driving + driven) | Controllers HTTP (driving), repositories Doctrine, envoi d'emails, security, commandes CLI, event subscribers |
 
 ### Patterns clés
 
