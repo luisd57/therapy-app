@@ -180,7 +180,7 @@ therapy/
 ├── api/                          # Backend Symfony 8.0
 │   ├── src/
 │   │   ├── Domain/               # Logique métier pure (entités, value objects, ports)
-│   │   ├── Application/          # Cas d'usage (32 handlers, DTOs)
+│   │   ├── Application/          # Cas d'usage (33 handlers, DTOs)
 │   │   └── Infrastructure/       # Adaptateurs (Doctrine, HTTP, email, CLI)
 │   ├── tests/
 │   │   ├── Unit/                 # Tests unitaires (domain + handlers)
