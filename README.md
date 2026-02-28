@@ -11,7 +11,7 @@
 
 Application web (en développement) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
 
-Projet conçu comme un cas réel : la thérapeute vérifie les paiements manuellement (Zelle / Pago Móvil) et la communication patient se fait par email.
+Projet conçu après d'un cas réel : Cabinet Thérapeutique avec un besoin de solution logiciel.
 
 ---
 
