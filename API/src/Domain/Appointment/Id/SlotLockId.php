@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Appointment\ValueObject;
+namespace App\Domain\Appointment\Id;
 
 use Symfony\Component\Uid\Uuid;
 
-final readonly class ExceptionId
+final readonly class SlotLockId
 {
     private function __construct(
         private string $value,

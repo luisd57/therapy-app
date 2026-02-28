@@ -6,7 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Reposit
 
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\UserRole;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;

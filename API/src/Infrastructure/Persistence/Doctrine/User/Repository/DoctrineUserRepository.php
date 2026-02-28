@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\User\Repository;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\UserRole;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;

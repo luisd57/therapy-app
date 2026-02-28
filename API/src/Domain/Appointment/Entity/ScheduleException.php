@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Appointment\Entity;
 
-use App\Domain\Appointment\ValueObject\ExceptionId;
+use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

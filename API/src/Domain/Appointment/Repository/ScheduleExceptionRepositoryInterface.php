@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Appointment\Repository;
 
 use App\Domain\Appointment\Entity\ScheduleException;
-use App\Domain\Appointment\ValueObject\ExceptionId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\Appointment\Id\ExceptionId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 

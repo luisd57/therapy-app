@@ -7,7 +7,7 @@ namespace App\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\RemoveScheduleExceptionInputDTO;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\ValueObject\ExceptionId;
+use App\Domain\Appointment\Id\ExceptionId;
 
 final readonly class RemoveScheduleExceptionHandler
 {

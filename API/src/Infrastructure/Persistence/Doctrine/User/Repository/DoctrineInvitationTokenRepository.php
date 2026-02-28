@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\User\Repository;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\TokenId;
+use App\Domain\User\Id\TokenId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;

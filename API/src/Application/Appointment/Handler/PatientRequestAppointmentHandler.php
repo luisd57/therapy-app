@@ -10,7 +10,7 @@ use App\Application\Appointment\Service\AppointmentRequestServiceInterface;
 use App\Domain\User\Exception\IncompleteProfileException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 
 final readonly class PatientRequestAppointmentHandler
 {

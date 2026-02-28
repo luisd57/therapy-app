@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Appointment\Entity;
 
 use App\Domain\Appointment\Entity\ScheduleException;
-use App\Domain\Appointment\ValueObject\ExceptionId;
+use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 

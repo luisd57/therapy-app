@@ -6,8 +6,8 @@ namespace App\Tests\Unit\Domain\User\Entity;
 
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\TokenId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\TokenId;
+use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;

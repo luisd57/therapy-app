@@ -6,7 +6,7 @@ namespace App\Application\User\Handler;
 
 use App\Application\User\DTO\Output\UserOutputDTO;use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 
 final readonly class GetUserHandler
 {

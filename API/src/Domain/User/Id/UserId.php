@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\User\ValueObject;
+namespace App\Domain\User\Id;
 
 use Symfony\Component\Uid\Uuid;
 
-final readonly class TokenId
+final readonly class UserId
 {
     private function __construct(
         private string $value,

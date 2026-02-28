@@ -8,7 +8,7 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;

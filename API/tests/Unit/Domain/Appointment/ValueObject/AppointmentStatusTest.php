@@ -97,9 +97,9 @@ final class AppointmentStatusTest extends TestCase
 
     // --- blocksSlot ---
 
-    public function testRequestedBlocksSlot(): void
+    public function testRequestedDoesNotBlockSlot(): void
     {
-        $this->assertTrue(AppointmentStatus::REQUESTED->blocksSlot());
+        $this->assertFalse(AppointmentStatus::REQUESTED->blocksSlot());
     }
 
     public function testConfirmedBlocksSlot(): void

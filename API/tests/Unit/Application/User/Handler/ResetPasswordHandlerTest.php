@@ -37,7 +37,7 @@ final class ResetPasswordHandlerTest extends TestCase
 
     public function testHandleSuccessUpdatesPasswordAndMarksTokenUsed(): void
     {
-        $userId = \App\Domain\User\ValueObject\UserId::generate();
+        $userId = \App\Domain\User\Id\UserId::generate();
         $resetToken = DomainTestHelper::createValidPasswordResetToken(
             token: 'valid-reset',
             userId: $userId,

@@ -8,8 +8,8 @@ use App\Application\Appointment\DTO\Input\AddScheduleExceptionInputDTO;
 use App\Application\Appointment\DTO\Output\ScheduleExceptionOutputDTO;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\ValueObject\ExceptionId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\Appointment\Id\ExceptionId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 
 final readonly class AddScheduleExceptionHandler

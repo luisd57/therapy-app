@@ -7,7 +7,7 @@ namespace App\Domain\User\Entity;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\UserRole;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;

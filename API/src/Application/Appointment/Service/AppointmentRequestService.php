@@ -15,13 +15,13 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 

@@ -6,7 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\Appointment;
 
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;

@@ -10,17 +10,17 @@ use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Service\AvailabilityComputer;
 use App\Domain\Appointment\Service\AvailabilityContext;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\AppointmentStatus;
-use App\Domain\Appointment\ValueObject\ExceptionId;
-use App\Domain\Appointment\ValueObject\ScheduleId;
-use App\Domain\Appointment\ValueObject\SlotLockId;
+use App\Domain\Appointment\Id\ExceptionId;
+use App\Domain\Appointment\Id\ScheduleId;
+use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\Appointment\ValueObject\WeekDay;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
@@ -543,7 +543,7 @@ final class AvailabilityComputerTest extends TestCase
         $appointment = $this->createAppointment(
             new DateTimeImmutable($dateStr . ' 10:40'),
             50,
-            AppointmentStatus::REQUESTED,
+            AppointmentStatus::CONFIRMED,
         );
 
         $result = $this->computer->computeAvailableSlots(

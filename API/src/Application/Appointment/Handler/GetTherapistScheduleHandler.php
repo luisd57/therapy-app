@@ -7,7 +7,7 @@ namespace App\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Output\TherapistScheduleOutputDTO;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class GetTherapistScheduleHandler

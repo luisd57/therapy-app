@@ -7,7 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Appointment\
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
-use App\Domain\Appointment\ValueObject\SlotLockId;
+use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Tests\Helper\IntegrationTestCase;
 use DateTimeImmutable;

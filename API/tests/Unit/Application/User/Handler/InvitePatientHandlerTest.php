@@ -11,7 +11,7 @@ use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

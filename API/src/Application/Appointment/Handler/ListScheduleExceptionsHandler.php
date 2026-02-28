@@ -8,7 +8,7 @@ use App\Application\Appointment\DTO\Input\ListScheduleExceptionsInputDTO;
 use App\Application\Appointment\DTO\Output\ScheduleExceptionOutputDTO;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 

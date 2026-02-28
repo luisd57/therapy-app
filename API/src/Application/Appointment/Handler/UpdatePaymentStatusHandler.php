@@ -8,7 +8,7 @@ use App\Application\Appointment\DTO\Input\UpdatePaymentStatusInputDTO;
 use App\Application\Appointment\DTO\Output\AppointmentOutputDTO;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 
 final readonly class UpdatePaymentStatusHandler
 {

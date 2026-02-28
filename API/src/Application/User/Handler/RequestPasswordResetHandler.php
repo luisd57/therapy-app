@@ -11,7 +11,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\TokenId;
+use App\Domain\User\Id\TokenId;
 
 final readonly class RequestPasswordResetHandler
 {

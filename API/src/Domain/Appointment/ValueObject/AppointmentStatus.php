@@ -27,7 +27,7 @@ enum AppointmentStatus: string
 
     public function blocksSlot(): bool
     {
-        return $this === self::REQUESTED || $this === self::CONFIRMED;
+        return $this === self::CONFIRMED;
     }
 
     public function getDisplayName(): string

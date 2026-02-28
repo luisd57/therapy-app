@@ -6,7 +6,7 @@ namespace App\Domain\User\Repository;
 
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\TokenId;
+use App\Domain\User\Id\TokenId;
 use Doctrine\Common\Collections\ArrayCollection;
 
 interface InvitationTokenRepositoryInterface

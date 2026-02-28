@@ -6,8 +6,8 @@ namespace App\Infrastructure\Persistence\Doctrine\Appointment\Repository;
 
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\ValueObject\ExceptionId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\Appointment\Id\ExceptionId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;

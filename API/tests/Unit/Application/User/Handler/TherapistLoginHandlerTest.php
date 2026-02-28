@@ -69,7 +69,7 @@ final class TherapistLoginHandlerTest extends TestCase
     public function testInactiveUserThrowsUserNotActive(): void
     {
         $inactiveTherapist = \App\Domain\User\Entity\User::reconstitute(
-            id: \App\Domain\User\ValueObject\UserId::generate(),
+            id: \App\Domain\User\Id\UserId::generate(),
             email: \App\Domain\User\ValueObject\Email::fromString('inactive@example.com'),
             fullName: 'Inactive Therapist',
             role: \App\Domain\User\ValueObject\UserRole::THERAPIST,

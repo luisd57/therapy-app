@@ -558,7 +558,7 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Tests\Helper\ApiTestCase;
 
 final class AuthControllerTest extends ApiTestCase

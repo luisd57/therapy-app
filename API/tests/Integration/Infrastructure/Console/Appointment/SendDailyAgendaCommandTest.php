@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Console\Appointment;
 
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\Appointment\Entity\Appointment;
 use App\Tests\Helper\IntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;

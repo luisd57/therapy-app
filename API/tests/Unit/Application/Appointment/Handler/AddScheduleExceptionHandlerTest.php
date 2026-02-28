@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\AddScheduleExceptionInputDTO;
 use App\Application\Appointment\Handler\AddScheduleExceptionHandler;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

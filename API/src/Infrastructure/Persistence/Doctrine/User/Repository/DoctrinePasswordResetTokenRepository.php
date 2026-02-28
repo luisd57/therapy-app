@@ -6,8 +6,8 @@ namespace App\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
-use App\Domain\User\ValueObject\TokenId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\TokenId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;

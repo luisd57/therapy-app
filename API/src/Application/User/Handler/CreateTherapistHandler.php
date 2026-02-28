@@ -12,7 +12,7 @@ use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\UserRole;
 
 final readonly class CreateTherapistHandler

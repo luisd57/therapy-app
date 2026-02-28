@@ -6,13 +6,13 @@ namespace App\Tests\Unit\Domain\Appointment\Entity;
 
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Exception\InvalidStatusTransitionException;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\ValueObject\AppointmentModality;
 use App\Domain\Appointment\ValueObject\AppointmentStatus;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -258,11 +258,11 @@ final class AppointmentTest extends TestCase
 
     // --- blocksSlot ---
 
-    public function testBlocksSlotForRequestedStatus(): void
+    public function testDoesNotBlockSlotForRequestedStatus(): void
     {
         $appointment = $this->createRequestedAppointment();
 
-        $this->assertTrue($appointment->blocksSlot());
+        $this->assertFalse($appointment->blocksSlot());
     }
 
     public function testBlocksSlotForConfirmedStatus(): void

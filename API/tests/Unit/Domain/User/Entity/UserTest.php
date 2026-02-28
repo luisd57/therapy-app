@@ -8,7 +8,7 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\UserRole;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;

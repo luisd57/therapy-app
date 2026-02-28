@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\User\Entity;
 
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\ValueObject\TokenId;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\TokenId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

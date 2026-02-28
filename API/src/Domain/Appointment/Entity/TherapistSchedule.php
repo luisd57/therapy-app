@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Appointment\Entity;
 
 use App\Domain\Appointment\ValueObject\AppointmentModality;
-use App\Domain\Appointment\ValueObject\ScheduleId;
+use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\ValueObject\WeekDay;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;

@@ -6,9 +6,9 @@ namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\Appointment\
 
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
-use App\Domain\Appointment\ValueObject\ExceptionId;
+use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 use DateTimeImmutable;

@@ -9,7 +9,7 @@ use App\Application\Appointment\Handler\CancelAppointmentHandler;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
-use App\Domain\Appointment\ValueObject\AppointmentId;
+use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

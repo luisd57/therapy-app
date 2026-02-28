@@ -12,7 +12,7 @@ use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Id\UserId;
 
 final readonly class ActivatePatientHandler
 {

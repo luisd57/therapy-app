@@ -7,7 +7,7 @@ namespace App\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\DeleteTherapistScheduleInputDTO;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
-use App\Domain\Appointment\ValueObject\ScheduleId;
+use App\Domain\Appointment\Id\ScheduleId;
 
 final readonly class DeleteTherapistScheduleHandler
 {
