@@ -39,7 +39,7 @@ services:
     App\Domain\User\Service\EmailSenderInterface:
         class: App\Infrastructure\Email\User\SymfonyEmailSender
 
-    App\Application\User\Handler\JwtTokenGeneratorInterface:
+    App\Domain\User\Service\JwtTokenGeneratorInterface:
         class: App\Infrastructure\Security\JwtTokenGenerator
 
     App\Infrastructure\Http\EventSubscriber\RateLimitSubscriber:

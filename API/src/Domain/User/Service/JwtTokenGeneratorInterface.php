@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\User\Handler;
+namespace App\Domain\User\Service;
 
 use App\Domain\User\Entity\User;
 

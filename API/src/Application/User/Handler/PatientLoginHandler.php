@@ -12,6 +12,7 @@ use App\Domain\User\Exception\UserNotActiveException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
+use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Domain\User\ValueObject\UserRole;
 
 final readonly class PatientLoginHandler

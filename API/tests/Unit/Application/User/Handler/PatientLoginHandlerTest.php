@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\User\Handler;
 
 use App\Application\User\DTO\Input\PatientLoginInputDTO;
-use App\Application\User\Handler\JwtTokenGeneratorInterface;
+use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Application\User\Handler\PatientLoginHandler;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Repository\UserRepositoryInterface;

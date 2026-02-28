@@ -440,7 +440,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Application\User\Handler;
 
-use App\Application\User\Handler\JwtTokenGeneratorInterface;
+use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Application\User\Handler\LoginHandler;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Security;
 
-use App\Application\User\Handler\JwtTokenGeneratorInterface;
+use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Domain\User\Entity\User;
 use App\Infrastructure\Persistence\Doctrine\User\Mapper\UserMapper;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
