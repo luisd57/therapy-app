@@ -136,11 +136,6 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 - Lock tokens are verified against the submitted time slot and modality, preventing reuse of a lock acquired for a different slot
 - Locks are an optional concurrency hint — they do **not** hide slots from the public browser. Only CONFIRMED appointments and schedule exceptions affect slot visibility
 
-## Prerequisites (this section shouldn't be here)
-
-- Docker Desktop for Windows
-- Git (optional, for version control)
-
 ## Quick Start
 
 ### Step 1: Clone/Create Project Directory
