@@ -146,9 +146,9 @@ docker-compose exec php vendor/bin/phpunit --testsuite=Integration
 
 Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et paiements.
 
-Une **collection Postman** complète est incluse dans [`api/postman/`](api/postman/) avec variables pré-configurées et scripts de test.
+Une **collection Postman** complète est incluse dans [`API/postman/`](API/postman/) avec variables pré-configurées et scripts de test.
 
-Pour la référence complète des endpoints, voir le [README de l'API](api/README.md#api-endpoints).
+Pour la référence complète des endpoints, voir le [README de l'API](API/README.md#api-endpoints).
 
 ---
 
@@ -169,7 +169,7 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 | Frontend | <http://localhost:4321> |
 | MailHog (emails) | <http://localhost:8025> |
 
-Pour le setup complet (BDD test, JWT, troubleshooting), voir le [README de l'API](api/README.md).
+Pour le setup complet (BDD test, JWT, troubleshooting), voir le [README de l'API](API/README.md).
 
 ---
 
@@ -177,7 +177,7 @@ Pour le setup complet (BDD test, JWT, troubleshooting), voir le [README de l'API
 
 ```
 therapy/
-├── api/                          # Backend Symfony 8.0
+├── API/                          # Backend Symfony 8.0
 │   ├── src/
 │   │   ├── Domain/               # Logique métier pure (entités, value objects, ports)
 │   │   ├── Application/          # Cas d'usage (33 handlers, DTOs)
