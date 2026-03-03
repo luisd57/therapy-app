@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Appointment\ValueObject;
+namespace App\Tests\Unit\Domain\Appointment\Enum;
 
-use App\Domain\Appointment\ValueObject\WeekDay;
+use App\Domain\Appointment\Enum\WeekDay;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 

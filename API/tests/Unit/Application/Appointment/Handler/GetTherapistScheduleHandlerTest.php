@@ -8,7 +8,7 @@ use App\Application\Appointment\Handler\GetTherapistScheduleHandler;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
-use App\Domain\Appointment\ValueObject\WeekDay;
+use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;

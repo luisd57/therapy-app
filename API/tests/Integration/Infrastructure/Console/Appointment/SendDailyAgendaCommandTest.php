@@ -6,7 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Console\Appointment;
 
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Id\AppointmentId;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;

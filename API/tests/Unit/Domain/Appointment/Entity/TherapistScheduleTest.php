@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Appointment\Entity;
 
 use App\Domain\Appointment\Entity\TherapistSchedule;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\ScheduleId;
-use App\Domain\Appointment\ValueObject\WeekDay;
+use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;

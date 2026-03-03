@@ -491,7 +491,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\ValueObject\UserRole;
+use App\Domain\User\Enum\UserRole;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 

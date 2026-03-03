@@ -8,7 +8,7 @@ use App\Application\Appointment\DTO\Input\ListAppointmentsInputDTO;
 use App\Application\Appointment\Handler\ListAppointmentsHandler;
 use App\Application\Shared\DTO\PaginationInputDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;

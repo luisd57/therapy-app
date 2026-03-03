@@ -11,7 +11,7 @@ use App\Domain\Appointment\Exception\InvalidStatusTransitionException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\Id\AppointmentId;
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

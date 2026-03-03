@@ -8,9 +8,9 @@ use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Entity\TherapistSchedule;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Domain\Appointment\ValueObject\WeekDay;
+use App\Domain\Appointment\Enum\WeekDay;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 

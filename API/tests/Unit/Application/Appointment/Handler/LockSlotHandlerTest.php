@@ -9,7 +9,7 @@ use App\Application\Appointment\Handler\LockSlotHandler;
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Service\TokenGeneratorInterface;

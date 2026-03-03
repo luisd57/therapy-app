@@ -7,7 +7,7 @@ namespace App\Infrastructure\Console\Appointment;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
-use App\Domain\Appointment\ValueObject\WeekDay;
+use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;

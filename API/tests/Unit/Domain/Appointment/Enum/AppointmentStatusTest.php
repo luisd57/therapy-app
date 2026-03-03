@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Appointment\ValueObject;
+namespace App\Tests\Unit\Domain\Appointment\Enum;
 
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use PHPUnit\Framework\TestCase;
 
 final class AppointmentStatusTest extends TestCase

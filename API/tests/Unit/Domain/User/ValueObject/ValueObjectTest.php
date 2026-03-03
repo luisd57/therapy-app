@@ -9,7 +9,7 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
-use App\Domain\User\ValueObject\UserRole;
+use App\Domain\User\Enum\UserRole;
 use PHPUnit\Framework\TestCase;
 
 final class ValueObjectTest extends TestCase

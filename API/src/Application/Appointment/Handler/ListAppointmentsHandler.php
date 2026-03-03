@@ -8,7 +8,7 @@ use App\Application\Appointment\DTO\Input\ListAppointmentsInputDTO;
 use App\Application\Appointment\DTO\Output\AppointmentOutputDTO;
 use App\Application\Shared\DTO\PaginatedResultDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class ListAppointmentsHandler

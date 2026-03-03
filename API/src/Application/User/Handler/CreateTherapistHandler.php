@@ -13,7 +13,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
-use App\Domain\User\ValueObject\UserRole;
+use App\Domain\User\Enum\UserRole;
 
 final readonly class CreateTherapistHandler
 {

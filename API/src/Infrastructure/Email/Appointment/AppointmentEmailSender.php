@@ -6,7 +6,7 @@ namespace App\Infrastructure\Email\Appointment;
 
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;

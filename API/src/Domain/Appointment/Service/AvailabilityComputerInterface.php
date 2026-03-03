@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Appointment\Service;
 
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;

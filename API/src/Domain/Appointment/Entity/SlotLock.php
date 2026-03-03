@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Appointment\Entity;
 
-use App\Domain\Appointment\ValueObject\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use DateTimeImmutable;

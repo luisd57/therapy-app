@@ -6,8 +6,8 @@ namespace App\Tests\Helper;
 
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Id\AppointmentId;
-use App\Domain\Appointment\ValueObject\AppointmentModality;
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentModality;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Entity\PasswordResetToken;
@@ -17,7 +17,7 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
-use App\Domain\User\ValueObject\UserRole;
+use App\Domain\User\Enum\UserRole;
 use DateTimeImmutable;
 
 final class DomainTestHelper

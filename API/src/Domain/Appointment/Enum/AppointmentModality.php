@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Appointment\ValueObject;
+namespace App\Domain\Appointment\Enum;
 
 enum AppointmentModality: string
 {

@@ -6,7 +6,7 @@ namespace App\Domain\Appointment\Repository;
 
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Id\AppointmentId;
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 

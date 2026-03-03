@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Appointment\Exception;
 
-use App\Domain\Appointment\ValueObject\AppointmentStatus;
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Exception\DomainException;
 
 final class InvalidStatusTransitionException extends DomainException
