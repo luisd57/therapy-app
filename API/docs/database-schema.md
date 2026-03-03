@@ -1,6 +1,6 @@
 # Database Schema
 
-PostgreSQL 16. All tables use UUIDs as primary keys (generated application-side). No physical foreign keys — the domain layer enforces referential integrity through its hexagonal architecture.
+PostgreSQL 16. All tables use UUIDs as primary keys (generated application-side). Foreign key constraints enforce referential integrity at the database level, complementing domain-layer validation.
 
 ## Entity Relationship Overview
 
@@ -63,7 +63,7 @@ Time-limited tokens for patient registration invitations.
 | `token` | VARCHAR(255) | NO | SHA-256 hash of the unique random token. Raw token is only returned at creation time |
 | `email` | VARCHAR(255) | NO | Invited patient's email |
 | `patient_name` | VARCHAR(255) | NO | Display name set by therapist |
-| `invited_by` | UUID | NO | Logical FK to `users.id` (the therapist) |
+| `invited_by` | UUID | NO | FK to `users.id` (the therapist). ON DELETE CASCADE |
 | `is_used` | BOOLEAN | NO | Marked TRUE after successful registration |
 | `created_at` | TIMESTAMP | NO | Immutable |
 | `expires_at` | TIMESTAMP | NO | `created_at + INVITATION_TOKEN_TTL` |
@@ -81,7 +81,7 @@ Time-limited tokens for the "Forgot Password" flow.
 |--------|------|----------|-------------|
 | `id` | UUID | NO | PK |
 | `token` | VARCHAR(255) | NO | SHA-256 hash of the unique random token. Raw token is only returned at creation time |
-| `user_id` | UUID | NO | Logical FK to `users.id` |
+| `user_id` | UUID | NO | FK to `users.id`. ON DELETE CASCADE |
 | `is_used` | BOOLEAN | NO | Marked TRUE after password is reset |
 | `created_at` | TIMESTAMP | NO | Immutable |
 | `expires_at` | TIMESTAMP | NO | `created_at + PASSWORD_RESET_TOKEN_TTL` |
@@ -98,7 +98,7 @@ Recurring weekly availability blocks. A therapist defines their working hours as
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | UUID | NO | PK |
-| `therapist_id` | UUID | NO | Logical FK to `users.id` |
+| `therapist_id` | UUID | NO | FK to `users.id`. ON DELETE CASCADE |
 | `day_of_week` | INT | NO | ISO-8601: 1=Monday ... 7=Sunday |
 | `start_time` | VARCHAR(5) | NO | `HH:MM` format (e.g., `"09:00"`) |
 | `end_time` | VARCHAR(5) | NO | `HH:MM` format (e.g., `"13:00"`) |
@@ -125,7 +125,7 @@ One-off time blocks where the therapist is unavailable (holidays, personal time,
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | UUID | NO | PK |
-| `therapist_id` | UUID | NO | Logical FK to `users.id` |
+| `therapist_id` | UUID | NO | FK to `users.id`. ON DELETE CASCADE |
 | `start_date_time` | TIMESTAMP | NO | Exception period start |
 | `end_date_time` | TIMESTAMP | NO | Exception period end |
 | `reason` | VARCHAR(500) | YES | Human-readable note (e.g., "Holiday") |
@@ -156,7 +156,7 @@ The core business entity. Tracks appointment requests from submission through co
 | `phone` | VARCHAR(50) | NO | Requester's phone |
 | `city` | VARCHAR(100) | NO | Requester's city |
 | `country` | VARCHAR(100) | NO | Requester's country |
-| `patient_id` | UUID | YES | Logical FK to `users.id`. NULL for public (unauthenticated) requests |
+| `patient_id` | UUID | YES | FK to `users.id`. ON DELETE SET NULL. NULL for public (unauthenticated) requests |
 | `payment_verified` | BOOLEAN | NO | Whether payment (Zelle/Pago Movil) has been verified by the therapist. Default `FALSE` |
 | `created_at` | TIMESTAMP | NO | Immutable |
 | `updated_at` | TIMESTAMP | NO | Last status change |
@@ -212,14 +212,20 @@ Ephemeral records for optional concurrency hints during the appointment request 
 
 ---
 
-## Why No Physical Foreign Keys?
+## Foreign Key Constraints
 
-The project follows hexagonal architecture (Ports & Adapters). The domain layer defines entity relationships and enforces invariants in PHP code — it doesn't rely on DB constraints for correctness.
+All tables referencing `users` have physical FK constraints enforced at the database level:
 
-Benefits of this approach:
+| Child Table | Column | ON DELETE |
+| --- | --- | --- |
+| `invitation_tokens` | `invited_by` | CASCADE |
+| `password_reset_tokens` | `user_id` | CASCADE |
+| `therapist_schedules` | `therapist_id` | CASCADE |
+| `schedule_exceptions` | `therapist_id` | CASCADE |
+| `appointments` | `patient_id` | SET NULL |
 
-- **Testing isolation**: Repository integration tests can insert entities in any order without FK constraint issues.
-- **Schema flexibility**: Tables can be created/dropped independently. Migrations are simpler.
-- **Domain authority**: Business rules like "a schedule must belong to an existing therapist" are enforced by the handler layer (which loads the therapist first), not by the database.
+- **CASCADE**: Deleting a user automatically removes their associated tokens, schedules, and exceptions.
+- **SET NULL**: Deleting a patient nullifies `patient_id` on their appointments, preserving appointment history.
+- `slot_locks` has no FK — these are standalone ephemeral records with no user reference.
 
-The tradeoff is that orphaned records are possible if the application has bugs. In practice this hasn't been an issue because all data mutations go through the domain layer.
+The domain layer still enforces business rules (e.g., validating that a therapist exists before creating a schedule). FK constraints act as a safety net against orphaned records.

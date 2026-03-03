@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
+use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
@@ -12,16 +13,29 @@ use App\Tests\Helper\IntegrationTestCase;
 final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 {
     private PasswordResetTokenRepositoryInterface $repository;
+    private UserRepositoryInterface $userRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = self::getContainer()->get(PasswordResetTokenRepositoryInterface::class);
+        $this->userRepository = self::getContainer()->get(UserRepositoryInterface::class);
+    }
+
+    private function persistUser(?UserId $id = null): UserId
+    {
+        $userId = $id ?? UserId::generate();
+        $user = DomainTestHelper::createTherapist(
+            id: $userId,
+            email: 'user-' . bin2hex(random_bytes(4)) . '@example.com',
+        );
+        $this->userRepository->save($user);
+        return $userId;
     }
 
     public function testSaveAndFindByToken(): void
     {
-        $token = DomainTestHelper::createValidPasswordResetToken(token: 'save-reset-test');
+        $token = DomainTestHelper::createValidPasswordResetToken(token: 'save-reset-test', userId: $this->persistUser());
         $this->repository->save($token);
 
         $this->entityManager->clear();
@@ -39,7 +53,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindValidByUserIdWithValidToken(): void
     {
-        $userId = UserId::generate();
+        $userId = $this->persistUser();
         $token = DomainTestHelper::createValidPasswordResetToken(
             token: 'valid-user-reset',
             userId: $userId,
@@ -54,7 +68,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindValidByUserIdReturnsNullForExpiredOnly(): void
     {
-        $userId = UserId::generate();
+        $userId = $this->persistUser();
         $expired = DomainTestHelper::createExpiredPasswordResetToken(
             token: 'expired-user-reset',
             userId: $userId,
@@ -66,7 +80,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindValidByUserIdReturnsNullForUsedOnly(): void
     {
-        $userId = UserId::generate();
+        $userId = $this->persistUser();
         $used = DomainTestHelper::createUsedPasswordResetToken(
             token: 'used-user-reset',
             userId: $userId,
@@ -78,8 +92,9 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testDeleteExpiredRemovesExpiredTokensOnly(): void
     {
-        $valid = DomainTestHelper::createValidPasswordResetToken(token: 'de-valid-reset');
-        $expired = DomainTestHelper::createExpiredPasswordResetToken(token: 'de-expired-reset');
+        $userId = $this->persistUser();
+        $valid = DomainTestHelper::createValidPasswordResetToken(token: 'de-valid-reset', userId: $userId);
+        $expired = DomainTestHelper::createExpiredPasswordResetToken(token: 'de-expired-reset', userId: $userId);
 
         $this->repository->save($valid);
         $this->repository->save($expired);
@@ -93,7 +108,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testInvalidateAllForUserMarksAllAsUsed(): void
     {
-        $userId = UserId::generate();
+        $userId = $this->persistUser();
         $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-1', userId: $userId);
         $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-2', userId: $userId);
 
@@ -110,8 +125,8 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testInvalidateAllForUserDoesNotAffectOtherUsers(): void
     {
-        $userId1 = UserId::generate();
-        $userId2 = UserId::generate();
+        $userId1 = $this->persistUser();
+        $userId2 = $this->persistUser();
         $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'user1-reset', userId: $userId1);
         $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'user2-reset', userId: $userId2);
 
@@ -129,7 +144,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 
     public function testDeleteRemovesToken(): void
     {
-        $token = DomainTestHelper::createValidPasswordResetToken(token: 'delete-reset');
+        $token = DomainTestHelper::createValidPasswordResetToken(token: 'delete-reset', userId: $this->persistUser());
         $this->repository->save($token);
 
         $this->repository->delete($token);

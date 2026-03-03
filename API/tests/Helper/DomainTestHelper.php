@@ -202,13 +202,14 @@ final class DomainTestHelper
     public static function createExpiredInvitation(
         string $token = 'expired-token',
         string $email = 'expired@example.com',
+        ?UserId $invitedBy = null,
     ): InvitationToken {
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
             email: Email::fromString($email),
             patientName: 'Expired Patient',
-            invitedBy: UserId::generate(),
+            invitedBy: $invitedBy ?? UserId::generate(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-2 hours'),
             expiresAt: new DateTimeImmutable('-1 hour'),
@@ -219,13 +220,14 @@ final class DomainTestHelper
     public static function createUsedInvitation(
         string $token = 'used-token',
         string $email = 'used@example.com',
+        ?UserId $invitedBy = null,
     ): InvitationToken {
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
             email: Email::fromString($email),
             patientName: 'Used Patient',
-            invitedBy: UserId::generate(),
+            invitedBy: $invitedBy ?? UserId::generate(),
             isUsed: true,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: new DateTimeImmutable('+23 hours'),
@@ -236,6 +238,7 @@ final class DomainTestHelper
     public static function createBoundaryInvitation(
         string $token = 'boundary-token',
         string $email = 'boundary@example.com',
+        ?UserId $invitedBy = null,
     ): InvitationToken {
         $now = new DateTimeImmutable();
 
@@ -244,7 +247,7 @@ final class DomainTestHelper
             token: $token,
             email: Email::fromString($email),
             patientName: 'Boundary Patient',
-            invitedBy: UserId::generate(),
+            invitedBy: $invitedBy ?? UserId::generate(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: $now,

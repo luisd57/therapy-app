@@ -208,12 +208,20 @@ final class AuthControllerTest extends ApiTestCase
 
     private function seedInvitation(): InvitationToken
     {
+        $therapist = User::createTherapist(
+            id: UserId::generate(),
+            email: Email::fromString('inviter-' . bin2hex(random_bytes(4)) . '@test.com'),
+            fullName: 'Inviter Therapist',
+            hashedPassword: 'hashed_password',
+        );
+        self::getContainer()->get(UserRepositoryInterface::class)->save($therapist);
+
         $invitation = InvitationToken::create(
             id: TokenId::generate(),
             token: 'test-invitation-token-' . bin2hex(random_bytes(8)),
             email: Email::fromString('newpatient@test.com'),
             patientName: 'New Patient',
-            invitedBy: UserId::generate(),
+            invitedBy: $therapist->getId(),
             ttlSeconds: 86400,
         );
 
