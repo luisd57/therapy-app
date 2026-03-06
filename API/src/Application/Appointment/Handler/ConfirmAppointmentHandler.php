@@ -10,12 +10,14 @@ use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\Id\AppointmentId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class ConfirmAppointmentHandler
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepository,
         private AppointmentEmailSenderInterface $emailSender,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -29,7 +31,7 @@ final readonly class ConfirmAppointmentHandler
             throw new AppointmentNotFoundException($dto->appointmentId);
         }
 
-        $appointment->confirm();
+        $appointment->confirm($this->clock->now());
         $this->appointmentRepository->save($appointment);
 
         $this->emailSender->sendConfirmationToPatient(

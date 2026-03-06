@@ -40,9 +40,8 @@ class PasswordResetToken
         string $token,
         UserId $userId,
         int $ttlSeconds,
+        DateTimeImmutable $now,
     ): self {
-        $now = new DateTimeImmutable();
-
         return new self(
             id: $id,
             token: $token,
@@ -52,28 +51,28 @@ class PasswordResetToken
         );
     }
 
-    public function use(): void
+    public function use(DateTimeImmutable $now): void
     {
         if ($this->isUsed) {
             throw new \DomainException('Password reset token has already been used.');
         }
 
-        if ($this->isExpired()) {
+        if ($this->isExpired($now)) {
             throw new \DomainException('Password reset token has expired.');
         }
 
         $this->isUsed = true;
-        $this->usedAt = new DateTimeImmutable();
+        $this->usedAt = $now;
     }
 
-    public function isExpired(): bool
+    public function isExpired(DateTimeImmutable $now): bool
     {
-        return $this->expiresAt < new DateTimeImmutable();
+        return $this->expiresAt < $now;
     }
 
-    public function isValid(): bool
+    public function isValid(DateTimeImmutable $now): bool
     {
-        return !$this->isUsed && !$this->isExpired();
+        return !$this->isUsed && !$this->isExpired($now);
     }
 
     // Getters

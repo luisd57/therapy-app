@@ -166,6 +166,7 @@ final class AvailabilityComputerTest extends TestCase
             from: new DateTimeImmutable('+60 days'),
             to: new DateTimeImmutable('+67 days'),
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(0, $result);
@@ -188,6 +189,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(3, $result);
@@ -213,6 +215,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 30,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(2, $result);
@@ -239,6 +242,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // Without exception: 3 slots (09:00, 09:50, 10:40)
@@ -271,6 +275,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // 3 slots normally, 1 blocked by appointment = 2 remaining
@@ -300,6 +305,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // All 3 slots remain because cancelled appointments don't block
@@ -326,6 +332,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // 3 slots normally, 1 blocked by active lock = 2 remaining
@@ -353,6 +360,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // All 3 slots remain because expired locks don't block
@@ -374,6 +382,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $yesterday,
             to: $yesterday,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(0, $result);
@@ -401,6 +410,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
             modalityFilter: AppointmentModality::IN_PERSON,
         );
 
@@ -427,6 +437,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
             modalityFilter: AppointmentModality::ONLINE,
         );
 
@@ -453,6 +464,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
             modalityFilter: null,
         );
 
@@ -478,6 +490,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(0, $result);
@@ -499,6 +512,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $mondayDate,
             to: $tuesdayDate,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // Monday: 3 slots, Tuesday: 2 slots = 5 total
@@ -517,6 +531,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $mondayDate,
             to: $mondayDate,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertCount(0, $result);
@@ -555,6 +570,7 @@ final class AvailabilityComputerTest extends TestCase
             from: $date,
             to: $date,
             slotDurationMinutes: 50,
+            now: new DateTimeImmutable(),
         );
 
         // Only 09:50-10:40 should remain

@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\AddScheduleExceptionInputDTO;
 use App\Application\Appointment\Handler\AddScheduleExceptionHandler;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\User\Id\UserId;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -14,14 +15,18 @@ use PHPUnit\Framework\TestCase;
 final class AddScheduleExceptionHandlerTest extends TestCase
 {
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
+    private ClockInterface&MockObject $clock;
     private AddScheduleExceptionHandler $handler;
 
     protected function setUp(): void
     {
         $this->exceptionRepository = $this->createMock(ScheduleExceptionRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new AddScheduleExceptionHandler(
             $this->exceptionRepository,
+            $this->clock,
         );
     }
 

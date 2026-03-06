@@ -22,6 +22,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -35,6 +36,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AvailabilityComputerInterface $availabilityComputer,
         private AppointmentEmailSenderInterface $emailSender,
+        private ClockInterface $clock,
         private int $appointmentDurationMinutes,
     ) {
     }
@@ -50,6 +52,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         ?string $lockToken = null,
         ?string $patientId = null,
     ): AppointmentOutputDTO {
+        $now = $this->clock->now();
         $startTime = new DateTimeImmutable($slotStartTime);
         $appointmentModality = AppointmentModality::from($modality);
         $emailVO = Email::fromString($email);
@@ -60,7 +63,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         if ($lockToken !== null) {
             $lock = $this->slotLockRepository->findByLockToken($lockToken);
 
-            if ($lock === null || $lock->isExpired()) {
+            if ($lock === null || $lock->isExpired($now)) {
                 throw new InvalidLockTokenException();
             }
 
@@ -90,6 +93,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             phone: $phoneVO,
             city: $city,
             country: $country,
+            now: $now,
             patientId: $patientUserId,
         );
 
@@ -146,6 +150,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             from: $dayStart,
             to: $dayEnd,
             slotDurationMinutes: $this->appointmentDurationMinutes,
+            now: $this->clock->now(),
             modalityFilter: $appointmentModality,
         );
 

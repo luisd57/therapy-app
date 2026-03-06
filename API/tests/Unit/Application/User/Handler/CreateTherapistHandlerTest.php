@@ -11,6 +11,7 @@ use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -18,13 +19,16 @@ final class CreateTherapistHandlerTest extends TestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
+    private ClockInterface&MockObject $clock;
     private CreateTherapistHandler $handler;
 
     protected function setUp(): void
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $this->handler = new CreateTherapistHandler($this->userRepository, $this->passwordHasher);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new CreateTherapistHandler($this->userRepository, $this->passwordHasher, $this->clock);
     }
 
     public function testHandleSuccessCreatesTherapistAndReturnsDTO(): void

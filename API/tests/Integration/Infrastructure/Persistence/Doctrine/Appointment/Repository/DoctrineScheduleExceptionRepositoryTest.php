@@ -39,6 +39,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: new DateTimeImmutable('2026-03-15 17:00:00'),
             reason: 'Day off',
             isAllDay: false,
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($exception);
 
@@ -65,6 +66,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: new DateTimeImmutable('2026-04-10 09:00:00'),
             endDateTime: new DateTimeImmutable('2026-04-10 17:00:00'),
             reason: 'Conference',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($inRange);
 
@@ -74,6 +76,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: new DateTimeImmutable('2026-06-15 09:00:00'),
             endDateTime: new DateTimeImmutable('2026-06-15 17:00:00'),
             reason: 'Vacation',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($outOfRange);
 
@@ -96,6 +99,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: new DateTimeImmutable('2026-07-01 09:00:00'),
             endDateTime: new DateTimeImmutable('2026-07-01 17:00:00'),
             reason: 'Holiday',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($exception);
 
@@ -116,6 +120,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: new DateTimeImmutable('2026-05-20 08:00:00'),
             endDateTime: new DateTimeImmutable('2026-05-20 16:00:00'),
             reason: 'Personal',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($exception);
 

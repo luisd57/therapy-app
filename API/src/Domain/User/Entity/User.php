@@ -88,18 +88,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         Email $email,
         string $fullName,
         string $hashedPassword,
+        DateTimeImmutable $now,
     ): self {
         $user = new self(
             id: $id,
             email: $email,
             fullName: $fullName,
             role: UserRole::THERAPIST,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
 
         $user->password = $hashedPassword;
         $user->isActive = true;
-        $user->activatedAt = new DateTimeImmutable();
+        $user->activatedAt = $now;
 
         return $user;
     }
@@ -108,17 +109,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         UserId $id,
         Email $email,
         string $fullName,
+        DateTimeImmutable $now,
     ): self {
         return new self(
             id: $id,
             email: $email,
             fullName: $fullName,
             role: UserRole::PATIENT,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
     }
 
-    public function activate(string $hashedPassword): void
+    public function activate(string $hashedPassword, DateTimeImmutable $now): void
     {
         if ($this->isActive) {
             throw new \DomainException('User is already active.');
@@ -126,17 +128,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         $this->password = $hashedPassword;
         $this->isActive = true;
-        $this->activatedAt = new DateTimeImmutable();
-        $this->updatedAt = new DateTimeImmutable();
+        $this->activatedAt = $now;
+        $this->updatedAt = $now;
     }
 
-    public function updatePassword(string $hashedPassword): void
+    public function updatePassword(string $hashedPassword, DateTimeImmutable $now): void
     {
         $this->password = $hashedPassword;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function updateProfile(?Phone $phone, ?Address $address): void
+    public function updateProfile(?Phone $phone, ?Address $address, DateTimeImmutable $now): void
     {
         if ($phone !== null) {
             $this->phone = $phone;
@@ -144,25 +146,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($address !== null) {
             $this->address = $address;
         }
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function updatePhone(Phone $phone): void
+    public function updatePhone(Phone $phone, DateTimeImmutable $now): void
     {
         $this->phone = $phone;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function updateAddress(Address $address): void
+    public function updateAddress(Address $address, DateTimeImmutable $now): void
     {
         $this->address = $address;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function deactivate(): void
+    public function deactivate(DateTimeImmutable $now): void
     {
         $this->isActive = false;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
     // Getters

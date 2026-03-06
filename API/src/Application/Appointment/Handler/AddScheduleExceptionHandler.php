@@ -10,12 +10,14 @@ use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 
 final readonly class AddScheduleExceptionHandler
 {
     public function __construct(
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -30,6 +32,7 @@ final readonly class AddScheduleExceptionHandler
             therapistId: $therapistId,
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
+            now: $this->clock->now(),
             reason: $dto->reason,
             isAllDay: $dto->isAllDay,
         );

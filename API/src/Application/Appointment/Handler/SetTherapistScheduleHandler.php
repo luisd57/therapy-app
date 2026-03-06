@@ -12,11 +12,13 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class SetTherapistScheduleHandler
 {
     public function __construct(
         private TherapistScheduleRepositoryInterface $scheduleRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -49,6 +51,7 @@ final readonly class SetTherapistScheduleHandler
             dayOfWeek: $dayOfWeek,
             startTime: $dto->startTime,
             endTime: $dto->endTime,
+            now: $this->clock->now(),
             supportsOnline: $dto->supportsOnline,
             supportsInPerson: $dto->supportsInPerson,
         );

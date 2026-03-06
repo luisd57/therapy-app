@@ -14,12 +14,14 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 
 final readonly class BookAppointmentHandler
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepository,
+        private ClockInterface $clock,
         private int $appointmentDurationMinutes,
     ) {
     }
@@ -42,6 +44,7 @@ final readonly class BookAppointmentHandler
             phone: $phone,
             city: $dto->city,
             country: $dto->country,
+            now: $this->clock->now(),
             patientId: $patientId,
         );
 

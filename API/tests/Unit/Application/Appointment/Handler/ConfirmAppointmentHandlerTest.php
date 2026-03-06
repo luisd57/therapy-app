@@ -10,6 +10,7 @@ use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Exception\InvalidStatusTransitionException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\DomainTestHelper;
@@ -20,13 +21,16 @@ final class ConfirmAppointmentHandlerTest extends TestCase
 {
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private AppointmentEmailSenderInterface&MockObject $emailSender;
+    private ClockInterface&MockObject $clock;
     private ConfirmAppointmentHandler $handler;
 
     protected function setUp(): void
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
-        $this->handler = new ConfirmAppointmentHandler($this->appointmentRepository, $this->emailSender);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new ConfirmAppointmentHandler($this->appointmentRepository, $this->emailSender, $this->clock);
     }
 
     public function testConfirmRequestedAppointment(): void

@@ -51,6 +51,7 @@ class TherapistSchedule
         WeekDay $dayOfWeek,
         string $startTime,
         string $endTime,
+        DateTimeImmutable $now,
         bool $supportsOnline = true,
         bool $supportsInPerson = true,
     ): self {
@@ -69,7 +70,7 @@ class TherapistSchedule
             endTime: $endTime,
             supportsOnline: $supportsOnline,
             supportsInPerson: $supportsInPerson,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
     }
 
@@ -79,6 +80,7 @@ class TherapistSchedule
         string $endTime,
         bool $supportsOnline,
         bool $supportsInPerson,
+        DateTimeImmutable $now,
     ): void {
         self::validateTimeFormat($startTime);
         self::validateTimeFormat($endTime);
@@ -92,19 +94,19 @@ class TherapistSchedule
         $this->endTime = $endTime;
         $this->supportsOnline = $supportsOnline;
         $this->supportsInPerson = $supportsInPerson;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function deactivate(): void
+    public function deactivate(DateTimeImmutable $now): void
     {
         $this->isActive = false;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function activate(): void
+    public function activate(DateTimeImmutable $now): void
     {
         $this->isActive = true;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
     public function supportsModality(AppointmentModality $modality): bool

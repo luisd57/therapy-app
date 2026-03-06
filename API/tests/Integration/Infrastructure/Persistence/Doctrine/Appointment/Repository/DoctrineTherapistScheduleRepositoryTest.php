@@ -12,6 +12,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
+use DateTimeImmutable;
 
 final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
 {
@@ -38,6 +39,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
             supportsOnline: true,
             supportsInPerson: true,
         );
@@ -70,6 +72,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($activeSchedule);
 
@@ -79,8 +82,9 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '14:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
-        $inactiveSchedule->deactivate();
+        $inactiveSchedule->deactivate(new DateTimeImmutable());
         $this->repository->save($inactiveSchedule);
 
         $results = $this->repository->findActiveByTherapist($this->therapistId);
@@ -98,6 +102,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($mondaySchedule);
 
@@ -107,6 +112,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '10:00',
             endTime: '13:00',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($tuesdaySchedule);
 
@@ -125,6 +131,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '08:00',
             endTime: '11:00',
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($schedule);
 

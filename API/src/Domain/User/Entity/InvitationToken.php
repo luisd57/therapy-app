@@ -47,9 +47,8 @@ class InvitationToken
         string $patientName,
         UserId $invitedBy,
         int $ttlSeconds,
+        DateTimeImmutable $now,
     ): self {
-        $now = new DateTimeImmutable();
-
         return new self(
             id: $id,
             token: $token,
@@ -61,28 +60,28 @@ class InvitationToken
         );
     }
 
-    public function use(): void
+    public function use(DateTimeImmutable $now): void
     {
         if ($this->isUsed) {
             throw new \DomainException('Invitation token has already been used.');
         }
 
-        if ($this->isExpired()) {
+        if ($this->isExpired($now)) {
             throw new \DomainException('Invitation token has expired.');
         }
 
         $this->isUsed = true;
-        $this->usedAt = new DateTimeImmutable();
+        $this->usedAt = $now;
     }
 
-    public function isExpired(): bool
+    public function isExpired(DateTimeImmutable $now): bool
     {
-        return $this->expiresAt < new DateTimeImmutable();
+        return $this->expiresAt < $now;
     }
 
-    public function isValid(): bool
+    public function isValid(DateTimeImmutable $now): bool
     {
-        return !$this->isUsed && !$this->isExpired();
+        return !$this->isUsed && !$this->isExpired($now);
     }
 
     // Getters

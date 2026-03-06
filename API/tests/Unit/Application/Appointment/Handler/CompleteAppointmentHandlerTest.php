@@ -9,6 +9,7 @@ use App\Application\Appointment\Handler\CompleteAppointmentHandler;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Exception\InvalidStatusTransitionException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -17,12 +18,15 @@ use PHPUnit\Framework\TestCase;
 final class CompleteAppointmentHandlerTest extends TestCase
 {
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
+    private ClockInterface&MockObject $clock;
     private CompleteAppointmentHandler $handler;
 
     protected function setUp(): void
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
-        $this->handler = new CompleteAppointmentHandler($this->appointmentRepository);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new CompleteAppointmentHandler($this->appointmentRepository, $this->clock);
     }
 
     public function testCompleteConfirmedAppointment(): void

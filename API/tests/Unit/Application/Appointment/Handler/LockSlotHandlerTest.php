@@ -13,6 +13,7 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Service\TokenGeneratorInterface;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,16 +21,20 @@ final class LockSlotHandlerTest extends TestCase
 {
     private SlotLockRepositoryInterface&MockObject $slotLockRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
+    private ClockInterface&MockObject $clock;
     private LockSlotHandler $handler;
 
     protected function setUp(): void
     {
         $this->slotLockRepository = $this->createMock(SlotLockRepositoryInterface::class);
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new LockSlotHandler(
             $this->slotLockRepository,
             $this->tokenGenerator,
+            $this->clock,
             50,
             600,
         );

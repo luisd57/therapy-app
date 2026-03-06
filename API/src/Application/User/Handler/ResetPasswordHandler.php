@@ -10,6 +10,7 @@ use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class ResetPasswordHandler
 {
@@ -17,10 +18,13 @@ final readonly class ResetPasswordHandler
         private PasswordResetTokenRepositoryInterface $resetTokenRepository,
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
     ) {}
 
     public function __invoke(ResetPasswordInputDTO $dto): void
     {
+        $now = $this->clock->now();
+
         $resetToken = $this->resetTokenRepository->findByToken($dto->token);
 
         if ($resetToken === null) {
@@ -31,7 +35,7 @@ final readonly class ResetPasswordHandler
             throw InvalidTokenException::alreadyUsed();
         }
 
-        if ($resetToken->isExpired()) {
+        if ($resetToken->isExpired($now)) {
             throw InvalidTokenException::expired();
         }
 
@@ -43,10 +47,10 @@ final readonly class ResetPasswordHandler
 
         // Update password
         $hashedPassword = $this->passwordHasher->hash($dto->newPassword);
-        $user->updatePassword($hashedPassword);
+        $user->updatePassword($hashedPassword, $now);
 
         // Mark token as used
-        $resetToken->use();
+        $resetToken->use($now);
 
         // Save changes
         $this->userRepository->save($user);

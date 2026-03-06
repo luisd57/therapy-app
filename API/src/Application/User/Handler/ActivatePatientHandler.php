@@ -13,6 +13,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class ActivatePatientHandler
 {
@@ -21,10 +22,13 @@ final readonly class ActivatePatientHandler
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private EmailSenderInterface $emailSender,
+        private ClockInterface $clock,
     ) {}
 
     public function __invoke(ActivatePatientInputDTO $dto): UserOutputDTO
     {
+        $now = $this->clock->now();
+
         $invitation = $this->invitationRepository->findByToken($dto->token);
 
         if ($invitation === null) {
@@ -35,7 +39,7 @@ final readonly class ActivatePatientHandler
             throw InvalidTokenException::alreadyUsed();
         }
 
-        if ($invitation->isExpired()) {
+        if ($invitation->isExpired($now)) {
             throw InvalidTokenException::expired();
         }
 
@@ -44,14 +48,15 @@ final readonly class ActivatePatientHandler
             id: UserId::generate(),
             email: $invitation->getEmail(),
             fullName: $invitation->getPatientName(),
+            now: $now,
         );
 
         // Activate with password
         $hashedPassword = $this->passwordHasher->hash($dto->password);
-        $user->activate($hashedPassword);
+        $user->activate($hashedPassword, $now);
 
         // Mark invitation as used
-        $invitation->use();
+        $invitation->use($now);
 
         // Save both entities
         $this->userRepository->save($user);

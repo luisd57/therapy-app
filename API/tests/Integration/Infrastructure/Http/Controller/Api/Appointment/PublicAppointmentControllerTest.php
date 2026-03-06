@@ -31,6 +31,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
             endTime: '18:00',
             supportsOnline: true,
             supportsInPerson: true,
+            now: new \DateTimeImmutable(),
         );
         $scheduleRepo->save($schedule);
     }

@@ -38,9 +38,8 @@ class SlotLock
         AppointmentModality $modality,
         string $lockToken,
         int $ttlSeconds,
+        DateTimeImmutable $now,
     ): self {
-        $now = new DateTimeImmutable();
-
         return new self(
             id: $id,
             timeSlot: $timeSlot,
@@ -51,14 +50,14 @@ class SlotLock
         );
     }
 
-    public function isExpired(): bool
+    public function isExpired(DateTimeImmutable $now): bool
     {
-        return $this->expiresAt < new DateTimeImmutable();
+        return $this->expiresAt < $now;
     }
 
-    public function isActive(): bool
+    public function isActive(DateTimeImmutable $now): bool
     {
-        return !$this->isExpired();
+        return !$this->isExpired($now);
     }
 
     public function matchesToken(string $token): bool

@@ -40,6 +40,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'US',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -78,22 +79,22 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-06-02 10:00:00'),
             email: 'confirmed@test.com',
         );
-        $confirmed->confirm();
+        $confirmed->confirm(new DateTimeImmutable());
         $this->repository->save($confirmed);
 
         $completed = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-06-02 11:00:00'),
             email: 'completed@test.com',
         );
-        $completed->confirm();
-        $completed->complete();
+        $completed->confirm(new DateTimeImmutable());
+        $completed->complete(new DateTimeImmutable());
         $this->repository->save($completed);
 
         $cancelled = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-06-02 12:00:00'),
             email: 'cancelled@test.com',
         );
-        $cancelled->cancel();
+        $cancelled->cancel(new DateTimeImmutable());
         $this->repository->save($cancelled);
 
         $results = $this->repository->findBlockingByDateRange(
@@ -120,7 +121,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-07-01 10:00:00'),
             email: 'status-conf@test.com',
         );
-        $confirmed->confirm();
+        $confirmed->confirm(new DateTimeImmutable());
         $this->repository->save($confirmed);
 
         $results = $this->repository->findByStatus(AppointmentStatus::REQUESTED);
@@ -139,7 +140,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-15 09:00:00'),
             email: 'confirmed-on-date@test.com',
         );
-        $confirmedOnDate->confirm();
+        $confirmedOnDate->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate);
 
         // Another confirmed on target date — should be included
@@ -147,7 +148,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-15 14:00:00'),
             email: 'confirmed-on-date2@test.com',
         );
-        $confirmedOnDate2->confirm();
+        $confirmedOnDate2->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate2);
 
         // Requested on target date — should NOT be included
@@ -162,7 +163,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-16 09:00:00'),
             email: 'confirmed-other-date@test.com',
         );
-        $confirmedOtherDate->confirm();
+        $confirmedOtherDate->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOtherDate);
 
         $results = $this->repository->findConfirmedByDate($targetDate);
@@ -183,14 +184,14 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-20 15:00:00'),
             email: 'later@test.com',
         );
-        $later->confirm();
+        $later->confirm(new DateTimeImmutable());
         $this->repository->save($later);
 
         $earlier = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-09-20 08:00:00'),
             email: 'earlier@test.com',
         );
-        $earlier->confirm();
+        $earlier->confirm(new DateTimeImmutable());
         $this->repository->save($earlier);
 
         $results = $this->repository->findConfirmedByDate($targetDate);

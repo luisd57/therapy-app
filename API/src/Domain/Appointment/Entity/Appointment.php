@@ -68,6 +68,7 @@ class Appointment
         Phone $phone,
         string $city,
         string $country,
+        DateTimeImmutable $now,
         ?UserId $patientId = null,
     ): self {
         if (trim($fullName) === '') {
@@ -92,7 +93,7 @@ class Appointment
             city: trim($city),
             country: trim($country),
             patientId: $patientId,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
     }
 
@@ -105,6 +106,7 @@ class Appointment
         Phone $phone,
         string $city,
         string $country,
+        DateTimeImmutable $now,
         ?UserId $patientId = null,
     ): self {
         if (trim($fullName) === '') {
@@ -129,7 +131,7 @@ class Appointment
             city: trim($city),
             country: trim($country),
             patientId: $patientId,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
 
         $appointment->status = AppointmentStatus::CONFIRMED;
@@ -137,41 +139,41 @@ class Appointment
         return $appointment;
     }
 
-    public function confirm(): void
+    public function confirm(DateTimeImmutable $now): void
     {
-        $this->transitionTo(AppointmentStatus::CONFIRMED);
+        $this->transitionTo(AppointmentStatus::CONFIRMED, $now);
     }
 
-    public function complete(): void
+    public function complete(DateTimeImmutable $now): void
     {
-        $this->transitionTo(AppointmentStatus::COMPLETED);
+        $this->transitionTo(AppointmentStatus::COMPLETED, $now);
     }
 
-    public function cancel(): void
+    public function cancel(DateTimeImmutable $now): void
     {
-        $this->transitionTo(AppointmentStatus::CANCELLED);
+        $this->transitionTo(AppointmentStatus::CANCELLED, $now);
     }
 
-    private function transitionTo(AppointmentStatus $newStatus): void
+    private function transitionTo(AppointmentStatus $newStatus, DateTimeImmutable $now): void
     {
         if (!$this->status->canTransitionTo($newStatus)) {
             throw new InvalidStatusTransitionException($this->status, $newStatus);
         }
 
         $this->status = $newStatus;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function markPaymentVerified(): void
+    public function markPaymentVerified(DateTimeImmutable $now): void
     {
         $this->paymentVerified = true;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
-    public function markPaymentUnverified(): void
+    public function markPaymentUnverified(DateTimeImmutable $now): void
     {
         $this->paymentVerified = false;
-        $this->updatedAt = new DateTimeImmutable();
+        $this->updatedAt = $now;
     }
 
     public function isPaymentVerified(): bool

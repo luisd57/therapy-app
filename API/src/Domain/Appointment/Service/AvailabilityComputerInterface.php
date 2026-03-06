@@ -21,6 +21,7 @@ interface AvailabilityComputerInterface
         DateTimeImmutable $from,
         DateTimeImmutable $to,
         int $slotDurationMinutes,
+        DateTimeImmutable $now,
         ?AppointmentModality $modalityFilter = null,
     ): ArrayCollection;
 }

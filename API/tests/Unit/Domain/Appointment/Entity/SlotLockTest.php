@@ -25,6 +25,7 @@ final class SlotLockTest extends TestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'test-token-123',
             ttlSeconds: 300,
+            now: $beforeCreate,
         );
 
         $afterCreate = new DateTimeImmutable();
@@ -43,16 +44,19 @@ final class SlotLockTest extends TestCase
 
     public function testIsActiveForActiveLock(): void
     {
+        $now = new DateTimeImmutable();
+
         $lock = SlotLock::create(
             id: SlotLockId::generate(),
             timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'active-token',
             ttlSeconds: 3600,
+            now: $now,
         );
 
-        $this->assertTrue($lock->isActive());
-        $this->assertFalse($lock->isExpired());
+        $this->assertTrue($lock->isActive($now));
+        $this->assertFalse($lock->isExpired($now));
     }
 
     public function testIsActiveForExpiredLock(): void
@@ -67,8 +71,9 @@ final class SlotLockTest extends TestCase
             expiresAt: new DateTimeImmutable('-30 minutes'),
         );
 
-        $this->assertFalse($lock->isActive());
-        $this->assertTrue($lock->isExpired());
+        $now = new DateTimeImmutable();
+        $this->assertFalse($lock->isActive($now));
+        $this->assertTrue($lock->isExpired($now));
     }
 
     // --- matchesToken ---
@@ -81,6 +86,7 @@ final class SlotLockTest extends TestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'my-secret-token',
             ttlSeconds: 300,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertTrue($lock->matchesToken('my-secret-token'));
@@ -94,6 +100,7 @@ final class SlotLockTest extends TestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'my-secret-token',
             ttlSeconds: 300,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertFalse($lock->matchesToken('wrong-token'));
@@ -107,6 +114,7 @@ final class SlotLockTest extends TestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'My-Token',
             ttlSeconds: 300,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertFalse($lock->matchesToken('my-token'));

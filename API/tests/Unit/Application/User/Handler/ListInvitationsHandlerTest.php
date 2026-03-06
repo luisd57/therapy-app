@@ -8,18 +8,22 @@ use App\Application\User\Handler\ListInvitationsHandler;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ListInvitationsHandlerTest extends TestCase
 {
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
+    private ClockInterface&MockObject $clock;
     private ListInvitationsHandler $handler;
 
     protected function setUp(): void
     {
         $this->invitationRepository = $this->createMock(InvitationTokenRepositoryInterface::class);
-        $this->handler = new ListInvitationsHandler($this->invitationRepository);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new ListInvitationsHandler($this->invitationRepository, $this->clock);
     }
 
     public function testHandleReturnsMappedDTOs(): void

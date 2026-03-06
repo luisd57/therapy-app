@@ -27,6 +27,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: $therapistId,
             startDateTime: $start,
             endDateTime: $end,
+            now: new DateTimeImmutable(),
             reason: 'Personal day',
             isAllDay: false,
         );
@@ -47,6 +48,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 09:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
+            now: new DateTimeImmutable(),
         );
 
         $this->assertSame('', $exception->getReason());
@@ -59,6 +61,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 00:00'),
             endDateTime: new DateTimeImmutable('2026-04-02 00:00'),
+            now: new DateTimeImmutable(),
             reason: 'Holiday',
             isAllDay: true,
         );
@@ -76,6 +79,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 12:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 09:00'),
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -89,6 +93,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: $time,
             endDateTime: $time,
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -101,6 +106,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
+            now: new DateTimeImmutable(),
         );
 
         $slot = TimeSlot::fromStartEnd(
@@ -118,6 +124,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            now: new DateTimeImmutable(),
         );
 
         $slot = TimeSlot::fromStartEnd(
@@ -135,6 +142,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            now: new DateTimeImmutable(),
         );
 
         $slot = TimeSlot::fromStartEnd(
@@ -152,6 +160,7 @@ final class ScheduleExceptionTest extends TestCase
             therapistId: UserId::generate(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            now: new DateTimeImmutable(),
         );
 
         $slot = TimeSlot::fromStartEnd(

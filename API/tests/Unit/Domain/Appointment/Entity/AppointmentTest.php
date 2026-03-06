@@ -29,6 +29,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
             patientId: $patientId,
         );
     }
@@ -50,6 +51,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
             patientId: $patientId,
         );
 
@@ -88,6 +90,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -105,6 +108,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -122,6 +126,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: '',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -139,6 +144,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: '',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -148,7 +154,7 @@ final class AppointmentTest extends TestCase
     {
         $appointment = $this->createRequestedAppointment();
 
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
 
         $this->assertSame(AppointmentStatus::CONFIRMED, $appointment->getStatus());
     }
@@ -156,9 +162,9 @@ final class AppointmentTest extends TestCase
     public function testCompleteFromConfirmed(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
 
-        $appointment->complete();
+        $appointment->complete(new DateTimeImmutable());
 
         $this->assertSame(AppointmentStatus::COMPLETED, $appointment->getStatus());
     }
@@ -167,7 +173,7 @@ final class AppointmentTest extends TestCase
     {
         $appointment = $this->createRequestedAppointment();
 
-        $appointment->cancel();
+        $appointment->cancel(new DateTimeImmutable());
 
         $this->assertSame(AppointmentStatus::CANCELLED, $appointment->getStatus());
     }
@@ -175,9 +181,9 @@ final class AppointmentTest extends TestCase
     public function testCancelFromConfirmed(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
 
-        $appointment->cancel();
+        $appointment->cancel(new DateTimeImmutable());
 
         $this->assertSame(AppointmentStatus::CANCELLED, $appointment->getStatus());
     }
@@ -189,7 +195,7 @@ final class AppointmentTest extends TestCase
         $appointment = $this->createRequestedAppointment();
 
         $this->expectException(InvalidStatusTransitionException::class);
-        $appointment->complete();
+        $appointment->complete(new DateTimeImmutable());
     }
 
     public function testConfirmFromCompletedThrowsInvalidStatusTransitionException(): void
@@ -211,7 +217,7 @@ final class AppointmentTest extends TestCase
         );
 
         $this->expectException(InvalidStatusTransitionException::class);
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
     }
 
     public function testCancelFromCompletedThrowsInvalidStatusTransitionException(): void
@@ -232,7 +238,7 @@ final class AppointmentTest extends TestCase
         );
 
         $this->expectException(InvalidStatusTransitionException::class);
-        $appointment->cancel();
+        $appointment->cancel(new DateTimeImmutable());
     }
 
     public function testConfirmFromCancelledThrowsInvalidStatusTransitionException(): void
@@ -253,7 +259,7 @@ final class AppointmentTest extends TestCase
         );
 
         $this->expectException(InvalidStatusTransitionException::class);
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
     }
 
     // --- blocksSlot ---
@@ -268,7 +274,7 @@ final class AppointmentTest extends TestCase
     public function testBlocksSlotForConfirmedStatus(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
 
         $this->assertTrue($appointment->blocksSlot());
     }
@@ -276,8 +282,8 @@ final class AppointmentTest extends TestCase
     public function testDoesNotBlockSlotForCompletedStatus(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->confirm();
-        $appointment->complete();
+        $appointment->confirm(new DateTimeImmutable());
+        $appointment->complete(new DateTimeImmutable());
 
         $this->assertFalse($appointment->blocksSlot());
     }
@@ -285,7 +291,7 @@ final class AppointmentTest extends TestCase
     public function testDoesNotBlockSlotForCancelledStatus(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->cancel();
+        $appointment->cancel(new DateTimeImmutable());
 
         $this->assertFalse($appointment->blocksSlot());
     }
@@ -303,6 +309,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
 
         $this->assertSame(AppointmentStatus::CONFIRMED, $appointment->getStatus());
@@ -321,6 +328,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+9876543210'),
             city: 'Los Angeles',
             country: 'USA',
+            now: new DateTimeImmutable(),
             patientId: $patientId,
         );
 
@@ -342,6 +350,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -358,7 +367,7 @@ final class AppointmentTest extends TestCase
     {
         $appointment = $this->createRequestedAppointment();
 
-        $appointment->markPaymentVerified();
+        $appointment->markPaymentVerified(new DateTimeImmutable());
 
         $this->assertTrue($appointment->isPaymentVerified());
     }
@@ -366,9 +375,9 @@ final class AppointmentTest extends TestCase
     public function testMarkPaymentUnverified(): void
     {
         $appointment = $this->createRequestedAppointment();
-        $appointment->markPaymentVerified();
+        $appointment->markPaymentVerified(new DateTimeImmutable());
 
-        $appointment->markPaymentUnverified();
+        $appointment->markPaymentUnverified(new DateTimeImmutable());
 
         $this->assertFalse($appointment->isPaymentVerified());
     }

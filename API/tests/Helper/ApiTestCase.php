@@ -64,6 +64,7 @@ abstract class ApiTestCase extends WebTestCase
             email: Email::fromString($email),
             fullName: 'Test Therapist',
             hashedPassword: $hasher->hash($password),
+            now: new \DateTimeImmutable(),
         );
         $repo->save($therapist);
 
@@ -88,8 +89,9 @@ abstract class ApiTestCase extends WebTestCase
             id: UserId::generate(),
             email: Email::fromString($email),
             fullName: 'Test Patient',
+            now: new \DateTimeImmutable(),
         );
-        $patient->activate($hasher->hash($password));
+        $patient->activate($hasher->hash($password), new \DateTimeImmutable());
         $repo->save($patient);
 
         $this->jsonRequest('POST', '/api/auth/patient/login', [

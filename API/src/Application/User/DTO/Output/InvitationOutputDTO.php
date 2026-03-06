@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\DTO\Output;
 
 use App\Domain\User\Entity\InvitationToken;
+use DateTimeImmutable;
 
 final readonly class InvitationOutputDTO
 {
@@ -18,11 +19,11 @@ final readonly class InvitationOutputDTO
     ) {
     }
 
-    public static function fromEntity(InvitationToken $token): self
+    public static function fromEntity(InvitationToken $token, DateTimeImmutable $now): self
     {
         $status = match (true) {
             $token->isUsed() => 'used',
-            $token->isExpired() => 'expired',
+            $token->isExpired($now) => 'expired',
             default => 'pending',
         };
 

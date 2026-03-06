@@ -7,18 +7,22 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\BookAppointmentInputDTO;
 use App\Application\Appointment\Handler\BookAppointmentHandler;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class BookAppointmentHandlerTest extends TestCase
 {
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
+    private ClockInterface&MockObject $clock;
     private BookAppointmentHandler $handler;
 
     protected function setUp(): void
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
-        $this->handler = new BookAppointmentHandler($this->appointmentRepository, 50);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new BookAppointmentHandler($this->appointmentRepository, $this->clock, 50);
     }
 
     public function testBookCreatesConfirmedAppointment(): void

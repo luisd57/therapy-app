@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\UpdatePaymentStatusInputDTO;
 use App\Application\Appointment\Handler\UpdatePaymentStatusHandler;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,12 +17,15 @@ use PHPUnit\Framework\TestCase;
 final class UpdatePaymentStatusHandlerTest extends TestCase
 {
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
+    private ClockInterface&MockObject $clock;
     private UpdatePaymentStatusHandler $handler;
 
     protected function setUp(): void
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
-        $this->handler = new UpdatePaymentStatusHandler($this->appointmentRepository);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new UpdatePaymentStatusHandler($this->appointmentRepository, $this->clock);
     }
 
     public function testMarkPaymentVerified(): void
@@ -50,7 +54,7 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
     {
         $id = AppointmentId::generate();
         $appointment = DomainTestHelper::createConfirmedAppointment(id: $id);
-        $appointment->markPaymentVerified();
+        $appointment->markPaymentVerified(new \DateTimeImmutable());
 
         $this->appointmentRepository
             ->expects($this->once())

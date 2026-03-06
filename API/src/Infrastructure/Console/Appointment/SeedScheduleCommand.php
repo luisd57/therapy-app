@@ -9,6 +9,7 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +26,7 @@ final class SeedScheduleCommand extends Command
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly TherapistScheduleRepositoryInterface $scheduleRepository,
+        private readonly ClockInterface $clock,
     ) {
         parent::__construct();
     }
@@ -57,8 +59,9 @@ final class SeedScheduleCommand extends Command
                 return Command::FAILURE;
             }
 
+            $now = $this->clock->now();
             foreach ($existing as $schedule) {
-                $schedule->deactivate();
+                $schedule->deactivate($now);
                 $this->scheduleRepository->save($schedule);
             }
             $io->note(sprintf('Deactivated %d existing schedule block(s).', $existing->count()));
@@ -83,6 +86,7 @@ final class SeedScheduleCommand extends Command
                 dayOfWeek: $day,
                 startTime: $start,
                 endTime: $end,
+                now: $this->clock->now(),
                 supportsOnline: $online,
                 supportsInPerson: $inPerson,
             );

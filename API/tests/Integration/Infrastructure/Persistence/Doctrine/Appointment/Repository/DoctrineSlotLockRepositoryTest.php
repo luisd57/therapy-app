@@ -30,6 +30,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'test-lock-token-123',
             ttlSeconds: 600,
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($lock);
 
@@ -57,6 +58,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'active-token',
             ttlSeconds: 600,
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($activeLock);
 
@@ -97,6 +99,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'keep-active-token',
             ttlSeconds: 600,
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($activeLock);
 
@@ -125,6 +128,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::IN_PERSON,
             lockToken: 'delete-me-token',
             ttlSeconds: 600,
+            now: new DateTimeImmutable(),
         );
         $this->repository->save($lock);
 

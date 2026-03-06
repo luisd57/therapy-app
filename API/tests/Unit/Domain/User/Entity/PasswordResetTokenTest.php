@@ -41,7 +41,7 @@ final class PasswordResetTokenTest extends TestCase
     {
         $token = DomainTestHelper::createValidPasswordResetToken();
 
-        $token->use();
+        $token->use(new DateTimeImmutable());
 
         $this->assertTrue($token->isUsed());
         $this->assertNotNull($token->getUsedAt());
@@ -53,7 +53,7 @@ final class PasswordResetTokenTest extends TestCase
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('already been used');
-        $token->use();
+        $token->use(new DateTimeImmutable());
     }
 
     public function testUseExpiredTokenThrowsDomainException(): void
@@ -62,21 +62,21 @@ final class PasswordResetTokenTest extends TestCase
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('expired');
-        $token->use();
+        $token->use(new DateTimeImmutable());
     }
 
     public function testIsExpiredFreshTokenReturnsFalse(): void
     {
         $token = DomainTestHelper::createValidPasswordResetToken();
 
-        $this->assertFalse($token->isExpired());
+        $this->assertFalse($token->isExpired(new DateTimeImmutable()));
     }
 
     public function testIsExpiredExpiredTokenReturnsTrue(): void
     {
         $token = DomainTestHelper::createExpiredPasswordResetToken();
 
-        $this->assertTrue($token->isExpired());
+        $this->assertTrue($token->isExpired(new DateTimeImmutable()));
     }
 
     public function testIsExpiredBoundaryTokenExpiringAtNow(): void
@@ -92,11 +92,11 @@ final class PasswordResetTokenTest extends TestCase
             usedAt: null,
         );
 
-        $isExpired = $token->isExpired();
+        $isExpired = $token->isExpired(new DateTimeImmutable());
         $this->assertIsBool($isExpired);
 
         if ($isExpired) {
-            $this->assertFalse($token->isValid());
+            $this->assertFalse($token->isValid(new DateTimeImmutable()));
         }
     }
 
@@ -104,21 +104,21 @@ final class PasswordResetTokenTest extends TestCase
     {
         $token = DomainTestHelper::createValidPasswordResetToken();
 
-        $this->assertTrue($token->isValid());
+        $this->assertTrue($token->isValid(new DateTimeImmutable()));
     }
 
     public function testIsValidUsedTokenReturnsFalse(): void
     {
         $token = DomainTestHelper::createUsedPasswordResetToken();
 
-        $this->assertFalse($token->isValid());
+        $this->assertFalse($token->isValid(new DateTimeImmutable()));
     }
 
     public function testIsValidExpiredTokenReturnsFalse(): void
     {
         $token = DomainTestHelper::createExpiredPasswordResetToken();
 
-        $this->assertFalse($token->isValid());
+        $this->assertFalse($token->isValid(new DateTimeImmutable()));
     }
 
     public function testReconstituteRestoresAllProperties(): void

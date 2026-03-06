@@ -202,6 +202,7 @@ final class AuthControllerTest extends ApiTestCase
             email: Email::fromString('therapist@test.com'),
             fullName: 'Test Therapist',
             hashedPassword: $hasher->hash('Password1!'),
+            now: new \DateTimeImmutable(),
         );
         $repo->save($therapist);
     }
@@ -213,6 +214,7 @@ final class AuthControllerTest extends ApiTestCase
             email: Email::fromString('inviter-' . bin2hex(random_bytes(4)) . '@test.com'),
             fullName: 'Inviter Therapist',
             hashedPassword: 'hashed_password',
+            now: new \DateTimeImmutable(),
         );
         self::getContainer()->get(UserRepositoryInterface::class)->save($therapist);
 
@@ -223,6 +225,7 @@ final class AuthControllerTest extends ApiTestCase
             patientName: 'New Patient',
             invitedBy: $therapist->getId(),
             ttlSeconds: 86400,
+            now: new \DateTimeImmutable(),
         );
 
         $repo = self::getContainer()->get(InvitationTokenRepositoryInterface::class);

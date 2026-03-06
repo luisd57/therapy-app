@@ -8,10 +8,10 @@ use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Clock\ClockInterface;
 
 final class DoctrineInvitationTokenRepository implements InvitationTokenRepositoryInterface
 {
@@ -20,6 +20,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ClockInterface $clock,
     ) {
         $this->repository = $entityManager->getRepository(InvitationToken::class);
     }
@@ -52,7 +53,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->andWhere('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('email', $email->getValue())
-            ->setParameter('now', new DateTimeImmutable())
+            ->setParameter('now', $this->clock->now())
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -68,7 +69,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->from(InvitationToken::class, 't')
             ->where('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
-            ->setParameter('now', new DateTimeImmutable())
+            ->setParameter('now', $this->clock->now())
             ->orderBy('t.createdAt', 'DESC');
 
         return new ArrayCollection($qb->getQuery()->getResult());
@@ -89,7 +90,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(InvitationToken::class, 't')
             ->where('t.expiresAt < :now')
-            ->setParameter('now', new DateTimeImmutable());
+            ->setParameter('now', $this->clock->now());
 
         return $qb->getQuery()->execute();
     }

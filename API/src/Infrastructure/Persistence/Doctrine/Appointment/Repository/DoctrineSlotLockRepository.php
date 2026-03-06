@@ -6,10 +6,11 @@ namespace App\Infrastructure\Persistence\Doctrine\Appointment\Repository;
 
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Clock\ClockInterface;
+use DateTimeImmutable;
 
 final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
 {
@@ -18,6 +19,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ClockInterface $clock,
     ) {
         $this->repository = $entityManager->getRepository(SlotLock::class);
     }
@@ -46,7 +48,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
             ->andWhere('l.expiresAt > :now')
             ->setParameter('from', $from)
             ->setParameter('to', $to)
-            ->setParameter('now', new DateTimeImmutable());
+            ->setParameter('now', $this->clock->now());
 
         return new ArrayCollection($qb->getQuery()->getResult());
     }
@@ -63,7 +65,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
             ->andWhere('l.expiresAt > :now')
             ->setParameter('start', $slotStart)
             ->setParameter('end', $slotEnd)
-            ->setParameter('now', new DateTimeImmutable())
+            ->setParameter('now', $this->clock->now())
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -89,7 +91,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(SlotLock::class, 'l')
             ->where('l.expiresAt < :now')
-            ->setParameter('now', new DateTimeImmutable());
+            ->setParameter('now', $this->clock->now());
 
         return $qb->getQuery()->execute();
     }

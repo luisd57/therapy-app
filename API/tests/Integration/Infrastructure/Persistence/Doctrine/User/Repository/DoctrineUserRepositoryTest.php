@@ -38,7 +38,7 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
         $user = DomainTestHelper::createTherapist();
         $this->repository->save($user);
 
-        $user->updatePassword('new_hashed_pw');
+        $user->updatePassword('new_hashed_pw', new \DateTimeImmutable());
         $this->repository->save($user);
 
         $found = $this->repository->findById($user->getId());

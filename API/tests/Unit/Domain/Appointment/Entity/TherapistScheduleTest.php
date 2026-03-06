@@ -27,6 +27,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
             supportsOnline: true,
             supportsInPerson: false,
         );
@@ -51,6 +52,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '10:00',
             endTime: '14:00',
+            now: new DateTimeImmutable(),
         );
 
         $this->assertTrue($schedule->isActive());
@@ -68,6 +70,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '9:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -81,6 +84,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '25:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -95,6 +99,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '17:00',
             endTime: '09:00',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -109,6 +114,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '09:00',
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -122,6 +128,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
 
         $schedule->update(
@@ -130,6 +137,7 @@ final class TherapistScheduleTest extends TestCase
             endTime: '15:00',
             supportsOnline: false,
             supportsInPerson: true,
+            now: new DateTimeImmutable(),
         );
 
         $this->assertSame(WeekDay::WEDNESDAY, $schedule->getDayOfWeek());
@@ -147,6 +155,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -157,6 +166,7 @@ final class TherapistScheduleTest extends TestCase
             endTime: '09:00',
             supportsOnline: true,
             supportsInPerson: true,
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -170,11 +180,12 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
 
         $this->assertTrue($schedule->isActive());
 
-        $schedule->deactivate();
+        $schedule->deactivate(new DateTimeImmutable());
 
         $this->assertFalse($schedule->isActive());
     }
@@ -187,12 +198,13 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
+            now: new DateTimeImmutable(),
         );
 
-        $schedule->deactivate();
+        $schedule->deactivate(new DateTimeImmutable());
         $this->assertFalse($schedule->isActive());
 
-        $schedule->activate();
+        $schedule->activate(new DateTimeImmutable());
 
         $this->assertTrue($schedule->isActive());
     }
@@ -207,6 +219,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
             supportsOnline: true,
             supportsInPerson: false,
         );
@@ -222,6 +235,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
             supportsOnline: false,
             supportsInPerson: true,
         );
@@ -237,6 +251,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
             supportsOnline: false,
             supportsInPerson: true,
         );
@@ -252,6 +267,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
+            now: new DateTimeImmutable(),
             supportsOnline: true,
             supportsInPerson: false,
         );

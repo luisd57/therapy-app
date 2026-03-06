@@ -11,6 +11,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,6 +21,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
     private PasswordResetTokenRepositoryInterface&MockObject $resetTokenRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
     private EmailSenderInterface&MockObject $emailSender;
+    private ClockInterface&MockObject $clock;
     private RequestPasswordResetHandler $handler;
 
     protected function setUp(): void
@@ -28,6 +30,8 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->resetTokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new RequestPasswordResetHandler(
             $this->userRepository,
@@ -36,6 +40,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
             $this->emailSender,
             'http://localhost:3000',
             3600,
+            $this->clock,
         );
     }
 

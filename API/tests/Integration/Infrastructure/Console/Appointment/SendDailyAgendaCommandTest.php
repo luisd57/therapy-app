@@ -37,6 +37,7 @@ final class SendDailyAgendaCommandTest extends IntegrationTestCase
             email: Email::fromString('therapist-cmd@test.com'),
             fullName: 'Dr. Command Test',
             hashedPassword: 'hashed_password',
+            now: new DateTimeImmutable(),
         );
         $userRepository->save($therapist);
 
@@ -64,8 +65,9 @@ final class SendDailyAgendaCommandTest extends IntegrationTestCase
             phone: Phone::fromString('+1234567890'),
             city: 'Test City',
             country: 'US',
+            now: new DateTimeImmutable(),
         );
-        $appointment->confirm();
+        $appointment->confirm(new DateTimeImmutable());
         $this->appointmentRepository->save($appointment);
 
         $this->commandTester->execute(['date' => '2026-10-10']);

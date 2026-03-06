@@ -14,6 +14,7 @@ use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -25,6 +26,7 @@ final readonly class GetNextAvailableWeekHandler
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AppointmentRepositoryInterface $appointmentRepository,
         private AvailabilityComputerInterface $availabilityComputer,
+        private ClockInterface $clock,
         private int $appointmentDurationMinutes,
         private int $maxLookaheadWeeks,
     ) {
@@ -42,7 +44,7 @@ final readonly class GetNextAvailableWeekHandler
         // Schedules are static — load once and reuse across all weeks
         $schedules = $this->scheduleRepository->findActiveByTherapist($therapistId);
 
-        $today = new DateTimeImmutable('today');
+        $today = $this->clock->now()->setTime(0, 0);
 
         for ($week = 0; $week < $this->maxLookaheadWeeks; $week++) {
             $weekStart = $today->modify("+{$week} weeks");
@@ -70,6 +72,7 @@ final readonly class GetNextAvailableWeekHandler
                 from: $weekStart,
                 to: $weekEnd,
                 slotDurationMinutes: $this->appointmentDurationMinutes,
+                now: $this->clock->now(),
                 modalityFilter: $modalityFilter,
             );
 

@@ -11,11 +11,13 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class UpdatePatientProfileHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -46,7 +48,7 @@ final readonly class UpdatePatientProfileHandler
             );
         }
 
-        $user->updateProfile($phone, $address);
+        $user->updateProfile($phone, $address, $this->clock->now());
         $this->userRepository->save($user);
 
         return UserOutputDTO::fromEntity($user);

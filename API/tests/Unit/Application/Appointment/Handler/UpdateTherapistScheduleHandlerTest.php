@@ -9,6 +9,7 @@ use App\Application\Appointment\Handler\UpdateTherapistScheduleHandler;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
@@ -19,14 +20,18 @@ use PHPUnit\Framework\TestCase;
 final class UpdateTherapistScheduleHandlerTest extends TestCase
 {
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
+    private ClockInterface&MockObject $clock;
     private UpdateTherapistScheduleHandler $handler;
 
     protected function setUp(): void
     {
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new UpdateTherapistScheduleHandler(
             $this->scheduleRepository,
+            $this->clock,
         );
     }
 

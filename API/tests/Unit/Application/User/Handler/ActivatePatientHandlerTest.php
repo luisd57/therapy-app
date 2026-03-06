@@ -12,6 +12,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +22,7 @@ final class ActivatePatientHandlerTest extends TestCase
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private EmailSenderInterface&MockObject $emailSender;
+    private ClockInterface&MockObject $clock;
     private ActivatePatientHandler $handler;
 
     protected function setUp(): void
@@ -29,12 +31,15 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new ActivatePatientHandler(
             $this->invitationRepository,
             $this->userRepository,
             $this->passwordHasher,
             $this->emailSender,
+            $this->clock,
         );
     }
 

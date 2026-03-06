@@ -15,6 +15,7 @@ use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class InvitePatientHandler
 {
@@ -25,6 +26,7 @@ final readonly class InvitePatientHandler
         private EmailSenderInterface $emailSender,
         private string $frontendUrl,
         private int $invitationTtl,
+        private ClockInterface $clock,
     ) {}
 
     public function __invoke(InvitePatientInputDTO $dto): InvitationOutputDTO
@@ -40,7 +42,7 @@ final readonly class InvitePatientHandler
         $existingInvitation = $this->invitationRepository->findValidByEmail($email);
         if ($existingInvitation !== null) {
             // Return existing valid invitation instead of creating duplicate
-            return InvitationOutputDTO::fromEntity($existingInvitation);
+            return InvitationOutputDTO::fromEntity($existingInvitation, $this->clock->now());
         }
 
         $token = $this->tokenGenerator->generate();
@@ -53,6 +55,7 @@ final readonly class InvitePatientHandler
             patientName: $dto->patientName,
             invitedBy: $therapistId,
             ttlSeconds: $this->invitationTtl,
+            now: $this->clock->now(),
         );
 
         $this->invitationRepository->save($invitation);
@@ -71,6 +74,6 @@ final readonly class InvitePatientHandler
             registrationUrl: $registrationUrl,
         );
 
-        return InvitationOutputDTO::fromEntity($invitation);
+        return InvitationOutputDTO::fromEntity($invitation, $this->clock->now());
     }
 }

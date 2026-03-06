@@ -7,11 +7,13 @@ namespace App\Application\User\Handler;
 use App\Application\User\DTO\Output\InvitationOutputDTO;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class ValidateInvitationHandler
 {
     public function __construct(
         private InvitationTokenRepositoryInterface $invitationRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -27,10 +29,10 @@ final readonly class ValidateInvitationHandler
             throw InvalidTokenException::alreadyUsed();
         }
 
-        if ($invitation->isExpired()) {
+        if ($invitation->isExpired($this->clock->now())) {
             throw InvalidTokenException::expired();
         }
 
-        return InvitationOutputDTO::fromEntity($invitation);
+        return InvitationOutputDTO::fromEntity($invitation, $this->clock->now());
     }
 }

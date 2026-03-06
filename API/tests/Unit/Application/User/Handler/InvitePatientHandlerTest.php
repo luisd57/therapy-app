@@ -13,6 +13,7 @@ use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -22,6 +23,7 @@ final class InvitePatientHandlerTest extends TestCase
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
     private EmailSenderInterface&MockObject $emailSender;
+    private ClockInterface&MockObject $clock;
     private InvitePatientHandler $handler;
 
     protected function setUp(): void
@@ -30,6 +32,8 @@ final class InvitePatientHandlerTest extends TestCase
         $this->invitationRepository = $this->createMock(InvitationTokenRepositoryInterface::class);
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new InvitePatientHandler(
             $this->userRepository,
@@ -38,6 +42,7 @@ final class InvitePatientHandlerTest extends TestCase
             $this->emailSender,
             'http://localhost:3000',
             86400,
+            $this->clock,
         );
     }
 

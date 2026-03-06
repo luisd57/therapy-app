@@ -13,20 +13,25 @@ use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class SetTherapistScheduleHandlerTest extends TestCase
 {
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
+    private ClockInterface&MockObject $clock;
     private SetTherapistScheduleHandler $handler;
 
     protected function setUp(): void
     {
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new SetTherapistScheduleHandler(
             $this->scheduleRepository,
+            $this->clock,
         );
     }
 

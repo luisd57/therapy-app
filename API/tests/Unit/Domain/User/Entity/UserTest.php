@@ -46,7 +46,7 @@ final class UserTest extends TestCase
     {
         $user = DomainTestHelper::createPatient();
 
-        $user->activate('hashed_password');
+        $user->activate('hashed_password', new DateTimeImmutable());
 
         $this->assertTrue($user->isActive());
         $this->assertSame('hashed_password', $user->getPassword());
@@ -58,7 +58,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createTherapist();
 
         $this->expectException(\DomainException::class);
-        $user->activate('another_password');
+        $user->activate('another_password', new DateTimeImmutable());
     }
 
     public function testUpdatePassword(): void
@@ -66,7 +66,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createTherapist();
         $oldUpdatedAt = $user->getUpdatedAt();
 
-        $user->updatePassword('new_hashed_password');
+        $user->updatePassword('new_hashed_password', new DateTimeImmutable());
 
         $this->assertSame('new_hashed_password', $user->getPassword());
         $this->assertGreaterThanOrEqual($oldUpdatedAt, $user->getUpdatedAt());
@@ -77,7 +77,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createActivePatient();
         $phone = Phone::fromString('+1234567890');
 
-        $user->updateProfile($phone, null);
+        $user->updateProfile($phone, null, new DateTimeImmutable());
 
         $this->assertNotNull($user->getPhone());
         $this->assertSame('+1234567890', $user->getPhone()->getValue());
@@ -89,7 +89,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createActivePatient();
         $address = Address::create('123 Main St', 'Springfield', 'USA');
 
-        $user->updateProfile(null, $address);
+        $user->updateProfile(null, $address, new DateTimeImmutable());
 
         $this->assertNull($user->getPhone());
         $this->assertNotNull($user->getAddress());
@@ -100,9 +100,9 @@ final class UserTest extends TestCase
     {
         $user = DomainTestHelper::createActivePatient();
         $phone = Phone::fromString('+1234567890');
-        $user->updateProfile($phone, null);
+        $user->updateProfile($phone, null, new DateTimeImmutable());
 
-        $user->updateProfile(null, null);
+        $user->updateProfile(null, null, new DateTimeImmutable());
 
         $this->assertNotNull($user->getPhone());
         $this->assertSame('+1234567890', $user->getPhone()->getValue());
@@ -113,7 +113,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createActivePatient();
         $phone = Phone::fromString('+9876543210');
 
-        $user->updatePhone($phone);
+        $user->updatePhone($phone, new DateTimeImmutable());
 
         $this->assertSame('+9876543210', $user->getPhone()->getValue());
     }
@@ -123,7 +123,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createActivePatient();
         $address = Address::create('456 Oak Ave', 'Portland', 'USA', '97201', 'OR');
 
-        $user->updateAddress($address);
+        $user->updateAddress($address, new DateTimeImmutable());
 
         $this->assertTrue($address->equals($user->getAddress()));
     }
@@ -133,7 +133,7 @@ final class UserTest extends TestCase
         $user = DomainTestHelper::createTherapist();
         $this->assertTrue($user->isActive());
 
-        $user->deactivate();
+        $user->deactivate(new DateTimeImmutable());
 
         $this->assertFalse($user->isActive());
     }

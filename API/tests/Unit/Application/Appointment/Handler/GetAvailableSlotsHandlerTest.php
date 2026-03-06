@@ -10,6 +10,7 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
@@ -27,6 +28,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private AvailabilityComputerInterface&MockObject $availabilityComputer;
+    private ClockInterface&MockObject $clock;
     private GetAvailableSlotsHandler $handler;
 
     protected function setUp(): void
@@ -36,6 +38,8 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         $this->exceptionRepository = $this->createMock(ScheduleExceptionRepositoryInterface::class);
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new GetAvailableSlotsHandler(
             $this->userRepository,
@@ -43,6 +47,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             $this->exceptionRepository,
             $this->appointmentRepository,
             $this->availabilityComputer,
+            $this->clock,
             50,
         );
     }

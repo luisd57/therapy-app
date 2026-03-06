@@ -21,10 +21,10 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
         DateTimeImmutable $from,
         DateTimeImmutable $to,
         int $slotDurationMinutes,
+        DateTimeImmutable $now,
         ?AppointmentModality $modalityFilter = null,
     ): ArrayCollection {
         $slots = new ArrayCollection();
-        $now = new DateTimeImmutable();
 
         $current = $from;
         while ($current <= $to) {
@@ -51,7 +51,7 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
                     if (!$this->isPast($timeSlot, $now)
                         && !$this->isBlockedByException($timeSlot, $context->exceptions)
                         && !$this->isOccupiedByAppointment($timeSlot, $context->blockingAppointments)
-                        && !$this->isHeldByLock($timeSlot, $context->activeLocks)
+                        && !$this->isHeldByLock($timeSlot, $context->activeLocks, $now)
                     ) {
                         $slots->add($timeSlot);
                     }
@@ -95,10 +95,10 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
     /**
      * @param ArrayCollection<int, SlotLock> $locks
      */
-    private function isHeldByLock(TimeSlot $slot, ArrayCollection $locks): bool
+    private function isHeldByLock(TimeSlot $slot, ArrayCollection $locks, DateTimeImmutable $now): bool
     {
         return $locks->exists(
-            fn (int $_index, SlotLock $slotLock) => $slotLock->isActive()
+            fn (int $_index, SlotLock $slotLock) => $slotLock->isActive($now)
                 && $slotLock->getTimeSlot()->overlaps($slot),
         );
     }

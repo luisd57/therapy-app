@@ -43,7 +43,7 @@ final class InvitationTokenTest extends TestCase
     {
         $invitation = DomainTestHelper::createValidInvitation();
 
-        $invitation->use();
+        $invitation->use(new DateTimeImmutable());
 
         $this->assertTrue($invitation->isUsed());
         $this->assertNotNull($invitation->getUsedAt());
@@ -55,7 +55,7 @@ final class InvitationTokenTest extends TestCase
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('already been used');
-        $invitation->use();
+        $invitation->use(new DateTimeImmutable());
     }
 
     public function testUseExpiredTokenThrowsDomainException(): void
@@ -64,21 +64,21 @@ final class InvitationTokenTest extends TestCase
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('expired');
-        $invitation->use();
+        $invitation->use(new DateTimeImmutable());
     }
 
     public function testIsExpiredFreshTokenReturnsFalse(): void
     {
         $invitation = DomainTestHelper::createValidInvitation(ttlSeconds: 86400);
 
-        $this->assertFalse($invitation->isExpired());
+        $this->assertFalse($invitation->isExpired(new DateTimeImmutable()));
     }
 
     public function testIsExpiredExpiredTokenReturnsTrue(): void
     {
         $invitation = DomainTestHelper::createExpiredInvitation();
 
-        $this->assertTrue($invitation->isExpired());
+        $this->assertTrue($invitation->isExpired(new DateTimeImmutable()));
     }
 
     public function testIsExpiredBoundaryTokenExpiringAtNow(): void
@@ -90,12 +90,12 @@ final class InvitationTokenTest extends TestCase
         // The boundary token has expiresAt set to 'now' at creation time.
         // By the time we check, a tiny amount of time has passed, so it may be expired.
         // This tests that the behavior is consistent: expiresAt < now means expired.
-        $isExpired = $invitation->isExpired();
+        $isExpired = $invitation->isExpired(new DateTimeImmutable());
         $this->assertIsBool($isExpired);
 
         // If expired, it should NOT be valid
         if ($isExpired) {
-            $this->assertFalse($invitation->isValid());
+            $this->assertFalse($invitation->isValid(new DateTimeImmutable()));
         }
     }
 
@@ -103,21 +103,21 @@ final class InvitationTokenTest extends TestCase
     {
         $invitation = DomainTestHelper::createValidInvitation();
 
-        $this->assertTrue($invitation->isValid());
+        $this->assertTrue($invitation->isValid(new DateTimeImmutable()));
     }
 
     public function testIsValidUsedTokenReturnsFalse(): void
     {
         $invitation = DomainTestHelper::createUsedInvitation();
 
-        $this->assertFalse($invitation->isValid());
+        $this->assertFalse($invitation->isValid(new DateTimeImmutable()));
     }
 
     public function testIsValidExpiredTokenReturnsFalse(): void
     {
         $invitation = DomainTestHelper::createExpiredInvitation();
 
-        $this->assertFalse($invitation->isValid());
+        $this->assertFalse($invitation->isValid(new DateTimeImmutable()));
     }
 
     public function testReconstituteRestoresAllProperties(): void

@@ -8,18 +8,22 @@ use App\Application\User\Handler\ValidateInvitationHandler;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ValidateInvitationHandlerTest extends TestCase
 {
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
+    private ClockInterface&MockObject $clock;
     private ValidateInvitationHandler $handler;
 
     protected function setUp(): void
     {
         $this->invitationRepository = $this->createMock(InvitationTokenRepositoryInterface::class);
-        $this->handler = new ValidateInvitationHandler($this->invitationRepository);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new ValidateInvitationHandler($this->invitationRepository, $this->clock);
     }
 
     public function testHandleValidTokenReturnsInvitationOutputDTO(): void

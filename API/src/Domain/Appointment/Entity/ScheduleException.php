@@ -40,6 +40,7 @@ class ScheduleException
         UserId $therapistId,
         DateTimeImmutable $startDateTime,
         DateTimeImmutable $endDateTime,
+        DateTimeImmutable $now,
         string $reason = '',
         bool $isAllDay = false,
     ): self {
@@ -54,7 +55,7 @@ class ScheduleException
             endDateTime: $endDateTime,
             reason: trim($reason),
             isAllDay: $isAllDay,
-            createdAt: new DateTimeImmutable(),
+            createdAt: $now,
         );
     }
 

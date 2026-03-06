@@ -9,11 +9,13 @@ use App\Application\Appointment\DTO\Output\AppointmentOutputDTO;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Id\AppointmentId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class UpdatePaymentStatusHandler
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepository,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -28,9 +30,9 @@ final readonly class UpdatePaymentStatusHandler
         }
 
         if ($dto->paymentVerified) {
-            $appointment->markPaymentVerified();
+            $appointment->markPaymentVerified($this->clock->now());
         } else {
-            $appointment->markPaymentUnverified();
+            $appointment->markPaymentUnverified($this->clock->now());
         }
 
         $this->appointmentRepository->save($appointment);

@@ -14,6 +14,7 @@ use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 
@@ -25,6 +26,7 @@ final readonly class GetAvailableSlotsHandler
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AppointmentRepositoryInterface $appointmentRepository,
         private AvailabilityComputerInterface $availabilityComputer,
+        private ClockInterface $clock,
         private int $appointmentDurationMinutes,
     ) {
     }
@@ -60,6 +62,7 @@ final readonly class GetAvailableSlotsHandler
             from: $from,
             to: $to,
             slotDurationMinutes: $this->appointmentDurationMinutes,
+            now: $this->clock->now(),
             modalityFilter: $modalityFilter,
         );
 

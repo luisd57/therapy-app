@@ -13,6 +13,7 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Service\TokenGeneratorInterface;
+use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 
 final readonly class LockSlotHandler
@@ -20,6 +21,7 @@ final readonly class LockSlotHandler
     public function __construct(
         private SlotLockRepositoryInterface $slotLockRepository,
         private TokenGeneratorInterface $tokenGenerator,
+        private ClockInterface $clock,
         private int $appointmentDurationMinutes,
         private int $slotLockTtl,
     ) {
@@ -27,6 +29,7 @@ final readonly class LockSlotHandler
 
     public function __invoke(LockSlotInputDTO $dto): SlotLockOutputDTO
     {
+        $now = $this->clock->now();
         $startTime = new DateTimeImmutable($dto->slotStartTime);
         $modality = AppointmentModality::from($dto->modality);
         $timeSlot = TimeSlot::create($startTime, $this->appointmentDurationMinutes);
@@ -36,7 +39,7 @@ final readonly class LockSlotHandler
             $timeSlot->getEndTime(),
         );
 
-        if ($existingLock !== null && $existingLock->isActive()) {
+        if ($existingLock !== null && $existingLock->isActive($now)) {
             throw SlotNotAvailableException::alreadyLocked();
         }
 
@@ -46,6 +49,7 @@ final readonly class LockSlotHandler
             modality: $modality,
             lockToken: $this->tokenGenerator->generate(32),
             ttlSeconds: $this->slotLockTtl,
+            now: $now,
         );
 
         $this->slotLockRepository->save($lock);

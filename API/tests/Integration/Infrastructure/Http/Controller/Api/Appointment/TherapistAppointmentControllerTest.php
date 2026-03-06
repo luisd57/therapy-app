@@ -35,10 +35,11 @@ final class TherapistAppointmentControllerTest extends ApiTestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
+            now: new DateTimeImmutable(),
         );
 
         if ($status === 'CONFIRMED') {
-            $appointment->confirm();
+            $appointment->confirm(new DateTimeImmutable());
         }
 
         $repo = self::getContainer()->get(AppointmentRepositoryInterface::class);

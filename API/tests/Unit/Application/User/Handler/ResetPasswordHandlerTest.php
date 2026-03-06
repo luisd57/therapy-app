@@ -12,6 +12,7 @@ use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,6 +21,7 @@ final class ResetPasswordHandlerTest extends TestCase
     private PasswordResetTokenRepositoryInterface&MockObject $resetTokenRepository;
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
+    private ClockInterface&MockObject $clock;
     private ResetPasswordHandler $handler;
 
     protected function setUp(): void
@@ -27,11 +29,14 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->resetTokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->handler = new ResetPasswordHandler(
             $this->resetTokenRepository,
             $this->userRepository,
             $this->passwordHasher,
+            $this->clock,
         );
     }
 

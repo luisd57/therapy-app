@@ -23,6 +23,7 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -35,6 +36,7 @@ final class AppointmentRequestServiceTest extends TestCase
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private AvailabilityComputerInterface&MockObject $availabilityComputer;
     private AppointmentEmailSenderInterface&MockObject $emailSender;
+    private ClockInterface&MockObject $clock;
     private AppointmentRequestService $service;
 
     protected function setUp(): void
@@ -46,6 +48,8 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->exceptionRepository = $this->createMock(ScheduleExceptionRepositoryInterface::class);
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
         $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->service = new AppointmentRequestService(
             $this->userRepository,
@@ -55,6 +59,7 @@ final class AppointmentRequestServiceTest extends TestCase
             $this->exceptionRepository,
             $this->availabilityComputer,
             $this->emailSender,
+            $this->clock,
             50,
         );
     }

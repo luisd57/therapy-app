@@ -12,6 +12,7 @@ use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class RequestPasswordResetHandler
 {
@@ -22,6 +23,7 @@ final readonly class RequestPasswordResetHandler
         private EmailSenderInterface $emailSender,
         private string $frontendUrl,
         private int $passwordResetTtl,
+        private ClockInterface $clock,
     ) {}
 
     /**
@@ -48,6 +50,7 @@ final readonly class RequestPasswordResetHandler
             token: $token,
             userId: $user->getId(),
             ttlSeconds: $this->passwordResetTtl,
+            now: $this->clock->now(),
         );
 
         $this->resetTokenRepository->save($resetToken);

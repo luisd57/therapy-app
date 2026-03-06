@@ -33,6 +33,7 @@ final class DomainTestHelper
             email: Email::fromString($email),
             fullName: $fullName,
             hashedPassword: $hashedPassword,
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -45,6 +46,7 @@ final class DomainTestHelper
             id: $id ?? UserId::generate(),
             email: Email::fromString($email),
             fullName: $fullName,
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -55,7 +57,7 @@ final class DomainTestHelper
         string $hashedPassword = 'hashed_password_123',
     ): User {
         $user = self::createPatient($id, $email, $fullName);
-        $user->activate($hashedPassword);
+        $user->activate($hashedPassword, new DateTimeImmutable());
         return $user;
     }
 
@@ -150,6 +152,7 @@ final class DomainTestHelper
             phone: Phone::fromString($phone),
             city: $city,
             country: $country,
+            now: new DateTimeImmutable(),
             patientId: $patientId,
         );
     }
@@ -196,6 +199,7 @@ final class DomainTestHelper
             patientName: $patientName,
             invitedBy: $invitedBy ?? UserId::generate(),
             ttlSeconds: $ttlSeconds,
+            now: new DateTimeImmutable(),
         );
     }
 
@@ -266,6 +270,7 @@ final class DomainTestHelper
             token: $token,
             userId: $userId ?? UserId::generate(),
             ttlSeconds: $ttlSeconds,
+            now: new DateTimeImmutable(),
         );
     }
 

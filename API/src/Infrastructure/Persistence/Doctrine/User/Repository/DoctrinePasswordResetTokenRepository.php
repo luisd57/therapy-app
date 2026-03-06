@@ -8,9 +8,9 @@ use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Clock\ClockInterface;
 
 final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRepositoryInterface
 {
@@ -19,6 +19,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ClockInterface $clock,
     ) {
         $this->repository = $entityManager->getRepository(PasswordResetToken::class);
     }
@@ -51,7 +52,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->andWhere('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('userId', $userId->getValue())
-            ->setParameter('now', new DateTimeImmutable())
+            ->setParameter('now', $this->clock->now())
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -72,7 +73,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(PasswordResetToken::class, 't')
             ->where('t.expiresAt < :now')
-            ->setParameter('now', new DateTimeImmutable());
+            ->setParameter('now', $this->clock->now());
 
         return $qb->getQuery()->execute();
     }
@@ -86,7 +87,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->where('t.userId = :userId')
             ->andWhere('t.isUsed = false')
             ->setParameter('userId', $userId->getValue())
-            ->setParameter('now', new DateTimeImmutable());
+            ->setParameter('now', $this->clock->now());
 
         $qb->getQuery()->execute();
     }

@@ -14,12 +14,14 @@ use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
+use Symfony\Component\Clock\ClockInterface;
 
 final readonly class CreateTherapistHandler
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
     ) {}
 
     public function __invoke(CreateTherapistInputDTO $dto): UserOutputDTO
@@ -42,6 +44,7 @@ final readonly class CreateTherapistHandler
             email: $email,
             fullName: $dto->fullName,
             hashedPassword: $hashedPassword,
+            now: $this->clock->now(),
         );
 
         $this->userRepository->save($user);

@@ -9,18 +9,22 @@ use App\Application\User\Handler\UpdatePatientProfileHandler;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdatePatientProfileHandlerTest extends TestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private ClockInterface&MockObject $clock;
     private UpdatePatientProfileHandler $handler;
 
     protected function setUp(): void
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->handler = new UpdatePatientProfileHandler($this->userRepository);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->handler = new UpdatePatientProfileHandler($this->userRepository, $this->clock);
     }
 
     public function testHandleUpdatePhoneOnly(): void
