@@ -13,6 +13,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\Id\UserId;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final readonly class ActivatePatientHandler
@@ -23,6 +24,7 @@ final readonly class ActivatePatientHandler
         private PasswordHasherInterface $passwordHasher,
         private EmailSenderInterface $emailSender,
         private ClockInterface $clock,
+        private LoggerInterface $logger,
     ) {}
 
     public function __invoke(ActivatePatientInputDTO $dto): UserOutputDTO
@@ -62,11 +64,18 @@ final readonly class ActivatePatientHandler
         $this->userRepository->save($user);
         $this->invitationRepository->save($invitation);
 
-        // Send welcome email
-        $this->emailSender->sendWelcome(
-            to: $user->getEmail(),
-            userName: $user->getFullName(),
-        );
+        try {
+            $this->emailSender->sendWelcome(
+                to: $user->getEmail(),
+                userName: $user->getFullName(),
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to send welcome email: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+                'email_type' => 'patient_welcome',
+            ]);
+        }
 
         return UserOutputDTO::fromEntity($user);
     }

@@ -11,6 +11,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
     private TokenGeneratorInterface&MockObject $tokenGenerator;
     private EmailSenderInterface&MockObject $emailSender;
     private ClockInterface&MockObject $clock;
+    private LoggerInterface&MockObject $logger;
     private RequestPasswordResetHandler $handler;
 
     protected function setUp(): void
@@ -32,6 +34,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new RequestPasswordResetHandler(
             $this->userRepository,
@@ -41,6 +44,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
             'http://localhost:3000',
             3600,
             $this->clock,
+            $this->logger,
         );
     }
 
@@ -110,5 +114,26 @@ final class RequestPasswordResetHandlerTest extends TestCase
             );
 
         $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
+    }
+
+    public function testHandleSucceedsWhenEmailFails(): void
+    {
+        $user = DomainTestHelper::createReconstitutedActivePatient(email: 'active@example.com');
+
+        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->tokenGenerator->method('generate')->willReturn('reset-token');
+        $this->resetTokenRepository->expects($this->once())->method('invalidateAllForUser');
+        $this->resetTokenRepository->expects($this->once())->method('save');
+
+        $this->emailSender
+            ->method('sendPasswordReset')
+            ->willThrowException(new \RuntimeException('SMTP error'));
+
+        $this->logger
+            ->expects($this->once())
+            ->method('error');
+
+        // Should NOT throw — token is saved, email failure is logged
+        $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'active@example.com'));
     }
 }

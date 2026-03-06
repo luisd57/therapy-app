@@ -22,6 +22,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -37,6 +38,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         private AvailabilityComputerInterface $availabilityComputer,
         private AppointmentEmailSenderInterface $emailSender,
         private ClockInterface $clock,
+        private LoggerInterface $logger,
         private int $appointmentDurationMinutes,
     ) {
     }
@@ -99,22 +101,28 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
 
         $this->appointmentRepository->save($appointment);
 
-        // Send acknowledgment to requester
-        $this->emailSender->sendRequestAcknowledgment(
-            to: $emailVO,
-            fullName: $fullName,
-            appointmentTime: $startTime,
-            modality: $appointmentModality,
-        );
+        try {
+            $this->emailSender->sendRequestAcknowledgment(
+                to: $emailVO,
+                fullName: $fullName,
+                appointmentTime: $startTime,
+                modality: $appointmentModality,
+            );
 
-        // Notify therapist
-        $therapist = $this->userRepository->findSingleTherapist();
-        $this->emailSender->sendNewRequestAlertToTherapist(
-            therapistEmail: $therapist->getEmail(),
-            requesterName: $fullName,
-            appointmentTime: $startTime,
-            modality: $appointmentModality,
-        );
+            $therapist = $this->userRepository->findSingleTherapist();
+            $this->emailSender->sendNewRequestAlertToTherapist(
+                therapistEmail: $therapist->getEmail(),
+                requesterName: $fullName,
+                appointmentTime: $startTime,
+                modality: $appointmentModality,
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to send appointment request email: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+                'email_type' => 'appointment_request',
+            ]);
+        }
 
         return AppointmentOutputDTO::fromEntity($appointment);
     }

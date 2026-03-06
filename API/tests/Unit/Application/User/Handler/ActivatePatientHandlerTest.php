@@ -12,6 +12,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -23,6 +24,7 @@ final class ActivatePatientHandlerTest extends TestCase
     private PasswordHasherInterface&MockObject $passwordHasher;
     private EmailSenderInterface&MockObject $emailSender;
     private ClockInterface&MockObject $clock;
+    private LoggerInterface&MockObject $logger;
     private ActivatePatientHandler $handler;
 
     protected function setUp(): void
@@ -33,6 +35,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new ActivatePatientHandler(
             $this->invitationRepository,
@@ -40,6 +43,7 @@ final class ActivatePatientHandlerTest extends TestCase
             $this->passwordHasher,
             $this->emailSender,
             $this->clock,
+            $this->logger,
         );
     }
 
@@ -112,5 +116,33 @@ final class ActivatePatientHandlerTest extends TestCase
 
         $input = new ActivatePatientInputDTO(token: 'token', password: 'securepass');
         $this->handler->__invoke($input);
+    }
+
+    public function testHandleSucceedsWhenWelcomeEmailFails(): void
+    {
+        $invitation = DomainTestHelper::createValidInvitation(
+            token: 'valid-token',
+            email: 'newpatient@example.com',
+            patientName: 'New Patient',
+        );
+
+        $this->invitationRepository->method('findByToken')->willReturn($invitation);
+        $this->passwordHasher->method('hash')->willReturn('hashed_pw');
+        $this->userRepository->expects($this->once())->method('save');
+        $this->invitationRepository->expects($this->once())->method('save');
+
+        $this->emailSender
+            ->method('sendWelcome')
+            ->willThrowException(new \RuntimeException('SMTP error'));
+
+        $this->logger
+            ->expects($this->once())
+            ->method('error');
+
+        $input = new ActivatePatientInputDTO(token: 'valid-token', password: 'securepass');
+        $result = $this->handler->__invoke($input);
+
+        $this->assertSame('newpatient@example.com', $result->email);
+        $this->assertTrue($result->isActive);
     }
 }

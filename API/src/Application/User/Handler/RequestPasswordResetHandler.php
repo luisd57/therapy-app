@@ -12,6 +12,7 @@ use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final readonly class RequestPasswordResetHandler
@@ -24,6 +25,7 @@ final readonly class RequestPasswordResetHandler
         private string $frontendUrl,
         private int $passwordResetTtl,
         private ClockInterface $clock,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -62,9 +64,17 @@ final readonly class RequestPasswordResetHandler
             $token,
         );
 
-        $this->emailSender->sendPasswordReset(
-            to: $email,
-            resetUrl: $resetUrl,
-        );
+        try {
+            $this->emailSender->sendPasswordReset(
+                to: $email,
+                resetUrl: $resetUrl,
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to send password reset email: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+                'email_type' => 'password_reset',
+            ]);
+        }
     }
 }

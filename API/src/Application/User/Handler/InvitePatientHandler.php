@@ -15,6 +15,7 @@ use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final readonly class InvitePatientHandler
@@ -27,6 +28,7 @@ final readonly class InvitePatientHandler
         private string $frontendUrl,
         private int $invitationTtl,
         private ClockInterface $clock,
+        private LoggerInterface $logger,
     ) {}
 
     public function __invoke(InvitePatientInputDTO $dto): InvitationOutputDTO
@@ -67,12 +69,19 @@ final readonly class InvitePatientHandler
             $token,
         );
 
-        // Send invitation email
-        $this->emailSender->sendInvitation(
-            to: $email,
-            patientName: $dto->patientName,
-            registrationUrl: $registrationUrl,
-        );
+        try {
+            $this->emailSender->sendInvitation(
+                to: $email,
+                patientName: $dto->patientName,
+                registrationUrl: $registrationUrl,
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to send invitation email: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+                'email_type' => 'patient_invitation',
+            ]);
+        }
 
         return InvitationOutputDTO::fromEntity($invitation, $this->clock->now());
     }

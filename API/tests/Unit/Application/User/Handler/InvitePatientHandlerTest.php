@@ -13,6 +13,7 @@ use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -24,6 +25,7 @@ final class InvitePatientHandlerTest extends TestCase
     private TokenGeneratorInterface&MockObject $tokenGenerator;
     private EmailSenderInterface&MockObject $emailSender;
     private ClockInterface&MockObject $clock;
+    private LoggerInterface&MockObject $logger;
     private InvitePatientHandler $handler;
 
     protected function setUp(): void
@@ -34,6 +36,7 @@ final class InvitePatientHandlerTest extends TestCase
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new InvitePatientHandler(
             $this->userRepository,
@@ -43,6 +46,7 @@ final class InvitePatientHandlerTest extends TestCase
             'http://localhost:3000',
             86400,
             $this->clock,
+            $this->logger,
         );
     }
 
@@ -126,5 +130,32 @@ final class InvitePatientHandlerTest extends TestCase
         );
 
         $this->handler->__invoke($input);
+    }
+
+    public function testHandleSucceedsWhenEmailFails(): void
+    {
+        $this->userRepository->method('existsByEmail')->willReturn(false);
+        $this->invitationRepository->method('findValidByEmail')->willReturn(null);
+        $this->tokenGenerator->method('generate')->willReturn('generated-token');
+        $this->invitationRepository->expects($this->once())->method('save');
+
+        $this->emailSender
+            ->method('sendInvitation')
+            ->willThrowException(new \RuntimeException('SMTP error'));
+
+        $this->logger
+            ->expects($this->once())
+            ->method('error');
+
+        $input = new InvitePatientInputDTO(
+            email: 'newpatient@example.com',
+            patientName: 'New Patient',
+            therapistId: UserId::generate()->getValue(),
+        );
+
+        $result = $this->handler->__invoke($input);
+
+        $this->assertSame('newpatient@example.com', $result->email);
+        $this->assertSame('pending', $result->status);
     }
 }

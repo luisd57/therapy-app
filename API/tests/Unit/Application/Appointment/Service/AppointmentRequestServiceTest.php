@@ -23,6 +23,7 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use Doctrine\Common\Collections\ArrayCollection;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -37,6 +38,7 @@ final class AppointmentRequestServiceTest extends TestCase
     private AvailabilityComputerInterface&MockObject $availabilityComputer;
     private AppointmentEmailSenderInterface&MockObject $emailSender;
     private ClockInterface&MockObject $clock;
+    private LoggerInterface&MockObject $logger;
     private AppointmentRequestService $service;
 
     protected function setUp(): void
@@ -50,6 +52,7 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->service = new AppointmentRequestService(
             $this->userRepository,
@@ -60,6 +63,7 @@ final class AppointmentRequestServiceTest extends TestCase
             $this->availabilityComputer,
             $this->emailSender,
             $this->clock,
+            $this->logger,
             50,
         );
     }
@@ -325,5 +329,35 @@ final class AppointmentRequestServiceTest extends TestCase
             city: 'Berlin',
             country: 'Germany',
         );
+    }
+
+    public function testRequestAppointmentSucceedsWhenEmailFails(): void
+    {
+        $this->stubAvailabilityCheck();
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('save');
+
+        $this->emailSender
+            ->method('sendRequestAcknowledgment')
+            ->willThrowException(new \RuntimeException('SMTP connection refused'));
+
+        $this->logger
+            ->expects($this->once())
+            ->method('error');
+
+        $result = $this->service->requestAppointment(
+            slotStartTime: '2025-06-02 09:00:00',
+            modality: 'ONLINE',
+            fullName: 'Jane Doe',
+            phone: '+1234567890',
+            email: 'jane@example.com',
+            city: 'Berlin',
+            country: 'Germany',
+        );
+
+        $this->assertSame('REQUESTED', $result->status);
+        $this->assertSame('Jane Doe', $result->fullName);
     }
 }

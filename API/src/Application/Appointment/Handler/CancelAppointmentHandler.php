@@ -10,6 +10,7 @@ use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\Id\AppointmentId;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final readonly class CancelAppointmentHandler
@@ -18,6 +19,7 @@ final readonly class CancelAppointmentHandler
         private AppointmentRepositoryInterface $appointmentRepository,
         private AppointmentEmailSenderInterface $emailSender,
         private ClockInterface $clock,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -34,12 +36,20 @@ final readonly class CancelAppointmentHandler
         $appointment->cancel($this->clock->now());
         $this->appointmentRepository->save($appointment);
 
-        $this->emailSender->sendCancellationToPatient(
-            to: $appointment->getEmail(),
-            fullName: $appointment->getFullName(),
-            appointmentTime: $appointment->getTimeSlot()->getStartTime(),
-            modality: $appointment->getModality(),
-        );
+        try {
+            $this->emailSender->sendCancellationToPatient(
+                to: $appointment->getEmail(),
+                fullName: $appointment->getFullName(),
+                appointmentTime: $appointment->getTimeSlot()->getStartTime(),
+                modality: $appointment->getModality(),
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to send cancellation email: {message}', [
+                'message' => $e->getMessage(),
+                'exception' => $e,
+                'email_type' => 'appointment_cancellation',
+            ]);
+        }
 
         return AppointmentOutputDTO::fromEntity($appointment);
     }
