@@ -128,7 +128,7 @@ One-off time blocks where the therapist is unavailable (holidays, personal time,
 | `therapist_id` | UUID | NO | FK to `users.id`. ON DELETE CASCADE |
 | `start_date_time` | TIMESTAMP | NO | Exception period start |
 | `end_date_time` | TIMESTAMP | NO | Exception period end |
-| `reason` | VARCHAR(500) | YES | Human-readable note (e.g., "Holiday") |
+| `reason` | VARCHAR(500) | NO | Human-readable note (e.g., "Holiday"). Defaults to empty string |
 | `is_all_day` | BOOLEAN | NO | UI hint. The actual blocking uses start/end times |
 | `created_at` | TIMESTAMP | NO | Immutable |
 

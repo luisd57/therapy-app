@@ -203,7 +203,6 @@ Open your browser and navigate to:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/health` | Health check |
-| GET | `/api/` | API info |
 | POST | `/api/auth/therapist/login` | Therapist login |
 | POST | `/api/auth/patient/login` | Patient login |
 | GET | `/api/auth/invitation/validate/{token}` | Validate invitation |
@@ -211,6 +210,7 @@ Open your browser and navigate to:
 | POST | `/api/auth/password/forgot` | Request password reset |
 | POST | `/api/auth/password/reset` | Reset password |
 | GET | `/api/appointments/available-slots` | Browse available time slots |
+| GET | `/api/appointments/next-available-week` | Find next week with available slots |
 | POST | `/api/appointments/lock-slot` | Temporarily hold a slot |
 | POST | `/api/appointments/request` | Submit appointment request |
 

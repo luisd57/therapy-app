@@ -69,12 +69,12 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 | Couche | Rôle | Contenu |
 | ------ | ---- | ------- |
 | **Domain** | Logique métier pure, aucune dépendance framework | Entités, Value Objects, interfaces Repository et Service (ports driven), services métier, exceptions |
-| **Application** | Orchestration des cas d'usage | 33 Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
+| **Application** | Orchestration des cas d'usage | 32 Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
 | **Infrastructure** | Adaptateurs techniques (driving + driven) | Controllers HTTP (driving), repositories Doctrine, envoi d'emails, security, commandes CLI, event subscribers |
 
 ### Patterns clés
 
-- **Value Objects** — Types immuables auto-validants (`Email`, `Phone`, `Address`, `TimeSlot`, `AppointmentStatus`…). Les enums PHP portent la logique métier (`canTransitionTo()`, `blocksSlot()`, `isTerminal()`).
+- **Value Objects** — Types immuables auto-validants (`Email`, `Phone`, `Address`, `TimeSlot`…). Les enums PHP (`AppointmentStatus`, `AppointmentModality`, `UserRole`, `WeekDay`) portent la logique métier (`canTransitionTo()`, `blocksSlot()`, `isTerminal()`).
 - **DTOs Input/Output** — `final readonly class` avec factory `fromEntity()` et `toArray()`. Séparation nette entre ce qui entre dans un handler et ce qui en sort.
 - **Repository Pattern** — Interfaces définies dans le Domain (ports), implémentées dans l'Infrastructure avec Doctrine (adapters).
 - **Custom DBAL Types** — Types Doctrine personnalisés (`EmailType`, `UserIdType`, `HashedStringType`…) pour convertir automatiquement entre Value Objects PHP et colonnes de base de données. Les entités Domain portent directement les attributs `#[ORM\Entity]` et `#[ORM\Column]` — pas de couche ORM séparée.
