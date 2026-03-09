@@ -43,6 +43,9 @@ abstract class ApiTestCase extends WebTestCase
         $headers = ['CONTENT_TYPE' => 'application/json'];
         if ($token !== null) {
             $headers['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        } else {
+            // Clear any lingering auth cookie to ensure truly unauthenticated requests
+            $this->client->getCookieJar()->expire('THERAPY_JWT', '/api');
         }
         $this->client->request($method, $uri, [], [], $headers, json_encode($data));
     }
@@ -73,9 +76,7 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        $data = $this->getResponseData();
-
-        return $data['data']['token'];
+        return $this->extractTokenFromCookie();
     }
 
     protected function createPatientAndGetToken(
@@ -99,8 +100,13 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        $data = $this->getResponseData();
+        return $this->extractTokenFromCookie();
+    }
 
-        return $data['data']['token'];
+    private function extractTokenFromCookie(): string
+    {
+        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
+
+        return $cookie !== null ? $cookie->getValue() : '';
     }
 }

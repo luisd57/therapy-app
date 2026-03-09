@@ -20,6 +20,12 @@ security:
             stateless: true
             jwt: ~
 
+        # Auth state check requires authentication
+        api_auth_me:
+            pattern: ^/api/auth/me$
+            stateless: true
+            jwt: ~
+
         # Public endpoints (no auth required)
         api_public:
             pattern: ^/api($|/$|/health|/auth|/appointments(/|$))
@@ -37,6 +43,7 @@ security:
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
         - { path: ^/api/$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/auth/me$, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         # Public appointment endpoints
         - { path: ^/api/appointments(/|$), roles: PUBLIC_ACCESS }

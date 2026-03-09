@@ -106,6 +106,9 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 ### Authentication & Secrets
 
 - JWT with `jti`-based revocation via Redis blocklist (`POST /api/auth/logout`)
+- JWT delivered via httpOnly cookie (`THERAPY_JWT`) for browser clients (defense-in-depth against XSS); Bearer token also supported for API clients (Postman, tests)
+- Auth state check endpoint: `GET /api/auth/me` (JWT-protected, used by dashboard on page refresh)
+- CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) — no HTTP endpoint exposed
 - Passwords hashed with bcrypt (cost 12), policy enforced at 8–72 characters in both HTTP and CLI flows
 - Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` — must be replaced before deploying

@@ -1,12 +1,19 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, map, catchError, throwError, EMPTY } from 'rxjs';
+import {
+  Observable,
+  tap,
+  map,
+  catchError,
+  of,
+  EMPTY,
+  finalize,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../api/api.models';
 import { AuthUser, LoginData, LoginRequest } from './auth.models';
 
-const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
 
 @Injectable({ providedIn: 'root' })
@@ -14,9 +21,36 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
-  readonly token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
   readonly user = signal<AuthUser | null>(this.loadUser());
-  readonly isAuthenticated = computed(() => this.token() !== null);
+  readonly isAuthenticated = computed(() => this.user() !== null);
+  readonly initialized = signal(false);
+
+  init(): Observable<void> {
+    const storedUser = this.loadUser();
+    if (!storedUser) {
+      this.initialized.set(true);
+      return of(void 0);
+    }
+
+    return this.http
+      .get<ApiResponse<AuthUser>>(`${environment.apiUrl}/auth/me`)
+      .pipe(
+        tap((response) => {
+          if (response.success && response.data) {
+            this.user.set(response.data);
+            localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+          } else {
+            this.clearLocal();
+          }
+        }),
+        catchError(() => {
+          this.clearLocal();
+          return of(void 0);
+        }),
+        map(() => void 0),
+        finalize(() => this.initialized.set(true)),
+      );
+  }
 
   login(request: LoginRequest): Observable<AuthUser> {
     return this.http
@@ -32,9 +66,7 @@ export class AuthService {
           return response.data;
         }),
         tap((data) => {
-          localStorage.setItem(TOKEN_KEY, data.token);
           localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-          this.token.set(data.token);
           this.user.set(data.user);
           this.router.navigate(['/appointments']);
         }),
@@ -43,18 +75,20 @@ export class AuthService {
   }
 
   logout(): void {
-    if (this.token()) {
+    if (this.user()) {
       this.http
         .post(`${environment.apiUrl}/auth/logout`, {})
         .pipe(catchError(() => EMPTY))
         .subscribe();
     }
 
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    this.token.set(null);
-    this.user.set(null);
+    this.clearLocal();
     this.router.navigate(['/login']);
+  }
+
+  private clearLocal(): void {
+    localStorage.removeItem(USER_KEY);
+    this.user.set(null);
   }
 
   private loadUser(): AuthUser | null {

@@ -97,7 +97,7 @@ Le frontend utilise l'architecture en îlots d'Astro : les pages sont générée
 | Frontend | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Base de données | PostgreSQL 16, clés primaires UUID, index optimisés pour les requêtes de disponibilité |
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
-| Authentification | JWT stateless avec révocation par claim `jti` via Redis |
+| Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookie httpOnly pour le dashboard, Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
 | Infrastructure | Docker Compose (8 conteneurs), cron planifié, Makefile |
 

@@ -15,6 +15,8 @@ use App\Application\User\Handler\RequestPasswordResetHandler;
 use App\Application\User\Handler\ResetPasswordHandler;
 use App\Application\User\Handler\TherapistLoginHandler;
 use App\Application\User\Handler\ValidateInvitationHandler;
+use App\Application\User\DTO\Output\UserOutputDTO;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotActiveException;
@@ -22,6 +24,7 @@ use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
 use App\Infrastructure\Http\Validation\PasswordStrength;
+use App\Infrastructure\Security\JwtCookieManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +40,7 @@ final class AuthController extends AbstractController
 
     public function __construct(
         private readonly ValidatorInterface $validator,
+        private readonly JwtCookieManager $jwtCookieManager,
     ) {}
 
     #[Route('/therapist/login', name: 'api_therapist_login', methods: ['POST'])]
@@ -55,10 +59,10 @@ final class AuthController extends AbstractController
                 password: $data['password'],
             ));
 
-            return $this->success([
-                'token' => $result->token,
-                'user' => $result->user->toArray(),
-            ]);
+            $response = $this->success(['user' => $result->user->toArray()]);
+            $response->headers->setCookie($this->jwtCookieManager->createCookie($result->token));
+
+            return $response;
         } catch (InvalidCredentialsException $exception) {
             // Intentionally hardcoded: don't leak whether email or password was wrong
             return $this->error('Invalid email or password', $exception->getErrorCode(), 401);
@@ -84,10 +88,10 @@ final class AuthController extends AbstractController
                 password: $data['password'],
             ));
 
-            return $this->success([
-                'token' => $result->token,
-                'user' => $result->user->toArray(),
-            ]);
+            $response = $this->success(['user' => $result->user->toArray()]);
+            $response->headers->setCookie($this->jwtCookieManager->createCookie($result->token));
+
+            return $response;
         } catch (InvalidCredentialsException $exception) {
             // Intentionally hardcoded: don't leak whether email or password was wrong
             return $this->error('Invalid email or password', $exception->getErrorCode(), 401);
@@ -273,6 +277,17 @@ final class AuthController extends AbstractController
         return $errors;
     }
 
+    #[Route('/me', name: 'api_auth_me', methods: ['GET'])]
+    public function me(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->error('Unauthorized', 'UNAUTHORIZED', 401);
+        }
+
+        return $this->success(UserOutputDTO::fromEntity($user)->toArray());
+    }
+
     #[Route('/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(
         Request $request,
@@ -280,8 +295,11 @@ final class AuthController extends AbstractController
         \Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface $jwtTokenManager,
         \Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface $jwtEncoder,
     ): JsonResponse {
-        $authHeader = $request->headers->get('Authorization', '');
-        $token = str_starts_with($authHeader, 'Bearer ') ? substr($authHeader, 7) : '';
+        $token = $request->cookies->get($this->jwtCookieManager->getCookieName(), '');
+        if ($token === '') {
+            $authHeader = $request->headers->get('Authorization', '');
+            $token = str_starts_with($authHeader, 'Bearer ') ? substr($authHeader, 7) : '';
+        }
 
         if ($token === '') {
             return $this->error('No token provided', 'NO_TOKEN', 400);
@@ -299,7 +317,10 @@ final class AuthController extends AbstractController
             $ttlSeconds = max(0, $exp - time());
             $jwtBlocklist->revoke($jti, $ttlSeconds);
 
-            return $this->success(['message' => 'Successfully logged out.']);
+            $response = $this->success(['message' => 'Successfully logged out.']);
+            $response->headers->setCookie($this->jwtCookieManager->createExpiredCookie());
+
+            return $response;
         } catch (\Exception) {
             return $this->error('Invalid token', 'INVALID_TOKEN', 400);
         }

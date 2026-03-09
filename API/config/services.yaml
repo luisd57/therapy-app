@@ -5,6 +5,7 @@ parameters:
     app.password_reset_ttl: '%env(int:PASSWORD_RESET_TOKEN_TTL)%'
     app.appointment_duration_minutes: '%env(int:APPOINTMENT_DURATION_MINUTES)%'
     app.slot_lock_ttl: '%env(int:SLOT_LOCK_TTL)%'
+    app.jwt_cookie_secure: '%env(bool:JWT_COOKIE_SECURE)%'
 
 services:
     _defaults:
@@ -49,6 +50,11 @@ services:
 
     App\Domain\User\Service\JwtBlocklistInterface:
         class: App\Infrastructure\Security\RedisJwtBlocklist
+
+    App\Infrastructure\Security\JwtCookieManager:
+        arguments:
+            $jwtTokenTtl: '%env(int:JWT_TOKEN_TTL)%'
+            $jwtCookieSecure: '%app.jwt_cookie_secure%'
 
     App\Infrastructure\Security\JwtCreatedListener:
         tags:

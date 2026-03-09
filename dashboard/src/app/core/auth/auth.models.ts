@@ -11,6 +11,5 @@ export interface AuthUser {
 }
 
 export interface LoginData {
-  token: string;
   user: AuthUser;
 }

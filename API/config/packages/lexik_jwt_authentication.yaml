@@ -9,6 +9,9 @@ lexik_jwt_authentication:
     user_id_claim: email
     
     token_extractors:
+        cookie:
+            enabled: true
+            name: THERAPY_JWT
         authorization_header:
             enabled: true
             prefix: Bearer

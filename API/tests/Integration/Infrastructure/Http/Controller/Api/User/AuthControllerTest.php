@@ -192,6 +192,125 @@ final class AuthControllerTest extends ApiTestCase
         $this->assertSame('therapist@test.com', $data['data']['email']);
     }
 
+    // ── HttpOnly Cookie Tests ─────────────────────────────────────────
+
+    public function testLoginSetsHttpOnlyCookie(): void
+    {
+        $this->seedTherapist();
+
+        $this->client->request('POST', '/api/auth/therapist/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
+
+        $this->assertResponseIsSuccessful();
+
+        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
+        $this->assertNotNull($cookie, 'Login should set THERAPY_JWT cookie');
+        $this->assertNotEmpty($cookie->getValue());
+
+        // Verify response body does not contain the token
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertArrayNotHasKey('token', $data['data']);
+        $this->assertArrayHasKey('user', $data['data']);
+    }
+
+    public function testCookieAuthenticatesOnProtectedEndpoint(): void
+    {
+        $this->seedTherapist();
+
+        // Login to get the cookie
+        $this->client->request('POST', '/api/auth/therapist/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
+
+        $this->assertResponseIsSuccessful();
+
+        // Access protected endpoint — cookie is sent automatically by the cookie jar
+        $this->client->request('GET', '/api/therapist/me');
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('therapist@test.com', $data['data']['email']);
+    }
+
+    public function testLogoutClearsCookie(): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/auth/logout', [], $token);
+
+        $this->assertResponseIsSuccessful();
+
+        // Verify the cookie is expired
+        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
+        $this->assertTrue(
+            $cookie === null || $cookie->isExpired(),
+            'THERAPY_JWT cookie should be expired after logout',
+        );
+    }
+
+    public function testLogoutWorksWithCookieToken(): void
+    {
+        $this->seedTherapist();
+
+        // Login to get the cookie
+        $this->client->request('POST', '/api/auth/therapist/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
+
+        // Logout using only the cookie (no Authorization header)
+        $this->client->request('POST', '/api/auth/logout', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertSame('Successfully logged out.', $data['data']['message']);
+    }
+
+    public function testAuthMeWithValidCookieReturns200(): void
+    {
+        $this->seedTherapist();
+
+        // Login to set the cookie
+        $this->client->request('POST', '/api/auth/therapist/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
+
+        // Call /auth/me — cookie sent automatically
+        $this->client->request('GET', '/api/auth/me');
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('therapist@test.com', $data['data']['email']);
+        $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
+    }
+
+    public function testAuthMeWithoutCookieReturns401(): void
+    {
+        $this->jsonRequest('GET', '/api/auth/me');
+
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testBearerTokenStillWorksOnProtectedEndpoints(): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        // Clear the cookie jar so only Bearer is used
+        $this->client->getCookieJar()->expire('THERAPY_JWT', '/api');
+
+        $this->jsonRequest('GET', '/api/therapist/me', [], $token);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertSame('therapist@test.com', $data['data']['email']);
+    }
+
     private function seedTherapist(): void
     {
         $hasher = self::getContainer()->get(PasswordHasherInterface::class);
