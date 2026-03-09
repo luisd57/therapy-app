@@ -93,6 +93,19 @@ services:
     networks:
       - therapy_network
 
+  dashboard:
+    image: node:22-alpine
+    container_name: therapy_dashboard
+    working_dir: /app
+    volumes:
+      - ./dashboard:/app
+      - dashboard_node_modules:/app/node_modules
+    ports:
+      - "4200:4200"
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --poll 2000"
+    networks:
+      - therapy_network
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: therapy_pgadmin
@@ -119,3 +132,4 @@ volumes:
   postgres_data:
   pgadmin_data:
   astro_node_modules:
+  dashboard_node_modules:
