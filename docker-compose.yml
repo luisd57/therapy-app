@@ -80,13 +80,13 @@ services:
       - APP_ENV=dev
       - DATABASE_URL=postgresql://therapy_user:therapy_pass@postgres:5432/therapy_db?serverVersion=16&charset=utf8
 
-  astro:
+  landing:
     image: node:22-alpine
-    container_name: therapy_astro
+    container_name: therapy_landing
     working_dir: /app
     volumes:
-      - ./UI:/app
-      - astro_node_modules:/app/node_modules
+      - ./landing:/app
+      - landing_node_modules:/app/node_modules
     ports:
       - "4321:4321"
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
@@ -131,5 +131,5 @@ networks:
 volumes:
   postgres_data:
   pgadmin_data:
-  astro_node_modules:
+  landing_node_modules:
   dashboard_node_modules:
