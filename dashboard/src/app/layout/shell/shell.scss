@@ -1,0 +1,24 @@
+.shell-container {
+  height: 100vh;
+}
+
+mat-sidenav {
+  width: 240px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+}
+
+.content {
+  padding: 1.5rem;
+}
+
+.active-link {
+  --mat-list-active-indicator-color: var(--mat-sys-secondary-container);
+}

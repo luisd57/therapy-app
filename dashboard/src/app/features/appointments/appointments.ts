@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-appointments',
-  template: `<h1>Appointments</h1><p>Coming soon.</p>`,
+  templateUrl: './appointments.html',
+  styleUrl: './appointments.scss',
 })
 export class Appointments {}
