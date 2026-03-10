@@ -4,7 +4,7 @@ import { tap } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
+  const authService: AuthService = inject(AuthService);
 
   req = req.clone({ withCredentials: true });
 

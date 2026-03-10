@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,12 +21,12 @@ import { AuthService } from '../../core/auth/auth.service';
   styleUrl: './login.scss',
 })
 export class Login {
-  private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
+  private readonly fb: FormBuilder = inject(FormBuilder);
+  private readonly authService: AuthService = inject(AuthService);
 
-  readonly hidePassword = signal(true);
-  readonly isLoading = signal(false);
-  readonly errorMessage = signal('');
+  readonly hidePassword: WritableSignal<boolean> = signal(true);
+  readonly isLoading: WritableSignal<boolean> = signal(false);
+  readonly errorMessage: WritableSignal<string> = signal('');
 
   readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
