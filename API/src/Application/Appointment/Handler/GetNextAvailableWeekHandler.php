@@ -13,6 +13,8 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\Enum\AppointmentModality;
+use App\Domain\Appointment\Entity\Appointment;
+use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
@@ -46,24 +48,38 @@ final readonly class GetNextAvailableWeekHandler
 
         $today = $this->clock->now()->setTime(0, 0);
 
+        // Batch load exceptions and appointments for the full range 
+        $rangeEnd = $today->modify("+{$this->maxLookaheadWeeks} weeks")->modify('-1 day 23:59:59');
+
+        $allExceptions = $this->exceptionRepository->findByTherapistAndDateRange(
+            $therapistId,
+            $today,
+            $rangeEnd,
+        );
+        $allConfirmedAppointments = $this->appointmentRepository->findConfirmedByDateRange(
+            $today,
+            $rangeEnd,
+        );
+
         for ($week = 0; $week < $this->maxLookaheadWeeks; $week++) {
             $weekStart = $today->modify("+{$week} weeks");
             $weekEnd = $weekStart->modify('+6 days 23:59:59');
 
-            $exceptions = $this->exceptionRepository->findByTherapistAndDateRange(
-                $therapistId,
-                $weekStart,
-                $weekEnd,
+            $weekExceptions = $allExceptions->filter(
+                fn (ScheduleException $exception) =>
+                    $exception->getStartDateTime() < $weekEnd
+                    && $exception->getEndDateTime() > $weekStart,
             );
-            $confirmedAppointments = $this->appointmentRepository->findConfirmedByDateRange(
-                $weekStart,
-                $weekEnd,
+            $weekAppointments = $allConfirmedAppointments->filter(
+                fn (Appointment $appointment) =>
+                    $appointment->getTimeSlot()->getStartTime() < $weekEnd
+                    && $appointment->getTimeSlot()->getEndTime() > $weekStart,
             );
 
             $context = new AvailabilityContext(
                 schedules: $schedules,
-                exceptions: $exceptions,
-                blockingAppointments: $confirmedAppointments,
+                exceptions: $weekExceptions,
+                blockingAppointments: $weekAppointments,
                 activeLocks: new ArrayCollection(),
             );
 

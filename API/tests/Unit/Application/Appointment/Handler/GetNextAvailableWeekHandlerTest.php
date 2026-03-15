@@ -170,14 +170,14 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
             ->method('findActiveByTherapist')
             ->willReturn(new ArrayCollection());
 
-        // These should be called once per week (3 times for 3-week lookahead)
+        // Batch-loaded once for the full lookahead range
         $this->exceptionRepository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('findByTherapistAndDateRange')
             ->willReturn(new ArrayCollection());
 
         $this->appointmentRepository
-            ->expects($this->exactly(3))
+            ->expects($this->once())
             ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
