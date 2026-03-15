@@ -9,6 +9,8 @@ services:
     volumes:
       - ./API:/var/www/html
       - ./API/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - php_vendor:/var/www/html/vendor
+      - php_var:/var/www/html/var
     depends_on:
       - postgres
       - redis
@@ -71,6 +73,8 @@ services:
     volumes:
       - ./API:/var/www/html
       - ./API/docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - php_vendor:/var/www/html/vendor
+      - php_var:/var/www/html/var
     depends_on:
       - postgres
       - redis
@@ -133,3 +137,5 @@ volumes:
   pgadmin_data:
   landing_node_modules:
   dashboard_node_modules:
+  php_vendor:
+  php_var:
