@@ -12,7 +12,8 @@ Thumbs.db
 
 # Claude
 CLAUDE.md
-.claude/
+.claude/settings.local.json
+.claudeignore
 
 # Dependencies
 node_modules/
