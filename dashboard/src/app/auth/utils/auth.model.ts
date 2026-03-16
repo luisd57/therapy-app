@@ -13,3 +13,24 @@ export interface AuthUser {
 export interface LoginData {
   user: AuthUser;
 }
+
+export interface RegisterRequest {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface InvitationData {
+  patient_name: string;
+  status: string;
+}

@@ -6,10 +6,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from '../data-access/auth.service';
+import { AuthService } from '../../data-access/auth.service';
 
 @Component({
-  selector: 'app-login-page',
+  selector: 'app-patient-login-page',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -19,10 +19,10 @@ import { AuthService } from '../data-access/auth.service';
     MatButtonModule,
     MatIconModule,
   ],
-  templateUrl: './login.page.html',
-  styleUrl: './login.page.scss',
+  templateUrl: './patient-login.page.html',
+  styleUrl: './patient-login.page.scss',
 })
-export class LoginPage {
+export class PatientLoginPage {
   private readonly fb: FormBuilder = inject(FormBuilder);
   private readonly authService: AuthService = inject(AuthService);
 
@@ -41,7 +41,7 @@ export class LoginPage {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.authService.login(this.loginForm.getRawValue()).subscribe({
+    this.authService.patientLogin(this.loginForm.getRawValue()).subscribe({
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(

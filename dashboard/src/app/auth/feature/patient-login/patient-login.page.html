@@ -1,7 +1,7 @@
 <div class="login-container">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>Therapy Dashboard</mat-card-title>
+      <mat-card-title>Patient Login</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -43,8 +43,10 @@
             Log In
           }
         </button>
+
         <div class="links">
-          <a routerLink="/patient-login">Are you a patient? Log in here</a>
+          <a routerLink="/forgot-password">Forgot password?</a>
+          <a routerLink="/login">Are you the therapist? Log in here</a>
         </div>
       </form>
     </mat-card-content>

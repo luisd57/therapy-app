@@ -5,11 +5,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from '../data-access/auth.service';
+import { AuthService } from '../../data-access/auth.service';
 
 @Component({
-  selector: 'app-login-page',
+  selector: 'app-forgot-password-page',
   imports: [
     ReactiveFormsModule,
     RouterLink,
@@ -17,36 +16,34 @@ import { AuthService } from '../data-access/auth.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
   ],
-  templateUrl: './login.page.html',
-  styleUrl: './login.page.scss',
+  templateUrl: './forgot-password.page.html',
+  styleUrl: './forgot-password.page.scss',
 })
-export class LoginPage {
+export class ForgotPasswordPage {
   private readonly fb: FormBuilder = inject(FormBuilder);
   private readonly authService: AuthService = inject(AuthService);
 
-  readonly hidePassword: WritableSignal<boolean> = signal(true);
   readonly isLoading: WritableSignal<boolean> = signal(false);
-  readonly errorMessage: WritableSignal<string> = signal('');
+  readonly submitted: WritableSignal<boolean> = signal(false);
 
-  readonly loginForm = this.fb.nonNullable.group({
+  readonly forgotForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
   });
 
   onSubmit(): void {
-    if (this.loginForm.invalid) return;
+    if (this.forgotForm.invalid) return;
 
     this.isLoading.set(true);
-    this.errorMessage.set('');
 
-    this.authService.login(this.loginForm.getRawValue()).subscribe({
-      error: (err) => {
+    this.authService.forgotPassword(this.forgotForm.getRawValue()).subscribe({
+      next: () => {
         this.isLoading.set(false);
-        this.errorMessage.set(
-          err?.error?.error?.message ?? err?.message ?? 'Login failed. Please try again.',
-        );
+        this.submitted.set(true);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.submitted.set(true);
       },
     });
   }

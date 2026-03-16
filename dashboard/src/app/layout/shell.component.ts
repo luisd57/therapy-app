@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, Signal, computed, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { AuthService } from '../auth/data-access/auth.service';
-import { NAV_ITEMS, NavItem } from './nav-items';
+import { NavItem, PATIENT_NAV_ITEMS, THERAPIST_NAV_ITEMS } from './nav-items';
 
 @Component({
   selector: 'app-shell',
@@ -32,7 +32,9 @@ export class ShellComponent {
   readonly authService: AuthService = inject(AuthService);
   private readonly breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
 
-  readonly navItems: NavItem[] = NAV_ITEMS;
+  readonly navItems: Signal<NavItem[]> = computed(() =>
+    this.authService.user()?.role === 'ROLE_PATIENT' ? PATIENT_NAV_ITEMS : THERAPIST_NAV_ITEMS,
+  );
   readonly isMobile = toSignal(
     this.breakpointObserver
       .observe([Breakpoints.Handset])

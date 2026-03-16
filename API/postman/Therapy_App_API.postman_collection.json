@@ -10,14 +10,6 @@
       "value": "http://localhost:8080/api"
     },
     {
-      "key": "therapist_token",
-      "value": ""
-    },
-    {
-      "key": "patient_token",
-      "value": ""
-    },
-    {
       "key": "invitation_token",
       "value": ""
     },
@@ -87,16 +79,6 @@
         },
         {
           "name": "2. Therapist Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if(pm.response.code===200){pm.collectionVariables.set('therapist_token',pm.response.json().data.token);}"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -137,7 +119,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTFiMmMzZDQtZTVmNi03ODkwLWFiY2QtZWYxMjM0NTY3ODkwIiwicm9sZSI6IlJPTEVfVEhFUkFQSVNUIiwiZXhwIjoxNzA5MTAwMDAwfQ.signature\",\n    \"user\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"email\": \"therapist@example.com\",\n      \"full_name\": \"Dr. Jane Smith\",\n      \"role\": \"ROLE_THERAPIST\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Medical Center\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"email\": \"therapist@example.com\",\n      \"full_name\": \"Dr. Jane Smith\",\n      \"role\": \"ROLE_THERAPIST\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Medical Center\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
             },
             {
               "name": "Invalid Credentials",
@@ -199,12 +181,6 @@
           "name": "3. Get Therapist Profile",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/me"
           },
           "response": [
@@ -212,12 +188,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/me"
               },
               "status": "OK",
@@ -239,10 +209,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -259,10 +225,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -291,10 +253,6 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -321,10 +279,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -353,12 +307,6 @@
           "name": "5. List Pending Invitations",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/invitations"
           },
           "response": [
@@ -366,12 +314,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/invitations"
               },
               "status": "OK",
@@ -549,16 +491,6 @@
         },
         {
           "name": "8. Patient Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if(pm.response.code===200){pm.collectionVariables.set('patient_token',pm.response.json().data.token);}"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [
@@ -599,7 +531,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTFiMmMzZDQtZTVmNi03ODkwLWFiY2QtZWYxMjM0NTY3ODkwIiwicm9sZSI6IlJPTEVfVEhFUkFQSVNUIiwiZXhwIjoxNzA5MTAwMDAwfQ.signature\",\n    \"user\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"email\": \"patient@example.com\",\n      \"full_name\": \"John Doe\",\n      \"role\": \"ROLE_PATIENT\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\",\n      \"email\": \"patient@example.com\",\n      \"full_name\": \"John Doe\",\n      \"role\": \"ROLE_PATIENT\",\n      \"is_active\": true,\n      \"phone\": \"+584141234567\",\n      \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"Merida\",\n        \"country\": \"Venezuela\",\n        \"postal_code\": \"5101\",\n        \"state\": \"Merida\"\n      },\n      \"created_at\": \"2026-02-23T10:00:00+00:00\",\n      \"activated_at\": \"2026-02-23T10:00:00+00:00\"\n    }\n  }\n}"
             },
             {
               "name": "Invalid Credentials",
@@ -634,12 +566,6 @@
           "name": "9. Get Patient Profile",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patient_token}}"
-              }
-            ],
             "url": "{{base_url}}/patient/me"
           },
           "response": [
@@ -647,12 +573,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/patient/me"
               },
               "status": "OK",
@@ -674,10 +594,6 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{patient_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -694,10 +610,6 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -726,10 +638,6 @@
                 "method": "PUT",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -757,12 +665,6 @@
           "name": "11. List Patients (as Therapist)",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/patients"
           },
           "response": [
@@ -770,12 +672,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/patients"
               },
               "status": "OK",
@@ -941,12 +837,6 @@
           "name": "14. Logout (Revoke Token)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/auth/logout"
           },
           "response": [
@@ -954,12 +844,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/auth/logout"
               },
               "status": "OK",
@@ -977,12 +861,6 @@
               "name": "No Token",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/auth/logout"
               },
               "status": "Bad Request",
@@ -1002,7 +880,7 @@
     },
     {
       "name": "Therapist Schedule Management",
-      "description": "Requires therapist authentication. Run '3. Therapist Login' first to set the token.",
+      "description": "Requires therapist authentication. Run 'Therapist Login' first (cookie is set automatically).",
       "item": [
         {
           "name": "1. Create Schedule Block (Monday 09:00-13:00)",
@@ -1020,10 +898,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1040,10 +914,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1072,10 +942,6 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -1102,10 +968,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1136,10 +998,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1156,10 +1014,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1190,10 +1044,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1210,10 +1060,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1242,12 +1088,6 @@
           "name": "4. List All Schedule Blocks",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/schedule"
           },
           "response": [
@@ -1255,12 +1095,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule"
               },
               "status": "OK",
@@ -1282,10 +1116,6 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1302,10 +1132,6 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1334,10 +1160,6 @@
                 "method": "PUT",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -1364,10 +1186,6 @@
               "originalRequest": {
                 "method": "PUT",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1396,12 +1214,6 @@
           "name": "6. Delete Schedule Block",
           "request": {
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
           },
           "response": [
@@ -1409,12 +1221,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
               },
               "status": "No Content",
@@ -1427,12 +1233,6 @@
               "name": "Not Found",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule/{{schedule_id}}"
               },
               "status": "Not Found",
@@ -1464,10 +1264,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1484,10 +1280,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1515,10 +1307,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1549,10 +1337,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -1569,10 +1353,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -1601,12 +1381,6 @@
           "name": "9. List Schedule Exceptions",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/schedule/exceptions?from=2026-03-01&to=2026-03-31"
           },
           "response": [
@@ -1614,12 +1388,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule/exceptions?from=2026-03-01&to=2026-03-31"
               },
               "status": "OK",
@@ -1639,12 +1407,6 @@
           "name": "10. Remove Schedule Exception",
           "request": {
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
           },
           "response": [
@@ -1652,12 +1414,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
               },
               "status": "No Content",
@@ -1670,12 +1426,6 @@
               "name": "Not Found",
               "originalRequest": {
                 "method": "DELETE",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/schedule/exceptions/{{exception_id}}"
               },
               "status": "Not Found",
@@ -2129,17 +1879,13 @@
     },
     {
       "name": "Patient Appointments",
-      "description": "Requires patient authentication. Run '9. Patient Login' and '11. Update Patient Profile' first.",
+      "description": "Requires patient authentication. Run 'Patient Login' first (cookie is set automatically).",
       "item": [
         {
           "name": "1. Request Appointment (as Patient)",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{patient_token}}"
-              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
@@ -2157,10 +1903,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2189,10 +1931,6 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -2219,10 +1957,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2253,10 +1987,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{patient_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2273,10 +2003,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2305,10 +2031,6 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{patient_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -2336,18 +2058,12 @@
     },
     {
       "name": "Therapist Appointment Management",
-      "description": "Requires therapist authentication. Run '3. Therapist Login' first. Submit a public appointment request first to have data to work with.",
+      "description": "Requires therapist authentication. Run 'Therapist Login' first (cookie is set automatically). Submit a public appointment request first to have data to work with.",
       "item": [
         {
           "name": "1. List All Appointments",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments"
           },
           "response": [
@@ -2355,12 +2071,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments"
               },
               "status": "OK",
@@ -2380,12 +2090,6 @@
           "name": "2. List Pending Requests",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments?status=REQUESTED"
           },
           "response": [
@@ -2393,12 +2097,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments?status=REQUESTED"
               },
               "status": "OK",
@@ -2418,12 +2116,6 @@
           "name": "3. Get Appointment Details",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
           },
           "response": [
@@ -2431,12 +2123,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
               },
               "status": "OK",
@@ -2454,12 +2140,6 @@
               "name": "Not Found",
               "originalRequest": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}"
               },
               "status": "Not Found",
@@ -2479,12 +2159,6 @@
           "name": "4. Confirm Appointment",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
           },
           "response": [
@@ -2492,12 +2166,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
               },
               "status": "OK",
@@ -2515,12 +2183,6 @@
               "name": "Invalid Status Transition",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
               },
               "status": "Conflict",
@@ -2538,12 +2200,6 @@
               "name": "Not Found",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/confirm"
               },
               "status": "Not Found",
@@ -2563,12 +2219,6 @@
           "name": "5. Complete Appointment",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
           },
           "response": [
@@ -2576,12 +2226,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
               },
               "status": "OK",
@@ -2599,12 +2243,6 @@
               "name": "Invalid Status Transition",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/complete"
               },
               "status": "Conflict",
@@ -2624,12 +2262,6 @@
           "name": "6. Cancel Appointment",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              }
-            ],
             "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
           },
           "response": [
@@ -2637,12 +2269,6 @@
               "name": "Success",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
               },
               "status": "OK",
@@ -2660,12 +2286,6 @@
               "name": "Invalid Status Transition",
               "originalRequest": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  }
-                ],
                 "url": "{{base_url}}/therapist/appointments/{{appointment_id}}/cancel"
               },
               "status": "Conflict",
@@ -2697,10 +2317,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2717,10 +2333,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2749,10 +2361,6 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
-                  {
                     "key": "Content-Type",
                     "value": "application/json"
                   }
@@ -2779,10 +2387,6 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2813,10 +2417,6 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2833,10 +2433,6 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2864,10 +2460,6 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"
@@ -2898,10 +2490,6 @@
             "method": "PATCH",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{therapist_token}}"
-              },
-              {
                 "key": "Content-Type",
                 "value": "application/json"
               }
@@ -2918,10 +2506,6 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "Bearer {{therapist_token}}"
-                  },
                   {
                     "key": "Content-Type",
                     "value": "application/json"

@@ -7,6 +7,30 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/feature/login.page').then((c) => c.LoginPage),
   },
   {
+    path: 'patient-login',
+    loadComponent: () =>
+      import('./auth/feature/patient-login/patient-login.page').then((c) => c.PatientLoginPage),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./auth/feature/register/register.page').then((c) => c.RegisterPage),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./auth/feature/forgot-password/forgot-password.page').then(
+        (c) => c.ForgotPasswordPage,
+      ),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./auth/feature/reset-password/reset-password.page').then(
+        (c) => c.ResetPasswordPage,
+      ),
+  },
+  {
     path: '',
     loadComponent: () => import('./layout/shell.component').then((c) => c.ShellComponent),
     canActivate: [authGuard],

@@ -1,0 +1,86 @@
+<div class="register-container">
+  @if (validating()) {
+    <mat-spinner diameter="48"></mat-spinner>
+  } @else if (validationError()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Invalid Invitation</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="error-message">{{ validationError() }}</p>
+        <a mat-flat-button routerLink="/patient-login">Go to Login</a>
+      </mat-card-content>
+    </mat-card>
+  } @else if (registered()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Registration Complete</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="success-message">Your account has been created successfully. You can now log in.</p>
+        <a mat-flat-button routerLink="/patient-login">Go to Login</a>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Create Your Account</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="welcome-text">Welcome, {{ patientName() }}! Set your password to complete registration.</p>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              formControlName="password"
+              [type]="hidePassword() ? 'password' : 'text'"
+              autocomplete="new-password"
+            />
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword.set(!hidePassword())">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (registerForm.controls.password.hasError('required') && registerForm.controls.password.touched) {
+              <mat-error>Password is required</mat-error>
+            } @else if (registerForm.controls.password.hasError('passwordStrength') && registerForm.controls.password.touched) {
+              <mat-error>Must be 8–72 chars with uppercase, lowercase, number, and special character</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm Password</mat-label>
+            <input
+              matInput
+              formControlName="password_confirmation"
+              [type]="hideConfirm() ? 'password' : 'text'"
+              autocomplete="new-password"
+            />
+            <button mat-icon-button matSuffix type="button" (click)="hideConfirm.set(!hideConfirm())">
+              <mat-icon>{{ hideConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (registerForm.controls.password_confirmation.hasError('required') && registerForm.controls.password_confirmation.touched) {
+              <mat-error>Please confirm your password</mat-error>
+            }
+          </mat-form-field>
+
+          @if (registerForm.hasError('passwordMatch') && registerForm.controls.password_confirmation.touched) {
+            <div class="error-message">Passwords do not match</div>
+          }
+
+          @if (errorMessage()) {
+            <div class="error-message">{{ errorMessage() }}</div>
+          }
+
+          <button mat-flat-button type="submit" [disabled]="isLoading() || registerForm.invalid">
+            @if (isLoading()) {
+              Creating account...
+            } @else {
+              Create Account
+            }
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
