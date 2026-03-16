@@ -11,8 +11,8 @@ import {
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth/auth.interceptor';
-import { AuthService } from './core/auth/auth.service';
+import { authInterceptor } from './auth/data-access/auth.interceptor';
+import { AuthService } from './auth/data-access/auth.service';
 
 function initAuth(authService: AuthService) {
   return () => authService.init();

@@ -5,10 +5,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService } from '../data-access/auth.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-login-page',
   imports: [
     ReactiveFormsModule,
     MatCardModule,
@@ -17,10 +17,10 @@ import { AuthService } from '../../core/auth/auth.service';
     MatButtonModule,
     MatIconModule,
   ],
-  templateUrl: './login.html',
-  styleUrl: './login.scss',
+  templateUrl: './login.page.html',
+  styleUrl: './login.page.scss',
 })
-export class Login {
+export class LoginPage {
   private readonly fb: FormBuilder = inject(FormBuilder);
   private readonly authService: AuthService = inject(AuthService);
 

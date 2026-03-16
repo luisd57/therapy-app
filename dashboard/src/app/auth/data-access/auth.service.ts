@@ -11,8 +11,8 @@ import {
   finalize,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../api/api.models';
-import { AuthUser, LoginData, LoginRequest } from './auth.models';
+import { ApiResponse } from '../../shared/utils/api-response.model';
+import { AuthUser, LoginData, LoginRequest } from '../utils/auth.model';
 
 const USER_KEY = 'auth_user';
 

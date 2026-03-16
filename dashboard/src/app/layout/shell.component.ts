@@ -1,4 +1,4 @@
-import { Component, WritableSignal, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -7,9 +7,10 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription } from 'rxjs';
-import { AuthService } from '../../core/auth/auth.service';
-import { NAV_ITEMS, NavItem } from '../nav-items';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
+import { AuthService } from '../auth/data-access/auth.service';
+import { NAV_ITEMS, NavItem } from './nav-items';
 
 @Component({
   selector: 'app-shell',
@@ -24,26 +25,20 @@ import { NAV_ITEMS, NavItem } from '../nav-items';
     MatButtonModule,
     MatTooltipModule,
   ],
-  templateUrl: './shell.html',
-  styleUrl: './shell.scss',
+  templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss',
 })
-export class Shell implements OnInit, OnDestroy {
+export class ShellComponent {
   readonly authService: AuthService = inject(AuthService);
   private readonly breakpointObserver: BreakpointObserver = inject(BreakpointObserver);
-  private breakpointSub?: Subscription;
 
   readonly navItems: NavItem[] = NAV_ITEMS;
-  readonly isMobile: WritableSignal<boolean> = signal(false);
-
-  ngOnInit(): void {
-    this.breakpointSub = this.breakpointObserver
+  readonly isMobile = toSignal(
+    this.breakpointObserver
       .observe([Breakpoints.Handset])
-      .subscribe((result) => this.isMobile.set(result.matches));
-  }
-
-  ngOnDestroy(): void {
-    this.breakpointSub?.unsubscribe();
-  }
+      .pipe(map((result) => result.matches)),
+    { initialValue: false },
+  );
 
   onLogout(): void {
     this.authService.logout();

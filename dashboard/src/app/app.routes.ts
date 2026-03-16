@@ -1,35 +1,33 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth/auth.guard';
+import { authGuard } from './auth/data-access/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/login/login').then((c) => c.Login),
+    loadComponent: () => import('./auth/feature/login.page').then((c) => c.LoginPage),
   },
   {
     path: '',
-    loadComponent: () =>
-      import('./layout/shell/shell').then((c) => c.Shell),
+    loadComponent: () => import('./layout/shell.component').then((c) => c.ShellComponent),
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'appointments', pathMatch: 'full' },
       {
         path: 'appointments',
-        loadComponent: () =>
-          import('./features/appointments/appointments').then(
-            (c) => c.Appointments,
+        loadChildren: () =>
+          import('./appointments/feature/appointments-shell.routes').then(
+            (r) => r.appointmentsRoutes,
           ),
       },
       {
         path: 'schedule',
-        loadComponent: () =>
-          import('./features/schedule/schedule').then((c) => c.Schedule),
+        loadChildren: () =>
+          import('./schedule/feature/schedule-shell.routes').then((r) => r.scheduleRoutes),
       },
       {
         path: 'patients',
-        loadComponent: () =>
-          import('./features/patients/patients').then((c) => c.Patients),
+        loadChildren: () =>
+          import('./patients/feature/patients-shell.routes').then((r) => r.patientsRoutes),
       },
     ],
   },
