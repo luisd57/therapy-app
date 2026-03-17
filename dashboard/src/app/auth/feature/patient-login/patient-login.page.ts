@@ -1,5 +1,5 @@
 import { Component, inject, signal, WritableSignal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../data-access/auth.service';
+import { extractErrorMessage } from '../../../shared/utils/api-response.model';
 
 @Component({
   selector: 'app-patient-login-page',
@@ -30,10 +31,11 @@ export class PatientLoginPage {
   readonly isLoading: WritableSignal<boolean> = signal(false);
   readonly errorMessage: WritableSignal<string> = signal('');
 
-  readonly loginForm = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
-  });
+  readonly loginForm: FormGroup<{ email: FormControl<string>; password: FormControl<string> }> =
+    this.fb.nonNullable.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
+    });
 
   onSubmit(): void {
     if (this.loginForm.invalid) return;
@@ -42,11 +44,9 @@ export class PatientLoginPage {
     this.errorMessage.set('');
 
     this.authService.patientLogin(this.loginForm.getRawValue()).subscribe({
-      error: (err) => {
+      error: (err: unknown): void => {
         this.isLoading.set(false);
-        this.errorMessage.set(
-          err?.error?.error?.message ?? err?.message ?? 'Login failed. Please try again.',
-        );
+        this.errorMessage.set(extractErrorMessage(err, 'Login failed. Please try again.'));
       },
     });
   }

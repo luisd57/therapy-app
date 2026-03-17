@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../data-access/auth.service';
+import { extractErrorMessage } from '../../../shared/utils/api-response.model';
 import { passwordStrength, passwordMatch } from '../../utils/password.validators';
 
 @Component({
@@ -34,9 +35,12 @@ export class ResetPasswordPage implements OnInit {
   readonly errorMessage: WritableSignal<string> = signal('');
   readonly resetComplete: WritableSignal<boolean> = signal(false);
 
-  private token = '';
+  private token: string = '';
 
-  readonly resetForm = this.fb.nonNullable.group(
+  readonly resetForm: FormGroup<{
+    password: FormControl<string>;
+    password_confirmation: FormControl<string>;
+  }> = this.fb.nonNullable.group(
     {
       password: ['', [Validators.required, passwordStrength()]],
       password_confirmation: ['', [Validators.required]],
@@ -54,7 +58,8 @@ export class ResetPasswordPage implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    const values = this.resetForm.getRawValue();
+    const values: { password: string; password_confirmation: string } =
+      this.resetForm.getRawValue();
     this.authService
       .resetPassword({
         token: this.token,
@@ -62,14 +67,14 @@ export class ResetPasswordPage implements OnInit {
         password_confirmation: values.password_confirmation,
       })
       .subscribe({
-        next: () => {
+        next: (): void => {
           this.isLoading.set(false);
           this.resetComplete.set(true);
         },
-        error: (err) => {
+        error: (err: unknown): void => {
           this.isLoading.set(false);
           this.errorMessage.set(
-            err?.error?.error?.message ?? err?.message ?? 'Password reset failed. Please try again.',
+            extractErrorMessage(err, 'Password reset failed. Please try again.'),
           );
         },
       });

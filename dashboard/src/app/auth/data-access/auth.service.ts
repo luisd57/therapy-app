@@ -6,7 +6,6 @@ import {
   tap,
   map,
   catchError,
-  of,
   EMPTY,
   finalize,
 } from 'rxjs';
@@ -22,7 +21,7 @@ import {
   ResetPasswordRequest,
 } from '../utils/auth.model';
 
-const USER_KEY = 'auth_user';
+const USER_KEY: string = 'auth_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,20 +29,20 @@ export class AuthService {
   private readonly router: Router = inject(Router);
 
   readonly user: WritableSignal<AuthUser | null> = signal<AuthUser | null>(this.loadUser());
-  readonly isAuthenticated: Signal<boolean> = computed(() => this.user() !== null);
+  readonly isAuthenticated: Signal<boolean> = computed((): boolean => this.user() !== null);
   readonly initialized: WritableSignal<boolean> = signal(false);
 
   init(): Observable<void> {
-    const storedUser = this.loadUser();
+    const storedUser: AuthUser | null = this.loadUser();
     if (!storedUser) {
       this.initialized.set(true);
-      return of(void 0);
+      return EMPTY;
     }
 
     return this.http
       .get<ApiResponse<AuthUser>>(`${environment.apiUrl}/auth/me`)
       .pipe(
-        tap((response) => {
+        tap((response: ApiResponse<AuthUser>): void => {
           if (response.success && response.data) {
             this.user.set(response.data);
             localStorage.setItem(USER_KEY, JSON.stringify(response.data));
@@ -51,12 +50,14 @@ export class AuthService {
             this.clearLocal();
           }
         }),
-        catchError(() => {
+        catchError((): Observable<never> => {
           this.clearLocal();
-          return of(void 0);
+          return EMPTY;
         }),
-        map(() => void 0),
-        finalize(() => this.initialized.set(true)),
+        map((): undefined => undefined),
+        finalize((): void => {
+          this.initialized.set(true);
+        }),
       );
   }
 
@@ -67,18 +68,18 @@ export class AuthService {
         request,
       )
       .pipe(
-        map((response) => {
+        map((response: ApiResponse<LoginData>): LoginData => {
           if (!response.success || !response.data) {
             throw new Error(response.error?.message ?? 'Login failed');
           }
           return response.data;
         }),
-        tap((data) => {
+        tap((data: LoginData): void => {
           localStorage.setItem(USER_KEY, JSON.stringify(data.user));
           this.user.set(data.user);
-          this.router.navigate(['/appointments']);
+          void this.router.navigate(['/appointments']);
         }),
-        map((data) => data.user),
+        map((data: LoginData): AuthUser => data.user),
       );
   }
 
@@ -89,18 +90,18 @@ export class AuthService {
         request,
       )
       .pipe(
-        map((response) => {
+        map((response: ApiResponse<LoginData>): LoginData => {
           if (!response.success || !response.data) {
             throw new Error(response.error?.message ?? 'Login failed');
           }
           return response.data;
         }),
-        tap((data) => {
+        tap((data: LoginData): void => {
           localStorage.setItem(USER_KEY, JSON.stringify(data.user));
           this.user.set(data.user);
-          this.router.navigate(['/appointments']);
+          void this.router.navigate(['/appointments']);
         }),
-        map((data) => data.user),
+        map((data: LoginData): AuthUser => data.user),
       );
   }
 
@@ -110,7 +111,7 @@ export class AuthService {
         `${environment.apiUrl}/auth/invitation/validate/${token}`,
       )
       .pipe(
-        map((response) => {
+        map((response: ApiResponse<InvitationData>): InvitationData => {
           if (!response.success || !response.data) {
             throw new Error(response.error?.message ?? 'Invalid invitation');
           }
@@ -123,7 +124,7 @@ export class AuthService {
     return this.http
       .post<ApiResponse<void>>(`${environment.apiUrl}/auth/register`, request)
       .pipe(
-        map((response) => {
+        map((response: ApiResponse<void>): void => {
           if (!response.success) {
             throw new Error(response.error?.message ?? 'Registration failed');
           }
@@ -137,7 +138,7 @@ export class AuthService {
         `${environment.apiUrl}/auth/password/forgot`,
         request,
       )
-      .pipe(map(() => void 0));
+      .pipe(map((): undefined => undefined));
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<void> {
@@ -147,7 +148,7 @@ export class AuthService {
         request,
       )
       .pipe(
-        map((response) => {
+        map((response: ApiResponse<void>): void => {
           if (!response.success) {
             throw new Error(response.error?.message ?? 'Password reset failed');
           }
@@ -156,17 +157,17 @@ export class AuthService {
   }
 
   logout(): void {
-    const isPatient = this.user()?.role === 'ROLE_PATIENT';
+    const isPatient: boolean = this.user()?.role === 'ROLE_PATIENT';
 
     if (this.user()) {
       this.http
         .post(`${environment.apiUrl}/auth/logout`, {})
-        .pipe(catchError(() => EMPTY))
+        .pipe(catchError((): Observable<never> => EMPTY))
         .subscribe();
     }
 
     this.clearLocal();
-    this.router.navigate([isPatient ? '/patient-login' : '/login']);
+    void this.router.navigate([isPatient ? '/patient-login' : '/login']);
   }
 
   private clearLocal(): void {
@@ -175,7 +176,7 @@ export class AuthService {
   }
 
   private loadUser(): AuthUser | null {
-    const stored = localStorage.getItem(USER_KEY);
+    const stored: string | null = localStorage.getItem(USER_KEY);
     if (!stored) return null;
     try {
       return JSON.parse(stored) as AuthUser;

@@ -2,7 +2,7 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export function passwordStrength(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    const value = control.value as string;
+    const value: string = control.value as string;
     if (!value) return null;
 
     const errors: ValidationErrors = {};
@@ -20,8 +20,8 @@ export function passwordStrength(): ValidatorFn {
 
 export function passwordMatch(passwordField: string, confirmField: string): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
-    const password = group.get(passwordField)?.value as string;
-    const confirm = group.get(confirmField)?.value as string;
+    const password: string = group.get(passwordField)?.value as string;
+    const confirm: string = group.get(confirmField)?.value as string;
 
     if (!password || !confirm) return null;
 

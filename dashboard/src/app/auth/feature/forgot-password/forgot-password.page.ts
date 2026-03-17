@@ -1,5 +1,5 @@
 import { Component, inject, signal, WritableSignal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,7 +27,7 @@ export class ForgotPasswordPage {
   readonly isLoading: WritableSignal<boolean> = signal(false);
   readonly submitted: WritableSignal<boolean> = signal(false);
 
-  readonly forgotForm = this.fb.nonNullable.group({
+  readonly forgotForm: FormGroup<{ email: FormControl<string> }> = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
   });
 
@@ -37,11 +37,11 @@ export class ForgotPasswordPage {
     this.isLoading.set(true);
 
     this.authService.forgotPassword(this.forgotForm.getRawValue()).subscribe({
-      next: () => {
+      next: (): void => {
         this.isLoading.set(false);
         this.submitted.set(true);
       },
-      error: () => {
+      error: (): void => {
         this.isLoading.set(false);
         this.submitted.set(true);
       },

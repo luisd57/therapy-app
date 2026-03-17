@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../data-access/auth.service';
+import { InvitationData } from '../../utils/auth.model';
+import { extractErrorMessage } from '../../../shared/utils/api-response.model';
 import { passwordStrength, passwordMatch } from '../../utils/password.validators';
 
 @Component({
@@ -39,9 +41,12 @@ export class RegisterPage implements OnInit {
   readonly errorMessage: WritableSignal<string> = signal('');
   readonly registered: WritableSignal<boolean> = signal(false);
 
-  private token = '';
+  private token: string = '';
 
-  readonly registerForm = this.fb.nonNullable.group(
+  readonly registerForm: FormGroup<{
+    password: FormControl<string>;
+    password_confirmation: FormControl<string>;
+  }> = this.fb.nonNullable.group(
     {
       password: ['', [Validators.required, passwordStrength()]],
       password_confirmation: ['', [Validators.required]],
@@ -52,13 +57,13 @@ export class RegisterPage implements OnInit {
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParams['token'] as string;
     this.authService.validateInvitation(this.token).subscribe({
-      next: (data) => {
+      next: (data: InvitationData): void => {
         this.patientName.set(data.patient_name);
         this.validating.set(false);
       },
-      error: (err) => {
+      error: (err: unknown): void => {
         this.validationError.set(
-          err?.error?.error?.message ?? err?.message ?? 'Invalid or expired invitation.',
+          extractErrorMessage(err, 'Invalid or expired invitation.'),
         );
         this.validating.set(false);
       },
@@ -71,7 +76,8 @@ export class RegisterPage implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    const values = this.registerForm.getRawValue();
+    const values: { password: string; password_confirmation: string } =
+      this.registerForm.getRawValue();
     this.authService
       .register({
         token: this.token,
@@ -79,14 +85,14 @@ export class RegisterPage implements OnInit {
         password_confirmation: values.password_confirmation,
       })
       .subscribe({
-        next: () => {
+        next: (): void => {
           this.isLoading.set(false);
           this.registered.set(true);
         },
-        error: (err) => {
+        error: (err: unknown): void => {
           this.isLoading.set(false);
           this.errorMessage.set(
-            err?.error?.error?.message ?? err?.message ?? 'Registration failed. Please try again.',
+            extractErrorMessage(err, 'Registration failed. Please try again.'),
           );
         },
       });

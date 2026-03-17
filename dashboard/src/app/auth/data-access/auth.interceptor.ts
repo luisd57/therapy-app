@@ -1,17 +1,16 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { AuthService } from './auth.service';
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> => {
   const authService: AuthService = inject(AuthService);
 
-  req = req.clone({ withCredentials: true });
+  const clonedReq: HttpRequest<unknown> = req.clone({ withCredentials: true });
 
-  return next(req).pipe(
+  return next(clonedReq).pipe(
     tap({
-      error: (error: HttpErrorResponse) => {
-        // Only auto-logout on 401 if authenticated (avoid loop on login failure)
+      error: (error: HttpErrorResponse): void => {
         if (error.status === 401 && authService.isAuthenticated()) {
           authService.logout();
         }
