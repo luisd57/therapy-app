@@ -32,6 +32,11 @@ feature  →  data-access  →  utils
 - `ui/` MUST NOT import from `feature/` or `data-access/`.
 - `data-access/` MUST NOT import from `feature/` or `ui/`.
 
+## Growing Domains
+- Nesting is for routes (`:id/survey`), NOT folders. All pages are siblings under `feature/`.
+- If a sub-feature grows complex enough to need its own `ui/` or `data-access/`, that's the signal to promote it to a top-level domain (e.g., `client-surveys/` with full `feature/`, `ui/`, `data-access/`, `utils/`).
+- Do NOT nest domains inside domains. Either stay flat or promote.
+
 ## Naming Conventions
 
 | Type                     | File Pattern               | Export Pattern       |
