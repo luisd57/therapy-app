@@ -6,6 +6,8 @@
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
 ![Astro 5](https://img.shields.io/badge/Astro-5.7-BC52EE?logo=astro&logoColor=white)
 ![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte&logoColor=white)
+![Angular 21](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
+![Angular Material](https://img.shields.io/badge/Angular_Material-21-757575?logo=angular&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
@@ -83,9 +85,17 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 
 ---
 
-## Frontend — Astro + Svelte (Islands Architecture)
+## Frontends
 
-Le frontend utilise l'architecture en îlots d'Astro : les pages sont générées en HTML statique au build, et seuls les composants interactifs sont hydratés côté client avec Svelte.
+Le projet comporte deux applications frontend distinctes :
+
+**Landing** (`landing/`) — Astro + Svelte (Islands Architecture)
+
+Site public destiné aux visiteurs. Les pages sont générées en HTML statique au build, et seuls les composants interactifs (flux de prise de rendez-vous) sont hydratés côté client avec Svelte.
+
+**Dashboard** (`dashboard/`) — Angular 21 + Angular Material
+
+Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère le planning, les rendez-vous, les patients et les invitations.
 
 ---
 
@@ -94,7 +104,8 @@ Le frontend utilise l'architecture en îlots d'Astro : les pages sont générée
 | Couche | Technologies |
 | ------ | ------------ |
 | Backend | PHP 8.4 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
-| Frontend | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
+| Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
+| Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index optimisés pour les requêtes de disponibilité |
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
 | Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookie httpOnly pour le dashboard, Bearer token pour les clients API. |
@@ -189,7 +200,7 @@ therapy/
 │   ├── migrations/               # Migrations Doctrine
 │   └── postman/                  # Collection Postman
 │
-├── ui/                           # Frontend Astro + Svelte
+├── landing/                      # Site public Astro + Svelte
 │   ├── src/
 │   │   ├── pages/                # Routes Astro (index.astro)
 │   │   ├── components/
@@ -200,6 +211,15 @@ therapy/
 │   │   ├── utils/                # Utilitaires date/heure
 │   │   └── content/              # Content Collections (markdown)
 │   └── public/                   # Assets statiques
+│
+├── dashboard/                    # Portail Angular (thérapeute + patients)
+│   └── src/app/
+│       ├── auth/                 # Login, registration, reset password
+│       ├── layout/               # Navigation et structure par rôle
+│       ├── appointments/         # Gestion des rendez-vous
+│       ├── patients/             # Gestion des patients
+│       ├── schedule/             # Planning et disponibilités
+│       └── shared/               # Services, guards, interceptors
 │
 ├── docker-compose.yml            # 8 conteneurs (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, Astro)
 └── Makefile                      # Commandes raccourcies
