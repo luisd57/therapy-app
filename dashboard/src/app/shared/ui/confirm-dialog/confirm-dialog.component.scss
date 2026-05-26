@@ -1,0 +1,8 @@
+mat-dialog-content {
+  min-width: 300px;
+}
+
+.warn-button {
+  background-color: var(--mat-sys-error);
+  color: var(--mat-sys-on-error);
+}

@@ -79,6 +79,11 @@ services:
             $frontendUrl: '%app.frontend_url%'
             $passwordResetTtl: '%app.password_reset_ttl%'
 
+    App\Application\User\Handler\ResendInvitationHandler:
+        arguments:
+            $frontendUrl: '%app.frontend_url%'
+            $invitationTtl: '%app.invitation_ttl%'
+
     # Appointment Domain Interfaces -> Infrastructure Implementations
     App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface:
         class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineTherapistScheduleRepository

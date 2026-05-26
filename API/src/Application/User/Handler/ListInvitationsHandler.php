@@ -22,7 +22,7 @@ final readonly class ListInvitationsHandler
      */
     public function __invoke(): ArrayCollection
     {
-        $invitations = $this->invitationRepository->findPendingInvitations();
+        $invitations = $this->invitationRepository->findAll();
         $now = $this->clock->now();
 
         return $invitations->map(

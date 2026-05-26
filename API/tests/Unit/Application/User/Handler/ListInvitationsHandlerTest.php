@@ -32,7 +32,7 @@ final class ListInvitationsHandlerTest extends TestCase
         $inv2 = DomainTestHelper::createValidInvitation(token: 'tok2', email: 'p2@example.com', patientName: 'Patient 2');
 
         $this->invitationRepository
-            ->method('findPendingInvitations')
+            ->method('findAll')
             ->willReturn(new ArrayCollection([$inv1, $inv2]));
 
         $result = $this->handler->__invoke();
@@ -46,7 +46,7 @@ final class ListInvitationsHandlerTest extends TestCase
     public function testHandleEmptyListReturnsEmptyCollection(): void
     {
         $this->invitationRepository
-            ->method('findPendingInvitations')
+            ->method('findAll')
             ->willReturn(new ArrayCollection());
 
         $result = $this->handler->__invoke();

@@ -29,6 +29,10 @@ final readonly class ValidateInvitationHandler
             throw InvalidTokenException::alreadyUsed();
         }
 
+        if ($invitation->isRevoked()) {
+            throw InvalidTokenException::revoked();
+        }
+
         if ($invitation->isExpired($this->clock->now())) {
             throw InvalidTokenException::expired();
         }

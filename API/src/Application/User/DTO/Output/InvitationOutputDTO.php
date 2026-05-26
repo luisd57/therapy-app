@@ -23,6 +23,7 @@ final readonly class InvitationOutputDTO
     {
         $status = match (true) {
             $token->isUsed() => 'used',
+            $token->isRevoked() => 'revoked',
             $token->isExpired($now) => 'expired',
             default => 'pending',
         };

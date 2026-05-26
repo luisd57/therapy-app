@@ -1,0 +1,19 @@
+@if (hasActions()) {
+  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Row actions">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    @if (canResend()) {
+      <button mat-menu-item type="button" (click)="onResend()">
+        <mat-icon>send</mat-icon>
+        <span>Resend</span>
+      </button>
+    }
+    @if (canRevoke()) {
+      <button mat-menu-item type="button" (click)="onRevoke()">
+        <mat-icon>block</mat-icon>
+        <span>Revoke</span>
+      </button>
+    }
+  </mat-menu>
+}

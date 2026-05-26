@@ -21,6 +21,12 @@ class InvitationToken
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isRevoked = false;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $revokedAt = null;
+
     public function __construct(
         #[ORM\Id]
         #[ORM\Column(type: 'token_id')]
@@ -66,12 +72,30 @@ class InvitationToken
             throw new \DomainException('Invitation token has already been used.');
         }
 
+        if ($this->isRevoked) {
+            throw new \DomainException('Invitation token has been revoked.');
+        }
+
         if ($this->isExpired($now)) {
             throw new \DomainException('Invitation token has expired.');
         }
 
         $this->isUsed = true;
         $this->usedAt = $now;
+    }
+
+    public function revoke(DateTimeImmutable $now): void
+    {
+        if ($this->isUsed) {
+            throw new \DomainException('Invitation token has already been used.');
+        }
+
+        if ($this->isRevoked) {
+            throw new \DomainException('Invitation token has already been revoked.');
+        }
+
+        $this->isRevoked = true;
+        $this->revokedAt = $now;
     }
 
     public function isExpired(DateTimeImmutable $now): bool
@@ -81,7 +105,7 @@ class InvitationToken
 
     public function isValid(DateTimeImmutable $now): bool
     {
-        return !$this->isUsed && !$this->isExpired($now);
+        return !$this->isUsed && !$this->isRevoked && !$this->isExpired($now);
     }
 
     // Getters
@@ -130,6 +154,16 @@ class InvitationToken
         return $this->usedAt;
     }
 
+    public function isRevoked(): bool
+    {
+        return $this->isRevoked;
+    }
+
+    public function getRevokedAt(): ?DateTimeImmutable
+    {
+        return $this->revokedAt;
+    }
+
     public static function reconstitute(
         TokenId $id,
         string $token,
@@ -140,6 +174,8 @@ class InvitationToken
         DateTimeImmutable $createdAt,
         DateTimeImmutable $expiresAt,
         ?DateTimeImmutable $usedAt,
+        bool $isRevoked = false,
+        ?DateTimeImmutable $revokedAt = null,
     ): self {
         $invitation = new self(
             id: $id,
@@ -153,6 +189,8 @@ class InvitationToken
 
         $invitation->isUsed = $isUsed;
         $invitation->usedAt = $usedAt;
+        $invitation->isRevoked = $isRevoked;
+        $invitation->revokedAt = $revokedAt;
 
         return $invitation;
     }

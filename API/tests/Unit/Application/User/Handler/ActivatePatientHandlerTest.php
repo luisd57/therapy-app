@@ -96,6 +96,17 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->handler->__invoke(new ActivatePatientInputDTO(token: 'expired-token', password: 'pass'));
     }
 
+    public function testHandleRevokedTokenThrowsInvalidTokenException(): void
+    {
+        $invitation = DomainTestHelper::createRevokedInvitation();
+        $this->invitationRepository->method('findByToken')->willReturn($invitation);
+
+        $this->expectException(InvalidTokenException::class);
+        $this->expectExceptionMessage('Token has been revoked.');
+
+        $this->handler->__invoke(new ActivatePatientInputDTO(token: 'revoked-token', password: 'pass'));
+    }
+
     public function testHandleSuccessSendsWelcomeEmail(): void
     {
         $invitation = DomainTestHelper::createValidInvitation(

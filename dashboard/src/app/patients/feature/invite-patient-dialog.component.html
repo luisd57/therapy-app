@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>Invite Patient</h2>
+<form [formGroup]="inviteForm" (ngSubmit)="onSubmit()">
+  <mat-dialog-content>
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" autocomplete="off" />
+      @if (inviteForm.controls.email.hasError('required') && inviteForm.controls.email.touched) {
+        <mat-error>Email is required</mat-error>
+      }
+      @if (inviteForm.controls.email.hasError('email') && !inviteForm.controls.email.hasError('required')) {
+        <mat-error>Enter a valid email</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Patient name</mat-label>
+      <input matInput formControlName="patient_name" autocomplete="off" maxlength="255" />
+      @if (inviteForm.controls.patient_name.hasError('required') && inviteForm.controls.patient_name.touched) {
+        <mat-error>Patient name is required</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading()">Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="inviteForm.invalid || isLoading()">
+      @if (isLoading()) {
+        <mat-spinner diameter="20"></mat-spinner>
+      } @else {
+        Send invitation
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

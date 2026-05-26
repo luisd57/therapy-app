@@ -24,6 +24,14 @@ final class InvalidTokenException extends DomainException
         );
     }
 
+    public static function revoked(): self
+    {
+        return new self(
+            message: 'Token has been revoked.',
+            errorCode: 'TOKEN_REVOKED',
+        );
+    }
+
     public static function notFound(): self
     {
         return new self(

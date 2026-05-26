@@ -7,10 +7,15 @@ namespace App\Infrastructure\Http\Controller\Api\User;
 use App\Application\Shared\DTO\PaginationInputDTO;
 use App\Application\User\DTO\Input\InvitePatientInputDTO;
 use App\Application\User\DTO\Input\ListPatientsInputDTO;
+use App\Application\User\DTO\Input\ResendInvitationInputDTO;
+use App\Application\User\DTO\Input\RevokeInvitationInputDTO;
 use App\Application\User\Handler\GetUserHandler;
 use App\Application\User\Handler\InvitePatientHandler;
 use App\Application\User\Handler\ListInvitationsHandler;
 use App\Application\User\Handler\ListPatientsHandler;
+use App\Application\User\Handler\ResendInvitationHandler;
+use App\Application\User\Handler\RevokeInvitationHandler;
+use App\Domain\User\Exception\InvitationNotFoundException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
@@ -106,6 +111,40 @@ final class TherapistController extends AbstractController
             'invitations' => $invitations->map(fn ($dto) => $dto->toArray())->toArray(),
             'count' => $invitations->count(),
         ]);
+    }
+
+    #[Route('/invitations/{id}/resend', name: 'api_therapist_resend_invitation', methods: ['POST'])]
+    public function resendInvitation(string $id, ResendInvitationHandler $handler): JsonResponse
+    {
+        try {
+            $invitation = $handler->__invoke(new ResendInvitationInputDTO(tokenId: $id));
+
+            return $this->created([
+                'invitation' => $invitation->toArray(),
+                'message' => 'Invitation resent successfully.',
+            ]);
+        } catch (InvitationNotFoundException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 404);
+        } catch (\DomainException $exception) {
+            return $this->error($exception->getMessage(), 'INVALID_INVITATION_STATE', 409);
+        }
+    }
+
+    #[Route('/invitations/{id}/revoke', name: 'api_therapist_revoke_invitation', methods: ['POST'])]
+    public function revokeInvitation(string $id, RevokeInvitationHandler $handler): JsonResponse
+    {
+        try {
+            $invitation = $handler->__invoke(new RevokeInvitationInputDTO(tokenId: $id));
+
+            return $this->success([
+                'invitation' => $invitation->toArray(),
+                'message' => 'Invitation revoked successfully.',
+            ]);
+        } catch (InvitationNotFoundException $exception) {
+            return $this->error($exception->getMessage(), $exception->getErrorCode(), 404);
+        } catch (\DomainException $exception) {
+            return $this->error($exception->getMessage(), 'INVALID_INVITATION_STATE', 409);
+        }
     }
 
     /**

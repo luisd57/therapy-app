@@ -259,6 +259,27 @@ final class DomainTestHelper
         );
     }
 
+    public static function createRevokedInvitation(
+        ?TokenId $id = null,
+        string $token = 'revoked-token',
+        string $email = 'revoked@example.com',
+        ?UserId $invitedBy = null,
+    ): InvitationToken {
+        return InvitationToken::reconstitute(
+            id: $id ?? TokenId::generate(),
+            token: $token,
+            email: Email::fromString($email),
+            patientName: 'Revoked Patient',
+            invitedBy: $invitedBy ?? UserId::generate(),
+            isUsed: false,
+            createdAt: new DateTimeImmutable('-1 hour'),
+            expiresAt: new DateTimeImmutable('+23 hours'),
+            usedAt: null,
+            isRevoked: true,
+            revokedAt: new DateTimeImmutable('-30 minutes'),
+        );
+    }
+
     public static function createValidPasswordResetToken(
         ?TokenId $id = null,
         string $token = 'valid-reset-token',

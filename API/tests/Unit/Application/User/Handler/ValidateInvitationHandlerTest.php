@@ -68,4 +68,15 @@ final class ValidateInvitationHandlerTest extends TestCase
         $this->expectException(InvalidTokenException::class);
         $this->handler->__invoke('expired-token');
     }
+
+    public function testHandleRevokedTokenThrowsInvalidTokenException(): void
+    {
+        $invitation = DomainTestHelper::createRevokedInvitation();
+        $this->invitationRepository->method('findByToken')->willReturn($invitation);
+
+        $this->expectException(InvalidTokenException::class);
+        $this->expectExceptionMessage('Token has been revoked.');
+
+        $this->handler->__invoke('revoked-token');
+    }
 }

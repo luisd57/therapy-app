@@ -1,0 +1,26 @@
+.status-chip {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-pending {
+  background-color: #fff8e1;
+  color: #8a6d00;
+}
+
+.status-expired {
+  background-color: #fbe9e7;
+  color: #b85c00;
+}
+
+.status-used {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-revoked {
+  background-color: #eceff1;
+  color: #455a64;
+}

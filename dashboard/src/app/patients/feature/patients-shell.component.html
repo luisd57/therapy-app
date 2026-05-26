@@ -1,0 +1,37 @@
+<div class="patients-shell">
+  <header class="patients-header">
+    <h1>Patients</h1>
+    <button mat-flat-button type="button" (click)="openInviteDialog()">
+      <mat-icon>person_add</mat-icon>
+      Invite Patient
+    </button>
+  </header>
+
+  <nav mat-tab-nav-bar [tabPanel]="navPanel">
+    <a
+      mat-tab-link
+      routerLink="."
+      routerLinkActive
+      #patientsLink="routerLinkActive"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [active]="patientsLink.isActive"
+    >
+      Registered
+    </a>
+    <a
+      mat-tab-link
+      routerLink="./invitations"
+      routerLinkActive
+      #invitationsLink="routerLinkActive"
+      [active]="invitationsLink.isActive"
+    >
+      Invitations
+    </a>
+  </nav>
+
+  <mat-tab-nav-panel #navPanel>
+    <div class="patients-content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-tab-nav-panel>
+</div>

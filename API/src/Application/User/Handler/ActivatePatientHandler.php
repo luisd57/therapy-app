@@ -41,6 +41,10 @@ final readonly class ActivatePatientHandler
             throw InvalidTokenException::alreadyUsed();
         }
 
+        if ($invitation->isRevoked()) {
+            throw InvalidTokenException::revoked();
+        }
+
         if ($invitation->isExpired($now)) {
             throw InvalidTokenException::expired();
         }

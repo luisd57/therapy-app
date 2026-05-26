@@ -24,6 +24,11 @@ interface InvitationTokenRepositoryInterface
      */
     public function findPendingInvitations(): ArrayCollection;
 
+    /**
+     * @return ArrayCollection<int, InvitationToken>
+     */
+    public function findAll(): ArrayCollection;
+
     public function delete(InvitationToken $token): void;
 
     public function deleteExpired(): int;

@@ -51,6 +51,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->from(InvitationToken::class, 't')
             ->where('t.email = :email')
             ->andWhere('t.isUsed = false')
+            ->andWhere('t.isRevoked = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('email', $email->getValue())
             ->setParameter('now', $this->clock->now())
@@ -68,8 +69,22 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
         $qb->select('t')
             ->from(InvitationToken::class, 't')
             ->where('t.isUsed = false')
+            ->andWhere('t.isRevoked = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('now', $this->clock->now())
+            ->orderBy('t.createdAt', 'DESC');
+
+        return new ArrayCollection($qb->getQuery()->getResult());
+    }
+
+    /**
+     * @return ArrayCollection<int, InvitationToken>
+     */
+    public function findAll(): ArrayCollection
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('t')
+            ->from(InvitationToken::class, 't')
             ->orderBy('t.createdAt', 'DESC');
 
         return new ArrayCollection($qb->getQuery()->getResult());

@@ -1,0 +1,20 @@
+.patients-shell {
+  padding: 1.5rem 2rem;
+}
+
+.patients-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.patients-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 500;
+}
+
+.patients-content {
+  padding: 1.5rem 0;
+}
