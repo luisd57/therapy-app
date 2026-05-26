@@ -17,6 +17,7 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
 {
     public function __construct(
         private MailerInterface $mailer,
+        private string $frontendUrl,
         private string $fromEmail = 'noreply@therapy-app.com',
         private string $fromName = 'Therapy App',
     ) {
@@ -52,12 +53,14 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         $formattedTime = $appointmentTime->format('g:i A');
         $modalityLabel = $modality->getDisplayName();
 
+        $dashboardUrl = "{$this->frontendUrl}/login";
+
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($therapistEmail->getValue())
             ->subject('New Appointment Request')
-            ->html($this->getTherapistAlertTemplate($requesterName, $formattedDate, $formattedTime, $modalityLabel))
-            ->text($this->getTherapistAlertTextTemplate($requesterName, $formattedDate, $formattedTime, $modalityLabel));
+            ->html($this->getTherapistAlertTemplate($requesterName, $formattedDate, $formattedTime, $modalityLabel, $dashboardUrl))
+            ->text($this->getTherapistAlertTextTemplate($requesterName, $formattedDate, $formattedTime, $modalityLabel, $dashboardUrl));
 
         $this->mailer->send($email);
     }
@@ -131,8 +134,10 @@ TEXT;
         string $date,
         string $time,
         string $modality,
+        string $dashboardUrl,
     ): string {
         $requesterName = htmlspecialchars($requesterName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $dashboardUrl = htmlspecialchars($dashboardUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         return <<<HTML
 <!DOCTYPE html>
@@ -143,6 +148,7 @@ TEXT;
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
         .details { background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #1565c0; color: white; text-decoration: none; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -155,7 +161,9 @@ TEXT;
             <p><strong>Time:</strong> {$time}</p>
             <p><strong>Modality:</strong> {$modality}</p>
         </div>
-        <p>Please log in to your dashboard to review and confirm or decline this request.</p>
+        <p><a href="{$dashboardUrl}" class="button">Open Dashboard</a></p>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p>{$dashboardUrl}</p>
     </div>
 </body>
 </html>
@@ -335,6 +343,7 @@ TEXT;
         string $date,
         string $time,
         string $modality,
+        string $dashboardUrl,
     ): string {
         return <<<TEXT
 New Appointment Request
@@ -347,7 +356,8 @@ Request Details:
 - Time: {$time}
 - Modality: {$modality}
 
-Please log in to your dashboard to review and confirm or decline this request.
+Open your dashboard to review and confirm or decline this request:
+{$dashboardUrl}
 TEXT;
     }
 
@@ -362,12 +372,14 @@ TEXT;
     ): void {
         $formattedDate = $date->format('l, F j, Y');
 
+        $dashboardUrl = "{$this->frontendUrl}/login";
+
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($therapistEmail->getValue())
             ->subject("Daily Agenda — {$formattedDate}")
-            ->html($this->getDailyAgendaTemplate($therapistName, $formattedDate, $appointments))
-            ->text($this->getDailyAgendaTextTemplate($therapistName, $formattedDate, $appointments));
+            ->html($this->getDailyAgendaTemplate($therapistName, $formattedDate, $appointments, $dashboardUrl))
+            ->text($this->getDailyAgendaTextTemplate($therapistName, $formattedDate, $appointments, $dashboardUrl));
 
         $this->mailer->send($email);
     }
@@ -379,7 +391,9 @@ TEXT;
         string $therapistName,
         string $formattedDate,
         ArrayCollection $appointments,
+        string $dashboardUrl,
     ): string {
+        $dashboardUrl = htmlspecialchars($dashboardUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $appointmentCount = $appointments->count();
 
         if ($appointmentCount === 0) {
@@ -437,6 +451,7 @@ TEXT;
         .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         .header { background-color: #1565c0; color: white; padding: 20px; border-radius: 4px 4px 0 0; }
         .content { padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #1565c0; color: white; text-decoration: none; border-radius: 4px; }
         .footer { margin-top: 30px; font-size: 12px; color: #666; }
     </style>
 </head>
@@ -450,6 +465,8 @@ TEXT;
             <p>Good morning, {$therapistName}!</p>
             <p>You have <strong>{$summary}</strong> for today.</p>
             {$tableHtml}
+            <p style="margin-top: 20px;"><a href="{$dashboardUrl}" class="button">Open Dashboard</a></p>
+            <p style="font-size: 12px; color: #666;">If the button doesn't work, copy and paste this link into your browser: {$dashboardUrl}</p>
         </div>
         <div class="footer">
             <p>This is an automated daily agenda summary from Therapy App.</p>
@@ -467,6 +484,7 @@ HTML;
         string $therapistName,
         string $formattedDate,
         ArrayCollection $appointments,
+        string $dashboardUrl,
     ): string {
         $appointmentCount = $appointments->count();
         $summary = $appointmentCount === 1
@@ -497,6 +515,8 @@ Good morning, {$therapistName}!
 You have {$summary} for today.
 
 {$listText}
+
+Open your dashboard: {$dashboardUrl}
 
 ---
 This is an automated daily agenda summary from Therapy App.

@@ -13,6 +13,7 @@ final readonly class SymfonyEmailSender implements EmailSenderInterface
 {
     public function __construct(
         private MailerInterface $mailer,
+        private string $frontendUrl,
         private string $fromEmail = 'noreply@therapy-app.com',
         private string $fromName = 'Therapy App',
     ) {
@@ -44,12 +45,14 @@ final readonly class SymfonyEmailSender implements EmailSenderInterface
 
     public function sendWelcome(Email $to, string $userName): void
     {
+        $loginUrl = "{$this->frontendUrl}/patient-login";
+
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($to->getValue())
             ->subject('Welcome to Therapy App')
-            ->html($this->getWelcomeTemplate($userName))
-            ->text($this->getWelcomeTextTemplate($userName));
+            ->html($this->getWelcomeTemplate($userName, $loginUrl))
+            ->text($this->getWelcomeTextTemplate($userName, $loginUrl));
 
         $this->mailer->send($email);
     }
@@ -151,9 +154,10 @@ If you did not request a password reset, please ignore this email. Your password
 TEXT;
     }
 
-    private function getWelcomeTemplate(string $userName): string
+    private function getWelcomeTemplate(string $userName, string $loginUrl): string
     {
         $userName = htmlspecialchars($userName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $loginUrl = htmlspecialchars($loginUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         return <<<HTML
 <!DOCTYPE html>
@@ -163,12 +167,16 @@ TEXT;
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to Therapy App, {$userName}!</h1>
         <p>Your account has been successfully created. You can now log in and access your dashboard.</p>
+        <p><a href="{$loginUrl}" class="button">Log in</a></p>
+        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+        <p>{$loginUrl}</p>
         <p>If you have any questions, please don't hesitate to reach out to your therapist.</p>
         <p>Best regards,<br>The Therapy App Team</p>
     </div>
@@ -177,12 +185,14 @@ TEXT;
 HTML;
     }
 
-    private function getWelcomeTextTemplate(string $userName): string
+    private function getWelcomeTextTemplate(string $userName, string $loginUrl): string
     {
         return <<<TEXT
 Welcome to Therapy App, {$userName}!
 
 Your account has been successfully created. You can now log in and access your dashboard.
+
+Log in here: {$loginUrl}
 
 If you have any questions, please don't hesitate to reach out to your therapist.
 

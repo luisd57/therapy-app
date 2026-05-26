@@ -37,8 +37,12 @@ services:
     App\Domain\User\Service\TokenGeneratorInterface:
         class: App\Infrastructure\Security\SecureTokenGenerator
 
+    App\Infrastructure\Email\User\SymfonyEmailSender:
+        arguments:
+            $frontendUrl: '%app.frontend_url%'
+
     App\Domain\User\Service\EmailSenderInterface:
-        class: App\Infrastructure\Email\User\SymfonyEmailSender
+        alias: App\Infrastructure\Email\User\SymfonyEmailSender
 
     App\Domain\User\Service\JwtTokenGeneratorInterface:
         class: App\Infrastructure\Security\JwtTokenGenerator
@@ -91,8 +95,12 @@ services:
     App\Domain\Appointment\Service\AvailabilityComputerInterface:
         class: App\Domain\Appointment\Service\AvailabilityComputer
 
+    App\Infrastructure\Email\Appointment\AppointmentEmailSender:
+        arguments:
+            $frontendUrl: '%app.frontend_url%'
+
     App\Domain\Appointment\Service\AppointmentEmailSenderInterface:
-        class: App\Infrastructure\Email\Appointment\AppointmentEmailSender
+        alias: App\Infrastructure\Email\Appointment\AppointmentEmailSender
 
     # Appointment Application Service
     App\Application\Appointment\Service\AppointmentRequestService:
