@@ -15,6 +15,7 @@ use App\Application\User\Handler\ListInvitationsHandler;
 use App\Application\User\Handler\ListPatientsHandler;
 use App\Application\User\Handler\ResendInvitationHandler;
 use App\Application\User\Handler\RevokeInvitationHandler;
+use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\InvitationNotFoundException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Exception\UserNotFoundException;
@@ -125,6 +126,8 @@ final class TherapistController extends AbstractController
             ]);
         } catch (InvitationNotFoundException $exception) {
             return $this->error($exception->getMessage(), $exception->getErrorCode(), 404);
+        } catch (InvalidTokenException $exception) {
+            return $this->error($exception->getMessage(), 'INVALID_INVITATION_STATE', 409);
         } catch (\DomainException $exception) {
             return $this->error($exception->getMessage(), 'INVALID_INVITATION_STATE', 409);
         }
