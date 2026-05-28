@@ -110,7 +110,7 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
 | Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookies httpOnly distincts par rôle (`THERAPY_THERAPIST_JWT` / `THERAPY_PATIENT_JWT`). Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
-| Infrastructure | Docker Compose (9 conteneurs par défaut + 1 conteneur Playwright sous le profil `e2e`), cron planifié, Makefile |
+| Infrastructure | Docker Compose (9 conteneurs par défaut + 2 conteneurs Playwright sous le profil `e2e` : exécuteur de tests + serveur de rapport HTML), cron planifié, Makefile |
 
 ---
 
@@ -276,6 +276,6 @@ therapy/
 │   │   └── shared/               # Services, guards, interceptors
 │   └── e2e/                      # Tests Playwright (config + fixtures + specs)
 │
-├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 1 service Playwright (profil e2e)
+├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 2 services Playwright sous le profil e2e (playwright = tests, playwright-report = serveur HTML du rapport)
 └── Makefile                      # Commandes raccourcies
 ```

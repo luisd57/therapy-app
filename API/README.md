@@ -706,7 +706,7 @@ therapy/
 │
 ├── landing/                      # Astro 5 + Svelte 5 public site
 │
-├── docker-compose.yml            # 9 default services + 1 playwright service (profile: e2e)
+├── docker-compose.yml            # 9 default services + 2 playwright services under profile: e2e (test runner + HTML report server)
 └── Makefile                      # Shortcut commands (test-db-setup, test, test-unit, etc.)
 ```
 
