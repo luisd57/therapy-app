@@ -137,6 +137,23 @@ services:
     profiles:
       - e2e
 
+  playwright-report:
+    # Serves dashboard/playwright-report/ over HTTP so the trace viewer works
+    # (file:// breaks the trace viewer's Service Worker).
+    # Invoke with: docker-compose --profile e2e up playwright-report
+    # Then open http://localhost:9323 in your browser. Ctrl-C to stop.
+    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    container_name: therapy_playwright_report
+    working_dir: /app
+    volumes:
+      - ./dashboard:/app
+      - playwright_node_modules:/app/node_modules
+    ports:
+      - "9323:9323"
+    command: sh -c "test -d node_modules || npm install --omit=optional --no-audit --no-fund; npx playwright show-report --host 0.0.0.0"
+    profiles:
+      - e2e
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: therapy_pgadmin

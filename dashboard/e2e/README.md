@@ -34,6 +34,8 @@ From the repo root:
 docker-compose --profile e2e run --rm playwright
 ```
 
+After the run, start `docker-compose --profile e2e up playwright-report` and open <http://localhost:9323> to replay each test step-by-step (DOM snapshots, video, network, console). See [Opening the report](#opening-the-report) below — `file://` does NOT work for the trace viewer.
+
 That single command:
 1. Spawns the playwright container (downloads the image on first run, ~2 GB).
 2. Runs `npm install` inside it (only re-resolves on first run / lockfile change).
@@ -88,12 +90,36 @@ docker-compose --profile e2e run --rm playwright \
 Set them in a `.env` at the repo root, or export them before the
 `docker-compose` call.
 
-## Reports & artifacts
+## Reports & artifacts (how to "see" what the browser did)
 
-Playwright writes its HTML report and traces to `dashboard/playwright-report/`
-and `dashboard/test-results/`. Both are mounted from the host so you can
-open `dashboard/playwright-report/index.html` in your browser after a run.
-Both directories are gitignored.
+The container is headless — no browser window pops up on your host. Every run writes a full HTML report + per-test trace to host-mounted volumes:
+
+- **HTML report:** `dashboard/playwright-report/index.html` — see "Opening the report" below.
+- **Traces:** `dashboard/test-results/<test-name>/trace.zip` — captured for every test (not just failures).
+
+Both `dashboard/playwright-report/` and `dashboard/test-results/` are gitignored.
+
+### Opening the report
+
+The trace viewer uses Service Workers and **does not work over `file://`** — opening `index.html` directly in your browser will give you the top-level report but every trace link will fail with a "must be loaded over http://" error.
+
+Serve it via the dedicated container instead:
+
+```bash
+docker-compose --profile e2e up playwright-report
+```
+
+Then open <http://localhost:9323> in your browser. Ctrl-C in the terminal to stop the server.
+
+The trace viewer gives you: timeline of every action, DOM snapshot before/after each click, network requests, console output, and the recorded video. Closest thing to "watching it live" without leaving Docker.
+
+### Cleanup
+
+No manual cleanup is needed in normal use: `playwright-report/` is regenerated on every run, and each test's `test-results/<name>/` folder is wiped at the start of that test's run. The only thing that accumulates is folders for tests you've renamed or deleted. For a full purge:
+
+```powershell
+Remove-Item -Recurse -Force dashboard\playwright-report, dashboard\test-results -ErrorAction SilentlyContinue
+```
 
 ## Test data
 

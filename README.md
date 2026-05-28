@@ -157,6 +157,15 @@ docker-compose --profile e2e run --rm playwright \
   npx playwright test invitation-happy-path
 ```
 
+Pour visualiser le rapport après une exécution :
+
+```bash
+docker-compose --profile e2e up playwright-report
+# puis ouvrir http://localhost:9323 (Ctrl-C pour arrêter)
+```
+
+Le serveur dédié est nécessaire car la visionneuse de traces ne fonctionne pas en `file://`. Détails dans le README e2e.
+
 Documentation détaillée : [`dashboard/e2e/README.md`](dashboard/e2e/README.md).
 
 ---

@@ -21,9 +21,11 @@ export default defineConfig({
     // Re-use the therapist session globalSetup persisted. Tests that need a
     // fresh/patient session create their own context with storageState: undefined.
     storageState: THERAPIST_STORAGE_STATE,
-    trace: 'retain-on-failure',
+    // Always-on so every run is replayable in the HTML report's trace viewer.
+    // Without these the user has nothing to "see" when all tests pass.
+    trace: 'on',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'on',
   },
 
   projects: [
