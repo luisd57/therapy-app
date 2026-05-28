@@ -71,6 +71,10 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('API/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Create empty .env (required by Symfony Dotenv::bootEnv)
+        working-directory: API
+        run: touch .env
+
       - name: Install API dependencies
         working-directory: API
         run: composer install --no-interaction --prefer-dist --no-progress
