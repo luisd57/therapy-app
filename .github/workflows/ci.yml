@@ -49,6 +49,7 @@ jobs:
       APP_FRONTEND_URL: http://localhost:3000
       INVITATION_TOKEN_TTL: 86400
       PASSWORD_RESET_TOKEN_TTL: 3600
+      DEFAULT_URI: http://localhost
 
     steps:
       - name: Checkout
