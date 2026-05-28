@@ -23,8 +23,9 @@ export interface ConfirmDialogData {
   styleUrl: './confirm-dialog.component.scss',
 })
 export class ConfirmDialogComponent {
-  protected readonly data: ConfirmDialogData = inject(MAT_DIALOG_DATA);
-  private readonly dialogRef: MatDialogRef<ConfirmDialogComponent, boolean> = inject(MatDialogRef);
+  protected readonly data: ConfirmDialogData = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+  private readonly dialogRef: MatDialogRef<ConfirmDialogComponent, boolean> =
+    inject<MatDialogRef<ConfirmDialogComponent, boolean>>(MatDialogRef);
 
   protected onCancel(): void {
     this.dialogRef.close(false);

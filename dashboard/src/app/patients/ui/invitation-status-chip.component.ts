@@ -1,4 +1,4 @@
-import { Component, computed, input, Signal } from '@angular/core';
+import { Component, computed, input, InputSignal, Signal } from '@angular/core';
 import { MatChip } from '@angular/material/chips';
 import { InvitationStatus } from '../utils/invitation.model';
 
@@ -9,7 +9,7 @@ import { InvitationStatus } from '../utils/invitation.model';
   styleUrl: './invitation-status-chip.component.scss',
 })
 export class InvitationStatusChipComponent {
-  readonly status = input.required<InvitationStatus>();
+  readonly status: InputSignal<InvitationStatus> = input.required<InvitationStatus>();
 
   protected readonly label: Signal<string> = computed((): string => {
     switch (this.status()) {

@@ -33,7 +33,7 @@ export class InvitePatientDialogComponent {
   private readonly fb: FormBuilder = inject(FormBuilder);
   private readonly patientsService: PatientsService = inject(PatientsService);
   private readonly dialogRef: MatDialogRef<InvitePatientDialogComponent, Invitation | undefined> =
-    inject(MatDialogRef);
+    inject<MatDialogRef<InvitePatientDialogComponent, Invitation | undefined>>(MatDialogRef);
 
   readonly isLoading: WritableSignal<boolean> = signal(false);
   readonly errorMessage: WritableSignal<string> = signal('');
