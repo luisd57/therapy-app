@@ -49,9 +49,21 @@ docker-compose --profile e2e run --rm playwright \
 
 ## What `globalSetup` does
 
-- Clears the MailHog inbox via `DELETE /api/v1/messages`.
-- Pre-flights `POST /api/auth/therapist/login` with the configured credentials.
-  Fails immediately with a clear error if the seeded therapist doesn't match.
+1. **Waits** for the dashboard (`/`) and MailHog (`/`) to respond. The dashboard
+   container starts before the Angular dev server finishes compiling on first
+   boot — without the wait, the suite would race the build.
+2. **Clears** the MailHog inbox via `DELETE /api/v1/messages` so each run starts
+   from an empty mailbox.
+3. **Logs in once** as the therapist through a real browser (Chromium) and
+   saves the resulting `storageState` to `e2e/.auth/therapist.json`.
+   - A browser login (not an API-only POST) is required: Angular's route guards
+     check `localStorage.auth_user` synchronously, before `/auth/me` returns.
+     Pure-cookie storageState bounces every protected route to `/login`.
+   - Tests pick up this state via `playwright.config.ts` → `use.storageState`,
+     so they don't each re-login. That avoids tripping the API's 5-login/min
+     rate limiter, which fires when many tests log in from the same container IP.
+   - Fails immediately with a clear error if the seeded therapist's credentials
+     don't match `THERAPIST_EMAIL` / `THERAPIST_PASSWORD`.
 
 ## Test files
 

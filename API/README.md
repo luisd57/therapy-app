@@ -106,7 +106,7 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 ### Authentication & Secrets
 
 - JWT with `jti`-based revocation via Redis blocklist (`POST /api/auth/logout`)
-- JWT delivered via httpOnly cookie (`THERAPY_JWT`) for browser clients (defense-in-depth against XSS); Bearer token also supported for API clients (Postman, tests)
+- JWT delivered via two role-scoped httpOnly cookies — `THERAPY_THERAPIST_JWT` and `THERAPY_PATIENT_JWT` — so a patient logging in cannot overwrite a therapist's session in the same browser. A custom `MultiCookieTokenExtractor` tries both. Bearer token also supported for API clients (Postman, tests)
 - Auth state check endpoint: `GET /api/auth/me` (JWT-protected, used by dashboard on page refresh)
 - CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) — no HTTP endpoint exposed
@@ -141,63 +141,31 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 
 ## Quick Start
 
-### Step 1: Clone/Create Project Directory
+Prerequisite: Docker Desktop running.
 
 ```powershell
-# Create project directory
-mkdir therapy-app
-cd therapy-app
-```
+# 1. Clone and enter the repo
+git clone <repo-url> therapy
+cd therapy
 
-### Step 2: Copy All Files
+# 2. Build and start all containers (PHP, Postgres, Redis, MailHog, etc.)
+docker-compose up -d --build
 
-Copy all the files from this implementation into your `therapy-app` directory.
-
-### Step 3: Build and Start Docker Containers
-
-```powershell
-# Build containers (first time only)
-docker-compose build
-
-# Start containers
-docker-compose up -d
-```
-
-### Step 4: Initialize Symfony Project
-
-```powershell
-# Enter the PHP container
-docker-compose exec php bash
-
-# Inside the container, run the initialization script
-bash /var/www/html/docker/scripts/init-project.sh
-
-# Exit the container
-exit
-```
-
-### Step 5: Create Database and Run Migrations
-
-```powershell
-# Create the database
-docker-compose exec php php bin/console doctrine:database:create --if-not-exists
-
-# Run migrations
+# 3. Apply database migrations (dev DB)
 docker-compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+
+# 4. Create the therapist account (single-therapist system — only one allowed)
+docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Name" "password"
 ```
 
-### Step 6: Clear Cache
-
-```powershell
-docker-compose exec php php bin/console cache:clear
-```
-
-### Step 7: Verify Installation
-
-Open your browser and navigate to:
+### Verify
 
 - **API Health Check**: <http://localhost:8080/api/health>
 - **MailHog** (email testing): <http://localhost:8025>
+- **Dashboard**: <http://localhost:4200>
+- **Landing**: <http://localhost:4321>
+
+> If you're starting from an empty directory rather than a clone, see [`API/docker/scripts/init-project.sh`](docker/scripts/init-project.sh) which scaffolds the Symfony project layout before step 3.
 
 ## API Endpoints
 
@@ -230,7 +198,9 @@ Open your browser and navigate to:
 | GET | `/api/therapist/me` | Get therapist profile |
 | GET | `/api/therapist/patients` | List all patients |
 | POST | `/api/therapist/patients/invite` | Invite a patient |
-| GET | `/api/therapist/invitations` | List pending invitations |
+| GET | `/api/therapist/invitations` | List all invitations (filterable by status) |
+| POST | `/api/therapist/invitations/{id}/resend` | Resend an invitation (revokes the old token and emails a new link) |
+| POST | `/api/therapist/invitations/{id}/revoke` | Revoke a pending invitation |
 | GET | `/api/therapist/schedule` | List schedule blocks |
 | POST | `/api/therapist/schedule` | Create schedule block |
 | PUT | `/api/therapist/schedule/{id}` | Update schedule block |
@@ -264,9 +234,7 @@ Open your browser and navigate to:
 
 ### Testing Flow
 
-Run the collection sequentially
-
-19. **Logout** - Revoke the JWT token
+Run the requests in the order they appear in the collection. The final request (`Logout`) revokes the JWT.
 
 ### Getting the Invitation Token
 
@@ -274,7 +242,7 @@ After inviting a patient:
 
 1. Go to <http://localhost:8025> (MailHog)
 2. Find the invitation email
-3. The registration URL contains the token: `http://localhost:3000/register?token=YOUR_TOKEN_HERE`
+3. The registration URL contains the token: `http://localhost:4200/register?token=YOUR_TOKEN_HERE`
 4. Copy the token value and set it in Postman's `invitation_token` variable
 
 ## Testing
@@ -632,6 +600,17 @@ final class AuthControllerTest extends ApiTestCase
 - This ensures transaction isolation works correctly with JWT authentication
 - Without this, each request would get a new EntityManager that can't see uncommitted transaction data
 
+### End-to-End Tests (Playwright)
+
+Beyond PHPUnit, the dashboard ships with a Playwright E2E suite at `dashboard/e2e/` that drives a real Chromium against the running stack (dashboard + API + MailHog). It runs in a dedicated Docker container so nothing is installed on the host.
+
+```powershell
+# From the repo root
+docker-compose --profile e2e run --rm playwright
+```
+
+The suite covers the full patient-invitation flow (invite → email → register → login), the cookie-isolation regression (proves the two role-scoped JWT cookies don't clobber each other), resend/revoke transitions, and four error paths (used token, garbage token, invalid email, password mismatch). See [`dashboard/e2e/README.md`](../dashboard/e2e/README.md) for setup, env overrides, and per-test breakdown.
+
 ## Console Commands
 
 ```powershell
@@ -691,34 +670,44 @@ docker-compose exec php php bin/console cache:warmup
 ## Services
 
 | Service | URL | Description |
-|---------|-----|-------------| 
-| API | <http://localhost:8080> | Main API |
-| PostgreSQL | localhost:5432 | Database |
+|---------|-----|-------------|
+| API | <http://localhost:8080> | Main API (via Nginx) |
+| Dashboard | <http://localhost:4200> | Angular SPA (therapist + patient portal) |
+| Landing | <http://localhost:4321> | Public Astro site (slot browser, appointment requests) |
+| pgAdmin | <http://localhost:5050> | PostgreSQL admin UI |
 | MailHog UI | <http://localhost:8025> | Email testing interface |
 | MailHog SMTP | localhost:1025 | SMTP server |
-| Redis | localhost:6379 | JWT blocklist & cache |
+| PostgreSQL | localhost:5432 | Database (bound to 127.0.0.1) |
+| Redis | localhost:6379 | JWT blocklist & cache (bound to 127.0.0.1) |
 
 ## Project Structure
 
+This README describes the `API/` subdirectory of the monorepo. Repo-wide layout:
+
 ```
-therapy-app/
-├── config/                    # Symfony configuration
-│   ├── packages/             # Bundle configurations
-│   ├── routes/               # Route configurations
-│   └── services.yaml         # Service definitions
-├── docker/                    # Docker configuration
-│   ├── nginx/                # Nginx config
-│   ├── php/                  # PHP Dockerfile & config
-│   └── scripts/              # Setup scripts
-├── migrations/                # Database migrations
-├── postman/                   # Postman collection
-├── public/                    # Web root
-├── src/                       # Application source
-│   ├── Application/          # Use cases
-│   ├── Domain/               # Business logic
-│   └── Infrastructure/       # External concerns
-├── docker-compose.yml         # Docker Compose config
-├── Makefile                   # Make commands
+therapy/
+├── API/                          # this directory — Symfony 8.0 backend
+│   ├── src/
+│   │   ├── Domain/               # Pure business logic (entities, value objects, ports)
+│   │   ├── Application/          # Use cases (handlers, DTOs)
+│   │   └── Infrastructure/       # Adapters (Doctrine, HTTP, email, security, CLI)
+│   ├── tests/
+│   │   ├── Unit/                 # Unit tests (no DB)
+│   │   └── Integration/          # Repository + controller tests (transactional)
+│   ├── config/                   # Symfony config (packages, services.yaml, security.yaml)
+│   ├── migrations/               # Doctrine migrations
+│   ├── postman/                  # Postman collection
+│   ├── public/                   # Web root (index.php)
+│   └── docker/                   # nginx, php, cron, pgadmin Dockerfiles + configs
+│
+├── dashboard/                    # Angular 21 SPA (therapist + patient portal)
+│   ├── src/app/                  # auth, layout, appointments, patients, schedule, shared
+│   └── e2e/                      # Playwright E2E suite (containerized)
+│
+├── landing/                      # Astro 5 + Svelte 5 public site
+│
+├── docker-compose.yml            # 9 default services + 1 playwright service (profile: e2e)
+└── Makefile                      # Shortcut commands (test-db-setup, test, test-unit, etc.)
 ```
 
 ## License
