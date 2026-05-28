@@ -12,6 +12,7 @@ use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
+use App\Infrastructure\Security\JwtCookieManager;
 use App\Tests\Helper\ApiTestCase;
 
 final class AuthControllerTest extends ApiTestCase
@@ -204,8 +205,8 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
-        $this->assertNotNull($cookie, 'Login should set THERAPY_JWT cookie');
+        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
+        $this->assertNotNull($cookie, 'Login should set ' . JwtCookieManager::THERAPIST_COOKIE_NAME . ' cookie');
         $this->assertNotEmpty($cookie->getValue());
 
         // Verify response body does not contain the token
@@ -243,11 +244,11 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // Verify the cookie is expired
-        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
+        // Verify the therapist cookie is expired (logout clears both role cookies)
+        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
         $this->assertTrue(
             $cookie === null || $cookie->isExpired(),
-            'THERAPY_JWT cookie should be expired after logout',
+            JwtCookieManager::THERAPIST_COOKIE_NAME . ' cookie should be expired after logout',
         );
     }
 
@@ -301,7 +302,7 @@ final class AuthControllerTest extends ApiTestCase
         $token = $this->createTherapistAndGetToken();
 
         // Clear the cookie jar so only Bearer is used
-        $this->client->getCookieJar()->expire('THERAPY_JWT', '/api');
+        $this->client->getCookieJar()->expire(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
 
         $this->jsonRequest('GET', '/api/therapist/me', [], $token);
 

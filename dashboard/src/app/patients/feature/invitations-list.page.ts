@@ -1,5 +1,16 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
+import { DatePipe, DOCUMENT } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
@@ -41,6 +52,8 @@ export class InvitationsListPage implements OnInit {
   private readonly patientsService: PatientsService = inject(PatientsService);
   private readonly dialog: MatDialog = inject(MatDialog);
   private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly document: Document = inject(DOCUMENT);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   readonly isLoading: WritableSignal<boolean> = signal(false);
   readonly errorMessage: WritableSignal<string> = signal('');
@@ -72,6 +85,17 @@ export class InvitationsListPage implements OnInit {
 
   ngOnInit(): void {
     this.fetch();
+
+    // Refresh whenever the tab regains visibility — covers the case where the
+    // therapist switches tabs to see the patient consume their invitation, then
+    // comes back expecting the row to show Used instead of Pending.
+    fromEvent(this.document, 'visibilitychange')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((): void => {
+        if (this.document.visibilityState === 'visible') {
+          this.fetch();
+        }
+      });
   }
 
   protected onFilterChange(value: FilterValue): void {

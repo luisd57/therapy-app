@@ -17,6 +17,7 @@ use App\Application\User\Handler\TherapistLoginHandler;
 use App\Application\User\Handler\ValidateInvitationHandler;
 use App\Application\User\DTO\Output\UserOutputDTO;
 use App\Domain\User\Entity\User;
+use App\Domain\User\Enum\UserRole;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotActiveException;
@@ -60,7 +61,9 @@ final class AuthController extends AbstractController
             ));
 
             $response = $this->success(['user' => $result->user->toArray()]);
-            $response->headers->setCookie($this->jwtCookieManager->createCookie($result->token));
+            $response->headers->setCookie(
+                $this->jwtCookieManager->createCookie($result->token, UserRole::THERAPIST),
+            );
 
             return $response;
         } catch (InvalidCredentialsException $exception) {
@@ -89,7 +92,9 @@ final class AuthController extends AbstractController
             ));
 
             $response = $this->success(['user' => $result->user->toArray()]);
-            $response->headers->setCookie($this->jwtCookieManager->createCookie($result->token));
+            $response->headers->setCookie(
+                $this->jwtCookieManager->createCookie($result->token, UserRole::PATIENT),
+            );
 
             return $response;
         } catch (InvalidCredentialsException $exception) {
@@ -295,7 +300,14 @@ final class AuthController extends AbstractController
         \Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface $jwtTokenManager,
         \Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface $jwtEncoder,
     ): JsonResponse {
-        $token = $request->cookies->get($this->jwtCookieManager->getCookieName(), '');
+        $token = '';
+        foreach ($this->jwtCookieManager->allCookieNames() as $cookieName) {
+            $cookieValue = $request->cookies->get($cookieName, '');
+            if ($cookieValue !== '') {
+                $token = $cookieValue;
+                break;
+            }
+        }
         if ($token === '') {
             $authHeader = $request->headers->get('Authorization', '');
             $token = str_starts_with($authHeader, 'Bearer ') ? substr($authHeader, 7) : '';
@@ -318,7 +330,9 @@ final class AuthController extends AbstractController
             $jwtBlocklist->revoke($jti, $ttlSeconds);
 
             $response = $this->success(['message' => 'Successfully logged out.']);
-            $response->headers->setCookie($this->jwtCookieManager->createExpiredCookie());
+            foreach ($this->jwtCookieManager->createExpiredCookies() as $expiredCookie) {
+                $response->headers->setCookie($expiredCookie);
+            }
 
             return $response;
         } catch (\Exception) {

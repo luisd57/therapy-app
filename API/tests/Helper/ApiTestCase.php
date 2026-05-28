@@ -9,6 +9,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
+use App\Infrastructure\Security\JwtCookieManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -44,8 +45,9 @@ abstract class ApiTestCase extends WebTestCase
         if ($token !== null) {
             $headers['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
         } else {
-            // Clear any lingering auth cookie to ensure truly unauthenticated requests
-            $this->client->getCookieJar()->expire('THERAPY_JWT', '/api');
+            // Clear any lingering auth cookies to ensure truly unauthenticated requests
+            $this->client->getCookieJar()->expire(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
+            $this->client->getCookieJar()->expire(JwtCookieManager::PATIENT_COOKIE_NAME, '/api');
         }
         $this->client->request($method, $uri, [], [], $headers, json_encode($data));
     }
@@ -76,7 +78,7 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        return $this->extractTokenFromCookie();
+        return $this->extractTokenFromCookie(JwtCookieManager::THERAPIST_COOKIE_NAME);
     }
 
     protected function createPatientAndGetToken(
@@ -100,12 +102,12 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        return $this->extractTokenFromCookie();
+        return $this->extractTokenFromCookie(JwtCookieManager::PATIENT_COOKIE_NAME);
     }
 
-    private function extractTokenFromCookie(): string
+    private function extractTokenFromCookie(string $cookieName): string
     {
-        $cookie = $this->client->getCookieJar()->get('THERAPY_JWT', '/api');
+        $cookie = $this->client->getCookieJar()->get($cookieName, '/api');
 
         return $cookie !== null ? $cookie->getValue() : '';
     }

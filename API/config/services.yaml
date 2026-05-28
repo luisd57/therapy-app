@@ -60,6 +60,10 @@ services:
             $jwtTokenTtl: '%env(int:JWT_TOKEN_TTL)%'
             $jwtCookieSecure: '%app.jwt_cookie_secure%'
 
+    # Custom JWT cookie extractor: tries both role-scoped cookies in turn.
+    # Attached to lexik's chain extractor via RegisterMultiCookieTokenExtractorPass.
+    App\Infrastructure\Security\MultiCookieTokenExtractor: ~
+
     App\Infrastructure\Security\JwtCreatedListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }

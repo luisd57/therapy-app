@@ -71,7 +71,7 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 | Couche | Rôle | Contenu |
 | ------ | ---- | ------- |
 | **Domain** | Logique métier pure, aucune dépendance framework | Entités, Value Objects, interfaces Repository et Service (ports driven), services métier, exceptions |
-| **Application** | Orchestration des cas d'usage | 32 Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
+| **Application** | Orchestration des cas d'usage | Handlers (1 fichier = 1 use case = 1 méthode `__invoke()`), DTOs Input/Output |
 | **Infrastructure** | Adaptateurs techniques (driving + driven) | Controllers HTTP (driving), repositories Doctrine, envoi d'emails, security, commandes CLI, event subscribers |
 
 ### Patterns clés
@@ -108,9 +108,9 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index optimisés pour les requêtes de disponibilité |
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
-| Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookie httpOnly pour le dashboard, Bearer token pour les clients API. |
+| Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookies httpOnly distincts par rôle (`THERAPY_THERAPIST_JWT` / `THERAPY_PATIENT_JWT`). Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
-| Infrastructure | Docker Compose (8 conteneurs), cron planifié, Makefile |
+| Infrastructure | Docker Compose (9 conteneurs par défaut + 1 conteneur Playwright sous le profil `e2e`), cron planifié, Makefile |
 
 ---
 
@@ -139,6 +139,49 @@ docker-compose exec php vendor/bin/phpunit --testsuite=Unit
 
 # Integration uniquement
 docker-compose exec php vendor/bin/phpunit --testsuite=Integration
+```
+
+### Tests E2E (Playwright)
+
+Suite end-to-end qui pilote un vrai Chromium contre le dashboard en cours d'exécution. Exécutée dans un conteneur Docker dédié (`mcr.microsoft.com/playwright:v1.49.1-noble`), aucune installation sur l'hôte.
+
+- Couvre : invitation patient (happy path), régression isolation cookie thérapeute/patient, resend + revoke, et 4 chemins d'erreur (token utilisé, token invalide, email invalide, mots de passe non-correspondants).
+- `globalSetup` se connecte une fois en tant que thérapeute et persiste la session via `storageState` — réutilisée par tous les tests pour éviter de saturer le rate limiter (5 logins/min/IP).
+
+```bash
+# Lancer la suite E2E complète
+docker-compose --profile e2e run --rm playwright
+
+# Lancer un fichier spécifique
+docker-compose --profile e2e run --rm playwright \
+  npx playwright test invitation-happy-path
+```
+
+Documentation détaillée : [`dashboard/e2e/README.md`](dashboard/e2e/README.md).
+
+---
+
+## Commandes utiles
+
+```bash
+# Créer le compte thérapeute (un seul autorisé)
+docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Nom" "motdepasse"
+
+# Nettoyer les tokens expirés (invitations + reset password)
+docker-compose exec php php bin/console app:cleanup-tokens
+
+# Envoyer l'agenda quotidien manuellement (normalement déclenché par cron)
+docker-compose exec php php bin/console app:send-daily-agenda
+
+# Seed de créneaux d'exemple pour le développement
+docker-compose exec php php bin/console app:seed-schedule
+
+# Vider la boîte MailHog
+curl -X DELETE http://localhost:8025/api/v1/messages
+
+# Vider le cache Symfony (après modif config)
+docker-compose exec php php bin/console cache:clear --env=dev
+docker-compose exec php php bin/console cache:clear --env=test
 ```
 
 ---
@@ -176,9 +219,11 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 
 | Service | URL |
 | ------- | --- |
-| API | <http://localhost:8080/api/health> |
-| Frontend | <http://localhost:4321> |
+| API | <http://localhost:8080/api> |
+| Landing | <http://localhost:4321> |
+| Dashboard | <http://localhost:4200> |
 | MailHog (emails) | <http://localhost:8025> |
+| pgAdmin | <http://localhost:5050> |
 
 Pour le setup complet (BDD test, JWT, troubleshooting), voir le [README de l'API](API/README.md).
 
@@ -191,7 +236,7 @@ therapy/
 ├── API/                          # Backend Symfony 8.0
 │   ├── src/
 │   │   ├── Domain/               # Logique métier pure (entités, value objects, ports)
-│   │   ├── Application/          # Cas d'usage (33 handlers, DTOs)
+│   │   ├── Application/          # Cas d'usage (handlers, DTOs)
 │   │   └── Infrastructure/       # Adaptateurs (Doctrine, HTTP, email, CLI)
 │   ├── tests/
 │   │   ├── Unit/                 # Tests unitaires (domain + handlers)
@@ -213,14 +258,15 @@ therapy/
 │   └── public/                   # Assets statiques
 │
 ├── dashboard/                    # Portail Angular (thérapeute + patients)
-│   └── src/app/
-│       ├── auth/                 # Login, registration, reset password
-│       ├── layout/               # Navigation et structure par rôle
-│       ├── appointments/         # Gestion des rendez-vous
-│       ├── patients/             # Gestion des patients
-│       ├── schedule/             # Planning et disponibilités
-│       └── shared/               # Services, guards, interceptors
+│   ├── src/app/
+│   │   ├── auth/                 # Login, registration, reset password
+│   │   ├── layout/               # Navigation et structure par rôle
+│   │   ├── appointments/         # Gestion des rendez-vous
+│   │   ├── patients/             # Gestion des patients
+│   │   ├── schedule/             # Planning et disponibilités
+│   │   └── shared/               # Services, guards, interceptors
+│   └── e2e/                      # Tests Playwright (config + fixtures + specs)
 │
-├── docker-compose.yml            # 8 conteneurs (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, Astro)
+├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 1 service Playwright (profil e2e)
 └── Makefile                      # Commandes raccourcies
 ```
