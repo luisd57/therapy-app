@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\User\Handler;
 use App\Application\User\DTO\Input\ResendInvitationInputDTO;
 use App\Application\User\Handler\ResendInvitationHandler;
 use App\Domain\User\Entity\InvitationToken;
+use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\InvitationNotFoundException;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
@@ -107,24 +108,32 @@ final class ResendInvitationHandlerTest extends TestCase
     {
         $invitation = DomainTestHelper::createUsedInvitation();
         $this->repository->method('findById')->willReturn($invitation);
+        $this->repository->expects($this->never())->method('save');
 
-        $this->expectException(\DomainException::class);
-
-        $this->handler->__invoke(
-            new ResendInvitationInputDTO(tokenId: TokenId::generate()->getValue()),
-        );
+        try {
+            $this->handler->__invoke(
+                new ResendInvitationInputDTO(tokenId: TokenId::generate()->getValue()),
+            );
+            $this->fail('Expected InvalidTokenException');
+        } catch (InvalidTokenException $e) {
+            $this->assertSame('TOKEN_ALREADY_USED', $e->getErrorCode());
+        }
     }
 
     public function testThrowsWhenInvitationAlreadyRevoked(): void
     {
         $invitation = DomainTestHelper::createRevokedInvitation();
         $this->repository->method('findById')->willReturn($invitation);
+        $this->repository->expects($this->never())->method('save');
 
-        $this->expectException(\DomainException::class);
-
-        $this->handler->__invoke(
-            new ResendInvitationInputDTO(tokenId: TokenId::generate()->getValue()),
-        );
+        try {
+            $this->handler->__invoke(
+                new ResendInvitationInputDTO(tokenId: TokenId::generate()->getValue()),
+            );
+            $this->fail('Expected InvalidTokenException');
+        } catch (InvalidTokenException $e) {
+            $this->assertSame('TOKEN_REVOKED', $e->getErrorCode());
+        }
     }
 
     public function testSwallowsEmailSendFailureButStillReturnsNewInvitation(): void

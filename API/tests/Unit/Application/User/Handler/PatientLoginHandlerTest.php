@@ -47,10 +47,20 @@ final class PatientLoginHandlerTest extends TestCase
         $this->assertSame('ROLE_PATIENT', $result->user->role);
     }
 
+    public function testUserNotFoundThrowsInvalidCredentials(): void
+    {
+        $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(false);
+
+        $this->expectException(InvalidCredentialsException::class);
+        $this->handler->__invoke(new PatientLoginInputDTO('unknown@example.com', 'password'));
+    }
+
     public function testWrongRoleThrowsInvalidCredentials(): void
     {
         $therapist = DomainTestHelper::createReconstitutedTherapist();
         $this->userRepository->method('findByEmail')->willReturn($therapist);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(false);
 
         $this->expectException(InvalidCredentialsException::class);
         $this->handler->__invoke(new PatientLoginInputDTO('therapist@example.com', 'password'));

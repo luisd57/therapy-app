@@ -76,50 +76,6 @@ final class SlotLockTest extends TestCase
         $this->assertTrue($lock->isExpired($now));
     }
 
-    // --- matchesToken ---
-
-    public function testMatchesTokenWithCorrectToken(): void
-    {
-        $lock = SlotLock::create(
-            id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
-            modality: AppointmentModality::ONLINE,
-            lockToken: 'my-secret-token',
-            ttlSeconds: 300,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertTrue($lock->matchesToken('my-secret-token'));
-    }
-
-    public function testMatchesTokenWithIncorrectToken(): void
-    {
-        $lock = SlotLock::create(
-            id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
-            modality: AppointmentModality::ONLINE,
-            lockToken: 'my-secret-token',
-            ttlSeconds: 300,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertFalse($lock->matchesToken('wrong-token'));
-    }
-
-    public function testMatchesTokenIsCaseSensitive(): void
-    {
-        $lock = SlotLock::create(
-            id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
-            modality: AppointmentModality::ONLINE,
-            lockToken: 'My-Token',
-            ttlSeconds: 300,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertFalse($lock->matchesToken('my-token'));
-    }
-
     // --- reconstitute ---
 
     public function testReconstituteRestoresAllProperties(): void

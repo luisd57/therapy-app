@@ -52,6 +52,7 @@ final class TherapistLoginHandlerTest extends TestCase
     public function testUserNotFoundThrowsInvalidCredentials(): void
     {
         $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(false);
 
         $this->expectException(InvalidCredentialsException::class);
         $this->handler->__invoke(new TherapistLoginInputDTO('unknown@example.com', 'password'));
@@ -61,6 +62,7 @@ final class TherapistLoginHandlerTest extends TestCase
     {
         $patient = DomainTestHelper::createReconstitutedActivePatient();
         $this->userRepository->method('findByEmail')->willReturn($patient);
+        $this->passwordHasher->expects($this->once())->method('verify')->willReturn(false);
 
         $this->expectException(InvalidCredentialsException::class);
         $this->handler->__invoke(new TherapistLoginInputDTO('patient@example.com', 'password'));

@@ -60,11 +60,6 @@ class SlotLock
         return !$this->isExpired($now);
     }
 
-    public function matchesToken(string $token): bool
-    {
-        return hash_equals($this->lockToken, $token);
-    }
-
     public function getId(): SlotLockId
     {
         return $this->id;

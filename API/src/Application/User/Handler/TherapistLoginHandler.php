@@ -17,6 +17,8 @@ use App\Domain\User\Enum\UserRole;
 
 final readonly class TherapistLoginHandler
 {
+    private const DUMMY_BCRYPT_HASH = '$2y$12$v2yYa3Zba1sfc7LMzCdWy.Z5ROqo2i7xIeXhSzQVv/Lt5FoYIOxii';
+
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
@@ -30,10 +32,13 @@ final readonly class TherapistLoginHandler
         $user = $this->userRepository->findByEmail($email);
 
         if ($user === null) {
+            // Burn bcrypt time so response timing doesn't reveal whether the email exists.
+            $this->passwordHasher->verify($dto->password, self::DUMMY_BCRYPT_HASH);
             throw new InvalidCredentialsException();
         }
 
         if ($user->getRole() !== UserRole::THERAPIST) {
+            $this->passwordHasher->verify($dto->password, self::DUMMY_BCRYPT_HASH);
             throw new InvalidCredentialsException();
         }
 
