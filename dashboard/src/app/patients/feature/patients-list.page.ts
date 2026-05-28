@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -58,7 +58,8 @@ export class PatientsListPage implements OnInit {
   }
 
   protected openInviteDialog(): void {
-    const ref = this.dialog.open(InvitePatientDialogComponent, { autoFocus: 'first-tabbable' });
+    const ref: MatDialogRef<InvitePatientDialogComponent, Invitation | undefined> =
+      this.dialog.open(InvitePatientDialogComponent, { autoFocus: 'first-tabbable' });
     ref.afterClosed().subscribe((result: Invitation | undefined): void => {
       if (result) {
         this.snackBar.open('Invitation sent.', 'Close', { duration: 4000 });

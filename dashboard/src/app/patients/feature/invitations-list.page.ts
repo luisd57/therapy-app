@@ -13,7 +13,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -103,7 +103,8 @@ export class InvitationsListPage implements OnInit {
   }
 
   protected openInviteDialog(): void {
-    const ref = this.dialog.open(InvitePatientDialogComponent, { autoFocus: 'first-tabbable' });
+    const ref: MatDialogRef<InvitePatientDialogComponent, Invitation | undefined> =
+      this.dialog.open(InvitePatientDialogComponent, { autoFocus: 'first-tabbable' });
     ref.afterClosed().subscribe((result: Invitation | undefined): void => {
       if (result) {
         this.snackBar.open('Invitation sent.', 'Close', { duration: 4000 });
@@ -119,7 +120,8 @@ export class InvitationsListPage implements OnInit {
         'A new link will be sent and the previous link will be invalidated. The patient will receive a fresh email.',
       confirmLabel: 'Resend',
     };
-    const ref = this.dialog.open(ConfirmDialogComponent, { data });
+    const ref: MatDialogRef<ConfirmDialogComponent, boolean> =
+      this.dialog.open(ConfirmDialogComponent, { data });
     ref.afterClosed().subscribe((confirmed: boolean | undefined): void => {
       if (!confirmed) return;
       this.patientsService.resend(invitation.id).subscribe({
@@ -142,7 +144,8 @@ export class InvitationsListPage implements OnInit {
       confirmLabel: 'Revoke',
       confirmColor: 'warn',
     };
-    const ref = this.dialog.open(ConfirmDialogComponent, { data });
+    const ref: MatDialogRef<ConfirmDialogComponent, boolean> =
+      this.dialog.open(ConfirmDialogComponent, { data });
     ref.afterClosed().subscribe((confirmed: boolean | undefined): void => {
       if (!confirmed) return;
       this.patientsService.revoke(invitation.id).subscribe({

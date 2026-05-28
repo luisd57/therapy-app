@@ -1,4 +1,4 @@
-import { Component, computed, input, output, Signal } from '@angular/core';
+import { Component, computed, input, InputSignal, output, OutputEmitterRef, Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -10,10 +10,10 @@ import { InvitationStatus } from '../utils/invitation.model';
   templateUrl: './invitations-row-actions.component.html',
 })
 export class InvitationsRowActionsComponent {
-  readonly status = input.required<InvitationStatus>();
+  readonly status: InputSignal<InvitationStatus> = input.required<InvitationStatus>();
 
-  readonly resend = output<void>();
-  readonly revoke = output<void>();
+  readonly resend: OutputEmitterRef<void> = output();
+  readonly revoke: OutputEmitterRef<void> = output();
 
   protected readonly canResend: Signal<boolean> = computed(
     (): boolean => this.status() === 'pending' || this.status() === 'expired',
