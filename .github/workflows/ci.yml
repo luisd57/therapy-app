@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: therapy_db
+          POSTGRES_USER: therapy_user
+          POSTGRES_PASSWORD: therapy_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U therapy_user -d therapy_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      APP_ENV: test
+      APP_SECRET: test_secret_for_testing_only
+      DATABASE_URL: "postgresql://therapy_user:therapy_pass@localhost:5432/therapy_db?serverVersion=16&charset=utf8"
+      REDIS_URL: "redis://localhost:6379"
+      MAILER_DSN: "null://null"
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: therapy_jwt_passphrase
+      JWT_TOKEN_TTL: 28800
+      APP_FRONTEND_URL: http://localhost:3000
+      INVITATION_TOKEN_TTL: 86400
+      PASSWORD_RESET_TOKEN_TTL: 3600
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, pdo_pgsql, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            API/vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('API/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install API dependencies
+        working-directory: API
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate JWT keypair
+        working-directory: API
+        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
+
+      - name: Create test database
+        working-directory: API
+        run: php bin/console doctrine:database:create --env=test --if-not-exists --no-interaction
+
+      - name: Run migrations on test database
+        working-directory: API
+        run: php bin/console doctrine:migrations:migrate --env=test --no-interaction --all-or-nothing
+
+      - name: Run PHPUnit
+        working-directory: API
+        run: vendor/bin/phpunit
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            dashboard/package-lock.json
+            landing/package-lock.json
+
+      - name: Install dashboard dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Lint dashboard
+        working-directory: dashboard
+        run: npm run lint
+
+      - name: Build dashboard
+        working-directory: dashboard
+        run: npm run build
+
+      - name: Install landing dependencies
+        working-directory: landing
+        run: npm ci
+
+      - name: Build landing
+        working-directory: landing
+        run: npm run build
