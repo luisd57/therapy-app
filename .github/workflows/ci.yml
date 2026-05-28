@@ -50,6 +50,11 @@ jobs:
       INVITATION_TOKEN_TTL: 86400
       PASSWORD_RESET_TOKEN_TTL: 3600
       DEFAULT_URI: http://localhost
+      TRUSTED_PROXIES: 127.0.0.1
+      JWT_COOKIE_SECURE: 'false'
+      APPOINTMENT_DURATION_MINUTES: 50
+      SLOT_LOCK_TTL: 600
+      CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
 
     steps:
       - name: Checkout
