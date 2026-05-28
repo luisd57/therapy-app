@@ -7,6 +7,7 @@ namespace App\Application\User\Handler;
 use App\Application\User\DTO\Input\ResendInvitationInputDTO;
 use App\Application\User\DTO\Output\InvitationOutputDTO;
 use App\Domain\User\Entity\InvitationToken;
+use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\InvitationNotFoundException;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
@@ -35,6 +36,14 @@ final readonly class ResendInvitationHandler
 
         if ($original === null) {
             throw new InvitationNotFoundException($dto->tokenId);
+        }
+
+        if ($original->isUsed()) {
+            throw InvalidTokenException::alreadyUsed();
+        }
+
+        if ($original->isRevoked()) {
+            throw InvalidTokenException::revoked();
         }
 
         $now = $this->clock->now();
