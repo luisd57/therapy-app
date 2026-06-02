@@ -40,6 +40,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
     public function testAvailableSlotsReturns200WithValidParams(): void
     {
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 2026-06-01 is a Monday
@@ -75,6 +76,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
     public function testAvailableSlotsWithModalityFilter(): void
     {
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 2026-06-01 is a Monday
@@ -141,6 +143,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
     public function testRequestAppointmentReturns201(): void
     {
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 2026-06-01T09:40:00 is a valid 50-min slot (08:00, 08:50, 09:40, ...)

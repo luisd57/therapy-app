@@ -13,6 +13,8 @@ use App\Infrastructure\Security\JwtCookieManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Clock\MockClock;
 
 abstract class ApiTestCase extends WebTestCase
 {
@@ -103,6 +105,19 @@ abstract class ApiTestCase extends WebTestCase
         ]);
 
         return $this->extractTokenFromCookie(JwtCookieManager::PATIENT_COOKIE_NAME);
+    }
+
+    /**
+     * Replace the container's ClockInterface with a frozen MockClock so date-dependent
+     * tests can pin "now" to a fixed instant. Must be called before the test triggers
+     * the request that resolves the clock-using handlers.
+     */
+    protected function freezeClock(string $now): MockClock
+    {
+        $clock = new MockClock(new \DateTimeImmutable($now));
+        self::getContainer()->set(ClockInterface::class, $clock);
+
+        return $clock;
     }
 
     private function extractTokenFromCookie(string $cookieName): string

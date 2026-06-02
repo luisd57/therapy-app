@@ -30,3 +30,6 @@ dist/
 
 # Personal scripts
 *.bat
+
+# Local docs (specs, plans, scratch)
+docs/
