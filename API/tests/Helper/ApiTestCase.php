@@ -47,9 +47,8 @@ abstract class ApiTestCase extends WebTestCase
         if ($token !== null) {
             $headers['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
         } else {
-            // Clear any lingering auth cookies to ensure truly unauthenticated requests
-            $this->client->getCookieJar()->expire(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
-            $this->client->getCookieJar()->expire(JwtCookieManager::PATIENT_COOKIE_NAME, '/api');
+            // Clear any lingering auth cookie to ensure truly unauthenticated requests
+            $this->client->getCookieJar()->expire(JwtCookieManager::COOKIE_NAME, '/api');
         }
         $this->client->request($method, $uri, [], [], $headers, json_encode($data));
     }
@@ -80,7 +79,7 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        return $this->extractTokenFromCookie(JwtCookieManager::THERAPIST_COOKIE_NAME);
+        return $this->extractTokenFromCookie(JwtCookieManager::COOKIE_NAME);
     }
 
     protected function createPatientAndGetToken(
@@ -104,7 +103,7 @@ abstract class ApiTestCase extends WebTestCase
             'password' => $password,
         ]);
 
-        return $this->extractTokenFromCookie(JwtCookieManager::PATIENT_COOKIE_NAME);
+        return $this->extractTokenFromCookie(JwtCookieManager::COOKIE_NAME);
     }
 
     /**

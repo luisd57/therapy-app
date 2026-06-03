@@ -9,12 +9,11 @@ lexik_jwt_authentication:
     user_id_claim: email
 
     token_extractors:
-        # Built-in cookie extractor disabled: only supports one cookie name.
-        # We use a custom extractor that tries both role-scoped cookies
-        # (THERAPY_THERAPIST_JWT and THERAPY_PATIENT_JWT) so a patient login
-        # in the same browser cannot overwrite a therapist's session.
+        # Single-session-per-browser model: one JWT cookie holds the active
+        # session's token. Logging in (either role) replaces it.
         cookie:
-            enabled: false
+            enabled: true
+            name: THERAPY_JWT
         authorization_header:
             enabled: true
             prefix: Bearer
