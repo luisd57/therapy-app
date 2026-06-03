@@ -7,8 +7,8 @@ paths:
 
 ## Authentication
 - JWT via `lexik/jwt-authentication-bundle` with `jti` claim for Redis-backed revocation
-- Transport: httpOnly cookies scoped per role (`THERAPY_THERAPIST_JWT`, `THERAPY_PATIENT_JWT`, `Path=/api`, `SameSite=Lax`) for browsers; Bearer token for API clients. `MultiCookieTokenExtractor` tries both cookies; header is the fallback.
-- Cookie managed by `JwtCookieManager`. `JWT_COOKIE_SECURE` controls Secure flag. Logout clears both role cookies.
+- Transport: single httpOnly cookie `THERAPY_JWT` (`Path=/api`, `SameSite=Lax`) for browsers; Bearer token for API clients. One session per browser — login (either role) replaces the cookie. Lexik's built-in cookie extractor reads it; Authorization header is the fallback.
+- Cookie managed by `JwtCookieManager` (name in `JwtCookieManager::COOKIE_NAME`). `JWT_COOKIE_SECURE` controls Secure flag. Logout clears the cookie + revokes the token's jti.
 - CORS with `allow_credentials: true`, scoped to `^/api/`, origin from `APP_FRONTEND_URL`
 
 ## Access Control

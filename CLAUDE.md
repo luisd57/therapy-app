@@ -89,7 +89,7 @@ These files are NOT loaded automatically. Reference them with @ when needed:
 
 ## Implementation Status
 
-### API: DONE (all endpoints implemented and tested; post-review security cleanups applied 2026-05-28)
+### API: DONE (all endpoints implemented and tested; post-review security cleanups 2026-05-28; auth reverted to single-session `THERAPY_JWT` cookie 2026-06-03)
 ### Landing: IN PROGRESS (slot browser + request form)
 ### Dashboard:
 - DONE: Therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), Playwright E2E suite for invitation flow (containerized)

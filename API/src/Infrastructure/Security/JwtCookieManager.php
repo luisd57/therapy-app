@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Security;
 
-use App\Domain\User\Enum\UserRole;
 use Symfony\Component\HttpFoundation\Cookie;
 
 final readonly class JwtCookieManager
 {
-    public const string THERAPIST_COOKIE_NAME = 'THERAPY_THERAPIST_JWT';
-    public const string PATIENT_COOKIE_NAME = 'THERAPY_PATIENT_JWT';
+    public const string COOKIE_NAME = 'THERAPY_JWT';
     private const string COOKIE_PATH = '/api';
 
     public function __construct(
@@ -18,44 +16,18 @@ final readonly class JwtCookieManager
         private bool $jwtCookieSecure,
     ) {}
 
-    public function createCookie(string $token, UserRole $userRole): Cookie
+    public function createCookie(string $token): Cookie
     {
         return $this->buildCookie(
-            name: $this->cookieNameForRole($userRole),
+            name: self::COOKIE_NAME,
             value: $token,
             expires: new \DateTimeImmutable('+' . $this->jwtTokenTtl . ' seconds'),
         );
     }
 
-    /**
-     * Returns expired cookies for BOTH roles. Logout clears whichever
-     * may be present so the browser is left in a clean state.
-     *
-     * @return list<Cookie>
-     */
-    public function createExpiredCookies(): array
+    public function createExpiredCookie(): Cookie
     {
-        $expiry = new \DateTimeImmutable('1970-01-01');
-
-        return [
-            $this->buildCookie(self::THERAPIST_COOKIE_NAME, '', $expiry),
-            $this->buildCookie(self::PATIENT_COOKIE_NAME, '', $expiry),
-        ];
-    }
-
-    public function cookieNameForRole(UserRole $userRole): string
-    {
-        return $userRole->isTherapist()
-            ? self::THERAPIST_COOKIE_NAME
-            : self::PATIENT_COOKIE_NAME;
-    }
-
-    /**
-     * @return list<string>
-     */
-    public function allCookieNames(): array
-    {
-        return [self::THERAPIST_COOKIE_NAME, self::PATIENT_COOKIE_NAME];
+        return $this->buildCookie(self::COOKIE_NAME, '', new \DateTimeImmutable('1970-01-01'));
     }
 
     private function buildCookie(string $name, string $value, \DateTimeImmutable $expires): Cookie

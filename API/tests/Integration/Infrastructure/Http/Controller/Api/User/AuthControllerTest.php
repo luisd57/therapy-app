@@ -205,8 +205,8 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
-        $this->assertNotNull($cookie, 'Login should set ' . JwtCookieManager::THERAPIST_COOKIE_NAME . ' cookie');
+        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::COOKIE_NAME, '/api');
+        $this->assertNotNull($cookie, 'Login should set ' . JwtCookieManager::COOKIE_NAME . ' cookie');
         $this->assertNotEmpty($cookie->getValue());
 
         // Verify response body does not contain the token
@@ -244,11 +244,11 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // Verify the therapist cookie is expired (logout clears both role cookies)
-        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
+        // Verify the session cookie is expired after logout
+        $cookie = $this->client->getCookieJar()->get(JwtCookieManager::COOKIE_NAME, '/api');
         $this->assertTrue(
             $cookie === null || $cookie->isExpired(),
-            JwtCookieManager::THERAPIST_COOKIE_NAME . ' cookie should be expired after logout',
+            JwtCookieManager::COOKIE_NAME . ' cookie should be expired after logout',
         );
     }
 
@@ -302,13 +302,42 @@ final class AuthControllerTest extends ApiTestCase
         $token = $this->createTherapistAndGetToken();
 
         // Clear the cookie jar so only Bearer is used
-        $this->client->getCookieJar()->expire(JwtCookieManager::THERAPIST_COOKIE_NAME, '/api');
+        $this->client->getCookieJar()->expire(JwtCookieManager::COOKIE_NAME, '/api');
 
         $this->jsonRequest('GET', '/api/therapist/me', [], $token);
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertSame('therapist@test.com', $data['data']['email']);
+    }
+
+    public function testSecondLoginReplacesSessionCookieSingleSession(): void
+    {
+        // Single-session-per-browser: logging in again (any role) replaces the
+        // one session cookie, so the prior session no longer applies.
+        $this->seedTherapist();
+        $this->seedActivatedPatient();
+
+        $this->client->request('POST', '/api/auth/patient/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'patient@test.com', 'password' => 'Patient1!']));
+        $patientCookie = $this->client->getCookieJar()->get(JwtCookieManager::COOKIE_NAME, '/api');
+        $this->assertNotNull($patientCookie);
+        $patientToken = $patientCookie->getValue();
+
+        $this->client->request('POST', '/api/auth/therapist/login', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
+        $therapistCookie = $this->client->getCookieJar()->get(JwtCookieManager::COOKIE_NAME, '/api');
+        $this->assertNotNull($therapistCookie);
+        $this->assertNotSame($patientToken, $therapistCookie->getValue(), 'Second login should replace the session cookie');
+
+        // The active session is now the therapist's — cookie sent automatically.
+        $this->client->request('GET', '/api/auth/me');
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
         $this->assertSame('therapist@test.com', $data['data']['email']);
     }
 
@@ -325,6 +354,21 @@ final class AuthControllerTest extends ApiTestCase
             now: new \DateTimeImmutable(),
         );
         $repo->save($therapist);
+    }
+
+    private function seedActivatedPatient(): void
+    {
+        $hasher = self::getContainer()->get(PasswordHasherInterface::class);
+        $repo = self::getContainer()->get(UserRepositoryInterface::class);
+
+        $patient = User::createPatient(
+            id: UserId::generate(),
+            email: Email::fromString('patient@test.com'),
+            fullName: 'Test Patient',
+            now: new \DateTimeImmutable(),
+        );
+        $patient->activate($hasher->hash('Patient1!'), new \DateTimeImmutable());
+        $repo->save($patient);
     }
 
     private function seedInvitation(): InvitationToken
