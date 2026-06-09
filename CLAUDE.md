@@ -90,9 +90,9 @@ These files are NOT loaded automatically. Reference them with @ when needed:
 ## Implementation Status
 
 ### API: DONE (all endpoints implemented and tested; post-review security cleanups 2026-05-28; auth reverted to single-session `THERAPY_JWT` cookie 2026-06-03)
-### Landing: IN PROGRESS (slot browser + request form)
+### Landing: IN PROGRESS (slot browser + request form; Playwright E2E suite for reservation flow, containerized)
 ### Dashboard:
-- DONE: Therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), Playwright E2E suite for invitation flow (containerized)
+- DONE: Therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), Playwright E2E suite for invitation + auth flows (containerized)
 - NEXT: Appointment queue, appointment list
 - TODO: Schedule manager, exception manager, therapist profile, patient area
 ### CI: DONE (GitHub Actions — API PHPUnit + dashboard lint+build + landing build; main protected, PRs required, `test` check must pass)

@@ -154,6 +154,32 @@ services:
     profiles:
       - e2e
 
+  playwright-landing:
+    # E2E runner for the public landing page. Self-contained: starts its OWN Astro
+    # dev server (via Playwright's webServer) bound to 127.0.0.1 so the page origin
+    # satisfies the API's loopback CORS rule. PUBLIC_API_BASE_URL is overridden to
+    # reach nginx on the compose network (the landing/.env default localhost:8080
+    # is unreachable from inside this container). Prereq: `app:seed-schedule` seeded.
+    # Invoke via: docker-compose --profile e2e run --rm playwright-landing
+    image: mcr.microsoft.com/playwright:v1.49.1-noble
+    container_name: therapy_playwright_landing
+    working_dir: /app
+    volumes:
+      - ./landing:/app
+      - landing_playwright_node_modules:/app/node_modules
+    networks:
+      - therapy_network
+    environment:
+      LANDING_URL: ${LANDING_URL:-http://127.0.0.1:4321}
+      API_BASE_URL: ${LANDING_API_BASE_URL:-http://nginx/api}
+      PUBLIC_API_BASE_URL: ${LANDING_API_BASE_URL:-http://nginx/api}
+      CI: "1"
+    command: sh -c "npm install --no-audit --no-fund && npx playwright test"
+    depends_on:
+      - nginx
+    profiles:
+      - e2e
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: therapy_pgadmin
@@ -182,5 +208,6 @@ volumes:
   landing_node_modules:
   dashboard_node_modules:
   playwright_node_modules:
+  landing_playwright_node_modules:
   php_vendor:
   php_var:

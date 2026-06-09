@@ -75,8 +75,16 @@ docker-compose --profile e2e run --rm playwright \
 | `invitation-cookie-isolation.spec.ts`      | F1 regression: patient login in 2nd tab keeps therapist session alive |
 | `invitation-resend-revoke.spec.ts`         | Row state transitions (Pending → Revoked, new Pending after resend) |
 | `invitation-errors.spec.ts`                | Used token, garbage token, bad email, password mismatch |
+| `auth-login.spec.ts`                       | Therapist login happy path, bad credentials, form validation |
+| `auth-logout.spec.ts`                      | Logout clears session + re-protects routes              |
+| `auth-route-guards.spec.ts`                | Unauthenticated protected routes redirect to /login     |
+| `auth-password-reset.spec.ts`              | Forgot → emailed reset link → login with new password; bad token |
 | `fixtures/helpers.ts`                      | Shared helpers + env constants                          |
 | `global-setup.ts`                          | MailHog clear + therapist login pre-check               |
+
+Login/logout behavior is covered with one role (therapist) since both roles share
+the same components; patient credentials are exercised once in the reset spec. This
+also keeps real logins under the API's 5/min/IP limit.
 
 ## Env overrides
 

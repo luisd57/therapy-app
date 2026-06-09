@@ -1,0 +1,4 @@
+# Playwright (e2e artifacts)
+/playwright-report
+/test-results
+/.playwright-mcp
