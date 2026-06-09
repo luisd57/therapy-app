@@ -166,6 +166,11 @@ jobs:
           echo "Redis did not become ready" >&2
           exit 1
 
+      - name: Fix volume ownership
+        # Fresh named volumes (php_vendor, php_var) mount empty and root-owned, but
+        # the php container runs as the symfony user — chown so composer/console can write.
+        run: $COMPOSE exec -T --user root php chown -R symfony:symfony /var/www/html/vendor /var/www/html/var
+
       - name: Install API dependencies
         run: $COMPOSE exec -T php composer install --no-interaction --prefer-dist --no-progress
 
