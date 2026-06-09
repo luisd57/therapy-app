@@ -56,6 +56,24 @@ export async function loginAsPatient(page: Page, email: string, password: string
   await expect(page).toHaveURL(/\/appointments$/);
 }
 
+/**
+ * Fill the login form at `route` ('/login' or '/patient-login') with credentials
+ * expected to fail, submit, and assert the inline error surfaces. Does NOT wait
+ * for a redirect to /appointments.
+ */
+export async function loginExpectingError(
+  page: Page,
+  route: string,
+  email: string,
+  password: string,
+): Promise<void> {
+  await page.goto(route);
+  await page.getByRole('textbox', { name: 'Email' }).fill(email);
+  await page.getByRole('textbox', { name: 'Password' }).fill(password);
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await expect(page.locator('.error-message')).toBeVisible();
+}
+
 // ── MailHog ──────────────────────────────────────────────────────────────
 
 /** Decode quoted-printable as it appears in MailHog message bodies. */
@@ -85,11 +103,16 @@ export async function fetchAllMessagesFor(
   );
 }
 
-export async function fetchLatestTokenFor(
+/**
+ * Poll MailHog for the most recent message to `email` whose decoded body matches
+ * `linkPatternRegex` (must capture the token in group 1). Retries briefly because
+ * the email send is async after the API call returns.
+ */
+async function fetchLatestTokenMatching(
   apiContext: APIRequestContext,
   email: string,
+  linkPatternRegex: RegExp,
 ): Promise<string> {
-  // Retry briefly — the email send is async after the API call returns.
   for (let attempt = 0; attempt < 10; attempt++) {
     const matches = (await fetchAllMessagesFor(apiContext, email)).sort(
       (a: MailhogMessage, b: MailhogMessage): number =>
@@ -98,10 +121,24 @@ export async function fetchLatestTokenFor(
 
     for (const message of matches) {
       const decoded = decodeQuotedPrintable(message.Content.Body);
-      const tokenMatch = decoded.match(/register\?token=([A-Za-z0-9_-]+)/);
+      const tokenMatch = decoded.match(linkPatternRegex);
       if (tokenMatch) return tokenMatch[1]!;
     }
     await new Promise<void>((resolve): NodeJS.Timeout => setTimeout(resolve, 500));
   }
-  throw new Error(`No invitation email with /register?token=... found for ${email} after retries`);
+  throw new Error(`No email matching ${linkPatternRegex} found for ${email} after retries`);
+}
+
+export async function fetchLatestTokenFor(
+  apiContext: APIRequestContext,
+  email: string,
+): Promise<string> {
+  return fetchLatestTokenMatching(apiContext, email, /register\?token=([A-Za-z0-9_-]+)/);
+}
+
+export async function fetchLatestResetTokenFor(
+  apiContext: APIRequestContext,
+  email: string,
+): Promise<string> {
+  return fetchLatestTokenMatching(apiContext, email, /reset-password\?token=([A-Za-z0-9_-]+)/);
 }

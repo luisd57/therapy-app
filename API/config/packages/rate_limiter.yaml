@@ -8,3 +8,14 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '1 minute'
+
+# Dev only: the e2e suite drives every public/login endpoint from one container IP,
+# so production-grade limits trip mid-run. Loosen them for APP_ENV=dev (where e2e and
+# manual testing run); test/prod keep the strict limits above.
+when@dev:
+    framework:
+        rate_limiter:
+            api_login:
+                limit: 1000
+            api_public:
+                limit: 1000
