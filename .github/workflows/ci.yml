@@ -141,6 +141,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create empty .env (required by Symfony Dotenv::bootEnv; bind-mounted into php)
+        run: touch API/.env
+
       - name: Start core services
         run: $COMPOSE up -d postgres redis nginx php mailhog dashboard
 
