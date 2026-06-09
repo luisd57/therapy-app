@@ -108,9 +108,9 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index optimisés pour les requêtes de disponibilité |
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
-| Authentification | JWT stateless avec révocation par claim `jti` via Redis. Cookies httpOnly distincts par rôle (`THERAPY_THERAPIST_JWT` / `THERAPY_PATIENT_JWT`). Bearer token pour les clients API. |
+| Authentification | JWT avec révocation par claim `jti` via Redis. Cookie httpOnly unique `THERAPY_JWT` (une session par navigateur ; un login remplace le cookie, le logout le supprime et révoque le `jti`). Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
-| Infrastructure | Docker Compose (9 conteneurs par défaut + 2 conteneurs Playwright sous le profil `e2e` : exécuteur de tests + serveur de rapport HTML), cron planifié, Makefile |
+| Infrastructure | Docker Compose (9 conteneurs par défaut + 3 conteneurs Playwright sous le profil `e2e` : e2e dashboard, e2e landing, serveur de rapport HTML), cron planifié, Makefile |
 
 ---
 
@@ -145,8 +145,9 @@ docker-compose exec php vendor/bin/phpunit --testsuite=Integration
 
 Suite end-to-end qui pilote un vrai Chromium contre le dashboard en cours d'exécution. Exécutée dans un conteneur Docker dédié (`mcr.microsoft.com/playwright:v1.49.1-noble`), aucune installation sur l'hôte.
 
-- Couvre : invitation patient (happy path), régression isolation cookie thérapeute/patient, resend + revoke, et 4 chemins d'erreur (token utilisé, token invalide, email invalide, mots de passe non-correspondants).
+- Couvre : invitation patient (happy path), authentification (login, logout, route guards, réinitialisation de mot de passe), resend + revoke, et 4 chemins d'erreur (token utilisé, token invalide, email invalide, mots de passe non-correspondants).
 - `globalSetup` se connecte une fois en tant que thérapeute et persiste la session via `storageState` — réutilisée par tous les tests pour éviter de saturer le rate limiter (5 logins/min/IP).
+- Exécutée aussi en CI (job `e2e`), qui démarre la stack via `docker-compose.ci.yml`. Une suite e2e distincte couvre le landing (`landing/e2e/`, service `playwright-landing`).
 
 ```bash
 # Lancer la suite E2E complète
@@ -276,6 +277,6 @@ therapy/
 │   │   └── shared/               # Services, guards, interceptors
 │   └── e2e/                      # Tests Playwright (config + fixtures + specs)
 │
-├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 2 services Playwright sous le profil e2e (playwright = tests, playwright-report = serveur HTML du rapport)
+├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 3 services Playwright sous le profil e2e (playwright = e2e dashboard, playwright-landing = e2e landing, playwright-report = serveur HTML du rapport)
 └── Makefile                      # Commandes raccourcies
 ```

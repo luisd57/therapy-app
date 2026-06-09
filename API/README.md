@@ -106,7 +106,7 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 ### Authentication & Secrets
 
 - JWT with `jti`-based revocation via Redis blocklist (`POST /api/auth/logout`)
-- JWT delivered via two role-scoped httpOnly cookies — `THERAPY_THERAPIST_JWT` and `THERAPY_PATIENT_JWT` — so a patient logging in cannot overwrite a therapist's session in the same browser. A custom `MultiCookieTokenExtractor` tries both. Bearer token also supported for API clients (Postman, tests)
+- JWT delivered via a single httpOnly cookie `THERAPY_JWT` (one session per browser — login of either role replaces it; logout clears it and revokes the `jti`). Read by Lexik's built-in cookie token extractor; Bearer token also supported for API clients (Postman, tests)
 - Auth state check endpoint: `GET /api/auth/me` (JWT-protected, used by dashboard on page refresh)
 - CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) — no HTTP endpoint exposed
@@ -609,7 +609,7 @@ Beyond PHPUnit, the dashboard ships with a Playwright E2E suite at `dashboard/e2
 docker-compose --profile e2e run --rm playwright
 ```
 
-The suite covers the full patient-invitation flow (invite → email → register → login), the cookie-isolation regression (proves the two role-scoped JWT cookies don't clobber each other), resend/revoke transitions, and four error paths (used token, garbage token, invalid email, password mismatch). See [`dashboard/e2e/README.md`](../dashboard/e2e/README.md) for setup, env overrides, and per-test breakdown.
+The suite covers the full patient-invitation flow (invite → email → register → login), auth (login, logout, route guards, password reset), resend/revoke transitions, and four error paths (used token, garbage token, invalid email, password mismatch). It also runs in CI (the `e2e` job). See [`dashboard/e2e/README.md`](../dashboard/e2e/README.md) for setup, env overrides, and per-test breakdown.
 
 ## Console Commands
 
@@ -706,7 +706,7 @@ therapy/
 │
 ├── landing/                      # Astro 5 + Svelte 5 public site
 │
-├── docker-compose.yml            # 9 default services + 2 playwright services under profile: e2e (test runner + HTML report server)
+├── docker-compose.yml            # 9 default services + 3 playwright services under profile: e2e (dashboard e2e + landing e2e + HTML report server)
 └── Makefile                      # Shortcut commands (test-db-setup, test, test-unit, etc.)
 ```
 

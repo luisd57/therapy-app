@@ -46,13 +46,15 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
+E2E tests use Playwright and run in a dedicated Docker container (not `ng e2e`).
+From the repo root:
 
 ```bash
-ng e2e
+docker-compose --profile e2e run --rm playwright
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+The suite also runs in CI (the `e2e` job). See [`e2e/README.md`](e2e/README.md) for
+prerequisites, env overrides, reports, and the per-test breakdown.
 
 ## Additional Resources
 
