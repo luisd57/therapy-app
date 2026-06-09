@@ -129,3 +129,99 @@ jobs:
       - name: Build landing
         working-directory: landing
         run: npm run build
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+
+    env:
+      COMPOSE: docker compose -f docker-compose.yml -f docker-compose.ci.yml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare host-mounted paths
+        # API/ is bind-mounted into the php container. .env must exist (Dotenv::bootEnv),
+        # and config/jwt must be writable by the container's symfony user (host-owned dir).
+        run: |
+          touch API/.env
+          mkdir -p API/config/jwt
+          chmod 777 API/config/jwt
+
+      - name: Start core services
+        run: $COMPOSE up -d postgres redis nginx php mailhog dashboard
+
+      - name: Wait for Postgres
+        run: |
+          for i in $(seq 1 30); do
+            if $COMPOSE exec -T postgres pg_isready -U therapy_user -d therapy_db; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Postgres did not become ready" >&2
+          exit 1
+
+      - name: Wait for Redis
+        run: |
+          for i in $(seq 1 30); do
+            if $COMPOSE exec -T redis redis-cli -a therapy_redis_pass ping | grep -q PONG; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Redis did not become ready" >&2
+          exit 1
+
+      - name: Fix volume ownership
+        # Fresh named volumes (php_vendor, php_var) mount empty and root-owned, but
+        # the php container runs as the symfony user — chown so composer/console can write.
+        run: $COMPOSE exec -T --user root php chown -R symfony:symfony /var/www/html/vendor /var/www/html/var
+
+      - name: Install API dependencies
+        run: $COMPOSE exec -T php composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate JWT keypair
+        run: $COMPOSE exec -T php php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
+
+      - name: Create database
+        run: $COMPOSE exec -T php php bin/console doctrine:database:create --if-not-exists --no-interaction
+
+      - name: Run migrations
+        run: $COMPOSE exec -T php php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+
+      - name: Seed therapist + schedule
+        run: |
+          $COMPOSE exec -T php php bin/console app:create-therapist therapist@example.com "Therapist" 'VerifyPass1!'
+          $COMPOSE exec -T php php bin/console app:seed-schedule
+
+      - name: Run dashboard e2e
+        run: $COMPOSE --profile e2e run --rm playwright
+
+      - name: Run landing e2e
+        run: $COMPOSE --profile e2e run --rm playwright-landing
+
+      - name: Upload dashboard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-playwright-report
+          path: |
+            dashboard/playwright-report
+            dashboard/test-results
+          if-no-files-found: ignore
+
+      - name: Upload landing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-playwright-report
+          path: |
+            landing/playwright-report
+            landing/test-results
+          if-no-files-found: ignore
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE down -v

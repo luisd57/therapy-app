@@ -95,4 +95,4 @@ These files are NOT loaded automatically. Reference them with @ when needed:
 - DONE: Therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), Playwright E2E suite for invitation + auth flows (containerized)
 - NEXT: Appointment queue, appointment list
 - TODO: Schedule manager, exception manager, therapist profile, patient area
-### CI: DONE (GitHub Actions — API PHPUnit + dashboard lint+build + landing build; main protected, PRs required, `test` check must pass)
+### CI: DONE (GitHub Actions — `test` job: API PHPUnit + dashboard lint+build + landing build; `e2e` job: dashboard + landing Playwright via docker-compose + `docker-compose.ci.yml`, advisory-only; main protected, PRs required, `test` check must pass)
