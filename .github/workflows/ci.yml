@@ -141,8 +141,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create empty .env (required by Symfony Dotenv::bootEnv; bind-mounted into php)
-        run: touch API/.env
+      - name: Prepare host-mounted paths
+        # API/ is bind-mounted into the php container. .env must exist (Dotenv::bootEnv),
+        # and config/jwt must be writable by the container's symfony user (host-owned dir).
+        run: |
+          touch API/.env
+          mkdir -p API/config/jwt
+          chmod 777 API/config/jwt
 
       - name: Start core services
         run: $COMPOSE up -d postgres redis nginx php mailhog dashboard
