@@ -1,0 +1,28 @@
+# CI override: injects the env vars the gitignored dev .env supplies on a developer
+# machine. Used only in GitHub Actions, layered on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.ci.yml ...
+# APP_ENV=dev is required so the when@dev rate-limiter relaxation applies (the e2e
+# suite drives every endpoint from one runner IP). REDIS_URL must carry the password
+# the redis container enforces; MAILER_DSN points at MailHog because the dashboard
+# specs read invitation/reset tokens from it.
+services:
+  php:
+    environment:
+      - APP_ENV=dev
+      - APP_SECRET=ci_secret_for_e2e_only
+      - DATABASE_URL=postgresql://therapy_user:therapy_pass@postgres:5432/therapy_db?serverVersion=16&charset=utf8
+      - REDIS_URL=redis://:therapy_redis_pass@redis:6379
+      - MAILER_DSN=smtp://mailhog:1025
+      - JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+      - JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+      - JWT_PASSPHRASE=therapy_jwt_passphrase
+      - JWT_TOKEN_TTL=28800
+      - JWT_COOKIE_SECURE=false
+      - APP_FRONTEND_URL=http://localhost:4200
+      - INVITATION_TOKEN_TTL=86400
+      - PASSWORD_RESET_TOKEN_TTL=3600
+      - DEFAULT_URI=http://localhost
+      - TRUSTED_PROXIES=127.0.0.1
+      - APPOINTMENT_DURATION_MINUTES=50
+      - SLOT_LOCK_TTL=600
+      - CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$
