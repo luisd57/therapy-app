@@ -15,6 +15,9 @@ using the official `mcr.microsoft.com/playwright:v1.49.1-noble` image:
   first run does an `npm install` and later runs reuse the cache.
 - Kept out of the default `docker-compose up` via `profiles: [e2e]`.
 
+The same suite also runs in CI (the `e2e` job in [.github/workflows/ci.yml](../../.github/workflows/ci.yml)),
+which stands up the stack via `docker-compose.ci.yml` and seeds the therapist + schedule before running.
+
 ## Prerequisites
 
 1. **Docker stack up**: `docker-compose up -d` (brings up `dashboard`, `php`,
@@ -72,7 +75,6 @@ docker-compose --profile e2e run --rm playwright \
 | File                                       | What it covers                                          |
 |--------------------------------------------|---------------------------------------------------------|
 | `invitation-happy-path.spec.ts`            | Invite → register → list refreshes on visibility change |
-| `invitation-cookie-isolation.spec.ts`      | F1 regression: patient login in 2nd tab keeps therapist session alive |
 | `invitation-resend-revoke.spec.ts`         | Row state transitions (Pending → Revoked, new Pending after resend) |
 | `invitation-errors.spec.ts`                | Used token, garbage token, bad email, password mismatch |
 | `auth-login.spec.ts`                       | Therapist login happy path, bad credentials, form validation |
