@@ -11,9 +11,9 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-Application web (en développement) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
+Application web (en phase de mise en production) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
 
-Projet conçu après d'un cas réel : Cabinet Thérapeutique avec un besoin de solution logiciel.
+Projet conçu d'après un cas réel : Cabinet Thérapeutique avec un besoin de solution logicielle.
 
 ---
 
@@ -208,7 +208,7 @@ docker-compose exec php php bin/console cache:clear --env=test
 }
 ```
 
-Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et paiements.
+Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et suivi du règlement (marquage manuel — les paiements sont réglés hors application)
 
 Une **collection Postman** complète est incluse dans [`API/postman/`](API/postman/) avec variables pré-configurées et scripts de test.
 
