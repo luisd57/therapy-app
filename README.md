@@ -106,7 +106,7 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Backend | PHP 8.4 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
 | Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
-| Base de données | PostgreSQL 16, clés primaires UUID, index optimisés pour les requêtes de disponibilité |
+| Base de données | PostgreSQL 16, clés primaires UUID, index composites sur les requêtes de disponibilité  pour les requêtes de disponibilité |
 | Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
 | Authentification | JWT avec révocation par claim `jti` via Redis. Cookie httpOnly unique `THERAPY_JWT` (une session par navigateur ; un login remplace le cookie, le logout le supprime et révoque le `jti`). Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
