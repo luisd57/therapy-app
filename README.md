@@ -13,7 +13,7 @@
 
 Application web (en phase de mise en production) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
 
-Projet conçu d'après un cas réel : Cabinet Thérapeutique avec un besoin de solution logicielle.
+Projet conçu à partir d'un besoin réel : le cabinet d'une psychothérapeute, sans outil de gestion.
 
 ---
 
@@ -23,7 +23,7 @@ Projet conçu d'après un cas réel : Cabinet Thérapeutique avec un besoin de s
 
 - Consultation des créneaux disponibles en temps réel, filtrables par modalité (en ligne / en personne)
 - Formulaire de prise de rendez-vous avec email de confirmation automatique
-- Inscription patient sur invitation uniquement (lien signé, durée limitée)
+- Inscription patient sur invitation uniquement (lien à usage unique, durée limitée)
 - Réinitialisation de mot de passe par email
 
 **Côté thérapeute**
@@ -106,8 +106,8 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Backend | PHP 8.4 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
 | Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
-| Base de données | PostgreSQL 16, clés primaires UUID, index composites sur les requêtes de disponibilité  pour les requêtes de disponibilité |
-| Cache / Messaging | Redis 7 — blocklist JWT (`jti`), expiration automatique |
+| Base de données | PostgreSQL 16, clés primaires UUID, index composites pour les requêtes de disponibilité |
+| Cache / Sessions | Redis 7 — blocklist JWT (`jti`), expiration automatique |
 | Authentification | JWT avec révocation par claim `jti` via Redis. Cookie httpOnly unique `THERAPY_JWT` (une session par navigateur ; un login remplace le cookie, le logout le supprime et révoque le `jti`). Bearer token pour les clients API. |
 | Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
 | Infrastructure | Docker Compose (9 conteneurs par défaut + 3 conteneurs Playwright sous le profil `e2e` : e2e dashboard, e2e landing, serveur de rapport HTML), cron planifié, Makefile |
@@ -175,7 +175,8 @@ Documentation détaillée : [`dashboard/e2e/README.md`](dashboard/e2e/README.md)
 
 ```bash
 # Créer le compte thérapeute (un seul autorisé)
-docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Nom" "motdepasse"
+# Le mot de passe doit contenir majuscule, minuscule, chiffre et caractère spécial (8-72 caractères)
+docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Nom" "MotDePasse1!"
 
 # Nettoyer les tokens expirés (invitations + reset password)
 docker-compose exec php php bin/console app:cleanup-tokens
@@ -208,7 +209,7 @@ docker-compose exec php php bin/console cache:clear --env=test
 }
 ```
 
-Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et suivi du règlement (marquage manuel — les paiements sont réglés hors application)
+Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et suivi du règlement (marquage manuel — les paiements sont réglés hors application).
 
 Une **collection Postman** complète est incluse dans [`API/postman/`](API/postman/) avec variables pré-configurées et scripts de test.
 
@@ -221,10 +222,18 @@ Pour la référence complète des endpoints, voir le [README de l'API](API/READM
 **Prérequis** : Docker Desktop
 
 ```bash
-git clone <repo-url> && cd therapy
+git clone <repo-url> && cd therapy-app
+
+# Variables d'environnement (le .env est gitignoré)
+cp API/.env.example API/.env
+
 docker-compose up -d --build
+
+# Générer la paire de clés JWT (les .pem sont gitignorés)
+docker-compose exec php php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
+
 docker-compose exec php php bin/console doctrine:migrations:migrate --no-interaction
-docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Nom" "motdepasse"
+docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Nom" "MotDePasse1!"
 ```
 
 | Service | URL |
