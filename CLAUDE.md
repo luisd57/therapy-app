@@ -1,21 +1,23 @@
-1. Ask, don't assume. If something is unclear, ask before writing a single line. Never make silent assumptions about intent, architecture, or requirements.
+Deliver what was asked, at the scope intended. Make routine judgment calls yourself, and check
+in only when different readings of the request would lead to materially different work. If the
+request seems mistaken or a better approach exists, say so in a sentence and continue with the
+task as asked rather than quietly narrowing or widening it.
 
-2. Simplest solution first. Always implement the simplest thing that could work. Do not add abstractions or flexibility that weren't explicitly requested.
+Keep responses focused and brief, and lead with the outcome. Match written documents to what
+the task needs — no filler sections or redundant summaries.
 
-3. Don't touch unrelated code. If a file or function is not directly part of the current task, do not modify it, even if you think it could be improved.
+Delegate to a subagent only for large, genuinely independent investigations. Don't delegate work
+you can finish in a handful of tool calls, and don't use subagents to double-check your own work.
 
-4. Flag uncertainty explicitly. If you are not confident about an approach or technical detail, say so before proceeding. Confidence without certainty causes more damage than admitting a gap.
+## Process Skills (Superpowers)
+
+Brainstorming, TDD, and systematic debugging come from the Superpowers plugin — invoke those
+skills; do NOT restate their guidance here. Keep this file and `.claude/rules/` focused on
+project facts and conventions Superpowers doesn't cover.
 
 # Therapy Practice Management System
 
 Single-therapist practice. Visitors and patients can browse slots and submit appointment requests. Therapist manages schedules, confirms/cancels appointments, onboards patients via invitation-only registration. Payments verified manually.
-
-## Workflow Rules
-
-When the user says "/done" or indicates a feature/milestone is complete:
-1. Update the "Implementation Status" section at the bottom of this file
-2. If the work revealed reusable patterns or gotchas, suggest updating auto-memory (but ask first)
-3. Do NOT update .claude/rules/ files unless explicitly asked
 
 ## Project Structure
 
@@ -28,8 +30,10 @@ When the user says "/done" or indicates a feature/milestone is complete:
 ```bash
 docker-compose up -d                          # Start all containers
 docker-compose exec php bash                  # Shell into PHP container
-docker-compose exec php vendor/bin/phpunit    # Run all tests
+make test                                     # Full suite
 ```
+
+The check that proves the tree is green: `make test`.
 
 | Service   | URL                          |
 |-----------|------------------------------|
@@ -69,8 +73,7 @@ CANCELLED      CANCELLED
 {"success": true, "data": [...], "pagination": {"page": 1, "limit": 20, "total": 42, "total_pages": 3}}
 ```
 
-- Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients)
-- Dates: ISO-8601 throughout
+Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: ISO-8601 throughout.
 
 ## Key Business Rules
 
@@ -87,12 +90,10 @@ These files are NOT loaded automatically. Reference them with @ when needed:
 - `@API/Product-Requirements.md` — feature specs and implementation status
 - `@API/postman/Therapy_App_API.postman_collection.json` — API contract with example requests/responses
 
-## Implementation Status
+## Adding Project-Specific Rules
 
-### API: DONE (all endpoints implemented and tested; post-review security cleanups 2026-05-28; auth reverted to single-session `THERAPY_JWT` cookie 2026-06-03)
-### Landing: IN PROGRESS (slot browser + request form; Playwright E2E suite for reservation flow, containerized)
-### Dashboard:
-- DONE: Therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), Playwright E2E suite for invitation + auth flows (containerized)
-- NEXT: Appointment queue, appointment list
-- TODO: Schedule manager, exception manager, therapist profile, patient area
-### CI: DONE (GitHub Actions — `test` job: API PHPUnit + dashboard lint+build + landing build; `e2e` job: dashboard + landing Playwright via docker-compose + `docker-compose.ci.yml`, advisory-only; main protected, PRs required, `test` check must pass)
+Stack/architecture conventions go in `.claude/rules/*.md`. Add `paths:` frontmatter to scope a rule to matching files (lazy-loaded); omit it for always-on rules. Repeatable multi-step workflows go in `.claude/skills/` instead. Follow `.claude/rules/documentation-style.md`.
+
+## Status
+
+Current per-component status: `docs/STATUS.md`. Read it when the state of an unfinished component matters; the `/done` skill updates it.
