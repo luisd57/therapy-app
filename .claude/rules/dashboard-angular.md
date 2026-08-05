@@ -4,7 +4,7 @@ paths:
   - dashboard/src/**/*.html
   - dashboard/src/**/*.scss
 ---
-# Angular Dashboard Conventions
+# Angular Dashboard Structure
 
 ## Domain-Based Folder Structure
 
@@ -69,15 +69,3 @@ Kebab-case for all files/folders. One component/service/store per file. No `inde
 - Services: HTTP/API interaction (`<domain>.service.ts`)
 - Stores: Reactive state with signals (`<domain>.store.ts`)
 - Only smart components (feature/) may inject from data-access/
-
-## Angular 21 Standards
-- All components standalone — NO NgModules, no `.module.ts` files
-- Signal APIs: `input()`, `output()`, `model()` — NOT `@Input()`, `@Output()`
-- `inject()` function — NOT constructor injection
-- State: `signal()`, `computed()`, `linkedSignal()`, `resource()` / `httpResource()`
-- Control flow: `@if`, `@for`, `@switch` — NOT `*ngIf`, `*ngFor`, `*ngSwitch`
-- Zoneless by default — no Zone.js
-- Functional providers in `app.config.ts`: `provideRouter()`, `provideHttpClient()`
-- Vitest for testing — NOT Karma/Jasmine
-- Signal Forms (`@angular/forms/signals`) for new forms
-- Prefer `[class]` / `[style]` bindings over `NgClass` / `NgStyle`

@@ -31,7 +31,8 @@ dist/
 # Personal scripts
 *.bat
 
-# Local docs (specs, plans, scratch)
-docs/
+# Local docs (specs, plans, scratch) — STATUS.md is tracked
+docs/*
+!docs/STATUS.md
 
 Reusable/

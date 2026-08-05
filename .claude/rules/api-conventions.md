@@ -8,7 +8,7 @@ paths:
 - `declare(strict_types=1);` in every file
 - Constructor Property Promotion: always
 - Readonly properties for immutable data
-- `final` for classes not intended for inheritance
+- `final` for classes not intended for inheritance (Doctrine entities are NEVER `final` — proxying)
 - Always declare return types
 
 ## Method Parameters
@@ -47,6 +47,12 @@ paths:
 ## Value Objects
 - Static factories: `fromString()`, `create()`, `generate()`
 - Private constructors, immutable (readonly), self-validating
+
+## Validation (deliberate, do not "fix")
+- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array via `ValidatesRequestTrait` (422, `details` = field → first message). Value Objects are the real guard — attribute validation duplicates their rules and drifts out of sync with them.
+
+## Errors (deliberate, do not "fix")
+- NO kernel exception listener. Each action catches the specific domain exceptions it can produce — a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.
 
 ## API Responses
 - Use `ApiResponseTrait` for consistent envelope format
