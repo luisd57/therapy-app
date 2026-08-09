@@ -4,6 +4,8 @@ parameters:
     app.invitation_ttl: '%env(int:INVITATION_TOKEN_TTL)%'
     app.password_reset_ttl: '%env(int:PASSWORD_RESET_TOKEN_TTL)%'
     app.appointment_duration_minutes: '%env(int:APPOINTMENT_DURATION_MINUTES)%'
+    app.slot_start_increment_minutes: '%env(int:SLOT_START_INCREMENT_MINUTES)%'
+    app.practice_timezone: '%env(PRACTICE_TIMEZONE)%'
     app.slot_lock_ttl: '%env(int:SLOT_LOCK_TTL)%'
     app.jwt_cookie_secure: '%env(bool:JWT_COOKIE_SECURE)%'
 
@@ -98,7 +100,20 @@ services:
         class: App\Infrastructure\Persistence\Doctrine\Appointment\Repository\DoctrineSlotLockRepository
 
     App\Domain\Appointment\Service\AvailabilityComputerInterface:
+        # `class:` is only safe because AvailabilityComputer takes no constructor
+        # arguments — slot rules are passed per call. Anything with an explicit
+        # `arguments:` block must use `alias:` instead (see below).
         class: App\Domain\Appointment\Service\AvailabilityComputer
+
+    App\Infrastructure\Config\EnvPracticeTimezoneProvider:
+        arguments:
+            $practiceTimezone: '%app.practice_timezone%'
+
+    # `alias:`, NOT `class:` — `class:` would create a second definition under the
+    # interface id that does not inherit the arguments block above, leaving
+    # $practiceTimezone unresolved and failing container compilation.
+    App\Domain\Appointment\Service\PracticeTimezoneProviderInterface:
+        alias: App\Infrastructure\Config\EnvPracticeTimezoneProvider
 
     App\Infrastructure\Email\Appointment\AppointmentEmailSender:
         arguments:
