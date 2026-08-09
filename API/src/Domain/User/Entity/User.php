@@ -34,10 +34,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isActive = false;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $activatedAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: 'utc_datetime_immutable')]
     private DateTimeImmutable $updatedAt;
 
     public function __construct(
@@ -50,7 +50,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         private readonly string $fullName,
         #[ORM\Column(type: Types::STRING, length: 50, enumType: UserRole::class)]
         private readonly UserRole $role,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->updatedAt = $createdAt;

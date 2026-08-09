@@ -20,7 +20,7 @@ class TherapistSchedule
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isActive = true;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: 'utc_datetime_immutable')]
     private DateTimeImmutable $updatedAt;
 
     public function __construct(
@@ -39,7 +39,7 @@ class TherapistSchedule
         private bool $supportsOnline,
         #[ORM\Column(type: Types::BOOLEAN)]
         private bool $supportsInPerson,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->updatedAt = $createdAt;

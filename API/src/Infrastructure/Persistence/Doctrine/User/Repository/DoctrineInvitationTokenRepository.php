@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Clock\ClockInterface;
+use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrineInvitationTokenRepository implements InvitationTokenRepositoryInterface
 {
@@ -54,7 +55,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->andWhere('t.isRevoked = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('email', $email->getValue())
-            ->setParameter('now', $this->clock->now())
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -71,7 +72,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->where('t.isUsed = false')
             ->andWhere('t.isRevoked = false')
             ->andWhere('t.expiresAt > :now')
-            ->setParameter('now', $this->clock->now())
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->orderBy('t.createdAt', 'DESC');
 
         return new ArrayCollection($qb->getQuery()->getResult());
@@ -105,7 +106,7 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(InvitationToken::class, 't')
             ->where('t.expiresAt < :now')
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);
 
         return $qb->getQuery()->execute();
     }

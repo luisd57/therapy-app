@@ -11,6 +11,7 @@ use App\Domain\User\Id\UserId;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Clock\ClockInterface;
+use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRepositoryInterface
 {
@@ -52,7 +53,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->andWhere('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('userId', $userId->getValue())
-            ->setParameter('now', $this->clock->now())
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -73,7 +74,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(PasswordResetToken::class, 't')
             ->where('t.expiresAt < :now')
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);
 
         return $qb->getQuery()->execute();
     }
@@ -87,7 +88,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->where('t.userId = :userId')
             ->andWhere('t.isUsed = false')
             ->setParameter('userId', $userId->getValue())
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);
 
         $qb->getQuery()->execute();
     }

@@ -13,6 +13,9 @@ doctrine:
             slot_lock_id: App\Infrastructure\Persistence\Doctrine\Type\SlotLockIdType
             token_id: App\Infrastructure\Persistence\Doctrine\Type\TokenIdType
             hashed_string: App\Infrastructure\Persistence\Doctrine\Type\HashedStringType
+            # Every instant column uses this instead of datetime_immutable —
+            # see the type's docblock for why the stock one loses the offset.
+            utc_datetime_immutable: App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType
     orm:
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware

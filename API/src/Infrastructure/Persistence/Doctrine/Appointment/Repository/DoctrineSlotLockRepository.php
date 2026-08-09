@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
+use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
 {
@@ -46,9 +47,9 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
             ->where('l.timeSlot.startTime < :to')
             ->andWhere('l.timeSlot.endTime > :from')
             ->andWhere('l.expiresAt > :now')
-            ->setParameter('from', $from)
-            ->setParameter('to', $to)
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('from', $from, UtcDateTimeImmutableType::NAME)
+            ->setParameter('to', $to, UtcDateTimeImmutableType::NAME)
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);
 
         return new ArrayCollection($qb->getQuery()->getResult());
     }
@@ -63,9 +64,9 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
             ->where('l.timeSlot.startTime < :end')
             ->andWhere('l.timeSlot.endTime > :start')
             ->andWhere('l.expiresAt > :now')
-            ->setParameter('start', $slotStart)
-            ->setParameter('end', $slotEnd)
-            ->setParameter('now', $this->clock->now())
+            ->setParameter('start', $slotStart, UtcDateTimeImmutableType::NAME)
+            ->setParameter('end', $slotEnd, UtcDateTimeImmutableType::NAME)
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
         return $qb->getQuery()->getOneOrNullResult();
@@ -91,7 +92,7 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
         $qb = $this->entityManager->createQueryBuilder();
         $qb->delete(SlotLock::class, 'l')
             ->where('l.expiresAt < :now')
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);
 
         return $qb->getQuery()->execute();
     }

@@ -25,9 +25,9 @@ class SlotLock
         private readonly AppointmentModality $modality,
         #[ORM\Column(type: 'hashed_string', length: 255, unique: true)]
         private readonly string $lockToken,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }

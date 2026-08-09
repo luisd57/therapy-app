@@ -17,7 +17,7 @@ class PasswordResetToken
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isUsed = false;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
     public function __construct(
@@ -28,9 +28,9 @@ class PasswordResetToken
         private readonly string $token,
         #[ORM\Column(type: 'user_id')]
         private readonly UserId $userId,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }

@@ -18,13 +18,13 @@ class InvitationToken
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $isUsed = false;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $usedAt = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isRevoked = false;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $revokedAt = null;
 
     public function __construct(
@@ -39,9 +39,9 @@ class InvitationToken
         private readonly string $patientName,
         #[ORM\Column(type: 'user_id')]
         private readonly UserId $invitedBy,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $expiresAt,
     ) {
     }

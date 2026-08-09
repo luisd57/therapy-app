@@ -26,7 +26,7 @@ class Appointment
     #[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentStatus::class)]
     private AppointmentStatus $status;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: 'utc_datetime_immutable')]
     private DateTimeImmutable $updatedAt;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
@@ -52,7 +52,7 @@ class Appointment
         private readonly string $country,
         #[ORM\Column(type: 'user_id', nullable: true)]
         private readonly ?UserId $patientId,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->status = AppointmentStatus::REQUESTED;
