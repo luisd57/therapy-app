@@ -11,6 +11,7 @@ use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
+use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -54,9 +55,22 @@ class Appointment
         private readonly ?UserId $patientId,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
+        /**
+         * The zone the requester was in when they booked. Nullable because it
+         * cannot be recovered for appointments made before it was captured, and
+         * defaulting to the practice zone would be inventing data. Readers fall
+         * back to the practice zone when it is absent.
+         */
+        #[ORM\Column(type: 'timezone', length: 64, nullable: true)]
+        private readonly ?Timezone $requesterTimezone = null,
     ) {
         $this->status = AppointmentStatus::REQUESTED;
         $this->updatedAt = $createdAt;
+    }
+
+    public function getRequesterTimezone(): ?Timezone
+    {
+        return $this->requesterTimezone;
     }
 
     public static function request(
@@ -70,6 +84,7 @@ class Appointment
         string $country,
         DateTimeImmutable $now,
         ?UserId $patientId = null,
+        ?Timezone $requesterTimezone = null,
     ): self {
         if (trim($fullName) === '') {
             throw new \InvalidArgumentException('Full name is required.');
@@ -94,6 +109,7 @@ class Appointment
             country: trim($country),
             patientId: $patientId,
             createdAt: $now,
+            requesterTimezone: $requesterTimezone,
         );
     }
 
@@ -108,6 +124,7 @@ class Appointment
         string $country,
         DateTimeImmutable $now,
         ?UserId $patientId = null,
+        ?Timezone $requesterTimezone = null,
     ): self {
         if (trim($fullName) === '') {
             throw new \InvalidArgumentException('Full name is required.');
@@ -132,6 +149,7 @@ class Appointment
             country: trim($country),
             patientId: $patientId,
             createdAt: $now,
+            requesterTimezone: $requesterTimezone,
         );
 
         $appointment->status = AppointmentStatus::CONFIRMED;
@@ -260,6 +278,7 @@ class Appointment
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
         bool $paymentVerified = false,
+        ?Timezone $requesterTimezone = null,
     ): self {
         $appointment = new self(
             id: $id,
@@ -272,6 +291,7 @@ class Appointment
             country: $country,
             patientId: $patientId,
             createdAt: $createdAt,
+            requesterTimezone: $requesterTimezone,
         );
 
         $appointment->status = $status;

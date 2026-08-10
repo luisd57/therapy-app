@@ -22,6 +22,7 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
+use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -55,6 +56,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         string $country,
         ?string $lockToken = null,
         ?string $patientId = null,
+        ?string $requesterTimezone = null,
     ): AppointmentOutputDTO {
         $now = $this->clock->now();
         $startTime = new DateTimeImmutable($slotStartTime);
@@ -99,6 +101,9 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             country: $country,
             now: $now,
             patientId: $patientUserId,
+            requesterTimezone: $requesterTimezone !== null
+                ? Timezone::fromString($requesterTimezone)
+                : null,
         );
 
         $this->appointmentRepository->save($appointment);

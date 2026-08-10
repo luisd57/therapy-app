@@ -54,6 +54,7 @@ final class PatientAppointmentController extends AbstractController
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
                 lockToken: $data['lock_token'] ?? null,
+                requesterTimezone: $data['timezone'] ?? null,
             ));
 
             $patientData = array_intersect_key($result->toArray(), array_flip([
@@ -89,6 +90,10 @@ final class PatientAppointmentController extends AbstractController
             $errors['slot_start_time'] = $slotViolations[0]->getMessage();
         } elseif (!$this->isValidInstant($data['slot_start_time'])) {
             $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
+        }
+
+        if (isset($data['timezone']) && !$this->isValidTimezone((string) $data['timezone'])) {
+            $errors['timezone'] = 'Timezone must be an IANA identifier, e.g. Europe/Madrid';
         }
 
         $modalityViolations = $this->validator->validate($data['modality'] ?? '', [

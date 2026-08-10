@@ -15,6 +15,7 @@ final readonly class RequestAppointmentInputDTO
         public string $city,
         public string $country,
         public ?string $lockToken = null,
+        public ?string $requesterTimezone = null,
     ) {
     }
 }

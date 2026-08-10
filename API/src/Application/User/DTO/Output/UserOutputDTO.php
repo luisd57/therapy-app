@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\User\Entity\User;
 
 final readonly class UserOutputDTO
@@ -18,6 +19,7 @@ final readonly class UserOutputDTO
         public ?AddressOutputDTO $address,
         public string $createdAt,
         public ?string $activatedAt,
+        public ?string $timezone = null,
     ) {
     }
 
@@ -33,8 +35,9 @@ final readonly class UserOutputDTO
             address: $user->getAddress()
                 ? AddressOutputDTO::fromValueObject($user->getAddress())
                 : null,
-            createdAt: $user->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            activatedAt: $user->getActivatedAt()?->format(\DateTimeInterface::ATOM),
+            createdAt: InstantFormatter::toAtomUtc($user->getCreatedAt()),
+            activatedAt: InstantFormatter::toAtomUtc($user->getActivatedAt()),
+            timezone: $user->getTimezone()?->getValue(),
         );
     }
 
@@ -53,6 +56,7 @@ final readonly class UserOutputDTO
             'address' => $this->address?->toArray(),
             'created_at' => $this->createdAt,
             'activated_at' => $this->activatedAt,
+            'timezone' => $this->timezone,
         ];
     }
 }

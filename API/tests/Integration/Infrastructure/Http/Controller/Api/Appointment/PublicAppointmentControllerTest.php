@@ -212,6 +212,53 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->assertFalse($data['success']);
     }
 
+    // ── requester timezone ───────────────────────────────────────────────
+
+    public function testRequestAppointmentRecordsTheRequestersTimezone(): void
+    {
+        $this->freezeClock('2026-05-30 09:00:00');
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            // The same instant the browse response gave, expressed in the
+            // requester's own offset — Madrid in summer is UTC+2.
+            'slot_start_time' => '2026-06-01T15:30:00+02:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Ana Torres',
+            'phone' => '+34600000000',
+            'email' => 'ana@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+            'timezone' => 'Europe/Madrid',
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $appointment = $this->getResponseData()['data']['appointment'];
+        $this->assertSame('2026-06-01T13:30:00+00:00', $appointment['start_time']);
+    }
+
+    public function testRequestAppointmentRejectsAFixedOffsetAsTimezone(): void
+    {
+        $this->freezeClock('2026-05-30 09:00:00');
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Ana Torres',
+            'phone' => '+34600000000',
+            'email' => 'ana@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+            // Carries no daylight-saving rules, so it would be wrong half the year.
+            'timezone' => '+02:00',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertArrayHasKey('timezone', $this->getResponseData()['error']['details']);
+    }
+
     // ── instant contract ─────────────────────────────────────────────────
 
     /**

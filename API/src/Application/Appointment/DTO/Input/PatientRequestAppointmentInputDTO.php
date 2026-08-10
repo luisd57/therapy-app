@@ -11,6 +11,7 @@ final readonly class PatientRequestAppointmentInputDTO
         public string $slotStartTime,
         public string $modality,
         public ?string $lockToken = null,
+        public ?string $requesterTimezone = null,
     ) {
     }
 }

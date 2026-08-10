@@ -7,6 +7,7 @@ namespace App\Domain\User\Entity;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
+use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use DateTimeImmutable;
@@ -39,6 +40,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'utc_datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
+    /**
+     * The patient's usual zone, so the therapist can see what time an
+     * appointment is for them. Each appointment also records the zone reported
+     * at booking, since people travel.
+     */
+    #[ORM\Column(type: 'timezone', length: 64, nullable: true)]
+    private ?Timezone $timezone = null;
 
     public function __construct(
         #[ORM\Id]
@@ -138,15 +147,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->updatedAt = $now;
     }
 
-    public function updateProfile(?Phone $phone, ?Address $address, DateTimeImmutable $now): void
-    {
+    public function updateProfile(
+        ?Phone $phone,
+        ?Address $address,
+        DateTimeImmutable $now,
+        ?Timezone $timezone = null,
+    ): void {
         if ($phone !== null) {
             $this->phone = $phone;
         }
         if ($address !== null) {
             $this->address = $address;
         }
+        if ($timezone !== null) {
+            $this->timezone = $timezone;
+        }
         $this->updatedAt = $now;
+    }
+
+    public function getTimezone(): ?Timezone
+    {
+        return $this->timezone;
     }
 
     public function updatePhone(Phone $phone, DateTimeImmutable $now): void
@@ -245,6 +266,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         DateTimeImmutable $createdAt,
         ?DateTimeImmutable $activatedAt,
         DateTimeImmutable $updatedAt,
+        ?Timezone $timezone = null,
     ): self {
         $user = new self(
             id: $id,
@@ -260,6 +282,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $user->isActive = $isActive;
         $user->activatedAt = $activatedAt;
         $user->updatedAt = $updatedAt;
+        $user->timezone = $timezone;
 
         return $user;
     }

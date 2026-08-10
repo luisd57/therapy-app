@@ -121,6 +121,7 @@ final class PublicAppointmentController extends AbstractController
                 city: $data['city'],
                 country: $data['country'],
                 lockToken: $data['lock_token'] ?? null,
+                requesterTimezone: $data['timezone'] ?? null,
             ));
 
             $publicData = array_intersect_key($result->toArray(), array_flip([
@@ -227,6 +228,12 @@ final class PublicAppointmentController extends AbstractController
 
         if (count($modalityViolations) > 0) {
             $errors['modality'] = $modalityViolations[0]->getMessage();
+        }
+
+        // Optional — older clients omit it — but a fixed offset is rejected
+        // outright, since it carries no daylight-saving rules.
+        if (isset($data['timezone']) && !$this->isValidTimezone((string) $data['timezone'])) {
+            $errors['timezone'] = 'Timezone must be an IANA identifier, e.g. Europe/Madrid';
         }
 
         $nameViolations = $this->validator->validate($data['full_name'] ?? '', [
