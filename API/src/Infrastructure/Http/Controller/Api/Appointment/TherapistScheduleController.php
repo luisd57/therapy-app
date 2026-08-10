@@ -269,8 +269,8 @@ final class TherapistScheduleController extends AbstractController
 
         if (count($startViolations) > 0) {
             $errors['start_date_time'] = $startViolations[0]->getMessage();
-        } elseif (!$this->isValidDateTime($data['start_date_time'])) {
-            $errors['start_date_time'] = 'Start date/time must be a valid ISO-8601 datetime';
+        } elseif (!$this->isValidInstant($data['start_date_time'])) {
+            $errors['start_date_time'] = 'Start date/time must be an ISO-8601 instant with a UTC offset';
         }
 
         $endViolations = $this->validator->validate($data['end_date_time'] ?? '', [
@@ -279,11 +279,16 @@ final class TherapistScheduleController extends AbstractController
 
         if (count($endViolations) > 0) {
             $errors['end_date_time'] = $endViolations[0]->getMessage();
-        } elseif (!$this->isValidDateTime($data['end_date_time'])) {
-            $errors['end_date_time'] = 'End date/time must be a valid ISO-8601 datetime';
+        } elseif (!$this->isValidInstant($data['end_date_time'])) {
+            $errors['end_date_time'] = 'End date/time must be an ISO-8601 instant with a UTC offset';
         }
 
-        if (empty($errors) && ($data['start_date_time'] ?? '') >= ($data['end_date_time'] ?? '')) {
+        // Compare instants, not strings. Lexically '09:00:00-04:00' sorts before
+        // '10:00:00+14:00' while being four hours later on the timeline, so a
+        // string comparison would wave an inverted range through.
+        if (empty($errors)
+            && new \DateTimeImmutable($data['start_date_time']) >= new \DateTimeImmutable($data['end_date_time'])
+        ) {
             $errors['end_date_time'] = 'End date/time must be after start date/time';
         }
 

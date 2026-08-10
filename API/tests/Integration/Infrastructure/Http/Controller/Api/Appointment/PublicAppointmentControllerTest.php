@@ -198,6 +198,82 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->assertFalse($data['success']);
     }
 
+    // ── instant contract ─────────────────────────────────────────────────
+
+    /**
+     * A datetime with no offset would have to be guessed against some zone.
+     * Guessing is exactly the ambiguity this contract removes, so it is a 422
+     * rather than a silent reinterpretation.
+     */
+    public function testLockSlotRejectsADatetimeWithoutAnOffset(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:00:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertFalse($data['success']);
+        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+    }
+
+    public function testRequestAppointmentRejectsADatetimeWithoutAnOffset(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => 'john@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+    }
+
+    public function testLockSlotAcceptsZuluAndOffsetFormsAsTheSameInstant(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        // 13:30 UTC and 09:30-04:00 are the same moment, so the second must
+        // collide with the first rather than being treated as a different slot.
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T13:30:00Z',
+            'modality' => 'ONLINE',
+        ]);
+        $this->assertResponseStatusCodeSame(201);
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    /**
+     * createFromFormat rolls 2026-02-31 forward into March instead of failing,
+     * so the validator needs a round-trip check on top of it.
+     */
+    public function testLockSlotRejectsACalendarDateThatDoesNotExist(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-02-31T09:00:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
     // ── next-available-week ────────────────────────────────────────────
 
     public function testNextAvailableWeekReturns200WithSchedule(): void
