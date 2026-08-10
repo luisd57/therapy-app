@@ -1,7 +1,7 @@
 ---
 name: done
 description: Record a completed feature or milestone in docs/STATUS.md
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Update `docs/STATUS.md` for the component just finished — one line, no description.
