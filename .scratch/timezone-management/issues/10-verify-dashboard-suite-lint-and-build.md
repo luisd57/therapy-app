@@ -3,11 +3,11 @@
 **What to build:** Confirmation that the dashboard still works after being
 translated and given timezone-aware date rendering.
 
-**None of this was run in the session that produced this work** — not the
-end-to-end suite, not lint, not the build. The dashboard was untouched by the
-timezone changes at the time, but tickets 06 and 07 change every template that
-renders a date and most that render copy, so assertions matching on visible text
-are likely to break.
+All three currently pass — the dashboard was untouched by the timezone work, so
+this is a baseline rather than a result. Tickets 06 and 07 change every template
+that renders a date and most that render copy, so assertions matching on visible
+text are likely to break once they land. That is what this ticket exists to
+absorb.
 
 Separated from ticket 09 on purpose: folding both suites into one verification
 step would have made the public site's timezone verification wait on the Spanish

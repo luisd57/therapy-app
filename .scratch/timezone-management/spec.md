@@ -271,22 +271,28 @@ handlers resolve the clock lazily at dispatch.
 
 ### Verification status — read before trusting any test result
 
-**The e2e suites have NOT been run in the session that produced this branch, and
-are unverified against these changes.** Two suites are affected:
+Everything ran green in continuous integration on the merge: the API PHPUnit
+suite, both Playwright suites, dashboard lint and build, and the landing Vitest
+suite.
 
-- the **dashboard** Playwright suite
-- the **landing** Playwright suite
+**A green Playwright run does not mean timezone behaviour is verified, and it
+would be a mistake to read it that way.** The suites were expected to fail and
+did not, for a reason worth recording: they are coupled to the *flow*, not to
+times. They assert that a Slot button exists — matched on the text "min", which
+matches any duration — and that a reservation completes. They never referenced
+the grouped-by-date response shape that was removed.
 
-Both depend on the seeded schedule, which still contains the old generic
-Monday-to-Friday pattern rather than the Therapist's real hours, and both were
-written against a Slot grid that has since changed to 30-minute Start Increments.
-The landing suite additionally asserts on slot buttons and the reservation flow,
-both of which this branch reshaped. **Failures there should be assumed to belong
-to this branch, not to whoever runs them next.** Dashboard lint and build were
-also not run.
+So the passes confirm nothing regressed structurally. They confirm nothing about
+zones. There is currently **no assertion anywhere** that the zone banner names
+both zones, or that the selected Slot and confirmation show the Practice time
+alongside the Requester's. Adding those is the substance of ticket 09, and it is
+not made redundant by the suites being green.
 
-Verified green at the time of writing: the API PHPUnit suite (545 tests) and the
-landing Vitest suite (16 tests).
+Two related caveats remain live: the seeded schedule is still the old generic
+Monday-to-Friday pattern rather than the Therapist's real hours (ticket 08), and
+session length is still 50 minutes rather than 90 (ticket 04). Both suites
+therefore currently exercise a Slot grid that is not the one the practice will
+run on.
 
 ### The Therapist's real schedule
 
