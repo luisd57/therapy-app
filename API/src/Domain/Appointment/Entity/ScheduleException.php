@@ -22,15 +22,15 @@ class ScheduleException
         private readonly ExceptionId $id,
         #[ORM\Column(type: 'user_id')]
         private readonly UserId $therapistId,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $startDateTime,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $endDateTime,
         #[ORM\Column(type: Types::STRING, length: 500)]
         private readonly string $reason,
         #[ORM\Column(type: Types::BOOLEAN)]
         private readonly bool $isAllDay,
-        #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+        #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
     ) {
     }

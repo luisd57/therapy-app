@@ -14,6 +14,7 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Tests\Helper\IntegrationTestCase;
 use DateTimeImmutable;
+use DateTimeZone;
 
 final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 {
@@ -206,6 +207,62 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $results = $this->repository->findConfirmedByDate(new DateTimeImmutable('2030-01-01'));
 
         $this->assertCount(0, $results);
+    }
+
+    /**
+     * The DB column carries no offset of its own, so an instant written from a
+     * non-UTC DateTimeImmutable must still come back as the same point on the
+     * timeline. Without a UTC-normalising DBAL type the offset is dropped on
+     * write and the value silently shifts by the writer's offset.
+     */
+    public function testPersistsAndReadsBackTheSameInstantInUtc(): void
+    {
+        $startTime = new DateTimeImmutable('2026-06-01 09:00:00', new DateTimeZone('America/Caracas'));
+
+        $appointment = $this->createAppointment(
+            startTime: $startTime,
+            email: 'utc-roundtrip@test.com',
+        );
+        $this->repository->save($appointment);
+        $this->entityManager->clear();
+
+        $found = $this->repository->findById($appointment->getId());
+
+        $this->assertNotNull($found);
+        $this->assertSame(
+            $startTime->getTimestamp(),
+            $found->getTimeSlot()->getStartTime()->getTimestamp(),
+            'Stored instant shifted; the written offset was discarded.',
+        );
+        $this->assertSame('+00:00', $found->getTimeSlot()->getStartTime()->format('P'));
+    }
+
+    /**
+     * Doctrine's ParameterTypeInferer binds a bare DateTimeImmutable through the
+     * naive datetime type, writing a literal without an offset. A range whose
+     * bounds are expressed in the practice zone must still match a row written
+     * in UTC — this is the cheapest detector for a missing setParameter() type.
+     */
+    public function testDateRangeQueryMatchesInstantsWrittenWithADifferentOffset(): void
+    {
+        $caracas = new DateTimeZone('America/Caracas');
+
+        $appointment = $this->createAppointment(
+            startTime: new DateTimeImmutable('2026-06-01 13:00:00', new DateTimeZone('UTC')),
+            email: 'offset-range@test.com',
+        );
+        $appointment->confirm(new DateTimeImmutable('2026-05-01 00:00:00', new DateTimeZone('UTC')));
+        $this->repository->save($appointment);
+        $this->entityManager->clear();
+
+        // 08:00–10:00 in Caracas is 12:00–14:00 UTC, so the 13:00 UTC row is inside.
+        $results = $this->repository->findConfirmedByDateRange(
+            new DateTimeImmutable('2026-06-01 08:00:00', $caracas),
+            new DateTimeImmutable('2026-06-01 10:00:00', $caracas),
+        );
+
+        $ids = $results->map(fn(Appointment $found) => $found->getId()->getValue())->toArray();
+        $this->assertContains($appointment->getId()->getValue(), $ids);
     }
 
     public function testDeleteRemovesAppointment(): void

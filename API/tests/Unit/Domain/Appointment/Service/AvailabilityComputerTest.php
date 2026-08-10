@@ -10,6 +10,7 @@ use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Service\AvailabilityComputer;
 use App\Domain\Appointment\Service\AvailabilityContext;
+use App\Domain\Appointment\Service\SlotGenerationRules;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Enum\AppointmentStatus;
@@ -22,9 +23,19 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Expected values here are absolute UTC instants written out by hand, never
+ * re-derived by formatting the same objects the computer builds. That is the
+ * point: the suite runs at UTC+14, so a test that formats its own fixtures
+ * would shift along with the code and could never disagree with it.
+ *
+ * 2026-06-01 is a Monday. America/Caracas is UTC-4 with no daylight saving,
+ * so a Caracas wall-clock time is always UTC minus four hours.
+ */
 final class AvailabilityComputerTest extends TestCase
 {
     private AvailabilityComputer $computer;
@@ -34,23 +45,37 @@ final class AvailabilityComputerTest extends TestCase
         $this->computer = new AvailabilityComputer();
     }
 
-    /**
-     * Helper: Find a future date that falls on the given WeekDay.
-     * Returns a date at least 30 days in the future to avoid "past slot" filtering.
-     */
-    private function findFutureDateForWeekDay(WeekDay $weekDay): DateTimeImmutable
+    private static function utc(string $dateTime): DateTimeImmutable
     {
-        // Start 60 days in the future to be safe
-        $date = new DateTimeImmutable('+60 days');
-        $currentDayNumber = (int) $date->format('N');
-        $targetDayNumber = $weekDay->value;
+        return new DateTimeImmutable($dateTime, new DateTimeZone('UTC'));
+    }
 
-        $daysToAdd = ($targetDayNumber - $currentDayNumber + 7) % 7;
-        if ($daysToAdd === 0) {
-            return $date;
-        }
+    private static function practiceTimeZone(): DateTimeZone
+    {
+        return new DateTimeZone('America/Caracas');
+    }
 
-        return $date->modify("+{$daysToAdd} days");
+    private static function rules(int $durationMinutes = 90, ?int $startIncrementMinutes = null): SlotGenerationRules
+    {
+        return SlotGenerationRules::create(
+            durationMinutes: $durationMinutes,
+            practiceTimeZone: self::practiceTimeZone(),
+            startIncrementMinutes: $startIncrementMinutes,
+        );
+    }
+
+    /**
+     * @param ArrayCollection<int, TimeSlot> $slots
+     *
+     * @return list<string>
+     */
+    private static function startsAsUtc(ArrayCollection $slots): array
+    {
+        return array_values($slots->map(
+            fn (TimeSlot $timeSlot): string => $timeSlot->getStartTime()
+                ->setTimezone(new DateTimeZone('UTC'))
+                ->format('Y-m-d\TH:i:s\Z'),
+        )->toArray());
     }
 
     private function createSchedule(
@@ -61,8 +86,6 @@ final class AvailabilityComputerTest extends TestCase
         bool $supportsInPerson = true,
         bool $isActive = true,
     ): TherapistSchedule {
-        $now = new DateTimeImmutable();
-
         return TherapistSchedule::reconstitute(
             id: ScheduleId::generate(),
             therapistId: UserId::generate(),
@@ -72,8 +95,8 @@ final class AvailabilityComputerTest extends TestCase
             supportsOnline: $supportsOnline,
             supportsInPerson: $supportsInPerson,
             isActive: $isActive,
-            createdAt: $now,
-            updatedAt: $now,
+            createdAt: self::utc('2026-01-01 00:00:00'),
+            updatedAt: self::utc('2026-01-01 00:00:00'),
         );
     }
 
@@ -82,8 +105,6 @@ final class AvailabilityComputerTest extends TestCase
         int $durationMinutes,
         AppointmentStatus $status = AppointmentStatus::CONFIRMED,
     ): Appointment {
-        $now = new DateTimeImmutable();
-
         return Appointment::reconstitute(
             id: AppointmentId::generate(),
             timeSlot: TimeSlot::create($startTime, $durationMinutes),
@@ -95,8 +116,8 @@ final class AvailabilityComputerTest extends TestCase
             city: 'TestCity',
             country: 'TestCountry',
             patientId: null,
-            createdAt: $now,
-            updatedAt: $now,
+            createdAt: self::utc('2026-01-01 00:00:00'),
+            updatedAt: self::utc('2026-01-01 00:00:00'),
         );
     }
 
@@ -111,35 +132,22 @@ final class AvailabilityComputerTest extends TestCase
             endDateTime: $end,
             reason: 'Blocked',
             isAllDay: false,
-            createdAt: new DateTimeImmutable(),
+            createdAt: self::utc('2026-01-01 00:00:00'),
         );
     }
 
-    private function createActiveLock(
+    private function createLock(
         DateTimeImmutable $startTime,
         int $durationMinutes,
+        DateTimeImmutable $expiresAt,
     ): SlotLock {
         return SlotLock::reconstitute(
             id: SlotLockId::generate(),
             timeSlot: TimeSlot::create($startTime, $durationMinutes),
             modality: AppointmentModality::ONLINE,
             lockToken: 'lock-token-' . bin2hex(random_bytes(4)),
-            createdAt: new DateTimeImmutable('-5 minutes'),
-            expiresAt: new DateTimeImmutable('+10 minutes'),
-        );
-    }
-
-    private function createExpiredLock(
-        DateTimeImmutable $startTime,
-        int $durationMinutes,
-    ): SlotLock {
-        return SlotLock::reconstitute(
-            id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create($startTime, $durationMinutes),
-            modality: AppointmentModality::ONLINE,
-            lockToken: 'expired-lock-token',
-            createdAt: new DateTimeImmutable('-2 hours'),
-            expiresAt: new DateTimeImmutable('-1 hour'),
+            createdAt: self::utc('2026-05-01 00:00:00'),
+            expiresAt: $expiresAt,
         );
     }
 
@@ -157,425 +165,411 @@ final class AvailabilityComputerTest extends TestCase
         );
     }
 
-    // --- Empty schedules ---
+    // --- Practice-zone materialisation ---
+
+    public function testScheduleBlocksAreReadInThePracticeZoneNotTheProcessZone(): void
+    {
+        // Monday 08:00-12:00 in Caracas is 12:00-16:00 UTC. At 90 minutes the
+        // third start (11:00 local) would end at 12:30, past the block.
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            ['2026-06-01T12:00:00Z', '2026-06-01T13:30:00Z'],
+            self::startsAsUtc($result),
+        );
+    }
+
+    /**
+     * The headline regression. 2026-06-02T00:00:00Z is Monday 20:00 in Caracas,
+     * so the Monday block must apply. Reading the weekday off the UTC instant
+     * would say Tuesday and return nothing.
+     */
+    public function testWeekdayIsTakenFromThePracticeZoneNotUtc(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '20:00', '23:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-02 00:00:00'),
+            to: self::utc('2026-06-02 06:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            ['2026-06-02T00:00:00Z', '2026-06-02T01:30:00Z'],
+            self::startsAsUtc($result),
+        );
+    }
+
+    // --- Start increments ---
+
+    public function testStartIncrementOffersOverlappingCandidateStarts(): void
+    {
+        // 08:00-12:00 Caracas, 90-minute sessions starting every 30 minutes.
+        // Last viable start is 10:30 local (ends exactly at 12:00).
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            [
+                '2026-06-01T12:00:00Z',
+                '2026-06-01T12:30:00Z',
+                '2026-06-01T13:00:00Z',
+                '2026-06-01T13:30:00Z',
+                '2026-06-01T14:00:00Z',
+                '2026-06-01T14:30:00Z',
+            ],
+            self::startsAsUtc($result),
+        );
+    }
+
+    public function testIncrementDefaultsToTheDurationProducingABackToBackGrid(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            ['2026-06-01T12:00:00Z', '2026-06-01T13:30:00Z'],
+            self::startsAsUtc($result),
+        );
+    }
+
+    public function testSlotMustFitEntirelyWithinTheBlock(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '09:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertCount(0, $result);
+    }
+
+    /**
+     * Her real Tuesday window. She said only two consultations fit, and that is
+     * capacity, not offered starts: six candidates, at most two non-overlapping.
+     */
+    public function testTuesdayMorningWindowOffersSixCandidateStarts(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::TUESDAY, '06:30', '10:30')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            from: self::utc('2026-06-02 00:00:00'),
+            to: self::utc('2026-06-03 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        // 06:30 Caracas is 10:30 UTC; last start 09:00 local ends exactly at 10:30.
+        $this->assertSame(
+            [
+                '2026-06-02T10:30:00Z',
+                '2026-06-02T11:00:00Z',
+                '2026-06-02T11:30:00Z',
+                '2026-06-02T12:00:00Z',
+                '2026-06-02T12:30:00Z',
+                '2026-06-02T13:00:00Z',
+            ],
+            self::startsAsUtc($result),
+        );
+    }
+
+    // --- Overlap suppression ---
+
+    public function testConfirmedAppointmentSuppressesEveryOverlappingCandidateStart(): void
+    {
+        // A 12:00-13:30 UTC booking (08:00 local) rules out every start whose
+        // 90-minute span intersects it: 10:30 through 13:00 UTC.
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '13:00')],
+                blockingAppointments: [
+                    $this->createAppointment(self::utc('2026-06-01 12:00:00'), 90),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        // Block is 12:00-17:00 UTC; last viable start 15:30. 12:00-13:00 suppressed.
+        $this->assertSame(
+            [
+                '2026-06-01T13:30:00Z',
+                '2026-06-01T14:00:00Z',
+                '2026-06-01T14:30:00Z',
+                '2026-06-01T15:00:00Z',
+                '2026-06-01T15:30:00Z',
+            ],
+            self::startsAsUtc($result),
+        );
+    }
+
+    public function testCancelledAppointmentDoesNotSuppressSlots(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '11:00')],
+                blockingAppointments: [
+                    $this->createAppointment(
+                        self::utc('2026-06-01 12:00:00'),
+                        90,
+                        AppointmentStatus::CANCELLED,
+                    ),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(['2026-06-01T12:00:00Z', '2026-06-01T13:30:00Z'], self::startsAsUtc($result));
+    }
+
+    public function testActiveLockSuppressesOverlappingSlotsAndExpiredOneDoesNot(): void
+    {
+        $now = self::utc('2026-05-01 00:00:00');
+        $schedules = [$this->createSchedule(WeekDay::MONDAY, '08:00', '11:00')];
+
+        $withActiveLock = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: $schedules,
+                activeLocks: [
+                    $this->createLock(
+                        self::utc('2026-06-01 12:00:00'),
+                        90,
+                        expiresAt: self::utc('2026-05-01 00:10:00'),
+                    ),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: $now,
+        );
+
+        $this->assertSame(['2026-06-01T13:30:00Z'], self::startsAsUtc($withActiveLock));
+
+        $withExpiredLock = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: $schedules,
+                activeLocks: [
+                    $this->createLock(
+                        self::utc('2026-06-01 12:00:00'),
+                        90,
+                        expiresAt: self::utc('2026-04-30 23:50:00'),
+                    ),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: $now,
+        );
+
+        $this->assertSame(
+            ['2026-06-01T12:00:00Z', '2026-06-01T13:30:00Z'],
+            self::startsAsUtc($withExpiredLock),
+        );
+    }
+
+    /**
+     * An all-day exception is a practice-local day, which in UTC runs 04:00 to
+     * 04:00. It must blank the Monday it covers and leave Tuesday alone.
+     */
+    public function testAllDayExceptionBlocksThePracticeLocalDayOnly(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [
+                    $this->createSchedule(WeekDay::MONDAY, '08:00', '11:00'),
+                    $this->createSchedule(WeekDay::TUESDAY, '08:00', '11:00'),
+                ],
+                exceptions: [
+                    $this->createScheduleException(
+                        self::utc('2026-06-01 04:00:00'),
+                        self::utc('2026-06-02 04:00:00'),
+                    ),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-03 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            ['2026-06-02T12:00:00Z', '2026-06-02T13:30:00Z'],
+            self::startsAsUtc($result),
+        );
+    }
+
+    // --- Window clipping and past filtering ---
+
+    public function testSlotsStartingBeforeTheRequestedWindowAreExcluded(): void
+    {
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '13:00')],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 13:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        // 12:00Z start is before the window; 13:30Z and 15:00Z survive.
+        $this->assertSame(
+            ['2026-06-01T13:30:00Z', '2026-06-01T15:00:00Z'],
+            self::startsAsUtc($result),
+        );
+    }
+
+    public function testPastSlotsAreFilteredRegardlessOfTheZoneNowIsExpressedIn(): void
+    {
+        $schedules = [$this->createSchedule(WeekDay::MONDAY, '08:00', '13:00')];
+
+        $nowInUtc = self::utc('2026-06-01 13:00:00');
+        $sameInstantInCaracas = new DateTimeImmutable('2026-06-01 09:00:00', self::practiceTimeZone());
+
+        $arguments = [
+            'availabilityContext' => $this->createContext(schedules: $schedules),
+            'slotGenerationRules' => self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            'from' => self::utc('2026-06-01 00:00:00'),
+            'to' => self::utc('2026-06-02 00:00:00'),
+        ];
+
+        $fromUtc = $this->computer->computeAvailableSlots(...[...$arguments, 'now' => $nowInUtc]);
+        $fromCaracas = $this->computer->computeAvailableSlots(...[...$arguments, 'now' => $sameInstantInCaracas]);
+
+        $this->assertSame(['2026-06-01T13:30:00Z', '2026-06-01T15:00:00Z'], self::startsAsUtc($fromUtc));
+        $this->assertSame(self::startsAsUtc($fromUtc), self::startsAsUtc($fromCaracas));
+    }
+
+    // --- Filtering that is independent of timezone ---
 
     public function testEmptySchedulesReturnsNoSlots(): void
     {
         $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(),
-            from: new DateTimeImmutable('+60 days'),
-            to: new DateTimeImmutable('+67 days'),
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
+            availabilityContext: $this->createContext(),
+            slotGenerationRules: self::rules(),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-08 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
         );
 
         $this->assertCount(0, $result);
     }
-
-    // --- Basic slot generation ---
-
-    public function testOneScheduleBlockGeneratesCorrectNumberOfSlots(): void
-    {
-        // 09:00-12:00 with 50-min slots should generate 3 slots:
-        // 09:00-09:50, 09:50-10:40, 10:40-11:30
-        // 11:30 + 50 = 12:20 > 12:00, so no 4th slot
-        $targetDay = WeekDay::MONDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertCount(3, $result);
-
-        $dateStr = $date->format('Y-m-d');
-        $slots = $result->toArray();
-
-        $this->assertSame($dateStr . ' 09:00', $slots[0]->getStartTime()->format('Y-m-d H:i'));
-        $this->assertSame($dateStr . ' 09:50', $slots[1]->getStartTime()->format('Y-m-d H:i'));
-        $this->assertSame($dateStr . ' 10:40', $slots[2]->getStartTime()->format('Y-m-d H:i'));
-    }
-
-    public function testSlotsThatExactlyFitTheBlock(): void
-    {
-        // 09:00-10:00 with 30-min slots: 09:00-09:30, 09:30-10:00 = 2 slots
-        $targetDay = WeekDay::TUESDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '10:00');
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 30,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertCount(2, $result);
-    }
-
-    // --- Schedule exceptions block slots ---
-
-    public function testScheduleExceptionsBlockSlots(): void
-    {
-        $targetDay = WeekDay::WEDNESDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        // Exception from 09:00 to 10:00 should block the first slot (09:00-09:50)
-        $exception = $this->createScheduleException(
-            new DateTimeImmutable($dateStr . ' 09:00'),
-            new DateTimeImmutable($dateStr . ' 10:00'),
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule], exceptions: [$exception]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // Without exception: 3 slots (09:00, 09:50, 10:40)
-        // Exception blocks 09:00-10:00, which overlaps 09:00-09:50 AND 09:50-10:40
-        // So only 10:40-11:30 remains
-        $this->assertCount(1, $result);
-        $slots = $result->toArray();
-        $this->assertSame($dateStr . ' 10:40', $slots[0]->getStartTime()->format('Y-m-d H:i'));
-    }
-
-    // --- Existing appointments remove slots ---
-
-    public function testExistingBlockingAppointmentsRemoveSlots(): void
-    {
-        $targetDay = WeekDay::THURSDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        // Confirmed appointment at 09:00-09:50 should block that slot
-        $appointment = $this->createAppointment(
-            new DateTimeImmutable($dateStr . ' 09:00'),
-            50,
-            AppointmentStatus::CONFIRMED,
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule], blockingAppointments: [$appointment]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // 3 slots normally, 1 blocked by appointment = 2 remaining
-        $this->assertCount(2, $result);
-        $slots = $result->toArray();
-        $this->assertSame($dateStr . ' 09:50', $slots[0]->getStartTime()->format('Y-m-d H:i'));
-        $this->assertSame($dateStr . ' 10:40', $slots[1]->getStartTime()->format('Y-m-d H:i'));
-    }
-
-    public function testCancelledAppointmentDoesNotBlockSlot(): void
-    {
-        $targetDay = WeekDay::THURSDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        // Cancelled appointment should NOT block
-        $appointment = $this->createAppointment(
-            new DateTimeImmutable($dateStr . ' 09:00'),
-            50,
-            AppointmentStatus::CANCELLED,
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule], blockingAppointments: [$appointment]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // All 3 slots remain because cancelled appointments don't block
-        $this->assertCount(3, $result);
-    }
-
-    // --- Active locks remove slots ---
-
-    public function testActiveLocksRemoveSlots(): void
-    {
-        $targetDay = WeekDay::FRIDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        $lock = $this->createActiveLock(
-            new DateTimeImmutable($dateStr . ' 09:50'),
-            50,
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule], activeLocks: [$lock]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // 3 slots normally, 1 blocked by active lock = 2 remaining
-        $this->assertCount(2, $result);
-        $slots = $result->toArray();
-        $this->assertSame($dateStr . ' 09:00', $slots[0]->getStartTime()->format('Y-m-d H:i'));
-        $this->assertSame($dateStr . ' 10:40', $slots[1]->getStartTime()->format('Y-m-d H:i'));
-    }
-
-    public function testExpiredLocksDoNotBlockSlots(): void
-    {
-        $targetDay = WeekDay::FRIDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        $lock = $this->createExpiredLock(
-            new DateTimeImmutable($dateStr . ' 09:50'),
-            50,
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule], activeLocks: [$lock]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // All 3 slots remain because expired locks don't block
-        $this->assertCount(3, $result);
-    }
-
-    // --- Past slots are filtered ---
-
-    public function testPastSlotsAreFilteredOut(): void
-    {
-        // Use yesterday's date - all slots should be filtered as past
-        $yesterday = new DateTimeImmutable('yesterday');
-        $weekDay = WeekDay::fromDateTimeImmutable($yesterday);
-
-        $schedule = $this->createSchedule($weekDay, '09:00', '12:00');
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$schedule]),
-            from: $yesterday,
-            to: $yesterday,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertCount(0, $result);
-    }
-
-    // --- Modality filter ---
-
-    public function testModalityFilterOnlyReturnsMatchingSlots(): void
-    {
-        $targetDay = WeekDay::SATURDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        // This schedule only supports ONLINE
-        $onlineSchedule = $this->createSchedule(
-            $targetDay,
-            '09:00',
-            '10:30',
-            supportsOnline: true,
-            supportsInPerson: false,
-        );
-
-        // Filter for IN_PERSON should return no slots since schedule is online-only
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$onlineSchedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-            modalityFilter: AppointmentModality::IN_PERSON,
-        );
-
-        $this->assertCount(0, $result);
-    }
-
-    public function testModalityFilterReturnsMatchingScheduleSlots(): void
-    {
-        $targetDay = WeekDay::SATURDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        // This schedule only supports ONLINE
-        $onlineSchedule = $this->createSchedule(
-            $targetDay,
-            '09:00',
-            '10:30',
-            supportsOnline: true,
-            supportsInPerson: false,
-        );
-
-        // Filter for ONLINE should return slots
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$onlineSchedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-            modalityFilter: AppointmentModality::ONLINE,
-        );
-
-        // 09:00-10:30, 50-min slots: 09:00-09:50 only (09:50+50=10:40 > 10:30)
-        $this->assertCount(1, $result);
-    }
-
-    public function testNoModalityFilterReturnsSlotsFromAllModalities(): void
-    {
-        $targetDay = WeekDay::SATURDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        $onlineOnlySchedule = $this->createSchedule(
-            $targetDay,
-            '09:00',
-            '10:30',
-            supportsOnline: true,
-            supportsInPerson: false,
-        );
-
-        // Without filter, should return slots
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$onlineOnlySchedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-            modalityFilter: null,
-        );
-
-        $this->assertCount(1, $result);
-    }
-
-    // --- Inactive schedules are skipped ---
 
     public function testInactiveSchedulesAreSkipped(): void
     {
-        $targetDay = WeekDay::MONDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-
-        $inactiveSchedule = $this->createSchedule(
-            $targetDay,
-            '09:00',
-            '12:00',
-            isActive: false,
-        );
-
         $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$inactiveSchedule]),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertCount(0, $result);
-    }
-
-    // --- Multiple days ---
-
-    public function testMultipleDaysWithDifferentScheduleBlocks(): void
-    {
-        $mondayDate = $this->findFutureDateForWeekDay(WeekDay::MONDAY);
-        $tuesdayDate = $mondayDate->modify('+1 day');
-
-        $mondaySchedule = $this->createSchedule(WeekDay::MONDAY, '09:00', '12:00');
-        // Tuesday: 14:00-16:00 with 50-min slots: 14:00-14:50, 14:50-15:40 = 2 slots
-        $tuesdaySchedule = $this->createSchedule(WeekDay::TUESDAY, '14:00', '16:00');
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$mondaySchedule, $tuesdaySchedule]),
-            from: $mondayDate,
-            to: $tuesdayDate,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        // Monday: 3 slots, Tuesday: 2 slots = 5 total
-        $this->assertCount(5, $result);
-    }
-
-    public function testScheduleOnNonMatchingDayProducesNoSlots(): void
-    {
-        $mondayDate = $this->findFutureDateForWeekDay(WeekDay::MONDAY);
-
-        // Schedule for Wednesday, but we only look at Monday
-        $wednesdaySchedule = $this->createSchedule(WeekDay::WEDNESDAY, '09:00', '12:00');
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(schedules: [$wednesdaySchedule]),
-            from: $mondayDate,
-            to: $mondayDate,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
-        );
-
-        $this->assertCount(0, $result);
-    }
-
-    // --- Combined filters ---
-
-    public function testCombinedExceptionAndAppointmentFiltering(): void
-    {
-        $targetDay = WeekDay::WEDNESDAY;
-        $date = $this->findFutureDateForWeekDay($targetDay);
-        $dateStr = $date->format('Y-m-d');
-
-        // 09:00-12:00 generates 3 slots: 09:00, 09:50, 10:40
-        $schedule = $this->createSchedule($targetDay, '09:00', '12:00');
-
-        // Exception blocks 09:00-09:50 slot
-        $exception = $this->createScheduleException(
-            new DateTimeImmutable($dateStr . ' 08:30'),
-            new DateTimeImmutable($dateStr . ' 09:30'),
-        );
-
-        // Appointment blocks 10:40-11:30 slot
-        $appointment = $this->createAppointment(
-            new DateTimeImmutable($dateStr . ' 10:40'),
-            50,
-            AppointmentStatus::CONFIRMED,
-        );
-
-        $result = $this->computer->computeAvailableSlots(
-            context: $this->createContext(
-                schedules: [$schedule],
-                exceptions: [$exception],
-                blockingAppointments: [$appointment],
+            availabilityContext: $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00', isActive: false)],
             ),
-            from: $date,
-            to: $date,
-            slotDurationMinutes: 50,
-            now: new DateTimeImmutable(),
+            slotGenerationRules: self::rules(),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
         );
 
-        // Only 09:50-10:40 should remain
-        $this->assertCount(1, $result);
-        $slots = $result->toArray();
-        $this->assertSame($dateStr . ' 09:50', $slots[0]->getStartTime()->format('Y-m-d H:i'));
+        $this->assertCount(0, $result);
+    }
+
+    public function testModalityFilterExcludesBlocksThatDoNotSupportIt(): void
+    {
+        $context = $this->createContext(
+            schedules: [
+                $this->createSchedule(
+                    WeekDay::MONDAY,
+                    '08:00',
+                    '12:00',
+                    supportsOnline: true,
+                    supportsInPerson: false,
+                ),
+            ],
+        );
+
+        $inPerson = $this->computer->computeAvailableSlots(
+            availabilityContext: $context,
+            slotGenerationRules: self::rules(),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+            modalityFilter: AppointmentModality::IN_PERSON,
+        );
+
+        $online = $this->computer->computeAvailableSlots(
+            availabilityContext: $context,
+            slotGenerationRules: self::rules(),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+            modalityFilter: AppointmentModality::ONLINE,
+        );
+
+        $this->assertCount(0, $inPerson);
+        $this->assertSame(['2026-06-01T12:00:00Z', '2026-06-01T13:30:00Z'], self::startsAsUtc($online));
+    }
+
+    public function testMultipleBlocksOnTheSameDayAreBothHonoured(): void
+    {
+        // Her Wednesday-to-Sunday shape: a morning block, lunch, an afternoon block.
+        $result = $this->computer->computeAvailableSlots(
+            availabilityContext: $this->createContext(
+                schedules: [
+                    $this->createSchedule(WeekDay::MONDAY, '08:00', '12:00'),
+                    $this->createSchedule(WeekDay::MONDAY, '13:30', '19:30'),
+                ],
+            ),
+            slotGenerationRules: self::rules(durationMinutes: 90, startIncrementMinutes: 90),
+            from: self::utc('2026-06-01 00:00:00'),
+            to: self::utc('2026-06-02 00:00:00'),
+            now: self::utc('2026-05-01 00:00:00'),
+        );
+
+        $this->assertSame(
+            [
+                // 08:00 and 09:30 local
+                '2026-06-01T12:00:00Z',
+                '2026-06-01T13:30:00Z',
+                // 13:30, 15:00, 16:30 and 18:00 local — the last ends at 19:30
+                '2026-06-01T17:30:00Z',
+                '2026-06-01T19:00:00Z',
+                '2026-06-01T20:30:00Z',
+                '2026-06-01T22:00:00Z',
+            ],
+            self::startsAsUtc($result),
+        );
     }
 }

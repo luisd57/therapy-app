@@ -203,8 +203,8 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         $token = $this->createTherapistAndGetToken();
 
         $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
-            'start_date_time' => '2026-06-15T09:00:00',
-            'end_date_time' => '2026-06-15T17:00:00',
+            'start_date_time' => '2026-06-15T09:00:00-04:00',
+            'end_date_time' => '2026-06-15T17:00:00-04:00',
             'reason' => 'Day off',
             'is_all_day' => false,
         ], $token);
@@ -235,8 +235,8 @@ final class TherapistScheduleControllerTest extends ApiTestCase
 
         // Create an exception first
         $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
-            'start_date_time' => '2026-07-01T09:00:00',
-            'end_date_time' => '2026-07-01T17:00:00',
+            'start_date_time' => '2026-07-01T09:00:00-04:00',
+            'end_date_time' => '2026-07-01T17:00:00-04:00',
             'reason' => 'Holiday',
             'is_all_day' => false,
         ], $token);
@@ -310,8 +310,8 @@ final class TherapistScheduleControllerTest extends ApiTestCase
     public function testAddExceptionUnauthenticatedReturns401(): void
     {
         $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
-            'start_date_time' => '2026-06-15T09:00:00',
-            'end_date_time' => '2026-06-15T17:00:00',
+            'start_date_time' => '2026-06-15T09:00:00-04:00',
+            'end_date_time' => '2026-06-15T17:00:00-04:00',
             'reason' => 'Day off',
             'is_all_day' => false,
         ]);

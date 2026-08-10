@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\Appointment\Service;
 
 use App\Application\Appointment\Service\AppointmentRequestService;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
@@ -54,6 +56,8 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
         $this->logger = $this->createMock(LoggerInterface::class);
 
+        $practiceTimezoneProvider = new EnvPracticeTimezoneProvider('America/Caracas');
+
         $this->service = new AppointmentRequestService(
             $this->userRepository,
             $this->appointmentRepository,
@@ -62,9 +66,10 @@ final class AppointmentRequestServiceTest extends TestCase
             $this->exceptionRepository,
             $this->availabilityComputer,
             $this->emailSender,
+            new SlotGenerationRulesFactory($practiceTimezoneProvider, 50, 50),
+            $practiceTimezoneProvider,
             $this->clock,
             $this->logger,
-            50,
         );
     }
 

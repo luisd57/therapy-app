@@ -62,9 +62,9 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $this->createTherapistWithSchedule();
         $patientToken = $this->createPatientWithProfileAndGetToken();
 
-        // 2026-06-01 is a Monday, 09:40 is a valid 50-min slot
+        // 2026-06-01 is a Monday; 09:30 Caracas is an offered start
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
         ], $patientToken);
 
@@ -97,7 +97,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $patientToken = $this->createPatientWithProfileAndGetToken();
 
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'INVALID',
         ], $patientToken);
 
@@ -115,7 +115,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $patientToken = $this->createPatientAndGetToken();
 
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
         ], $patientToken);
 
@@ -137,7 +137,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $patientToken = $this->createPatientWithProfileAndGetToken();
 
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'ONLINE',
         ], $patientToken);
 
@@ -151,7 +151,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
     public function testRequestAppointmentReturns401WithoutToken(): void
     {
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
         ]);
 
@@ -163,7 +163,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $therapistToken = $this->createTherapistAndGetToken();
 
         $this->jsonRequest('POST', '/api/patient/appointments', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
         ], $therapistToken);
 

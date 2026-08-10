@@ -1458,7 +1458,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+              "raw": "{\"start_date_time\":\"2026-03-16T00:00:00-04:00\",\"end_date_time\":\"2026-03-16T23:59:59-04:00\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
             },
             "url": "{{base_url}}/therapist/schedule/exceptions"
           },
@@ -1475,7 +1475,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00-04:00\",\"end_date_time\":\"2026-03-16T23:59:59-04:00\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
                 },
                 "url": "{{base_url}}/therapist/schedule/exceptions"
               },
@@ -1502,7 +1502,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00\",\"end_date_time\":\"2026-03-16T23:59:59\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
+                  "raw": "{\"start_date_time\":\"2026-03-16T00:00:00-04:00\",\"end_date_time\":\"2026-03-16T23:59:59-04:00\",\"reason\":\"Personal day off\",\"is_all_day\":true}"
                 },
                 "url": "{{base_url}}/therapist/schedule/exceptions"
               },
@@ -1531,7 +1531,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"start_date_time\":\"2026-03-18T09:00:00\",\"end_date_time\":\"2026-03-18T12:00:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
+              "raw": "{\"start_date_time\":\"2026-03-18T09:00:00-04:00\",\"end_date_time\":\"2026-03-18T12:00:00-04:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
             },
             "url": "{{base_url}}/therapist/schedule/exceptions"
           },
@@ -1548,7 +1548,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"start_date_time\":\"2026-03-18T09:00:00\",\"end_date_time\":\"2026-03-18T12:00:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
+                  "raw": "{\"start_date_time\":\"2026-03-18T09:00:00-04:00\",\"end_date_time\":\"2026-03-18T12:00:00-04:00\",\"reason\":\"Doctor appointment\",\"is_all_day\":false}"
                 },
                 "url": "{{base_url}}/therapist/schedule/exceptions"
               },
@@ -1639,14 +1639,14 @@
           "name": "1. Get Available Slots (Week View)",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-08T00:00:00-04:00"
           },
           "response": [
             {
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-08T00:00:00-04:00"
               },
               "status": "OK",
               "code": 200,
@@ -1657,13 +1657,13 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-07\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T11:00:00+00:00\",\n          \"end_time\": \"2026-06-01T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T12:00:00+00:00\",\n          \"end_time\": \"2026-06-01T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ],\n      \"2026-06-03\": [\n        {\n          \"start_time\": \"2026-06-03T10:00:00+00:00\",\n          \"end_time\": \"2026-06-03T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T11:00:00+00:00\",\n          \"end_time\": \"2026-06-03T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T12:00:00+00:00\",\n          \"end_time\": \"2026-06-03T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-03T13:00:00+00:00\",\n          \"end_time\": \"2026-06-03T13:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 8\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01T04:00:00+00:00\",\n    \"to\": \"2026-06-08T04:00:00+00:00\",\n    \"modality\": null,\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [\n      {\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T10:00:00+00:00\",\n        \"end_time\": \"2026-06-01T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T11:00:00+00:00\",\n        \"end_time\": \"2026-06-01T11:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T12:00:00+00:00\",\n        \"end_time\": \"2026-06-01T12:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-03T10:00:00+00:00\",\n        \"end_time\": \"2026-06-03T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-03T11:00:00+00:00\",\n        \"end_time\": \"2026-06-03T11:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-03T12:00:00+00:00\",\n        \"end_time\": \"2026-06-03T12:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-03T13:00:00+00:00\",\n        \"end_time\": \"2026-06-03T13:50:00+00:00\",\n        \"duration_minutes\": 50\n      }\n    ],\n    \"total_slots\": 8\n  }\n}"
             },
             {
               "name": "Validation Error",
               "originalRequest": {
                 "method": "GET",
-                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07"
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-08T00:00:00-04:00"
               },
               "status": "Unprocessable Entity",
               "code": 422,
@@ -1682,14 +1682,14 @@
           "name": "2. Get Available Slots (Single Day)",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-01"
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-02T00:00:00-04:00"
           },
           "response": [
             {
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-01"
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-02T00:00:00-04:00"
               },
               "status": "OK",
               "code": 200,
@@ -1700,7 +1700,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-01\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T11:00:00+00:00\",\n          \"end_time\": \"2026-06-01T11:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T12:00:00+00:00\",\n          \"end_time\": \"2026-06-01T12:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 4\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01T04:00:00+00:00\",\n    \"to\": \"2026-06-02T04:00:00+00:00\",\n    \"modality\": null,\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [\n      {\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T10:00:00+00:00\",\n        \"end_time\": \"2026-06-01T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T11:00:00+00:00\",\n        \"end_time\": \"2026-06-01T11:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T12:00:00+00:00\",\n        \"end_time\": \"2026-06-01T12:50:00+00:00\",\n        \"duration_minutes\": 50\n      }\n    ],\n    \"total_slots\": 4\n  }\n}"
             }
           ]
         },
@@ -1708,14 +1708,14 @@
           "name": "3. Get Available Slots (Filtered by Modality)",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07&modality=ONLINE"
+            "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-08T00:00:00-04:00&modality=ONLINE"
           },
           "response": [
             {
               "name": "Success",
               "originalRequest": {
                 "method": "GET",
-                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01&to=2026-06-07&modality=ONLINE"
+                "url": "{{base_url}}/appointments/available-slots?from=2026-06-01T00:00:00-04:00&to=2026-06-08T00:00:00-04:00&modality=ONLINE"
               },
               "status": "OK",
               "code": 200,
@@ -1726,7 +1726,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01\",\n    \"to\": \"2026-06-07\",\n    \"modality\": \"ONLINE\",\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00+00:00\",\n          \"end_time\": \"2026-06-01T09:50:00+00:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00+00:00\",\n          \"end_time\": \"2026-06-01T10:50:00+00:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 2\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"from\": \"2026-06-01T04:00:00+00:00\",\n    \"to\": \"2026-06-08T04:00:00+00:00\",\n    \"modality\": \"ONLINE\",\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [\n      {\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T10:00:00+00:00\",\n        \"end_time\": \"2026-06-01T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      }\n    ],\n    \"total_slots\": 2\n  }\n}"
             }
           ]
         },
@@ -1752,7 +1752,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01\",\n    \"week_end\": \"2026-06-07\",\n    \"modality\": null,\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00-04:00\",\n          \"end_time\": \"2026-06-01T09:50:00-04:00\",\n          \"duration_minutes\": 50\n        },\n        {\n          \"start_time\": \"2026-06-01T10:00:00-04:00\",\n          \"end_time\": \"2026-06-01T10:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ],\n      \"2026-06-03\": [\n        {\n          \"start_time\": \"2026-06-03T10:00:00-04:00\",\n          \"end_time\": \"2026-06-03T10:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 3\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01T04:00:00+00:00\",\n    \"week_end\": \"2026-06-08T04:00:00+00:00\",\n    \"modality\": null,\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [\n      {\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-01T10:00:00+00:00\",\n        \"end_time\": \"2026-06-01T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      },\n      {\n        \"start_time\": \"2026-06-03T10:00:00+00:00\",\n        \"end_time\": \"2026-06-03T10:50:00+00:00\",\n        \"duration_minutes\": 50\n      }\n    ],\n    \"total_slots\": 3\n  }\n}"
             },
             {
               "name": "Success — No Availability",
@@ -1769,7 +1769,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": false,\n    \"week_start\": null,\n    \"week_end\": null,\n    \"modality\": null,\n    \"slots_by_date\": {},\n    \"total_slots\": 0\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": false,\n    \"week_start\": null,\n    \"week_end\": null,\n    \"modality\": null,\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [],\n    \"total_slots\": 0\n  }\n}"
             },
             {
               "name": "With Modality Filter",
@@ -1786,7 +1786,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01\",\n    \"week_end\": \"2026-06-07\",\n    \"modality\": \"ONLINE\",\n    \"slots_by_date\": {\n      \"2026-06-01\": [\n        {\n          \"start_time\": \"2026-06-01T09:00:00-04:00\",\n          \"end_time\": \"2026-06-01T09:50:00-04:00\",\n          \"duration_minutes\": 50\n        }\n      ]\n    },\n    \"total_slots\": 1\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"found\": true,\n    \"week_start\": \"2026-06-01T04:00:00+00:00\",\n    \"week_end\": \"2026-06-08T04:00:00+00:00\",\n    \"modality\": \"ONLINE\",\n    \"practice_timezone\": \"America/Caracas\",\n    \"slots\": [\n      {\n        \"start_time\": \"2026-06-01T09:00:00+00:00\",\n        \"end_time\": \"2026-06-01T09:50:00+00:00\",\n        \"duration_minutes\": 50\n      }\n    ],\n    \"total_slots\": 1\n  }\n}"
             },
             {
               "name": "Validation Error",
@@ -1829,7 +1829,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
             },
             "url": "{{base_url}}/appointments/lock-slot"
           },
@@ -1846,7 +1846,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
                 },
                 "url": "{{base_url}}/appointments/lock-slot"
               },
@@ -1873,7 +1873,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
                 },
                 "url": "{{base_url}}/appointments/lock-slot"
               },
@@ -1902,7 +1902,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
             },
             "url": "{{base_url}}/appointments/request"
           },
@@ -1919,7 +1919,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
                 },
                 "url": "{{base_url}}/appointments/request"
               },
@@ -1946,7 +1946,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
                 },
                 "url": "{{base_url}}/appointments/request"
               },
@@ -1973,7 +1973,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\",\"full_name\":\"Maria Garcia\",\"phone\":\"+584141234567\",\"email\":\"maria@example.com\",\"city\":\"Merida\",\"country\":\"Venezuela\",\"lock_token\":\"{{lock_token}}\"}"
                 },
                 "url": "{{base_url}}/appointments/request"
               },
@@ -2081,7 +2081,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+              "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
             },
             "url": "{{base_url}}/patient/appointments"
           },
@@ -2098,7 +2098,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
                 },
                 "url": "{{base_url}}/patient/appointments"
               },
@@ -2125,7 +2125,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
                 },
                 "url": "{{base_url}}/patient/appointments"
               },
@@ -2152,7 +2152,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00\",\"modality\":\"ONLINE\"}"
+                  "raw": "{\"slot_start_time\":\"2026-06-01T09:00:00-04:00\",\"modality\":\"ONLINE\"}"
                 },
                 "url": "{{base_url}}/patient/appointments"
               },

@@ -26,11 +26,17 @@ export interface SlotData {
   duration_minutes: number;
 }
 
+/**
+ * Slots arrive as a flat list of instants. They are deliberately not grouped by
+ * date server-side: the only calendar the API could group by is the practice's,
+ * which is the wrong one for every patient outside Venezuela.
+ */
 export interface SlotsResponse {
   from: string;
   to: string;
   modality: string | null;
-  slots_by_date: Record<string, SlotData[]>;
+  practice_timezone: string;
+  slots: SlotData[];
   total_slots: number;
 }
 
@@ -55,12 +61,14 @@ export interface AppointmentSummary {
   created_at: string;
 }
 
+/** week_start / week_end are instants (week_end exclusive), not calendar days. */
 export interface NextAvailableWeekResponse {
   found: boolean;
   week_start: string | null;
   week_end: string | null;
   modality: string | null;
-  slots_by_date: Record<string, SlotData[]>;
+  practice_timezone: string;
+  slots: SlotData[];
   total_slots: number;
 }
 

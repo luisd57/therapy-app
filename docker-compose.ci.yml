@@ -25,4 +25,8 @@ services:
       - TRUSTED_PROXIES=127.0.0.1
       - APPOINTMENT_DURATION_MINUTES=50
       - SLOT_LOCK_TTL=600
+      - PRACTICE_TIMEZONE=America/Caracas
+      - SLOT_START_INCREMENT_MINUTES=30
+      - TZ=UTC
+      - PGTZ=UTC
       - CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$

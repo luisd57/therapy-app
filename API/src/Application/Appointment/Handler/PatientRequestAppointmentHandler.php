@@ -42,6 +42,10 @@ final readonly class PatientRequestAppointmentHandler
             country: $patient->getAddress()->getCountry(),
             lockToken: $dto->lockToken,
             patientId: $dto->patientId,
+            // Prefer what the browser reported now: a patient may be travelling,
+            // so the zone on their profile is only a fallback.
+            requesterTimezone: $dto->requesterTimezone
+                ?? $patient->getTimezone()?->getValue(),
         );
     }
 }

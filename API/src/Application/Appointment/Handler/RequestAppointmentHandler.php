@@ -26,6 +26,7 @@ final readonly class RequestAppointmentHandler
             city: $dto->city,
             country: $dto->country,
             lockToken: $dto->lockToken,
+            requesterTimezone: $dto->requesterTimezone,
         );
     }
 }

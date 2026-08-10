@@ -54,7 +54,13 @@ jobs:
       JWT_COOKIE_SECURE: 'false'
       APPOINTMENT_DURATION_MINUTES: 50
       SLOT_LOCK_TTL: 600
+      PRACTICE_TIMEZONE: America/Caracas
+      SLOT_START_INCREMENT_MINUTES: 30
       CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+      # cache:clear resolves every %env(...)% reference, so any var missing here
+      # crashes container compilation before a single test runs.
+      TZ: UTC
+      PGTZ: UTC
 
     steps:
       - name: Checkout
@@ -125,6 +131,10 @@ jobs:
       - name: Install landing dependencies
         working-directory: landing
         run: npm ci
+
+      - name: Test landing
+        working-directory: landing
+        run: npm test
 
       - name: Build landing
         working-directory: landing

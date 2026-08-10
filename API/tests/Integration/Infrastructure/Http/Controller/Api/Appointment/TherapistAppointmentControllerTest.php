@@ -234,7 +234,7 @@ final class TherapistAppointmentControllerTest extends ApiTestCase
     public function testBookAppointment(): void
     {
         $this->jsonRequest('POST', '/api/therapist/appointments', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'Walk-in Patient',
             'phone' => '+1234567890',
@@ -265,7 +265,7 @@ final class TherapistAppointmentControllerTest extends ApiTestCase
     public function testBookAppointmentWithInvalidModality(): void
     {
         $this->jsonRequest('POST', '/api/therapist/appointments', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'INVALID',
             'full_name' => 'Test',
             'phone' => '+1234567890',

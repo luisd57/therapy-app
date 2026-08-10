@@ -121,6 +121,7 @@ final class PublicAppointmentController extends AbstractController
                 city: $data['city'],
                 country: $data['country'],
                 lockToken: $data['lock_token'] ?? null,
+                requesterTimezone: $data['timezone'] ?? null,
             ));
 
             $publicData = array_intersect_key($result->toArray(), array_flip([
@@ -146,27 +147,29 @@ final class PublicAppointmentController extends AbstractController
         $errors = [];
 
         $fromViolations = $this->validator->validate($from, [
-            new Assert\NotBlank(message: 'From date is required'),
+            new Assert\NotBlank(message: 'From is required'),
         ]);
 
         if (count($fromViolations) > 0) {
             $errors['from'] = $fromViolations[0]->getMessage();
-        } elseif (!$this->isValidDate($from)) {
-            $errors['from'] = 'From date must be a valid date (YYYY-MM-DD)';
+        } elseif (!$this->isValidInstant($from)) {
+            $errors['from'] = 'From must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T00:00:00-04:00';
         }
 
         $toViolations = $this->validator->validate($to, [
-            new Assert\NotBlank(message: 'To date is required'),
+            new Assert\NotBlank(message: 'To is required'),
         ]);
 
         if (count($toViolations) > 0) {
             $errors['to'] = $toViolations[0]->getMessage();
-        } elseif (!$this->isValidDate($to)) {
-            $errors['to'] = 'To date must be a valid date (YYYY-MM-DD)';
+        } elseif (!$this->isValidInstant($to)) {
+            $errors['to'] = 'To must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-08T00:00:00-04:00';
         }
 
-        if (empty($errors) && $from > $to) {
-            $errors['from'] = 'From date must be before or equal to To date';
+        // Instants, not strings: two windows with different offsets do not sort
+        // lexically in timeline order.
+        if (empty($errors) && new \DateTimeImmutable($from) >= new \DateTimeImmutable($to)) {
+            $errors['from'] = 'From must be before To';
         }
 
         return $errors;
@@ -185,8 +188,8 @@ final class PublicAppointmentController extends AbstractController
 
         if (count($slotViolations) > 0) {
             $errors['slot_start_time'] = $slotViolations[0]->getMessage();
-        } elseif (!$this->isValidDateTime($data['slot_start_time'])) {
-            $errors['slot_start_time'] = 'Slot start time must be a valid ISO-8601 datetime';
+        } elseif (!$this->isValidInstant($data['slot_start_time'])) {
+            $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
         }
 
         $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
@@ -214,8 +217,8 @@ final class PublicAppointmentController extends AbstractController
 
         if (count($slotViolations) > 0) {
             $errors['slot_start_time'] = $slotViolations[0]->getMessage();
-        } elseif (!$this->isValidDateTime($data['slot_start_time'])) {
-            $errors['slot_start_time'] = 'Slot start time must be a valid ISO-8601 datetime';
+        } elseif (!$this->isValidInstant($data['slot_start_time'])) {
+            $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
         }
 
         $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
@@ -225,6 +228,12 @@ final class PublicAppointmentController extends AbstractController
 
         if (count($modalityViolations) > 0) {
             $errors['modality'] = $modalityViolations[0]->getMessage();
+        }
+
+        // Optional — older clients omit it — but a fixed offset is rejected
+        // outright, since it carries no daylight-saving rules.
+        if (isset($data['timezone']) && !$this->isValidTimezone((string) $data['timezone'])) {
+            $errors['timezone'] = 'Timezone must be an IANA identifier, e.g. Europe/Madrid';
         }
 
         $nameViolations = $this->validator->validate($data['full_name'] ?? '', [

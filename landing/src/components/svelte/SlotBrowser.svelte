@@ -4,70 +4,86 @@
   import { ApiError } from '../../types/api';
   import { fetchAvailableSlots, fetchNextAvailableWeek } from '../../services/api';
   import {
-    getWeekStart,
-    getWeekDates,
-    getWeekdayName,
-    formatShortDate,
-    toDateParam,
+    detectTimeZone,
+    dayKeyInZone,
+    todayKeyInZone,
+    weekStartKey,
+    weekKeys,
+    addDaysToKey,
+    windowForKeys,
+    formatShortDayKey,
+    formatWeekdayDayKey,
+    zoneLabel,
   } from '../../utils/dates';
   import ModalityToggle from './ModalityToggle.svelte';
   import SlotCard from './SlotCard.svelte';
   import ErrorBanner from './ErrorBanner.svelte';
 
   interface Props {
-    onSlotSelected: (slot: SlotData, modality: Modality) => void;
+    onSlotSelected: (
+      slot: SlotData,
+      modality: Modality,
+      practiceZone: string,
+    ) => void;
     errorMessage?: string;
   }
 
   let { onSlotSelected, errorMessage = '' }: Props = $props();
 
-  let weekStart = $state(getWeekStart(new Date()));
+  // The grid is laid out in the viewer's zone, so someone in Madrid sees each
+  // slot under the day it falls on for them, not for the practice.
+  let viewerZone = $state(detectTimeZone());
+  let practiceZone = $state('America/Caracas');
+
+  let weekStart = $state(weekStartKey(todayKeyInZone(detectTimeZone())));
   let modality: ModalityFilter = $state('ALL');
-  let slotsByDate: Record<string, SlotData[]> = $state({});
+  let slots: SlotData[] = $state([]);
   let isLoading = $state(false);
   let isInitialLoading = $state(true);
   let error = $state(errorMessage);
 
-  const weekDates = $derived(getWeekDates(weekStart));
+  const weekDates = $derived(weekKeys(weekStart));
+
+  /** Slots bucketed by the day they fall on in the viewer's zone. */
+  const slotsByDay = $derived(
+    slots.reduce<Record<string, SlotData[]>>((buckets, slot) => {
+      const key = dayKeyInZone(slot.start_time, viewerZone);
+      (buckets[key] ??= []).push(slot);
+      return buckets;
+    }, {}),
+  );
+
+  const showsBothZones = $derived(viewerZone !== practiceZone);
 
   async function loadSlots() {
     isLoading = true;
     error = '';
     try {
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-
       const response = await fetchAvailableSlots({
-        from: toDateParam(weekStart),
-        to: toDateParam(weekEnd),
+        ...windowForKeys(weekDates),
         modality: modality === 'ALL' ? undefined : modality,
       });
 
-      slotsByDate = response.slots_by_date;
+      slots = response.slots;
+      practiceZone = response.practice_timezone;
     } catch (err) {
-      if (err instanceof ApiError) {
-        error = err.message;
-      } else {
-        error = 'Error de conexión. Por favor intenta de nuevo.';
-      }
+      error =
+        err instanceof ApiError
+          ? err.message
+          : 'Error de conexión. Por favor intenta de nuevo.';
     } finally {
       isLoading = false;
     }
   }
 
   function prevWeek() {
-    const now = getWeekStart(new Date());
-    if (weekStart <= now) return;
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() - 7);
-    weekStart = d;
+    if (isPastWeek()) return;
+    weekStart = addDaysToKey(weekStart, -7);
     loadSlots();
   }
 
   function nextWeek() {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 7);
-    weekStart = d;
+    weekStart = addDaysToKey(weekStart, 7);
     loadSlots();
   }
 
@@ -79,12 +95,16 @@
 
   function handleSlotClick(slot: SlotData) {
     const selectedModality: Modality = modality === 'ALL' ? 'ONLINE' : modality;
-    onSlotSelected(slot, selectedModality);
+    onSlotSelected(slot, selectedModality, practiceZone);
   }
 
+  /**
+   * Comparing day keys as strings, not Dates: the previous version compared a
+   * noon-anchored Date against a midnight one, so the guard silently stopped
+   * working after the first load and let people page into past weeks.
+   */
   function isPastWeek(): boolean {
-    const now = getWeekStart(new Date());
-    return weekStart <= now;
+    return weekStart <= weekStartKey(todayKeyInZone(viewerZone));
   }
 
   onMount(async () => {
@@ -93,12 +113,15 @@
         modality: modality === 'ALL' ? undefined : modality,
       });
 
+      practiceZone = response.practice_timezone;
+
       if (response.found && response.week_start) {
-        // Parse date at noon to avoid timezone off-by-one
-        weekStart = new Date(response.week_start + 'T12:00:00');
-        slotsByDate = response.slots_by_date;
+        // week_start is an instant; which day it belongs to depends on who is
+        // looking, so resolve it in the viewer's zone before picking the week.
+        weekStart = weekStartKey(dayKeyInZone(response.week_start, viewerZone));
+        slots = response.slots;
       } else {
-        slotsByDate = {};
+        slots = [];
       }
     } catch (err) {
       error = 'Error de conexión. Por favor intenta de nuevo.';
@@ -108,7 +131,19 @@
   });
 </script>
 
-<div class="space-y-6">
+<div class="space-y-4">
+  <!-- Which zone the times below are in. Never leave this implicit: a silent
+       conversion is how people miss a session by several hours. -->
+  <div
+    class="rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-2.5 text-sm text-neutral-700"
+    data-testid="timezone-banner"
+  >
+    Horarios en <strong class="font-semibold">{zoneLabel(viewerZone)}</strong>
+    {#if showsBothZones}
+      &middot; consultorio en <strong class="font-semibold">{zoneLabel(practiceZone)}</strong>
+    {/if}
+  </div>
+
   <!-- Controls -->
   <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
     <ModalityToggle value={modality} onChange={onModalityChange} />
@@ -122,7 +157,7 @@
         &larr; Anterior
       </button>
       <span class="text-sm font-medium text-neutral-700 min-w-[120px] text-center">
-        {formatShortDate(toDateParam(weekStart))} &ndash; {formatShortDate(toDateParam(new Date(weekStart.getTime() + 6 * 86400000)))}
+        {formatShortDayKey(weekDates[0])} &ndash; {formatShortDayKey(weekDates[6])}
       </span>
       <button
         onclick={nextWeek}
@@ -139,7 +174,6 @@
     <ErrorBanner message={error} onDismiss={() => (error = '')} />
   {/if}
 
-  <!-- Skeleton on initial load -->
   {#if isInitialLoading || isLoading}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
       {#each Array(7) as _}
@@ -155,15 +189,15 @@
     </div>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
-      {#each weekDates as dateStr}
-        {@const daySlots = slotsByDate[dateStr] ?? []}
+      {#each weekDates as dayKey}
+        {@const daySlots = slotsByDay[dayKey] ?? []}
         <div class="rounded-xl border {daySlots.length > 0 ? 'border-neutral-200 bg-white' : 'border-neutral-100 bg-neutral-50'} p-3">
           <div class="mb-2 text-center">
             <div class="text-xs font-medium capitalize text-neutral-500">
-              {getWeekdayName(dateStr)}
+              {formatWeekdayDayKey(dayKey)}
             </div>
             <div class="text-sm font-semibold text-neutral-800">
-              {formatShortDate(dateStr)}
+              {formatShortDayKey(dayKey)}
             </div>
           </div>
           {#if daySlots.length > 0}
@@ -171,6 +205,7 @@
               {#each daySlots as slot}
                 <SlotCard
                   {slot}
+                  timeZone={viewerZone}
                   onClick={() => handleSlotClick(slot)}
                   isLoading={false}
                 />

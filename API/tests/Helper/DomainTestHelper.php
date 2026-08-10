@@ -19,6 +19,7 @@ use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use DateTimeImmutable;
+use DateTimeZone;
 
 final class DomainTestHelper
 {
@@ -132,6 +133,17 @@ final class DomainTestHelper
         );
     }
 
+    /**
+     * A relative offset combined with a wall-clock time ('+1 day 10:00') resolves
+     * against the process timezone, which the suite deliberately sets to +14:00.
+     * Pinning it to UTC keeps fixtures at a predictable instant so tests can assert
+     * absolute times rather than only relative ones.
+     */
+    private static function defaultStartTime(): DateTimeImmutable
+    {
+        return new DateTimeImmutable('+1 day 10:00', new DateTimeZone('UTC'));
+    }
+
     public static function createRequestedAppointment(
         ?AppointmentId $id = null,
         ?DateTimeImmutable $startTime = null,
@@ -145,7 +157,7 @@ final class DomainTestHelper
     ): Appointment {
         return Appointment::request(
             id: $id ?? AppointmentId::generate(),
-            timeSlot: TimeSlot::create($startTime ?? new DateTimeImmutable('+1 day 10:00'), 50),
+            timeSlot: TimeSlot::create($startTime ?? self::defaultStartTime(), 50),
             modality: $modality,
             fullName: $fullName,
             email: Email::fromString($email),
@@ -170,7 +182,7 @@ final class DomainTestHelper
     ): Appointment {
         return Appointment::reconstitute(
             id: $id ?? AppointmentId::generate(),
-            timeSlot: TimeSlot::create($startTime ?? new DateTimeImmutable('+1 day 10:00'), 50),
+            timeSlot: TimeSlot::create($startTime ?? self::defaultStartTime(), 50),
             modality: $modality,
             status: AppointmentStatus::CONFIRMED,
             fullName: $fullName,

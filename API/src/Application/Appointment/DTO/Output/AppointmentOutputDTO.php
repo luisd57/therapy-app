@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Appointment\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\Entity\Appointment;
-use DateTimeInterface;
 
 final readonly class AppointmentOutputDTO
 {
@@ -24,6 +24,8 @@ final readonly class AppointmentOutputDTO
         public bool $paymentVerified,
         public string $createdAt,
         public string $updatedAt,
+        /** Null for appointments booked before the zone was captured. */
+        public ?string $requesterTimezone = null,
     ) {
     }
 
@@ -31,8 +33,8 @@ final readonly class AppointmentOutputDTO
     {
         return new self(
             id: $appointment->getId()->getValue(),
-            startTime: $appointment->getTimeSlot()->getStartTime()->format(DateTimeInterface::ATOM),
-            endTime: $appointment->getTimeSlot()->getEndTime()->format(DateTimeInterface::ATOM),
+            startTime: InstantFormatter::toAtomUtc($appointment->getTimeSlot()->getStartTime()),
+            endTime: InstantFormatter::toAtomUtc($appointment->getTimeSlot()->getEndTime()),
             modality: $appointment->getModality()->value,
             status: $appointment->getStatus()->value,
             fullName: $appointment->getFullName(),
@@ -42,8 +44,9 @@ final readonly class AppointmentOutputDTO
             country: $appointment->getCountry(),
             patientId: $appointment->getPatientId()?->getValue(),
             paymentVerified: $appointment->isPaymentVerified(),
-            createdAt: $appointment->getCreatedAt()->format(DateTimeInterface::ATOM),
-            updatedAt: $appointment->getUpdatedAt()->format(DateTimeInterface::ATOM),
+            createdAt: InstantFormatter::toAtomUtc($appointment->getCreatedAt()),
+            updatedAt: InstantFormatter::toAtomUtc($appointment->getUpdatedAt()),
+            requesterTimezone: $appointment->getRequesterTimezone()?->getValue(),
         );
     }
 
@@ -67,6 +70,7 @@ final readonly class AppointmentOutputDTO
             'payment_verified' => $this->paymentVerified,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
+            'requester_timezone' => $this->requesterTimezone,
         ];
     }
 }

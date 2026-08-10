@@ -6,6 +6,8 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\GetNextAvailableWeekInputDTO;
 use App\Application\Appointment\Handler\GetNextAvailableWeekHandler;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
@@ -38,19 +40,27 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        // Fixed instant: the week start is derived in the practice zone, so a
+        // real "now" would make the expected date depend on when the suite runs.
+        // 12:00 UTC is 08:00 the same day in Caracas.
+        $this->clock->method('now')->willReturn(
+            new \DateTimeImmutable('2026-06-15 12:00:00', new \DateTimeZone('UTC')),
+        );
     }
 
     private function createHandler(int $maxLookaheadWeeks = 3): GetNextAvailableWeekHandler
     {
+        $practiceTimezoneProvider = new EnvPracticeTimezoneProvider('America/Caracas');
+
         return new GetNextAvailableWeekHandler(
             $this->userRepository,
             $this->scheduleRepository,
             $this->exceptionRepository,
             $this->appointmentRepository,
             $this->availabilityComputer,
+            new SlotGenerationRulesFactory($practiceTimezoneProvider, 50, 50),
+            $practiceTimezoneProvider,
             $this->clock,
-            50,
             $maxLookaheadWeeks,
         );
     }
@@ -111,8 +121,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertTrue($result->found);
         $this->assertNotNull($result->weekStart);
         $this->assertNotNull($result->weekEnd);
-        $this->assertSame(1, $result->totalSlots);
-        $this->assertNotEmpty($result->slotsByDate);
+        $this->assertCount(1, $result->slots);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
     }
 
     public function testReturnsFoundFalseWhenNoSlotsInLookahead(): void
@@ -129,8 +139,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertFalse($result->found);
         $this->assertNull($result->weekStart);
         $this->assertNull($result->weekEnd);
-        $this->assertSame(0, $result->totalSlots);
-        $this->assertEmpty($result->slotsByDate);
+        $this->assertCount(0, $result->slots);
     }
 
     public function testPassesModalityFilterToComputer(): void
@@ -204,8 +213,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $result = $handler->__invoke(new GetNextAvailableWeekInputDTO());
 
         $this->assertTrue($result->found);
-        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $this->assertSame($today, $result->weekStart);
+        // Practice-local midnight on 2026-06-15 is 04:00 UTC.
+        $this->assertSame('2026-06-15T04:00:00+00:00', $result->weekStart);
     }
 
     public function testOutputDtoToArray(): void
@@ -227,7 +236,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertArrayHasKey('week_start', $array);
         $this->assertArrayHasKey('week_end', $array);
         $this->assertArrayHasKey('modality', $array);
-        $this->assertArrayHasKey('slots_by_date', $array);
+        $this->assertArrayHasKey('slots', $array);
+        $this->assertArrayHasKey('practice_timezone', $array);
         $this->assertArrayHasKey('total_slots', $array);
         $this->assertTrue($array['found']);
     }

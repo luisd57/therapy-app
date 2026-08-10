@@ -1,13 +1,15 @@
 <script lang="ts">
   import type { AppointmentSummary } from '../../types/api';
-  import { formatDate, formatTime } from '../../utils/dates';
+  import SlotTimeSummary from './SlotTimeSummary.svelte';
 
   interface Props {
     appointment: AppointmentSummary;
+    viewerZone: string;
+    practiceZone: string;
     onRestart: () => void;
   }
 
-  let { appointment, onRestart }: Props = $props();
+  let { appointment, viewerZone, practiceZone, onRestart }: Props = $props();
 
   const modalityLabel = appointment.modality === 'ONLINE' ? 'Online' : 'Presencial';
 </script>
@@ -30,13 +32,13 @@
   </p>
 
   <div class="mt-6 rounded-xl bg-neutral-50 border border-neutral-200 p-4">
-    <p class="text-sm font-medium text-neutral-700 capitalize">
-      {formatDate(appointment.start_time)}
-    </p>
-    <p class="text-lg font-bold text-neutral-900">
-      {formatTime(appointment.start_time)}
-    </p>
-    <span class="mt-1 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
+    <SlotTimeSummary
+      startTime={appointment.start_time}
+      {viewerZone}
+      {practiceZone}
+      size="medium"
+    />
+    <span class="mt-2 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
       {modalityLabel}
     </span>
   </div>

@@ -12,6 +12,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrineAppointmentRepository implements AppointmentRepositoryInterface
 {
@@ -55,8 +56,8 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
                 AppointmentStatus::REQUESTED->value,
                 AppointmentStatus::CONFIRMED->value,
             ])
-            ->setParameter('from', $from)
-            ->setParameter('to', $to);
+            ->setParameter('from', $from, UtcDateTimeImmutableType::NAME)
+            ->setParameter('to', $to, UtcDateTimeImmutableType::NAME);
 
         return new ArrayCollection($qb->getQuery()->getResult());
     }
@@ -143,8 +144,8 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
             ->andWhere('a.timeSlot.startTime < :to')
             ->andWhere('a.timeSlot.endTime > :from')
             ->setParameter('status', AppointmentStatus::CONFIRMED->value)
-            ->setParameter('from', $from)
-            ->setParameter('to', $to);
+            ->setParameter('from', $from, UtcDateTimeImmutableType::NAME)
+            ->setParameter('to', $to, UtcDateTimeImmutableType::NAME);
 
         return new ArrayCollection($qb->getQuery()->getResult());
     }
@@ -164,8 +165,8 @@ final class DoctrineAppointmentRepository implements AppointmentRepositoryInterf
             ->andWhere('a.timeSlot.startTime >= :dayStart')
             ->andWhere('a.timeSlot.startTime < :dayEnd')
             ->setParameter('status', AppointmentStatus::CONFIRMED->value)
-            ->setParameter('dayStart', $dayStart)
-            ->setParameter('dayEnd', $dayEnd)
+            ->setParameter('dayStart', $dayStart, UtcDateTimeImmutableType::NAME)
+            ->setParameter('dayEnd', $dayEnd, UtcDateTimeImmutableType::NAME)
             ->orderBy('a.timeSlot.startTime', 'ASC');
 
         return new ArrayCollection($qb->getQuery()->getResult());

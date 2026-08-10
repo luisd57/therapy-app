@@ -9,6 +9,15 @@
     <php>
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />
+        <!--
+            Deliberately neither UTC (production) nor America/Caracas (the practice
+            zone), and a +14:00 offset with a date-line shift. Any code that builds
+            a DateTime without an explicit zone, or formats one without setting a
+            zone, produces a visibly wrong result here instead of passing by
+            coincidence. Never relax this to make a test go green — add the
+            explicit zone the failing code is missing.
+        -->
+        <ini name="date.timezone" value="Pacific/Kiritimati" />
         <env name="APP_ENV" value="test" force="true" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />

@@ -18,5 +18,8 @@ interface AppointmentRequestServiceInterface
         string $country,
         ?string $lockToken = null,
         ?string $patientId = null,
+        /** Requester's IANA zone, recorded so the therapist knows what time
+         *  the session is for them. Null when the client did not report one. */
+        ?string $requesterTimezone = null,
     ): AppointmentOutputDTO;
 }

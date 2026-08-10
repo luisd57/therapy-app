@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Appointment\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use DateTimeInterface;
 
 final readonly class TimeSlotOutputDTO
 {
@@ -16,12 +16,12 @@ final readonly class TimeSlotOutputDTO
     ) {
     }
 
-    public static function fromValueObject(TimeSlot $slot): self
+    public static function fromValueObject(TimeSlot $timeSlot): self
     {
         return new self(
-            startTime: $slot->getStartTime()->format(DateTimeInterface::ATOM),
-            endTime: $slot->getEndTime()->format(DateTimeInterface::ATOM),
-            durationMinutes: $slot->getDurationMinutes(),
+            startTime: InstantFormatter::toAtomUtc($timeSlot->getStartTime()),
+            endTime: InstantFormatter::toAtomUtc($timeSlot->getEndTime()),
+            durationMinutes: $timeSlot->getDurationMinutes(),
         );
     }
 

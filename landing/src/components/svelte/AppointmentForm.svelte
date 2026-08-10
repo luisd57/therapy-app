@@ -2,19 +2,30 @@
   import type { SlotData, Modality, LockResponse, AppointmentSummary } from '../../types/api';
   import { ApiError } from '../../types/api';
   import { requestAppointment } from '../../services/api';
-  import { formatDate, formatTime } from '../../utils/dates';
   import ErrorBanner from './ErrorBanner.svelte';
+  import SlotTimeSummary from './SlotTimeSummary.svelte';
 
   interface Props {
     slot: SlotData;
     modality: Modality;
+    viewerZone: string;
+    practiceZone: string;
     lockData: LockResponse | null;
     lockWarning?: string;
     onSuccess: (appointment: AppointmentSummary) => void;
     onBack: (errorMessage?: string) => void;
   }
 
-  let { slot, modality, lockData, lockWarning, onSuccess, onBack }: Props = $props();
+  let {
+    slot,
+    modality,
+    viewerZone,
+    practiceZone,
+    lockData,
+    lockWarning,
+    onSuccess,
+    onBack,
+  }: Props = $props();
 
   let fullName = $state('');
   let phone = $state('');
@@ -40,6 +51,9 @@
       email,
       city,
       country,
+      // Recorded on the appointment: the therapist needs to know what time this
+      // is for the patient, and it cannot be recovered afterwards.
+      timezone: viewerZone,
     };
 
     if (lockData?.lock_token) {
@@ -97,13 +111,12 @@
 <div class="mx-auto max-w-lg">
   <!-- Selected slot header -->
   <div class="mb-6 rounded-xl bg-brand-50 border border-brand-200 p-4 text-center">
-    <p class="text-sm font-medium text-brand-700 capitalize">
-      {formatDate(slot.start_time)}
-    </p>
-    <p class="text-2xl font-bold text-brand-800">
-      {formatTime(slot.start_time)}
-    </p>
-    <span class="mt-1 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
+    <SlotTimeSummary
+      startTime={slot.start_time}
+      {viewerZone}
+      {practiceZone}
+    />
+    <span class="mt-2 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-700">
       {modalityLabel}
     </span>
   </div>

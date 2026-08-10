@@ -6,6 +6,8 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\GetAvailableSlotsInputDTO;
 use App\Application\Appointment\Handler\GetAvailableSlotsHandler;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
@@ -41,14 +43,19 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
+        // Real collaborators: both are pure configuration with no I/O, so
+        // mocking them would only restate their behaviour.
+        $practiceTimezoneProvider = new EnvPracticeTimezoneProvider('America/Caracas');
+
         $this->handler = new GetAvailableSlotsHandler(
             $this->userRepository,
             $this->scheduleRepository,
             $this->exceptionRepository,
             $this->appointmentRepository,
             $this->availabilityComputer,
+            new SlotGenerationRulesFactory($practiceTimezoneProvider, 50, 50),
+            $practiceTimezoneProvider,
             $this->clock,
-            50,
         );
     }
 
@@ -89,25 +96,32 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
-        $slot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
+        // Slots are grouped by the practice-local day, so the fixture has to say
+        // which zone 09:00 means rather than leaning on the process default.
+        $slot = TimeSlot::create(
+            new \DateTimeImmutable('2025-06-02 09:00:00', new \DateTimeZone('America/Caracas')),
+            50,
+        );
 
         $this->availabilityComputer
             ->method('computeAvailableSlots')
             ->willReturn(new ArrayCollection([$slot]));
 
         $input = new GetAvailableSlotsInputDTO(
-            from: '2025-06-02',
-            to: '2025-06-02',
+            from: '2025-06-02T00:00:00-04:00',
+            to: '2025-06-03T00:00:00-04:00',
         );
 
         $result = $this->handler->__invoke($input);
 
-        $this->assertSame('2025-06-02', $result->from);
-        $this->assertSame('2025-06-02', $result->to);
+        // The window is echoed back normalised to UTC, so a client can see
+        // exactly which instants the server understood.
+        $this->assertSame('2025-06-02T04:00:00+00:00', $result->from);
+        $this->assertSame('2025-06-03T04:00:00+00:00', $result->to);
         $this->assertNull($result->modality);
-        $this->assertSame(1, $result->totalSlots);
-        $this->assertArrayHasKey('2025-06-02', $result->slotsByDate);
-        $this->assertCount(1, $result->slotsByDate['2025-06-02']);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
+        $this->assertCount(1, $result->slots);
+        $this->assertSame('2025-06-02T13:00:00+00:00', $result->slots->first()->startTime);
     }
 
     public function testHandleWithModalityFilter(): void
@@ -135,15 +149,15 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $input = new GetAvailableSlotsInputDTO(
-            from: '2025-06-02',
-            to: '2025-06-02',
+            from: '2025-06-02T00:00:00-04:00',
+            to: '2025-06-03T00:00:00-04:00',
             modality: 'ONLINE',
         );
 
         $result = $this->handler->__invoke($input);
 
         $this->assertSame('ONLINE', $result->modality);
-        $this->assertSame(0, $result->totalSlots);
-        $this->assertEmpty($result->slotsByDate);
+        $this->assertCount(0, $result->slots);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
     }
 }

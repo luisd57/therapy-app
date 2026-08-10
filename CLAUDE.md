@@ -97,3 +97,7 @@ Stack/architecture conventions go in `.claude/rules/*.md`. Add `paths:` frontmat
 ## Status
 
 Current per-component status: `docs/STATUS.md`. Read it when the state of an unfinished component matters; the `/done` skill updates it.
+
+## Agent skills
+
+Issue tracker (local markdown in `.scratch/`), triage labels, and domain-doc layout: see `docs/agents/`. Glossary is `CONTEXT.md`; decisions are `docs/adr/`.

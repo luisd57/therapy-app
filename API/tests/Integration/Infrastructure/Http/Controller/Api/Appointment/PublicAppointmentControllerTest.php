@@ -43,17 +43,25 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
-        // 2026-06-01 is a Monday
-        $this->client->request('GET', '/api/appointments/available-slots?from=2026-06-01&to=2026-06-01');
+        // 2026-06-01 is a Monday. The window is the client's own instants.
+        $this->client->request(
+            'GET',
+            '/api/appointments/available-slots'
+            . '?from=' . urlencode('2026-06-01T00:00:00-04:00')
+            . '&to=' . urlencode('2026-06-02T00:00:00-04:00'),
+        );
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('2026-06-01', $data['data']['from']);
-        $this->assertSame('2026-06-01', $data['data']['to']);
-        $this->assertArrayHasKey('total_slots', $data['data']);
-        $this->assertArrayHasKey('slots_by_date', $data['data']);
+        $this->assertSame('2026-06-01T04:00:00+00:00', $data['data']['from']);
+        $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
         $this->assertGreaterThan(0, $data['data']['total_slots']);
+
+        // Flat list, and every instant is emitted in UTC regardless of the
+        // offset the caller used.
+        $this->assertArrayHasKey('slots', $data['data']);
+        $this->assertSame('2026-06-01T12:00:00+00:00', $data['data']['slots'][0]['start_time']);
     }
 
     public function testAvailableSlotsReturns422WithMissingFrom(): void
@@ -80,7 +88,13 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->createTherapistWithSchedule();
 
         // 2026-06-01 is a Monday
-        $this->client->request('GET', '/api/appointments/available-slots?from=2026-06-01&to=2026-06-01&modality=ONLINE');
+        $this->client->request(
+            'GET',
+            '/api/appointments/available-slots'
+            . '?from=' . urlencode('2026-06-01T00:00:00-04:00')
+            . '&to=' . urlencode('2026-06-02T00:00:00-04:00')
+            . '&modality=ONLINE',
+        );
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
@@ -97,7 +111,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
         // 2026-06-01T09:00:00 is a Monday at 09:00, within the 08:00-18:00 schedule
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
 
@@ -123,14 +137,14 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
         // Lock the slot once
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
         $this->assertResponseStatusCodeSame(201);
 
         // Try to lock the same slot again
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
 
@@ -146,9 +160,10 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
-        // 2026-06-01T09:40:00 is a valid 50-min slot (08:00, 08:50, 09:40, ...)
+        // 09:30 Caracas (13:30 UTC) is an offered start: 08:00 plus a multiple of the
+        // 30-minute increment, and a full session still fits before 18:00.
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'John Doe',
             'phone' => '+1234567890',
@@ -167,7 +182,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
     public function testRequestAppointmentReturns422WithMissingFields(): void
     {
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
         ]);
 
         $this->assertResponseStatusCodeSame(422);
@@ -183,7 +198,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $userRepo->save($therapist);
 
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'John Doe',
             'phone' => '+1234567890',
@@ -195,6 +210,129 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(409);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
+    }
+
+    // ── requester timezone ───────────────────────────────────────────────
+
+    public function testRequestAppointmentRecordsTheRequestersTimezone(): void
+    {
+        $this->freezeClock('2026-05-30 09:00:00');
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            // The same instant the browse response gave, expressed in the
+            // requester's own offset — Madrid in summer is UTC+2.
+            'slot_start_time' => '2026-06-01T15:30:00+02:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Ana Torres',
+            'phone' => '+34600000000',
+            'email' => 'ana@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+            'timezone' => 'Europe/Madrid',
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $appointment = $this->getResponseData()['data']['appointment'];
+        $this->assertSame('2026-06-01T13:30:00+00:00', $appointment['start_time']);
+    }
+
+    public function testRequestAppointmentRejectsAFixedOffsetAsTimezone(): void
+    {
+        $this->freezeClock('2026-05-30 09:00:00');
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Ana Torres',
+            'phone' => '+34600000000',
+            'email' => 'ana@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+            // Carries no daylight-saving rules, so it would be wrong half the year.
+            'timezone' => '+02:00',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertArrayHasKey('timezone', $this->getResponseData()['error']['details']);
+    }
+
+    // ── instant contract ─────────────────────────────────────────────────
+
+    /**
+     * A datetime with no offset would have to be guessed against some zone.
+     * Guessing is exactly the ambiguity this contract removes, so it is a 422
+     * rather than a silent reinterpretation.
+     */
+    public function testLockSlotRejectsADatetimeWithoutAnOffset(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:00:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertFalse($data['success']);
+        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+    }
+
+    public function testRequestAppointmentRejectsADatetimeWithoutAnOffset(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => 'john@test.com',
+            'city' => 'Madrid',
+            'country' => 'ES',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+    }
+
+    public function testLockSlotAcceptsZuluAndOffsetFormsAsTheSameInstant(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        // 13:30 UTC and 09:30-04:00 are the same moment, so the second must
+        // collide with the first rather than being treated as a different slot.
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T13:30:00Z',
+            'modality' => 'ONLINE',
+        ]);
+        $this->assertResponseStatusCodeSame(201);
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+        $this->assertResponseStatusCodeSame(409);
+    }
+
+    /**
+     * createFromFormat rolls 2026-02-31 forward into March instead of failing,
+     * so the validator needs a round-trip check on top of it.
+     */
+    public function testLockSlotRejectsACalendarDateThatDoesNotExist(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-02-31T09:00:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
     }
 
     // ── next-available-week ────────────────────────────────────────────
@@ -212,7 +350,8 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->assertNotNull($data['data']['week_start']);
         $this->assertNotNull($data['data']['week_end']);
         $this->assertGreaterThan(0, $data['data']['total_slots']);
-        $this->assertArrayHasKey('slots_by_date', $data['data']);
+        $this->assertArrayHasKey('slots', $data['data']);
+        $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
     }
 
     public function testNextAvailableWeekReturnsFoundFalseWithNoSchedule(): void

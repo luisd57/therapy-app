@@ -12,6 +12,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrineScheduleExceptionRepository implements ScheduleExceptionRepositoryInterface
 {
@@ -53,8 +54,8 @@ final class DoctrineScheduleExceptionRepository implements ScheduleExceptionRepo
             ->andWhere('e.startDateTime < :to')
             ->andWhere('e.endDateTime > :from')
             ->setParameter('therapistId', $therapistId->getValue())
-            ->setParameter('from', $from)
-            ->setParameter('to', $to);
+            ->setParameter('from', $from, UtcDateTimeImmutableType::NAME)
+            ->setParameter('to', $to, UtcDateTimeImmutableType::NAME);
 
         return new ArrayCollection($qb->getQuery()->getResult());
     }
