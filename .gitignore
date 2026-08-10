@@ -34,5 +34,8 @@ dist/
 # Local docs (specs, plans, scratch) — STATUS.md is tracked
 docs/*
 !docs/STATUS.md
+# Architecture decisions and agent config are project artefacts, not scratch.
+!docs/adr/
+!docs/agents/
 
 Reusable/
