@@ -15,6 +15,7 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
+use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
@@ -37,9 +38,10 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AvailabilityComputerInterface $availabilityComputer,
         private AppointmentEmailSenderInterface $emailSender,
+        private SlotGenerationRulesFactory $slotGenerationRulesFactory,
+        private PracticeTimezoneProviderInterface $practiceTimezoneProvider,
         private ClockInterface $clock,
         private LoggerInterface $logger,
-        private int $appointmentDurationMinutes,
     ) {
     }
 
@@ -59,7 +61,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         $appointmentModality = AppointmentModality::from($modality);
         $emailVO = Email::fromString($email);
         $phoneVO = Phone::fromString($phone);
-        $timeSlot = TimeSlot::create($startTime, $this->appointmentDurationMinutes);
+        $timeSlot = TimeSlot::create($startTime, $this->slotGenerationRulesFactory->create()->durationMinutes);
 
         // If a lock token is provided, validate and consume it
         if ($lockToken !== null) {
@@ -132,8 +134,12 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         AppointmentModality $appointmentModality,
     ): void {
         $therapist = $this->userRepository->findSingleTherapist();
-        $dayStart = $startTime->setTime(0, 0);
-        $dayEnd = $startTime->setTime(23, 59, 59);
+
+        // Bound the search by the therapist's calendar day, not the requester's:
+        // a 20:00 Caracas slot is already tomorrow for a patient in Madrid.
+        $practiceDay = $startTime->setTimezone($this->practiceTimezoneProvider->getTimeZone());
+        $dayStart = $practiceDay->setTime(0, 0);
+        $dayEnd = $dayStart->modify('+1 day');
 
         $schedules = $this->scheduleRepository->findActiveByTherapist($therapist->getId());
         $exceptions = $this->exceptionRepository->findByTherapistAndDateRange(
@@ -154,10 +160,10 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         );
 
         $availableSlots = $this->availabilityComputer->computeAvailableSlots(
-            context: $context,
+            availabilityContext: $context,
+            slotGenerationRules: $this->slotGenerationRulesFactory->create(),
             from: $dayStart,
             to: $dayEnd,
-            slotDurationMinutes: $this->appointmentDurationMinutes,
             now: $this->clock->now(),
             modalityFilter: $appointmentModality,
         );

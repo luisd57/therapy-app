@@ -10,8 +10,10 @@ use App\Application\Appointment\DTO\Output\TimeSlotOutputDTO;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
+use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -26,8 +28,9 @@ final readonly class GetAvailableSlotsHandler
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private AppointmentRepositoryInterface $appointmentRepository,
         private AvailabilityComputerInterface $availabilityComputer,
+        private SlotGenerationRulesFactory $slotGenerationRulesFactory,
+        private PracticeTimezoneProviderInterface $practiceTimezoneProvider,
         private ClockInterface $clock,
-        private int $appointmentDurationMinutes,
     ) {
     }
 
@@ -36,8 +39,13 @@ final readonly class GetAvailableSlotsHandler
         $therapist = $this->userRepository->findSingleTherapist();
         $therapistId = $therapist->getId();
 
-        $from = new DateTimeImmutable($dto->from);
-        $to = new DateTimeImmutable($dto->to . ' 23:59:59');
+        $practiceTimeZone = $this->practiceTimezoneProvider->getTimeZone();
+
+        // The requested dates are calendar days in the practice zone, so the
+        // window runs from local midnight to local midnight of the day after.
+        $from = DateTimeImmutable::createFromFormat('!Y-m-d', $dto->from, $practiceTimeZone);
+        $to = DateTimeImmutable::createFromFormat('!Y-m-d', $dto->to, $practiceTimeZone)->modify('+1 day');
+
         $modalityFilter = $dto->modality !== null
             ? AppointmentModality::from($dto->modality)
             : null;
@@ -58,17 +66,19 @@ final readonly class GetAvailableSlotsHandler
         );
 
         $availableSlots = $this->availabilityComputer->computeAvailableSlots(
-            context: $context,
+            availabilityContext: $context,
+            slotGenerationRules: $this->slotGenerationRulesFactory->create(),
             from: $from,
             to: $to,
-            slotDurationMinutes: $this->appointmentDurationMinutes,
             now: $this->clock->now(),
             modalityFilter: $modalityFilter,
         );
 
         $slotsByDate = [];
         foreach ($availableSlots as $slot) {
-            $date = $slot->getStartTime()->format('Y-m-d');
+            // Slots are UTC instants; group them by the practice-local calendar
+            // day so a late-evening slot does not land on the following date.
+            $date = $slot->getStartTime()->setTimezone($practiceTimeZone)->format('Y-m-d');
             $slotsByDate[$date][] = TimeSlotOutputDTO::fromValueObject($slot);
         }
 

@@ -122,22 +122,20 @@ services:
     App\Domain\Appointment\Service\AppointmentEmailSenderInterface:
         alias: App\Infrastructure\Email\Appointment\AppointmentEmailSender
 
-    # Appointment Application Service
-    App\Application\Appointment\Service\AppointmentRequestService:
+    # Single source of truth for slot duration + start increment; the services
+    # that compute availability take this instead of the raw ints.
+    App\Application\Appointment\Service\SlotGenerationRulesFactory:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+            $slotStartIncrementMinutes: '%app.slot_start_increment_minutes%'
 
+    # Appointment Application Service
     App\Application\Appointment\Service\AppointmentRequestServiceInterface:
         alias: App\Application\Appointment\Service\AppointmentRequestService
 
     # Appointment Handlers with specific configuration
-    App\Application\Appointment\Handler\GetAvailableSlotsHandler:
-        arguments:
-            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
-
     App\Application\Appointment\Handler\GetNextAvailableWeekHandler:
         arguments:
-            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
             $maxLookaheadWeeks: 12
 
     App\Application\Appointment\Handler\LockSlotHandler:

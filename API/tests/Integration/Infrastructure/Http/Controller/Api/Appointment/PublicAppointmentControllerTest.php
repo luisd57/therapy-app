@@ -97,7 +97,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
         // 2026-06-01T09:00:00 is a Monday at 09:00, within the 08:00-18:00 schedule
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
 
@@ -123,14 +123,14 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
         // Lock the slot once
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
         $this->assertResponseStatusCodeSame(201);
 
         // Try to lock the same slot again
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
-            'slot_start_time' => '2026-06-01T09:00:00',
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
             'modality' => 'ONLINE',
         ]);
 
@@ -146,9 +146,10 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
-        // 2026-06-01T09:40:00 is a valid 50-min slot (08:00, 08:50, 09:40, ...)
+        // 09:30 Caracas (13:30 UTC) is an offered start: 08:00 plus a multiple of the
+        // 30-minute increment, and a full session still fits before 18:00.
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T09:40:00',
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'John Doe',
             'phone' => '+1234567890',
@@ -167,7 +168,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
     public function testRequestAppointmentReturns422WithMissingFields(): void
     {
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
         ]);
 
         $this->assertResponseStatusCodeSame(422);
@@ -183,7 +184,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $userRepo->save($therapist);
 
         $this->jsonRequest('POST', '/api/appointments/request', [
-            'slot_start_time' => '2026-06-01T10:00:00',
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'John Doe',
             'phone' => '+1234567890',

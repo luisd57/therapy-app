@@ -12,94 +12,181 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\Appointment\Enum\WeekDay;
 use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
 
 final readonly class AvailabilityComputer implements AvailabilityComputerInterface
 {
     public function computeAvailableSlots(
-        AvailabilityContext $context,
+        AvailabilityContext $availabilityContext,
+        SlotGenerationRules $slotGenerationRules,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
-        int $slotDurationMinutes,
         DateTimeImmutable $now,
         ?AppointmentModality $modalityFilter = null,
     ): ArrayCollection {
         $slots = new ArrayCollection();
 
-        $current = $from;
-        while ($current <= $to) {
-            $weekDay = WeekDay::fromDateTimeImmutable($current);
+        if ($to <= $from) {
+            return $slots;
+        }
 
-            $daySchedules = $context->schedules->filter(
-                fn (TherapistSchedule $schedule) => $schedule->getDayOfWeek() === $weekDay
-                    && $schedule->isActive()
-                    && ($modalityFilter === null || $schedule->supportsModality($modalityFilter)),
+        $practiceTimeZone = $slotGenerationRules->practiceTimeZone;
+
+        // Walk practice-local calendar days. Comparing formatted dates rather
+        // than instants keeps the loop correct when the window boundaries fall
+        // mid-day in the practice zone.
+        $cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);
+        $lastDate = $to->setTimezone($practiceTimeZone)->format('Y-m-d');
+
+        while ($cursor->format('Y-m-d') <= $lastDate) {
+            // $cursor is practice-zoned, so this is the therapist's weekday —
+            // not the weekday of the underlying UTC instant, which can differ.
+            $weekDay = WeekDay::fromDateTimeImmutable($cursor);
+
+            $daySchedules = $availabilityContext->schedules->filter(
+                fn (TherapistSchedule $therapistSchedule) => $therapistSchedule->getDayOfWeek() === $weekDay
+                    && $therapistSchedule->isActive()
+                    && ($modalityFilter === null || $therapistSchedule->supportsModality($modalityFilter)),
             );
 
-            foreach ($daySchedules as $schedule) {
-                $blockStart = new DateTimeImmutable(
-                    $current->format('Y-m-d') . 'T' . $schedule->getStartTime() . ':00',
+            foreach ($daySchedules as $therapistSchedule) {
+                $this->collectBlockSlots(
+                    $slots,
+                    $availabilityContext,
+                    $slotGenerationRules,
+                    $cursor,
+                    $therapistSchedule,
+                    $from,
+                    $to,
+                    $now,
                 );
-                $blockEnd = new DateTimeImmutable(
-                    $current->format('Y-m-d') . 'T' . $schedule->getEndTime() . ':00',
-                );
-
-                $slotStart = $blockStart;
-                while ($slotStart->modify("+{$slotDurationMinutes} minutes") <= $blockEnd) {
-                    $timeSlot = TimeSlot::create($slotStart, $slotDurationMinutes);
-
-                    if (!$this->isPast($timeSlot, $now)
-                        && !$this->isBlockedByException($timeSlot, $context->exceptions)
-                        && !$this->isOccupiedByAppointment($timeSlot, $context->blockingAppointments)
-                        && !$this->isHeldByLock($timeSlot, $context->activeLocks, $now)
-                    ) {
-                        $slots->add($timeSlot);
-                    }
-
-                    $slotStart = $slotStart->modify("+{$slotDurationMinutes} minutes");
-                }
             }
 
-            $current = $current->modify('+1 day');
+            $cursor = $cursor->modify('+1 day');
         }
 
         return $slots;
     }
 
-    private function isPast(TimeSlot $slot, DateTimeImmutable $now): bool
+    /**
+     * @param ArrayCollection<int, TimeSlot> $slots
+     */
+    private function collectBlockSlots(
+        ArrayCollection $slots,
+        AvailabilityContext $availabilityContext,
+        SlotGenerationRules $slotGenerationRules,
+        DateTimeImmutable $practiceDay,
+        TherapistSchedule $therapistSchedule,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+        DateTimeImmutable $now,
+    ): void {
+        $blockStart = $this->materialize(
+            $practiceDay,
+            $therapistSchedule->getStartTime(),
+            $slotGenerationRules->practiceTimeZone,
+        );
+        $blockEnd = $this->materialize(
+            $practiceDay,
+            $therapistSchedule->getEndTime(),
+            $slotGenerationRules->practiceTimeZone,
+        );
+
+        if ($blockStart === null || $blockEnd === null || $blockEnd <= $blockStart) {
+            return;
+        }
+
+        $slotStart = $blockStart;
+
+        while (true) {
+            $timeSlot = TimeSlot::create($slotStart, $slotGenerationRules->durationMinutes);
+
+            // A session must fit entirely inside the block: the block end is the
+            // time by which the therapist is finished, not the last start.
+            if ($timeSlot->getEndTime() > $blockEnd) {
+                return;
+            }
+
+            if ($slotStart >= $from
+                && $slotStart < $to
+                && !$this->isPast($timeSlot, $now)
+                && !$this->isBlockedByException($timeSlot, $availabilityContext->exceptions)
+                && !$this->isOccupiedByAppointment($timeSlot, $availabilityContext->blockingAppointments)
+                && !$this->isHeldByLock($timeSlot, $availabilityContext->activeLocks, $now)
+            ) {
+                $slots->add($timeSlot);
+            }
+
+            $slotStart = $slotStart->modify("+{$slotGenerationRules->startIncrementMinutes} minutes");
+        }
+    }
+
+    /**
+     * Turns a recurring wall-clock rule ("08:00") into an absolute instant by
+     * reading it in the practice zone.
+     *
+     * The leading '!' resets every unspecified field, microseconds included —
+     * without it the slot would inherit the current microsecond and fail the
+     * loose equality comparisons that match a requested slot to a computed one.
+     *
+     * Stepping happens in UTC so the increment is a physical duration. For a
+     * zone with daylight saving that means wall-clock starts shift after a
+     * transition; America/Caracas has had no DST since 2016, so this is
+     * unreachable today and left as a deliberate, documented choice.
+     */
+    private function materialize(
+        DateTimeImmutable $practiceDay,
+        string $wallClockTime,
+        DateTimeZone $practiceTimeZone,
+    ): ?DateTimeImmutable {
+        $materialized = DateTimeImmutable::createFromFormat(
+            '!Y-m-d H:i:s',
+            $practiceDay->format('Y-m-d') . ' ' . $wallClockTime . ':00',
+            $practiceTimeZone,
+        );
+
+        if ($materialized === false) {
+            return null;
+        }
+
+        return $materialized->setTimezone(new DateTimeZone('UTC'));
+    }
+
+    private function isPast(TimeSlot $timeSlot, DateTimeImmutable $now): bool
     {
-        return $slot->getStartTime() <= $now;
+        return $timeSlot->getStartTime() <= $now;
     }
 
     /**
      * @param ArrayCollection<int, ScheduleException> $exceptions
      */
-    private function isBlockedByException(TimeSlot $slot, ArrayCollection $exceptions): bool
+    private function isBlockedByException(TimeSlot $timeSlot, ArrayCollection $exceptions): bool
     {
         return $exceptions->exists(
-            fn (int $_index, ScheduleException $exception) => $exception->overlapsTimeSlot($slot),
+            fn (int $_index, ScheduleException $scheduleException) => $scheduleException->overlapsTimeSlot($timeSlot),
         );
     }
 
     /**
      * @param ArrayCollection<int, Appointment> $appointments
      */
-    private function isOccupiedByAppointment(TimeSlot $slot, ArrayCollection $appointments): bool
+    private function isOccupiedByAppointment(TimeSlot $timeSlot, ArrayCollection $appointments): bool
     {
         return $appointments->exists(
             fn (int $_index, Appointment $appointment) => $appointment->blocksSlot()
-                && $appointment->getTimeSlot()->overlaps($slot),
+                && $appointment->getTimeSlot()->overlaps($timeSlot),
         );
     }
 
     /**
      * @param ArrayCollection<int, SlotLock> $locks
      */
-    private function isHeldByLock(TimeSlot $slot, ArrayCollection $locks, DateTimeImmutable $now): bool
+    private function isHeldByLock(TimeSlot $timeSlot, ArrayCollection $locks, DateTimeImmutable $now): bool
     {
         return $locks->exists(
             fn (int $_index, SlotLock $slotLock) => $slotLock->isActive($now)
-                && $slotLock->getTimeSlot()->overlaps($slot),
+                && $slotLock->getTimeSlot()->overlaps($timeSlot),
         );
     }
 }

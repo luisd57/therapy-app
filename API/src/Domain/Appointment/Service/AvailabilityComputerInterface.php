@@ -12,15 +12,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 interface AvailabilityComputerInterface
 {
     /**
-     * Computes available time slots for a given date range, optionally filtered by modality.
+     * Computes bookable slots in the half-open instant window [$from, $to).
+     *
+     * $from, $to and $now are absolute instants in any zone; every returned
+     * TimeSlot carries UTC instants. Which schedule blocks apply on a given day
+     * is decided in the practice zone from $slotGenerationRules, not in the
+     * zone the window happens to be expressed in.
      *
      * @return ArrayCollection<int, TimeSlot>
      */
     public function computeAvailableSlots(
-        AvailabilityContext $context,
+        AvailabilityContext $availabilityContext,
+        SlotGenerationRules $slotGenerationRules,
         DateTimeImmutable $from,
         DateTimeImmutable $to,
-        int $slotDurationMinutes,
         DateTimeImmutable $now,
         ?AppointmentModality $modalityFilter = null,
     ): ArrayCollection;
