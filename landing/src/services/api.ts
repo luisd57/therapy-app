@@ -38,6 +38,7 @@ async function apiRequest<T>(
   return json.data as T;
 }
 
+/** `from` and `to` are ISO-8601 instants with an offset, `to` exclusive. */
 export async function fetchAvailableSlots(params: {
   from: string;
   to: string;
@@ -87,6 +88,9 @@ export async function requestAppointment(body: {
   email: string;
   city: string;
   country: string;
+  /** Requester's IANA zone. Cannot be reconstructed later, and the therapist
+   *  needs it to know what time the session is for the patient. */
+  timezone: string;
   lock_token?: string;
 }): Promise<AppointmentResponse> {
   return apiRequest<AppointmentResponse>('/appointments/request', {

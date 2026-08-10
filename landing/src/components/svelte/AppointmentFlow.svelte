@@ -2,9 +2,15 @@
   import type { SlotData, Modality, LockResponse, AppointmentSummary } from '../../types/api';
   import { ApiError } from '../../types/api';
   import { lockSlot } from '../../services/api';
+  import { detectTimeZone } from '../../utils/dates';
   import SlotBrowser from './SlotBrowser.svelte';
   import AppointmentForm from './AppointmentForm.svelte';
   import ThankYou from './ThankYou.svelte';
+
+  // Held here so the form and confirmation keep showing both times after the
+  // browser is unmounted.
+  let viewerZone = $state(detectTimeZone());
+  let practiceZone = $state('America/Caracas');
 
   type FlowStep =
     | { step: 'browsing'; errorMessage?: string }
@@ -13,7 +19,13 @@
 
   let current: FlowStep = $state({ step: 'browsing' });
 
-  function handleSlotSelected(slot: SlotData, modality: Modality) {
+  function handleSlotSelected(
+    slot: SlotData,
+    modality: Modality,
+    selectedPracticeZone: string,
+  ) {
+    practiceZone = selectedPracticeZone;
+
     // Optimistic: show form immediately, lock in background
     current = { step: 'filling_form', slot, modality, lockData: null };
 
@@ -58,6 +70,8 @@
     <AppointmentForm
       slot={current.slot}
       modality={current.modality}
+      {viewerZone}
+      {practiceZone}
       lockData={current.lockData}
       lockWarning={current.lockWarning}
       onSuccess={handleSuccess}
@@ -66,6 +80,8 @@
   {:else if current.step === 'success'}
     <ThankYou
       appointment={current.appointment}
+      {viewerZone}
+      {practiceZone}
       onRestart={handleRestart}
     />
   {/if}

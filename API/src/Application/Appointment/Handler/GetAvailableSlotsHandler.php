@@ -11,6 +11,7 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Application\Appointment\Service\SlotGenerationRulesFactory;
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
@@ -39,12 +40,10 @@ final readonly class GetAvailableSlotsHandler
         $therapist = $this->userRepository->findSingleTherapist();
         $therapistId = $therapist->getId();
 
-        $practiceTimeZone = $this->practiceTimezoneProvider->getTimeZone();
-
-        // The requested dates are calendar days in the practice zone, so the
-        // window runs from local midnight to local midnight of the day after.
-        $from = DateTimeImmutable::createFromFormat('!Y-m-d', $dto->from, $practiceTimeZone);
-        $to = DateTimeImmutable::createFromFormat('!Y-m-d', $dto->to, $practiceTimeZone)->modify('+1 day');
+        // The window is a pair of instants chosen by the client, so its own week
+        // boundaries are honoured rather than being snapped to practice days.
+        $from = new DateTimeImmutable($dto->from);
+        $to = new DateTimeImmutable($dto->to);
 
         $modalityFilter = $dto->modality !== null
             ? AppointmentModality::from($dto->modality)
@@ -74,20 +73,14 @@ final readonly class GetAvailableSlotsHandler
             modalityFilter: $modalityFilter,
         );
 
-        $slotsByDate = [];
-        foreach ($availableSlots as $slot) {
-            // Slots are UTC instants; group them by the practice-local calendar
-            // day so a late-evening slot does not land on the following date.
-            $date = $slot->getStartTime()->setTimezone($practiceTimeZone)->format('Y-m-d');
-            $slotsByDate[$date][] = TimeSlotOutputDTO::fromValueObject($slot);
-        }
-
         return new AvailableSlotsOutputDTO(
-            from: $dto->from,
-            to: $dto->to,
+            from: InstantFormatter::toAtomUtc($from),
+            to: InstantFormatter::toAtomUtc($to),
             modality: $dto->modality,
-            slotsByDate: $slotsByDate,
-            totalSlots: $availableSlots->count(),
+            practiceTimezone: $this->practiceTimezoneProvider->getIdentifier(),
+            slots: $availableSlots->map(
+                fn ($timeSlot) => TimeSlotOutputDTO::fromValueObject($timeSlot),
+            ),
         );
     }
 }

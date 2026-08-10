@@ -146,27 +146,29 @@ final class PublicAppointmentController extends AbstractController
         $errors = [];
 
         $fromViolations = $this->validator->validate($from, [
-            new Assert\NotBlank(message: 'From date is required'),
+            new Assert\NotBlank(message: 'From is required'),
         ]);
 
         if (count($fromViolations) > 0) {
             $errors['from'] = $fromViolations[0]->getMessage();
-        } elseif (!$this->isValidDate($from)) {
-            $errors['from'] = 'From date must be a valid date (YYYY-MM-DD)';
+        } elseif (!$this->isValidInstant($from)) {
+            $errors['from'] = 'From must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T00:00:00-04:00';
         }
 
         $toViolations = $this->validator->validate($to, [
-            new Assert\NotBlank(message: 'To date is required'),
+            new Assert\NotBlank(message: 'To is required'),
         ]);
 
         if (count($toViolations) > 0) {
             $errors['to'] = $toViolations[0]->getMessage();
-        } elseif (!$this->isValidDate($to)) {
-            $errors['to'] = 'To date must be a valid date (YYYY-MM-DD)';
+        } elseif (!$this->isValidInstant($to)) {
+            $errors['to'] = 'To must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-08T00:00:00-04:00';
         }
 
-        if (empty($errors) && $from > $to) {
-            $errors['from'] = 'From date must be before or equal to To date';
+        // Instants, not strings: two windows with different offsets do not sort
+        // lexically in timeline order.
+        if (empty($errors) && new \DateTimeImmutable($from) >= new \DateTimeImmutable($to)) {
+            $errors['from'] = 'From must be before To';
         }
 
         return $errors;

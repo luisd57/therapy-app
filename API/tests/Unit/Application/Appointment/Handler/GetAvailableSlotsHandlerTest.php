@@ -108,18 +108,20 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->willReturn(new ArrayCollection([$slot]));
 
         $input = new GetAvailableSlotsInputDTO(
-            from: '2025-06-02',
-            to: '2025-06-02',
+            from: '2025-06-02T00:00:00-04:00',
+            to: '2025-06-03T00:00:00-04:00',
         );
 
         $result = $this->handler->__invoke($input);
 
-        $this->assertSame('2025-06-02', $result->from);
-        $this->assertSame('2025-06-02', $result->to);
+        // The window is echoed back normalised to UTC, so a client can see
+        // exactly which instants the server understood.
+        $this->assertSame('2025-06-02T04:00:00+00:00', $result->from);
+        $this->assertSame('2025-06-03T04:00:00+00:00', $result->to);
         $this->assertNull($result->modality);
-        $this->assertSame(1, $result->totalSlots);
-        $this->assertArrayHasKey('2025-06-02', $result->slotsByDate);
-        $this->assertCount(1, $result->slotsByDate['2025-06-02']);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
+        $this->assertCount(1, $result->slots);
+        $this->assertSame('2025-06-02T13:00:00+00:00', $result->slots->first()->startTime);
     }
 
     public function testHandleWithModalityFilter(): void
@@ -147,15 +149,15 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             ->willReturn(new ArrayCollection());
 
         $input = new GetAvailableSlotsInputDTO(
-            from: '2025-06-02',
-            to: '2025-06-02',
+            from: '2025-06-02T00:00:00-04:00',
+            to: '2025-06-03T00:00:00-04:00',
             modality: 'ONLINE',
         );
 
         $result = $this->handler->__invoke($input);
 
         $this->assertSame('ONLINE', $result->modality);
-        $this->assertSame(0, $result->totalSlots);
-        $this->assertEmpty($result->slotsByDate);
+        $this->assertCount(0, $result->slots);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
     }
 }

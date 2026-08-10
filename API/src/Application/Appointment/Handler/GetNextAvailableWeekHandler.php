@@ -11,6 +11,7 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Application\Appointment\Service\SlotGenerationRulesFactory;
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
 use App\Domain\Appointment\Service\AvailabilityContext;
 use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
@@ -100,19 +101,15 @@ final readonly class GetNextAvailableWeekHandler
             );
 
             if ($availableSlots->count() > 0) {
-                $slotsByDate = [];
-                foreach ($availableSlots as $slot) {
-                    $date = $slot->getStartTime()->setTimezone($practiceTimeZone)->format('Y-m-d');
-                    $slotsByDate[$date][] = TimeSlotOutputDTO::fromValueObject($slot);
-                }
-
                 return new NextAvailableWeekOutputDTO(
                     found: true,
-                    weekStart: $weekStart->format('Y-m-d'),
-                    weekEnd: $weekStart->modify('+6 days')->format('Y-m-d'),
+                    weekStart: InstantFormatter::toAtomUtc($weekStart),
+                    weekEnd: InstantFormatter::toAtomUtc($weekEnd),
                     modality: $dto->modality,
-                    slotsByDate: $slotsByDate,
-                    totalSlots: $availableSlots->count(),
+                    practiceTimezone: $this->practiceTimezoneProvider->getIdentifier(),
+                    slots: $availableSlots->map(
+                        fn ($timeSlot) => TimeSlotOutputDTO::fromValueObject($timeSlot),
+                    ),
                 );
             }
         }
@@ -122,8 +119,8 @@ final readonly class GetNextAvailableWeekHandler
             weekStart: null,
             weekEnd: null,
             modality: $dto->modality,
-            slotsByDate: [],
-            totalSlots: 0,
+            practiceTimezone: $this->practiceTimezoneProvider->getIdentifier(),
+            slots: new ArrayCollection(),
         );
     }
 }

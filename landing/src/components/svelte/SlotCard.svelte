@@ -4,11 +4,13 @@
 
   interface Props {
     slot: SlotData;
+    /** Zone the time is rendered in — always the viewer's, named on the banner. */
+    timeZone: string;
     onClick: () => void;
     isLoading: boolean;
   }
 
-  let { slot, onClick, isLoading }: Props = $props();
+  let { slot, timeZone, onClick, isLoading }: Props = $props();
 </script>
 
 <button
@@ -19,7 +21,7 @@
          disabled:opacity-50 disabled:cursor-wait"
 >
   <span class="text-sm font-semibold text-neutral-900">
-    {formatTime(slot.start_time)}
+    {formatTime(slot.start_time, timeZone)}
   </span>
   <span class="ml-2 text-xs text-neutral-500">
     {slot.duration_minutes} min

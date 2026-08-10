@@ -121,8 +121,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertTrue($result->found);
         $this->assertNotNull($result->weekStart);
         $this->assertNotNull($result->weekEnd);
-        $this->assertSame(1, $result->totalSlots);
-        $this->assertNotEmpty($result->slotsByDate);
+        $this->assertCount(1, $result->slots);
+        $this->assertSame('America/Caracas', $result->practiceTimezone);
     }
 
     public function testReturnsFoundFalseWhenNoSlotsInLookahead(): void
@@ -139,8 +139,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertFalse($result->found);
         $this->assertNull($result->weekStart);
         $this->assertNull($result->weekEnd);
-        $this->assertSame(0, $result->totalSlots);
-        $this->assertEmpty($result->slotsByDate);
+        $this->assertCount(0, $result->slots);
     }
 
     public function testPassesModalityFilterToComputer(): void
@@ -214,7 +213,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $result = $handler->__invoke(new GetNextAvailableWeekInputDTO());
 
         $this->assertTrue($result->found);
-        $this->assertSame('2026-06-15', $result->weekStart);
+        // Practice-local midnight on 2026-06-15 is 04:00 UTC.
+        $this->assertSame('2026-06-15T04:00:00+00:00', $result->weekStart);
     }
 
     public function testOutputDtoToArray(): void
@@ -236,7 +236,8 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertArrayHasKey('week_start', $array);
         $this->assertArrayHasKey('week_end', $array);
         $this->assertArrayHasKey('modality', $array);
-        $this->assertArrayHasKey('slots_by_date', $array);
+        $this->assertArrayHasKey('slots', $array);
+        $this->assertArrayHasKey('practice_timezone', $array);
         $this->assertArrayHasKey('total_slots', $array);
         $this->assertTrue($array['found']);
     }
