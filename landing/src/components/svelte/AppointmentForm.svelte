@@ -76,7 +76,7 @@
       }
 
       if (err.code === 'INVALID_LOCK_TOKEN') {
-        // Lock expired — retry without lock token
+        // Lock expired, retry without the lock token
         try {
           delete body.lock_token;
           const response = await requestAppointment(body as any);

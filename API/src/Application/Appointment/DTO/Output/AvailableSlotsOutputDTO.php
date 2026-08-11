@@ -8,10 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Slots are a flat list of instants, deliberately not grouped by date.
- *
- * Grouping server-side can only use the practice's calendar, which is the wrong
- * calendar for everyone outside Venezuela — a Friday 19:00 slot in Caracas is
- * already Saturday in Madrid. Clients bucket by their viewer's day instead.
+ * Grouping here could only use the practice calendar, the wrong day for viewers in other zones.
  */
 final readonly class AvailableSlotsOutputDTO
 {

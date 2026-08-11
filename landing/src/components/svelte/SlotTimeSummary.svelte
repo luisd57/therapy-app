@@ -12,8 +12,8 @@
 
   let { startTime, viewerZone, practiceZone, size = 'large' }: Props = $props();
 
-  // Only worth showing twice when the two actually differ — for a patient in
-  // Venezuela a second line would be noise.
+  // Only worth showing twice when the two differ. For a patient in Venezuela
+  // a second line would just be noise.
   const showsBothZones = $derived(viewerZone !== practiceZone);
 </script>
 

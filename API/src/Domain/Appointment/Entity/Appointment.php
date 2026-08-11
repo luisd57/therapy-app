@@ -56,10 +56,8 @@ class Appointment
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
         /**
-         * The zone the requester was in when they booked. Nullable because it
-         * cannot be recovered for appointments made before it was captured, and
-         * defaulting to the practice zone would be inventing data. Readers fall
-         * back to the practice zone when it is absent.
+         * The zone the requester was in when they booked.
+         * Null for bookings made before it was captured; readers fall back to the practice zone.
          */
         #[ORM\Column(type: 'timezone', length: 64, nullable: true)]
         private readonly ?Timezone $requesterTimezone = null,

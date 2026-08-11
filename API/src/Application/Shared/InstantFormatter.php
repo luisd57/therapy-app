@@ -9,12 +9,8 @@ use DateTimeInterface;
 use DateTimeZone;
 
 /**
- * Renders instants for API responses.
- *
- * Always UTC, always with an explicit offset. Clients convert to whatever zone
- * their reader is in; the API never guesses on their behalf. Formatting in the
- * server's zone would make the response depend on deployment config, which is
- * how a '-04:00' offset that was never stored ended up in payloads before.
+ * Renders instants for API responses: always UTC, always with an explicit offset.
+ * Never the server's zone, or the response starts depending on deployment config. See ADR 0001.
  */
 final readonly class InstantFormatter
 {

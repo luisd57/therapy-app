@@ -230,8 +230,8 @@ final class PublicAppointmentController extends AbstractController
             $errors['modality'] = $modalityViolations[0]->getMessage();
         }
 
-        // Optional — older clients omit it — but a fixed offset is rejected
-        // outright, since it carries no daylight-saving rules.
+        // Optional, since older clients omit it. A fixed offset is still rejected
+        // outright, because it carries no daylight-saving rules.
         if (isset($data['timezone']) && !$this->isValidTimezone((string) $data['timezone'])) {
             $errors['timezone'] = 'Timezone must be an IANA identifier, e.g. Europe/Madrid';
         }

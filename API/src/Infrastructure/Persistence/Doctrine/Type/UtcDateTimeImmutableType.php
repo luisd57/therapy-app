@@ -14,16 +14,7 @@ use Exception;
 
 /**
  * Maps an instant to TIMESTAMP WITH TIME ZONE, always writing and reading UTC.
- *
- * The stock datetime_immutable type formats a value using its OWN timezone and
- * emits no offset, so an instant built in America/Caracas is stored as though it
- * were UTC and silently shifts by four hours. Pinning both directions to UTC
- * means a stored row denotes the same point on the timeline regardless of which
- * zone the writing code happened to be in.
- *
- * Deliberately not DBAL's DATETIMETZ_IMMUTABLE: that type requires the exact
- * 'Y-m-d H:i:sO' format and has no parse fallback, while Postgres renders the
- * offset as '+00' — any drift becomes a hard InvalidFormat at read time.
+ * Not the stock type (it drops the offset) and not DATETIMETZ_IMMUTABLE. See ADR 0001.
  */
 final class UtcDateTimeImmutableType extends DateTimeImmutableType
 {

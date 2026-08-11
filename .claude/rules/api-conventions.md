@@ -8,7 +8,7 @@ paths:
 - `declare(strict_types=1);` in every file
 - Constructor Property Promotion: always
 - Readonly properties for immutable data
-- `final` for classes not intended for inheritance (Doctrine entities are NEVER `final` — proxying)
+- `final` for classes not intended for inheritance (Doctrine entities are NEVER `final` - proxying)
 - Always declare return types
 
 ## Method Parameters
@@ -42,18 +42,18 @@ paths:
 - Input DTOs: `DTO/Input/`, suffixed `InputDTO`
 - Output DTOs: `DTO/Output/`, suffixed `OutputDTO`
 - All DTOs are `final readonly class`
-- Name the static factory for what it maps: `fromEntity()` from a single entity, `fromValueObject()` from a VO. A DTO built from computed results, or needing repositories to compose, is assembled by its handler or an Application Service — don't add a factory that only aliases the constructor
-- `toArray()` on every Output DTO that goes into a response. Omit it on internal carriers the controller destructures — e.g. an auth result whose token goes to an httpOnly cookie, not the body
+- Name the static factory for what it maps: `fromEntity()` from a single entity, `fromValueObject()` from a VO. A DTO built from computed results, or needing repositories to compose, is assembled by its handler or an Application Service - don't add a factory that only aliases the constructor
+- `toArray()` on every Output DTO that goes into a response. Omit it on internal carriers the controller destructures - e.g. an auth result whose token goes to an httpOnly cookie, not the body
 
 ## Value Objects
 - Static factories: `fromString()`, `create()`, `generate()`
 - Private constructors, immutable (readonly), self-validating
 
 ## Validation (deliberate, do not "fix")
-- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array via `ValidatesRequestTrait` (422, `details` = field → first message). Value Objects are the real guard — attribute validation duplicates their rules and drifts out of sync with them.
+- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array via `ValidatesRequestTrait` (422, `details` = field → first message). Value Objects are the real guard - attribute validation duplicates their rules and drifts out of sync with them.
 
 ## Errors (deliberate, do not "fix")
-- NO kernel exception listener. Each action catches the specific domain exceptions it can produce — a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.
+- NO kernel exception listener. Each action catches the specific domain exceptions it can produce - a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.
 
 ## API Responses
 - Use `ApiResponseTrait` for consistent envelope format

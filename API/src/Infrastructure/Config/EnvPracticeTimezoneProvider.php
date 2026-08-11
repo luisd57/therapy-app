@@ -10,9 +10,7 @@ use DateTimeZone;
 
 /**
  * Reads the practice zone from PRACTICE_TIMEZONE.
- *
- * Configuration rather than a database column: there is one therapist and she is
- * not relocating. Should that change, this is the only class that has to.
+ * Config rather than a database column; if that ever changes, this is the only class that does.
  */
 final class EnvPracticeTimezoneProvider implements PracticeTimezoneProviderInterface
 {

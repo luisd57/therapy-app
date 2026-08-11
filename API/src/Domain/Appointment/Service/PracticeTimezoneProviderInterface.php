@@ -8,10 +8,7 @@ use DateTimeZone;
 
 /**
  * The zone the therapist's schedule blocks are expressed in.
- *
- * A block of "08:00-12:00 on Monday" is a recurring wall-clock rule, not an
- * instant; it only becomes a point on the timeline once read against this zone.
- * Single-therapist practice, so there is exactly one.
+ * A block is a wall-clock rule, not an instant; it only lands on the timeline once read here.
  */
 interface PracticeTimezoneProviderInterface
 {

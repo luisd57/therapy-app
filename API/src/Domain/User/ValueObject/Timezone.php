@@ -8,10 +8,7 @@ use DateTimeZone;
 
 /**
  * An IANA timezone identifier, such as 'America/Caracas' or 'Europe/Madrid'.
- *
- * Deliberately not a fixed offset. Most patients are in Europe, where the offset
- * to Venezuela is five hours in winter and six in summer — only the named zone
- * carries the rules that make that shift automatic.
+ * Never a fixed offset: only a named zone carries the DST rules. See ADR 0001.
  */
 final readonly class Timezone
 {

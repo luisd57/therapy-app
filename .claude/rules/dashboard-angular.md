@@ -54,7 +54,7 @@ Kebab-case for all files/folders. One component/service/store per file. No `inde
 - Standalone, no NgModules
 - Inject services/stores via `inject()`
 - Pass data to dumb components via signal `input()`, receive events via `output()`
-- Minimal template logic — delegate display to `ui/` components
+- Minimal template logic - delegate display to `ui/` components
 
 ## Dumb Components (ui/)
 - Standalone, receive data via signal `input()`, emit via `output()`
@@ -62,7 +62,7 @@ Kebab-case for all files/folders. One component/service/store per file. No `inde
 
 ## Shell Routes
 - Every domain with multiple routes has a `<domain>-shell.routes.ts` in `feature/`
-- Contains ONLY route definitions — no components, no services
+- Contains ONLY route definitions - no components, no services
 - Use `loadComponent` for individual pages, `loadChildren` for domain route sets
 
 ## Data-Access

@@ -135,7 +135,7 @@ export function formatWeekdayDayKey(
   });
 }
 
-/** "Madrid (GMT+2)" — the city plus its offset at the given instant. */
+/** "Madrid (GMT+2)", the city plus its offset at the given instant. */
 export function zoneLabel(timeZone: string, at: Date = new Date()): string {
   const city = timeZone.split('/').pop()?.replace(/_/g, ' ') ?? timeZone;
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -148,9 +148,8 @@ export function zoneLabel(timeZone: string, at: Date = new Date()): string {
 }
 
 /**
- * Difference in hours from the practice zone to the viewer's, at a given
- * instant — the "5 o 6 horas" the therapist reasons in. Positive means the
- * viewer is ahead.
+ * Difference in hours from the practice zone to the viewer's, at a given instant.
+ * Positive means the viewer is ahead. This is the "5 o 6 horas" the therapist reasons in.
  */
 export function offsetHoursBetween(
   fromZone: string,

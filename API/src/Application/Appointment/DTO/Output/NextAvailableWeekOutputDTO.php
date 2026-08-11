@@ -7,9 +7,8 @@ namespace App\Application\Appointment\DTO\Output;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * Week bounds are instants, not calendar dates: the week is the therapist's,
- * and a client in another zone needs to know exactly where it starts and ends
- * to lay it out against its own days. weekEnd is exclusive.
+ * Week bounds are instants, not calendar dates, so a client in another zone can place them.
+ * weekEnd is exclusive.
  */
 final readonly class NextAvailableWeekOutputDTO
 {

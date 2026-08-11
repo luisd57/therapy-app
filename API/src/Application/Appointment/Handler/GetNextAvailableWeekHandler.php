@@ -47,12 +47,12 @@ final readonly class GetNextAvailableWeekHandler
             ? AppointmentModality::from($dto->modality)
             : null;
 
-        // Schedules are static — load once and reuse across all weeks
+        // Schedules are static, so load once and reuse across all weeks
         $schedules = $this->scheduleRepository->findActiveByTherapist($therapistId);
 
         $practiceTimeZone = $this->practiceTimezoneProvider->getTimeZone();
 
-        // "Today" is the therapist's day, not the server's — at 02:00 UTC it is
+        // "Today" is the therapist's day, not the server's. At 02:00 UTC it is
         // still the previous day in Caracas, and the week must start there.
         $today = $this->clock->now()->setTimezone($practiceTimeZone)->setTime(0, 0);
 
