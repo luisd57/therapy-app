@@ -86,9 +86,8 @@ export class InvitationsListPage implements OnInit {
   ngOnInit(): void {
     this.fetch();
 
-    // Refresh whenever the tab regains visibility — covers the case where the
-    // therapist switches tabs to see the patient consume their invitation, then
-    // comes back expecting the row to show Used instead of Pending.
+    // Refresh whenever the tab regains visibility, so a row the therapist watched
+    // being used elsewhere shows Used instead of Pending when they come back.
     fromEvent(this.document, 'visibilitychange')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((): void => {

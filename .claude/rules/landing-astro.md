@@ -7,7 +7,7 @@ paths:
 # Landing Page Conventions (Astro + Svelte)
 
 ## Tech Stack
-- Astro 5.7 (Islands Architecture — static HTML with selective client hydration)
+- Astro 5.7 (Islands Architecture - static HTML with selective client hydration)
 - Svelte 5 (interactive island components)
 - Tailwind CSS 3.4
 
@@ -15,8 +15,8 @@ paths:
 ```
 src/
 ├── components/
-│   ├── astro/         # Server-rendered (.astro) — layout, bio, services
-│   └── svelte/        # Client-hydrated (.svelte) — interactive flows
+│   ├── astro/         # Server-rendered (.astro) - layout, bio, services
+│   └── svelte/        # Client-hydrated (.svelte) - interactive flows
 ├── content/site/      # Content Collections (markdown)
 ├── layouts/           # Astro layout templates
 ├── pages/             # Astro page routes

@@ -13,9 +13,9 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 ## ORM Pragmatism (deliberate, do not "fix")
 
 - ORM attributes (`#[ORM\...]`) live directly on Domain entities. No separate mapping layer: the abstraction only pays off if you swap ORMs, and at this scale that isn't happening.
-- NO Doctrine relation attributes (`OneToMany`, `ManyToOne`, `mappedBy`, `inversedBy`). Entities reference other aggregates by ID value objects; repositories resolve them. Never introduce bidirectional mappings — they buy coupling between aggregates and lazy-loading surprises, and explicit repository lookups are cheaper to reason about.
+- NO Doctrine relation attributes (`OneToMany`, `ManyToOne`, `mappedBy`, `inversedBy`). Entities reference other aggregates by ID value objects; repositories resolve them. Never introduce bidirectional mappings - they buy coupling between aggregates and lazy-loading surprises, and explicit repository lookups are cheaper to reason about.
 - This is an ORM-mapping rule, NOT a schema rule. Migrations still declare `FOREIGN KEY` constraints with explicit cascade semantics: referential integrity belongs in the database.
-- Repositories flush; handlers NEVER call flush or manage transactions. No transaction middleware — an accepted trade-off.
+- Repositories flush; handlers NEVER call flush or manage transactions. No transaction middleware - an accepted trade-off.
 
 ## Domain Layer
 Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, InvitationToken, PasswordResetToken), Value Objects (immutable, self-validating: UserId, Email, Phone, Address, UserRole, AppointmentId, AppointmentStatus, AppointmentModality, TimeSlot, WeekDay), Repository Interfaces (driven ports), Service Interfaces (driven ports: EmailSenderInterface, JwtTokenGeneratorInterface, PasswordHasherInterface), Domain Services (AvailabilityComputer), Parameter Objects (AvailabilityContext), Exceptions.
@@ -39,7 +39,7 @@ Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/
 3. Custom DBAL Type in `src/Infrastructure/Persistence/Doctrine/Type/`
 4. Register type in `config/packages/doctrine.yaml`
 5. Repository impl in `src/Infrastructure/Persistence/Doctrine/Repository/`
-6. Migration: review `doctrine:migrations:diff` output before keeping it — entities declare no relations, so Doctrine does not know about the hand-written FK constraints and indexes in `migrations/` and will propose dropping them
+6. Migration: review `doctrine:migrations:diff` output before keeping it - entities declare no relations, so Doctrine does not know about the hand-written FK constraints and indexes in `migrations/` and will propose dropping them
 
 ### New API Endpoint
 1. Route method in controller in `src/Infrastructure/Http/Controller/Api/`

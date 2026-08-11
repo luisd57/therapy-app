@@ -42,9 +42,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private DateTimeImmutable $updatedAt;
 
     /**
-     * The patient's usual zone, so the therapist can see what time an
-     * appointment is for them. Each appointment also records the zone reported
-     * at booking, since people travel.
+     * The patient's usual zone, so the therapist sees what time an appointment is for them.
+     * Each appointment records its own zone too, since people travel.
      */
     #[ORM\Column(type: 'timezone', length: 64, nullable: true)]
     private ?Timezone $timezone = null;

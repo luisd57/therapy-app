@@ -13,11 +13,7 @@ interface AvailabilityComputerInterface
 {
     /**
      * Computes bookable slots in the half-open instant window [$from, $to).
-     *
-     * $from, $to and $now are absolute instants in any zone; every returned
-     * TimeSlot carries UTC instants. Which schedule blocks apply on a given day
-     * is decided in the practice zone from $slotGenerationRules, not in the
-     * zone the window happens to be expressed in.
+     * Which blocks apply on a day is decided in the practice zone, not the window's zone.
      *
      * @return ArrayCollection<int, TimeSlot>
      */

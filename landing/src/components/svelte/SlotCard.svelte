@@ -4,7 +4,7 @@
 
   interface Props {
     slot: SlotData;
-    /** Zone the time is rendered in — always the viewer's, named on the banner. */
+    /** Zone the time is rendered in, always the viewer's, named on the banner. */
     timeZone: string;
     onClick: () => void;
     isLoading: boolean;

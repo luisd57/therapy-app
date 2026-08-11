@@ -8,12 +8,7 @@ use DateTimeZone;
 
 /**
  * How a schedule block is turned into bookable slots.
- *
- * Duration and start increment are separate on purpose. A session lasts 90
- * minutes, but offering starts only every 90 minutes makes some wall-clock
- * times unreachable — 19:00 is not a multiple of 90 from 13:30. A 30-minute
- * increment offers overlapping candidates instead, and booking one suppresses
- * those it overlaps.
+ * Duration and increment are separate so starts stay reachable: 19:00 is not a multiple of 90 from 13:30.
  */
 final readonly class SlotGenerationRules
 {

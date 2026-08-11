@@ -17,11 +17,11 @@ recurring. See ADR-0002.
 ## Why IANA rather than offsets
 
 The therapist describes the gap to Europe as "5 o 6 horas". That wobble is
-European daylight saving: Caracas is UTC−4 all year, Madrid is UTC+1 in winter
+European daylight saving: Caracas is UTC-4 all year, Madrid is UTC+1 in winter
 and UTC+2 in summer. A stored `-04:00`/`+02:00` pair would be wrong for roughly
-half of every year on the main path — most patients are in Western Europe.
+half of every year on the main path - most patients are in Western Europe.
 
-Venezuela is also not a stable offset historically: it ran UTC−04:30 from 2007 to
+Venezuela is also not a stable offset historically: it ran UTC-04:30 from 2007 to
 2016. Only the named zone gets pre-2016 instants right, which is why the
 migration converts with `AT TIME ZONE 'America/Caracas'` rather than
 `AT TIME ZONE '-04:00'`.
@@ -29,7 +29,7 @@ migration converts with `AT TIME ZONE 'America/Caracas'` rather than
 ## Considered and rejected
 
 **Naive `TIMESTAMP` plus a convention that everything is UTC.** Rejected: the
-convention is invisible and unenforceable. This is what the system had before —
+convention is invisible and unenforceable. This is what the system had before -
 the only thing giving stored values meaning was one `date.timezone` line in
 `php.ini`, and changing it silently reinterpreted every row.
 

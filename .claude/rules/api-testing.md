@@ -10,9 +10,9 @@ paths:
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
 
 ## Key Rules
-- All integration tests run in transactions that rollback in `tearDown()` — no data persists.
+- All integration tests run in transactions that rollback in `tearDown()` - no data persists.
 - Kernel reboot disabled in API tests for transaction isolation across multiple HTTP requests.
-- `reconstitute()` is for test helpers ONLY — never in handlers or controllers.
+- `reconstitute()` is for test helpers ONLY - never in handlers or controllers.
 
 ## Running Tests
 ```bash

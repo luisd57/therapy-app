@@ -40,7 +40,7 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
         $lastDate = $to->setTimezone($practiceTimeZone)->format('Y-m-d');
 
         while ($cursor->format('Y-m-d') <= $lastDate) {
-            // $cursor is practice-zoned, so this is the therapist's weekday —
+            // $cursor is practice-zoned, so this is the therapist's weekday,
             // not the weekday of the underlying UTC instant, which can differ.
             $weekDay = WeekDay::fromDateTimeImmutable($cursor);
 
@@ -118,22 +118,15 @@ final readonly class AvailabilityComputer implements AvailabilityComputerInterfa
                 $slots->add($timeSlot);
             }
 
+            // Stepping in UTC, so the increment is a physical duration. A practice zone with
+            // DST would shift wall-clock starts after a transition. See ADR 0002.
             $slotStart = $slotStart->modify("+{$slotGenerationRules->startIncrementMinutes} minutes");
         }
     }
 
     /**
-     * Turns a recurring wall-clock rule ("08:00") into an absolute instant by
-     * reading it in the practice zone.
-     *
-     * The leading '!' resets every unspecified field, microseconds included —
-     * without it the slot would inherit the current microsecond and fail the
-     * loose equality comparisons that match a requested slot to a computed one.
-     *
-     * Stepping happens in UTC so the increment is a physical duration. For a
-     * zone with daylight saving that means wall-clock starts shift after a
-     * transition; America/Caracas has had no DST since 2016, so this is
-     * unreachable today and left as a deliberate, documented choice.
+     * Turns a wall-clock rule ("08:00") into an instant by reading it in the practice zone.
+     * The leading '!' zeroes unspecified fields, microseconds included, or slot equality misses.
      */
     private function materialize(
         DateTimeImmutable $practiceDay,

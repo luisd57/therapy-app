@@ -41,10 +41,7 @@ interface UserRepositoryInterface
 
     /**
      * Returns the single therapist user in the system.
-     *
-     * Unlike other repository methods that return null for missing entities,
-     * this method throws because the existence of exactly one therapist is a
-     * system invariant for this single-therapist application.
+     * Throws rather than returning null, because exactly one therapist is a system invariant.
      *
      * @throws \RuntimeException if zero or more than one therapist exists
      */

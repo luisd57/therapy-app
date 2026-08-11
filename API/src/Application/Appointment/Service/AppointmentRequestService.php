@@ -82,10 +82,8 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             $this->slotLockRepository->delete($lock);
         }
 
-        // Verify the slot falls within a valid schedule block and is not already CONFIRMED.
-        // Only CONFIRMED appointments block new requests — multiple REQUESTED appointments
-        // for the same slot are permitted by design. The therapist resolves conflicts
-        // manually during confirmation.
+        // Only CONFIRMED appointments block new requests. Several REQUESTED ones for the
+        // same slot are allowed by design; the therapist resolves those by hand.
         $this->verifySlotAvailable($startTime, $appointmentModality);
 
         $patientUserId = $patientId !== null ? UserId::fromString($patientId) : null;

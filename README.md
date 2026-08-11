@@ -1,4 +1,4 @@
-# Therapy — Gestion de cabinet de psychothérapie
+# Therapy - Gestion de cabinet de psychothérapie
 
 ![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
 ![Symfony 8.0](https://img.shields.io/badge/Symfony-8.0-000000?logo=symfony&logoColor=white)
@@ -37,7 +37,7 @@ Projet conçu à partir d'un besoin réel : le cabinet d'une psychothérapeute, 
 
 ---
 
-## Architecture Backend — Hexagonale (Ports & Adapters)
+## Architecture Backend - Hexagonale (Ports & Adapters)
 
 Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, avec une règle de dépendance unidirectionnelle :
 
@@ -76,12 +76,12 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 
 ### Patterns clés
 
-- **Value Objects** — Types immuables auto-validants (`Email`, `Phone`, `Address`, `TimeSlot`…). Les enums PHP (`AppointmentStatus`, `AppointmentModality`, `UserRole`, `WeekDay`) portent la logique métier (`canTransitionTo()`, `blocksSlot()`, `isTerminal()`).
-- **DTOs Input/Output** — `final readonly class` avec factory `fromEntity()` et `toArray()`. Séparation nette entre ce qui entre dans un handler et ce qui en sort.
-- **Repository Pattern** — Interfaces définies dans le Domain (ports), implémentées dans l'Infrastructure avec Doctrine (adapters).
-- **Custom DBAL Types** — Types Doctrine personnalisés (`EmailType`, `UserIdType`, `HashedStringType`…) pour convertir automatiquement entre Value Objects PHP et colonnes de base de données. Les entités Domain portent directement les attributs `#[ORM\Entity]` et `#[ORM\Column]` — pas de couche ORM séparée.
-- **Reconstitution Pattern** — Méthodes statiques `reconstitute()` sur les entités Domain pour créer des objets dans un état spécifique sans déclencher de logique métier. Utilisé uniquement par les helpers de test (`DomainTestHelper`, tests unitaires et d'intégration).
-- **Parameter Objects** — `AvailabilityContext` regroupe schedules, exceptions, appointments et locks pour éviter l'explosion de paramètres.
+- **Value Objects** - Types immuables auto-validants (`Email`, `Phone`, `Address`, `TimeSlot`...). Les enums PHP (`AppointmentStatus`, `AppointmentModality`, `UserRole`, `WeekDay`) portent la logique métier (`canTransitionTo()`, `blocksSlot()`, `isTerminal()`).
+- **DTOs Input/Output** - `final readonly class` avec factory `fromEntity()` et `toArray()`. Séparation nette entre ce qui entre dans un handler et ce qui en sort.
+- **Repository Pattern** - Interfaces définies dans le Domain (ports), implémentées dans l'Infrastructure avec Doctrine (adapters).
+- **Custom DBAL Types** - Types Doctrine personnalisés (`EmailType`, `UserIdType`, `HashedStringType`...) pour convertir automatiquement entre Value Objects PHP et colonnes de base de données. Les entités Domain portent directement les attributs `#[ORM\Entity]` et `#[ORM\Column]` - pas de couche ORM séparée.
+- **Reconstitution Pattern** - Méthodes statiques `reconstitute()` sur les entités Domain pour créer des objets dans un état spécifique sans déclencher de logique métier. Utilisé uniquement par les helpers de test (`DomainTestHelper`, tests unitaires et d'intégration).
+- **Parameter Objects** - `AvailabilityContext` regroupe schedules, exceptions, appointments et locks pour éviter l'explosion de paramètres.
 
 ---
 
@@ -89,11 +89,11 @@ Le backend suit une architecture hexagonale (Ports & Adapters) en 3 couches, ave
 
 Le projet comporte deux applications frontend distinctes :
 
-**Landing** (`landing/`) — Astro + Svelte (Islands Architecture)
+**Landing** (`landing/`) - Astro + Svelte (Islands Architecture)
 
 Site public destiné aux visiteurs. Les pages sont générées en HTML statique au build, et seuls les composants interactifs (flux de prise de rendez-vous) sont hydratés côté client avec Svelte.
 
-**Dashboard** (`dashboard/`) — Angular 21 + Angular Material
+**Dashboard** (`dashboard/`) - Angular 21 + Angular Material
 
 Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère le planning, les rendez-vous, les patients et les invitations.
 
@@ -107,9 +107,9 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 | Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index composites pour les requêtes de disponibilité |
-| Cache / Sessions | Redis 7 — blocklist JWT (`jti`), expiration automatique |
+| Cache / Sessions | Redis 7 - blocklist JWT (`jti`), expiration automatique |
 | Authentification | JWT avec révocation par claim `jti` via Redis. Cookie httpOnly unique `THERAPY_JWT` (une session par navigateur ; un login remplace le cookie, le logout le supprime et révoque le `jti`). Bearer token pour les clients API. |
-| Emails | Symfony Mailer — MailHog en dev, SMTP en prod |
+| Emails | Symfony Mailer - MailHog en dev, SMTP en prod |
 | Infrastructure | Docker Compose (9 conteneurs par défaut + 3 conteneurs Playwright sous le profil `e2e` : e2e dashboard, e2e landing, serveur de rapport HTML), cron planifié, Makefile |
 
 ---
@@ -125,10 +125,10 @@ Tests répartis en deux suites :
 
 ### Patterns de test
 
-- **Isolation transactionnelle** — Chaque test d'intégration s'exécute dans une transaction qui est rollback automatiquement dans `tearDown()`. Aucune donnée ne persiste entre les tests.
-- **DomainTestHelper** — Factory methods pour créer des objets domain dans n'importe quel état (utilisateurs actifs/inactifs, tokens valides/expirés/utilisés).
-- **ApiTestCase** — Classe de base avec client HTTP, helpers d'authentification (`createTherapistAndGetToken()`), et wrapping transactionnel.
-- **Kernel reboot disabled** — `$this->client->disableReboot()` maintient le même kernel Symfony entre plusieurs requêtes HTTP, garantissant que l'EntityManager voit les données non commitées de la transaction de test.
+- **Isolation transactionnelle** - Chaque test d'intégration s'exécute dans une transaction qui est rollback automatiquement dans `tearDown()`. Aucune donnée ne persiste entre les tests.
+- **DomainTestHelper** - Factory methods pour créer des objets domain dans n'importe quel état (utilisateurs actifs/inactifs, tokens valides/expirés/utilisés).
+- **ApiTestCase** - Classe de base avec client HTTP, helpers d'authentification (`createTherapistAndGetToken()`), et wrapping transactionnel.
+- **Kernel reboot disabled** - `$this->client->disableReboot()` maintient le même kernel Symfony entre plusieurs requêtes HTTP, garantissant que l'EntityManager voit les données non commitées de la transaction de test.
 
 ```bash
 # Tous les tests
@@ -146,7 +146,7 @@ docker-compose exec php vendor/bin/phpunit --testsuite=Integration
 Suite end-to-end qui pilote un vrai Chromium contre le dashboard en cours d'exécution. Exécutée dans un conteneur Docker dédié (`mcr.microsoft.com/playwright:v1.49.1-noble`), aucune installation sur l'hôte.
 
 - Couvre : invitation patient (happy path), authentification (login, logout, route guards, réinitialisation de mot de passe), resend + revoke, et 4 chemins d'erreur (token utilisé, token invalide, email invalide, mots de passe non-correspondants).
-- `globalSetup` se connecte une fois en tant que thérapeute et persiste la session via `storageState` — réutilisée par tous les tests pour éviter de saturer le rate limiter (5 logins/min/IP).
+- `globalSetup` se connecte une fois en tant que thérapeute et persiste la session via `storageState` - réutilisée par tous les tests pour éviter de saturer le rate limiter (5 logins/min/IP).
 - Exécutée aussi en CI (job `e2e`), qui démarre la stack via `docker-compose.ci.yml`. Une suite e2e distincte couvre le landing (`landing/e2e/`, service `playwright-landing`).
 
 ```bash
@@ -209,7 +209,7 @@ docker-compose exec php php bin/console cache:clear --env=test
 }
 ```
 
-Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et suivi du règlement (marquage manuel — les paiements sont réglés hors application).
+Les endpoints couvrent : authentification, gestion des patients, planning, disponibilités, rendez-vous, et suivi du règlement (marquage manuel - les paiements sont réglés hors application).
 
 Une **collection Postman** complète est incluse dans [`API/postman/`](API/postman/) avec variables pré-configurées et scripts de test.
 

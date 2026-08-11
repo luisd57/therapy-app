@@ -9,9 +9,8 @@ use App\Domain\User\ValueObject\Timezone;
 trait ValidationHelperTrait
 {
     /**
-     * A bare calendar day. Only for therapist-facing ranges, where the day is
-     * unambiguous because it is read in the practice timezone. Anything naming
-     * a moment must use isValidInstant() instead.
+     * A bare calendar day, only for therapist-facing ranges read in the practice zone.
+     * Anything naming a moment must use isValidInstant() instead.
      */
     protected function isValidDate(string $date): bool
     {
@@ -22,11 +21,7 @@ trait ValidationHelperTrait
 
     /**
      * An ISO-8601 instant that carries its own UTC offset, either 'Z' or ±HH:MM.
-     *
-     * An offset-less datetime is rejected rather than guessed: the server would
-     * have to pick a zone for it, and picking silently is the failure this
-     * contract exists to prevent. Clients send back the exact string the API
-     * gave them, so this costs them nothing.
+     * Offset-less input is rejected, not guessed: picking a zone silently is the bug to avoid.
      */
     protected function isValidInstant(string $instant): bool
     {

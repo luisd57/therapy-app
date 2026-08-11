@@ -12,9 +12,8 @@ import {
 } from './dates';
 
 /**
- * The therapist is in America/Caracas (UTC-4, no daylight saving). Most patients
- * are in Europe/Madrid, which is UTC+1 in winter and UTC+2 in summer — the
- * "5 o 6 horas" difference she describes.
+ * The therapist is in America/Caracas (UTC-4, no daylight saving).
+ * Most patients are in Europe/Madrid, UTC+1 in winter and UTC+2 in summer.
  */
 const CARACAS = 'America/Caracas';
 const MADRID = 'Europe/Madrid';
