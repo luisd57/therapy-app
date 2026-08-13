@@ -27,4 +27,5 @@ See ADR-0002 for the anchoring decision this follows from.
 - [ ] An all-day Exception submitted from a far-away zone blocks the Therapist's day, not the caller's
 - [ ] The Slot most at risk — one late in the Practice's evening — is correctly blocked, and the equivalent Slot on the following day is not
 - [ ] Multi-day all-day ranges snap on both ends
+- [ ] A test pins the snapping: an all-day Exception submitted from a far-away zone blocks the Practice-local day, and the equivalent Slot on the following day survives
 - [ ] Full API suite green

@@ -9,11 +9,19 @@ the task needs - no filler sections or redundant summaries.
 Delegate to a subagent only for large, genuinely independent investigations. Don't delegate work
 you can finish in a handful of tool calls, and don't use subagents to double-check your own work.
 
-## Process Skills (Superpowers)
+## Process Skills
 
-Brainstorming, TDD, and systematic debugging come from the Superpowers plugin - invoke those
-skills; do NOT restate their guidance here. Keep this file and `.claude/rules/` focused on
-project facts and conventions Superpowers doesn't cover.
+Two plugins provide them. Invoke the skills; do NOT restate their guidance here.
+
+- **superpowers** - brainstorming, systematic-debugging, verification-before-completion,
+  executing-plans.
+- **mattpocock-skills** - tdd, code-review, domain-modeling, grilling, and the spec/ticket
+  flows (`to-spec`, `to-tickets`, `wayfinder`) that `docs/agents/` and the ADRs reference.
+
+Both ship a TDD skill. Here, TDD means **`mattpocock-skills:tdd`**. Testing expectations are
+in `.claude/rules/testing-policy.md`.
+
+Keep this file and `.claude/rules/` focused on project facts the plugins don't cover.
 
 # Therapy Practice Management System
 

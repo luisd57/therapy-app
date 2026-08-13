@@ -33,6 +33,5 @@ her capacity nor the expectations the end-to-end suites will be written against.
 - [ ] Seeded Schedule Blocks match the table above, including the lunch gap on every working day
 - [ ] Monday is In-Person only; Tuesday through Sunday support both Modalities
 - [ ] Seeding is idempotent — re-running does not duplicate Schedule Blocks
-- [ ] The Tuesday window yields six candidate starts and two non-overlapping sessions
-- [ ] The Wednesday-to-Sunday afternoon window's last start is 19:00, finishing at 20:30
+- [ ] A test pins the seeded shape: the Tuesday window yields six candidate starts and two non-overlapping sessions, and the Wednesday-to-Sunday afternoon window's last start is 19:00 finishing at 20:30
 - [ ] Full API suite green
