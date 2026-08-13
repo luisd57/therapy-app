@@ -14,7 +14,7 @@ at all.
 
 She resolves this by hand today. In her own words she asks the person abroad to
 propose a time, "teniendo en cuenta que en relación a Europa Venezuela tiene 5 o
-6 horas más tempranas" — she delegates the conversion to the Patient and absorbs
+6 horas más tempranas" - she delegates the conversion to the Patient and absorbs
 the coordination cost in WhatsApp messages. That five-or-six-hour wobble is
 European daylight saving, and it is exactly the kind of arithmetic people get
 wrong twice a year.
@@ -27,7 +27,7 @@ Concretely, before this work:
 - Every API response stamped a `-04:00` offset that had never been stored,
   derived from server config at serialization time.
 - Slots were grouped by the Practice's calendar day, which is the wrong calendar
-  for every Patient abroad — a Friday 19:00 slot in Caracas is already Saturday
+  for every Patient abroad - a Friday 19:00 slot in Caracas is already Saturday
   in Madrid.
 - The slot browser showed times in the visitor's browser zone while bucketing
   them by the Practice's day, so a Requester could see a slot filed under the
@@ -48,8 +48,8 @@ the Therapist currently performs by hand.
   Timezone, so no client hardcodes it.
 - The public slot browser renders in the **Viewer Zone**, buckets Slots by the
   viewer's **Day key**, and says plainly which zones it is showing.
-- Wherever a mistake would be costly — the selected Slot, the confirmation, every
-  email — both the Requester's time and the Therapist's time appear together.
+- Wherever a mistake would be costly - the selected Slot, the confirmation, every
+  email - both the Requester's time and the Therapist's time appear together.
 - The **Requester Timezone** is captured on the Appointment so the Therapist can
   see what time a session is for the Patient.
 
@@ -120,7 +120,7 @@ the Therapist currently performs by hand.
 
 ## Implementation Decisions
 
-### Storage and representation — ADR-0001
+### Storage and representation - ADR-0001
 
 - Every Instant column is `TIMESTAMP WITH TIME ZONE`, normalised to UTC in both
   directions by a custom DBAL type. The stock immutable-datetime type formats
@@ -130,16 +130,16 @@ the Therapist currently performs by hand.
   naive type. **Every temporal query parameter must state its type explicitly.**
   Omitting one produces results four hours out with no error and no exception.
 - Zones are IANA identifiers everywhere. Fixed offsets are rejected at the input
-  boundary — they carry no daylight-saving rules and would be wrong for half of
+  boundary - they carry no daylight-saving rules and would be wrong for half of
   every year on the main path.
 - Schedule Block start/end remain short strings. They are Wall-clock rules, not
   Instants; converting them would destroy what makes them recurring.
 
-### Availability computation — ADR-0002
+### Availability computation - ADR-0002
 
 - Availability walks Practice-local calendar days. The weekday a Schedule Block
   applies to is read in the Practice Timezone, not from the underlying UTC
-  Instant — these disagree for roughly a fifth of every day.
+  Instant - these disagree for roughly a fifth of every day.
 - Wall-clock rules are materialised against an explicit zone, with all
   unspecified fields reset including microseconds, because requested Slots are
   matched to computed Slots by equality.
@@ -161,7 +161,7 @@ the Therapist currently performs by hand.
   shared formatter rather than per-DTO formatting.
 - Datetime input must carry `Z` or a numeric offset, and is round-trip validated
   so an impossible date fails rather than rolling forward.
-- Range validation compares Instants, never strings — lexically an offset-bearing
+- Range validation compares Instants, never strings - lexically an offset-bearing
   string can sort opposite to its position on the timeline.
 - Appointments carry an optional Requester Timezone; Users carry an optional
   profile timezone. Both nullable with no backfill, because the zone of an
@@ -177,13 +177,13 @@ the Therapist currently performs by hand.
   offset is under a day, so the padding always covers the viewer's week.
 - Day-key arithmetic is calendar arithmetic, never millisecond arithmetic, which
   drifts across daylight-saving transitions.
-- Times are formatted in the viewer's locale — Spanish copy throughout, but a
+- Times are formatted in the viewer's locale - Spanish copy throughout, but a
   reader in Spain sees 24-hour and one in Venezuela sees 12-hour.
 - Dual display appears on the selected Slot, the confirmation, all emails, and
   therapist-facing rows; the Slot grid itself shows viewer time only, with the
   banner carrying the zone information.
 
-### Scheduled jobs and email — ADR-0004, ADR-0005
+### Scheduled jobs and email - ADR-0004, ADR-0005
 
 Both are currently **defects in committed code**, not merely unfinished work:
 
@@ -199,8 +199,8 @@ Both are currently **defects in committed code**, not merely unfinished work:
 ## Testing Decisions
 
 A good test here asserts **externally observable behaviour** through a public
-seam, and its expected values come from an independent source — a hand-written
-absolute Instant, a worked example — never from re-formatting the object under
+seam, and its expected values come from an independent source - a hand-written
+absolute Instant, a worked example - never from re-formatting the object under
 test. That distinction is not academic on this branch: the suite was moved to a
 hostile timezone and produced zero new failures, because the existing date tests
 built fixtures naively and derived expectations by formatting those same
@@ -210,33 +210,33 @@ fixtures, so both sides shifted together and could never disagree. See ADR-0003.
 
 Seven of the eight seams already exist; only the dashboard formatting seam is new.
 
-1. **Availability computation** (unit) — Practice-zone materialisation, weekday
+1. **Availability computation** (unit) - Practice-zone materialisation, weekday
    resolution, Start Increment behaviour, block-fit, overlap suppression, window
    clipping. The highest-value seam: this is where a Wall-clock rule becomes an
    Instant.
-2. **Slot and Schedule Exception overlap** (unit) — equality and overlap are
+2. **Slot and Schedule Exception overlap** (unit) - equality and overlap are
    Instant-based; an all-day exception must block the Practice-local day it
    covers and leave the next one alone.
-3. **Public availability endpoints** (integration) — flat shape, Practice
+3. **Public availability endpoints** (integration) - flat shape, Practice
    Timezone present, UTC output regardless of the caller's offset.
-4. **Lock and request endpoints** (integration) — the same Instant expressed with
+4. **Lock and request endpoints** (integration) - the same Instant expressed with
    different offsets must collide rather than double-book; offset-less input and
    fixed-offset zones are 422.
-5. **Repository round-trip** (integration) — an Instant written from a non-UTC
+5. **Repository round-trip** (integration) - an Instant written from a non-UTC
    zone reads back identical, and a range expressed in the Practice zone matches
    a row written in UTC. This is the cheapest possible detector for a missing
    query-parameter type, which otherwise fails silently.
-6. **Landing date utilities** (unit, Vitest) — bucketing, calendar arithmetic
+6. **Landing date utilities** (unit, Vitest) - bucketing, calendar arithmetic
    across a daylight-saving transition, zone labelling, offset difference.
-7. **Email rendering** (unit) — a seam that exists but currently asserts nothing
+7. **Email rendering** (unit) - a seam that exists but currently asserts nothing
    about times, which is exactly why the UTC regression reached committed code.
    Must be extended to assert rendered times and zone labels.
-8. **Both Playwright suites** (e2e) — the reservation flow end to end.
+8. **Both Playwright suites** (e2e) - the reservation flow end to end.
 
 **New seam, confirmed with the developer:** a single shared date-formatting
 utility in the dashboard, unit-tested, mirroring the landing utilities. The delta
 calculation and zone conversion get pinned; templates stay covered by e2e only.
-Deliberately not a full component-testing setup — that is its own project and
+Deliberately not a full component-testing setup - that is its own project and
 would block the timezone fixes behind it.
 
 ### Prior art
@@ -269,26 +269,34 @@ handlers resolve the clock lazily at dispatch.
 
 ## Further Notes
 
-### Verification status — read before trusting any test result
+### Verification status - read before trusting any test result
 
-Everything ran green in continuous integration on the merge: the API PHPUnit
-suite, both Playwright suites, dashboard lint and build, and the landing Vitest
-suite.
+Green on the API PHPUnit suite, the landing Vitest suite, dashboard lint and
+build. **The landing Playwright suite is neither reliably green nor reliably
+red**, and both halves of that need explaining, because this section has now been
+wrong twice in opposite directions.
 
-**A green Playwright run does not mean timezone behaviour is verified, and it
-would be a mistake to read it that way.** The suites were expected to fail and
-did not, for a reason worth recording: they are coupled to the *flow*, not to
-times. They assert that a Slot button exists — matched on the text "min", which
-matches any duration — and that a reservation completes. They never referenced
-the grouped-by-date response shape that was removed.
+**When it passes, it proves less than it looks.** The specs are coupled to the
+*flow*, not to times: they assert a Slot button exists - matched on the text
+"min", which matches any duration - and that a reservation completes. They never
+referenced the grouped-by-date response shape that was removed. So a green run
+confirms nothing regressed structurally and confirms **nothing about zones**.
+There is still no assertion anywhere that the zone banner names both zones, or
+that the selected Slot and confirmation show the Practice time alongside the
+Requester's. That is the substance of ticket 09, and a green suite does not make
+it redundant.
 
-So the passes confirm nothing regressed structurally. They confirm nothing about
-zones. There is currently **no assertion anywhere** that the zone banner names
-both zones, or that the selected Slot and confirmation show the Practice time
-alongside the Requester's. Adding those is the substance of ticket 09, and it is
-not made redundant by the suites being green.
+**When it fails, it is currently finding a real bug.** CI run 31750161621 failed
+two specs because the browser's "all modalities" filter shows In-Person-only
+Slots and then books them as Online. It is date-dependent - it fires only when
+the first offered Slot falls in an In-Person-only Schedule Block - which is why
+earlier runs passed. See ticket 05, reclassified as an active defect.
 
-Two related caveats remain live: the seeded schedule is still the old generic
+So: do not read a green run as verification, and do not read a red run as
+flakiness. Until ticket 05 lands, the suite's colour is mostly a function of
+which weekday CI happened to run on.
+
+Two further caveats remain live: the seeded schedule is still the old generic
 Monday-to-Friday pattern rather than the Therapist's real hours (ticket 08), and
 session length is still 50 minutes rather than 90 (ticket 04). Both suites
 therefore currently exercise a Slot grid that is not the one the practice will
@@ -308,7 +316,7 @@ consistent at 90 minutes:
 
 Lunch is the gap between blocks and applies every working day. She expects to be
 booked at weekends. Her "only two consultations fit" on Tuesday describes
-**capacity**, not offered starts — with 30-minute increments Tuesday offers six
+**capacity**, not offered starts - with 30-minute increments Tuesday offers six
 candidate starts and still caps at two non-overlapping sessions.
 
 ### Known defects in committed code
