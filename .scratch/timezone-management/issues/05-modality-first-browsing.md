@@ -27,5 +27,7 @@ value the API reports and should not be duplicated.
 - [ ] The Modality shown in the grid is the Modality submitted — no silent substitution
 - [ ] Switching Modality refetches Slots
 - [ ] Hardcoded Practice Timezone fallbacks are reduced to a single definition
+- [ ] A test pins the preselection: Online is chosen when the Viewer Zone differs from the Practice Timezone, and not forced when they match
+- [ ] A test pins that the browsed Modality is the one submitted, so the silent substitution cannot come back
 - [ ] Landing unit suite green
 - [ ] Landing build green
