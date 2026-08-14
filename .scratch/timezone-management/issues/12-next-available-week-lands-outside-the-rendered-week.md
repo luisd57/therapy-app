@@ -4,9 +4,10 @@
 availability window, but renders a Monday-to-Sunday calendar week. When the two
 disagree, it shows a week it already knows has no Slots.
 
-**This is an active defect and it is currently the only thing making the whole
-landing e2e suite red.** It is separate from ticket 05, which fails later in the
-flow, at submission, with a populated grid.
+**This is an active defect.** It is what fails every landing spec at once, and it
+is separate from ticket 05, which fails later in the flow, at submission, with a
+populated grid. The two fire on different days and mask each other, so neither is
+done until both are.
 
 ## What happens
 
