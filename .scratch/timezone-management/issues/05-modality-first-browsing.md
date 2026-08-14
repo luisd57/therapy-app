@@ -4,8 +4,15 @@
 and the Modality they browsed is the Modality they book.
 
 **This is an active defect, not a latent one.** It was filed as a nice-to-have
-bundled with modality-first browsing; it is in fact the only thing currently
-making CI red, and it breaks a real user path.
+bundled with modality-first browsing; it is in fact one of two defects making CI
+red, and it breaks a real user path.
+
+**It is not the only one.** This ticket previously claimed to be the sole cause
+of a red suite. Ticket 12 is the other, and the two mask each other: 05 fires on
+days where the first offered Slot is In-Person only, 12 fires from Friday
+afternoon through Sunday, when the next available Slot falls outside the week the
+grid renders. Fixing either alone leaves the suite red on the other's days, so
+neither is done until both are.
 
 The browser opens on an "all modalities" filter, which applies no filter when
 fetching, then silently books as Online. So a Requester who browsed everything
