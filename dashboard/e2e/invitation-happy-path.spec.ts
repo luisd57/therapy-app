@@ -33,7 +33,7 @@ test('happy path: therapist invites → patient registers → row flips to Used 
   await loginAsPatient(patientPage, patientEmail, PATIENT_PASSWORD);
   await patientContext.close();
 
-  // F2 regression — therapist list should refresh on visibility change.
+  // F2 regression - therapist list should refresh on visibility change.
   // Simulate by dispatching the event directly (Playwright pages are always "visible").
   await page.evaluate((): void => {
     document.dispatchEvent(new Event('visibilitychange'));

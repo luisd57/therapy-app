@@ -31,7 +31,7 @@ dist/
 # Personal scripts
 *.bat
 
-# Local docs (specs, plans, scratch) — STATUS.md is tracked
+# Local docs (specs, plans, scratch) - STATUS.md is tracked
 docs/*
 !docs/STATUS.md
 # Architecture decisions and agent config are project artefacts, not scratch.

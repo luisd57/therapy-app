@@ -227,7 +227,7 @@ final class AuthControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // Access protected endpoint — cookie is sent automatically by the cookie jar
+        // Access protected endpoint - cookie is sent automatically by the cookie jar
         $this->client->request('GET', '/api/therapist/me');
 
         $this->assertResponseIsSuccessful();
@@ -280,7 +280,7 @@ final class AuthControllerTest extends ApiTestCase
             'CONTENT_TYPE' => 'application/json',
         ], json_encode(['email' => 'therapist@test.com', 'password' => 'Password1!']));
 
-        // Call /auth/me — cookie sent automatically
+        // Call /auth/me - cookie sent automatically
         $this->client->request('GET', '/api/auth/me');
 
         $this->assertResponseIsSuccessful();
@@ -333,7 +333,7 @@ final class AuthControllerTest extends ApiTestCase
         $this->assertNotNull($therapistCookie);
         $this->assertNotSame($patientToken, $therapistCookie->getValue(), 'Second login should replace the session cookie');
 
-        // The active session is now the therapist's — cookie sent automatically.
+        // The active session is now the therapist's - cookie sent automatically.
         $this->client->request('GET', '/api/auth/me');
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();

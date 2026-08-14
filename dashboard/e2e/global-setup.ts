@@ -38,7 +38,7 @@ export default async function globalSetup(): Promise<void> {
   //      - avoids tripping the API's 5-login/min rate limiter (per IP)
   //      - captures localStorage `auth_user`, which the route guards check
   //        synchronously before the AuthService's `/api/auth/me` round-trip
-  //        completes — without it, navigating to a protected route on a
+  //        completes - without it, navigating to a protected route on a
   //        fresh page bounces to /login.
   const browser: Browser = await chromium.launch();
   const ctx = await browser.newContext({ baseURL: DASHBOARD_URL });

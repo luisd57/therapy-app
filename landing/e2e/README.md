@@ -1,7 +1,7 @@
 # Landing E2E (Playwright)
 
 End-to-end tests for the public slot browser + appointment-request flow. Runs
-inside a dedicated Docker container — nothing is installed on your host.
+inside a dedicated Docker container - nothing is installed on your host.
 
 ## How it runs
 
@@ -12,17 +12,17 @@ using `mcr.microsoft.com/playwright:v1.49.1-noble`:
   to `127.0.0.1:4321`, so the page origin matches the API's loopback CORS rule
   (`^https?://(localhost|127\.0\.0\.1)(:port)?$`).
 - The in-container browser fetches the API at `API_BASE_URL` (`http://nginx/api`
-  on the compose network). `PUBLIC_API_BASE_URL` is overridden to that value —
+  on the compose network). `PUBLIC_API_BASE_URL` is overridden to that value -
   the `landing/.env` default (`http://localhost:8080/api`) is unreachable from
   inside the container, and Vite prioritizes the inline env var.
-- The landing app is public/anonymous — no auth, no `storageState`.
+- The landing app is public/anonymous - no auth, no `storageState`.
 - `node_modules` lives in a named volume (`landing_playwright_node_modules`).
 - Kept out of `docker-compose up` via `profiles: [e2e]`.
 
 ## Prerequisites
 
 1. **Docker stack up**: `docker-compose up -d`.
-2. **Seeded availability** — the reservation specs need real, future slots:
+2. **Seeded availability** - the reservation specs need real, future slots:
    ```bash
    docker-compose exec php php bin/console app:seed-schedule
    ```

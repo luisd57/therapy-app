@@ -221,7 +221,7 @@ final class PublicAppointmentControllerTest extends ApiTestCase
 
         $this->jsonRequest('POST', '/api/appointments/request', [
             // The same instant the browse response gave, expressed in the
-            // requester's own offset — Madrid in summer is UTC+2.
+            // requester's own offset - Madrid in summer is UTC+2.
             'slot_start_time' => '2026-06-01T15:30:00+02:00',
             'modality' => 'ONLINE',
             'full_name' => 'Ana Torres',

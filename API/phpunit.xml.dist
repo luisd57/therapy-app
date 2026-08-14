@@ -14,7 +14,7 @@
             zone), and a +14:00 offset with a date-line shift. Any code that builds
             a DateTime without an explicit zone, or formats one without setting a
             zone, produces a visibly wrong result here instead of passing by
-            coincidence. Never relax this to make a test go green — add the
+            coincidence. Never relax this to make a test go green - add the
             explicit zone the failing code is missing.
         -->
         <ini name="date.timezone" value="Pacific/Kiritimati" />

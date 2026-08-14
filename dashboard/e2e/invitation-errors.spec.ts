@@ -7,7 +7,7 @@ import {
   uniqueEmail,
 } from './fixtures/helpers';
 
-test.describe('Patient invitation — error paths', (): void => {
+test.describe('Patient invitation - error paths', (): void => {
   test('used token shows "already used"', async ({ page, browser, request }): Promise<void> => {
     // Therapist (default page, storageState-authenticated) sends an invitation.
     const patientEmail: string = uniqueEmail('verify-used-token');
@@ -31,7 +31,7 @@ test.describe('Patient invitation — error paths', (): void => {
   });
 
   test('garbage token shows "Invalid token."', async ({ browser }): Promise<void> => {
-    // No therapist needed — public route.
+    // No therapist needed - public route.
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const anonPage: Page = await ctx.newPage();
     await anonPage.goto('/register?token=garbage-token-for-e2e-12345');

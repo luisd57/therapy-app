@@ -12,7 +12,7 @@ interface NextAvailableWeek {
 /**
  * The reservation specs need real availability. Schedule blocks are recurring
  * weekly, so once `app:seed-schedule` has run, slots always exist in the future.
- * Fail fast (with a clear remedy) if none are seeded — otherwise the specs would
+ * Fail fast (with a clear remedy) if none are seeded - otherwise the specs would
  * fail deep in the flow with a confusing "no slot to click" error.
  */
 export default async function globalSetup(): Promise<void> {

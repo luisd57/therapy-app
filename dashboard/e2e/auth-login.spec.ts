@@ -9,7 +9,7 @@ import {
 // is exercised with one role (therapist). Patient credentials are still exercised
 // once in auth-password-reset.spec.ts. Keeping login attempts low also stays under
 // the API's 5-login/min/IP rate limit (the Playwright container has one IP).
-test.describe('Auth — login', (): void => {
+test.describe('Auth - login', (): void => {
   test('therapist logs in and lands on /appointments', async ({ browser }): Promise<void> => {
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const page: Page = await ctx.newPage();

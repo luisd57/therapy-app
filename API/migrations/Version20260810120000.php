@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Hand-written on purpose — do NOT regenerate with doctrine:migrations:diff.
+ * Hand-written on purpose - do NOT regenerate with doctrine:migrations:diff.
  *
  * Entities declare no ORM relations (see .claude/rules/api-architecture.md), so
  * Doctrine cannot see the hand-written FOREIGN KEY constraints or the hand-named
@@ -29,14 +29,14 @@ final class Version20260810120000 extends AbstractMigration
         'schedule_exceptions' => ['start_date_time', 'end_date_time', 'created_at'],
         'slot_locks' => ['start_time', 'end_time', 'created_at', 'expires_at'],
         // therapist_schedules.start_time/end_time are VARCHAR(5) wall-clock rules,
-        // not instants — they must NOT be converted.
+        // not instants - they must NOT be converted.
         'therapist_schedules' => ['created_at', 'updated_at'],
         'users' => ['created_at', 'activated_at', 'updated_at'],
     ];
 
     /**
      * The zone the existing naive values were written in: PHP's old default was
-     * America/Caracas. Use the IANA name, never a fixed '-04:00' — Venezuela ran
+     * America/Caracas. Use the IANA name, never a fixed '-04:00' - Venezuela ran
      * -04:30 from 2007 to 2016, and only the named zone gets older rows right.
      */
     private const string LEGACY_TIMEZONE = 'America/Caracas';

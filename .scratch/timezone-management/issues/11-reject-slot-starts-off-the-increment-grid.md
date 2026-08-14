@@ -1,10 +1,10 @@
-# 11 — Reject Slot starts that are not on the increment grid
+# 11 - Reject Slot starts that are not on the increment grid
 
 **What to build:** A Slot Lock or Appointment request can only name a Slot start
 the system actually offers.
 
 Taking a Slot Lock does not currently check that the requested Instant is a legal
-Slot start. A client can lock an arbitrary time — 09:07, say — and hold it. The
+Slot start. A client can lock an arbitrary time - 09:07, say - and hold it. The
 Appointment request path does verify the Instant against computed Slots, so this
 does not produce a bookable Appointment, but it does let a caller occupy
 availability that was never offered, and every overlapping genuine Slot with it.
@@ -15,7 +15,7 @@ denser, so an off-grid lock suppresses more real Slots than it used to.
 
 Lowest priority of the eleven. Nothing depends on it, and it blocks nothing.
 
-**Blocked by:** None — can start immediately.
+**Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 

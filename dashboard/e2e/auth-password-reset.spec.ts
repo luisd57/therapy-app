@@ -11,7 +11,7 @@ import {
 
 const NEW_PASSWORD: string = 'ResetPass1!';
 
-test.describe('Auth — password reset', (): void => {
+test.describe('Auth - password reset', (): void => {
   test('patient resets password via emailed link and logs in with the new one', async ({
     page,
     browser,
@@ -27,7 +27,7 @@ test.describe('Auth — password reset', (): void => {
     await registerPatient(registerPage, inviteToken, PATIENT_PASSWORD);
     await registerCtx.close();
 
-    // Request a reset — the page always shows the generic confirmation.
+    // Request a reset - the page always shows the generic confirmation.
     const resetCtx: BrowserContext = await browser.newContext({ storageState: undefined });
     const resetPage: Page = await resetCtx.newPage();
     await resetPage.goto('/forgot-password');

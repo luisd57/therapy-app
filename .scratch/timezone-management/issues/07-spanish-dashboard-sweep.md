@@ -1,8 +1,8 @@
-# 07 — Spanish dashboard sweep
+# 07 - Spanish dashboard sweep
 
 **What to build:** The Therapist can read and use the dashboard.
 
-She speaks only Spanish. The dashboard is currently entirely in English — page
+She speaks only Spanish. The dashboard is currently entirely in English - page
 copy, navigation, table headers, buttons, form labels, validation messages. This
 makes the product unusable by its primary user, independent of anything to do
 with timezones.
@@ -20,7 +20,7 @@ Ticket 06 handles date and time rendering, including its own Spanish strings, so
 these two can proceed in either order. They touch overlapping templates; whichever
 lands second should expect to merge.
 
-**Blocked by:** None — can start immediately.
+**Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 

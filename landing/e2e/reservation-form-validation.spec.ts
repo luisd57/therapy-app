@@ -9,7 +9,7 @@ import {
 // The form fields use native `required` / `type="email"`, so the browser blocks
 // submission of empty or malformed input before any API call. We assert that
 // real client behavior rather than server-side field errors.
-test.describe('Reservation form — validation', (): void => {
+test.describe('Reservation form - validation', (): void => {
   test('empty required fields block submission', async ({ page }): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);

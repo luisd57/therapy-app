@@ -124,7 +124,7 @@ services:
 
   playwright:
     # Pinned to the same minor as dashboard/package.json @playwright/test.
-    # Browsers come preinstalled in the image — no separate `playwright install` needed.
+    # Browsers come preinstalled in the image - no separate `playwright install` needed.
     # One-shot runner; not started by `docker-compose up`. Invoke via:
     #   docker-compose --profile e2e run --rm playwright
     image: mcr.microsoft.com/playwright:v1.49.1-noble

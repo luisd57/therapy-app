@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
  * Guards the deliberately hostile suite timezone declared in phpunit.xml.dist.
  *
  * Production runs UTC. If the suite also ran UTC, code that builds a DateTime
- * without an explicit zone would pass by coincidence — UTC in, UTC out. Running
+ * without an explicit zone would pass by coincidence - UTC in, UTC out. Running
  * at +14:00 (and a day ahead) means any implicit-local assumption produces a
  * visibly wrong instant instead.
  *
