@@ -1,7 +1,7 @@
 # Dashboard E2E (Playwright)
 
 End-to-end tests that drive a real Chromium against the running dashboard.
-Runs inside a dedicated Docker container — nothing is installed on your host.
+Runs inside a dedicated Docker container - nothing is installed on your host.
 
 ## How it runs
 
@@ -10,7 +10,7 @@ using the official `mcr.microsoft.com/playwright:v1.49.1-noble` image:
 
 - Same Docker network as the rest of the stack → tests hit `http://dashboard:4200`
   and `http://mailhog:8025` via service DNS.
-- Browsers come preinstalled in the image — no separate install step.
+- Browsers come preinstalled in the image - no separate install step.
 - `node_modules` lives in a named volume (`playwright_node_modules`), so the
   first run does an `npm install` and later runs reuse the cache.
 - Kept out of the default `docker-compose up` via `profiles: [e2e]`.
@@ -26,7 +26,7 @@ which stands up the stack via `docker-compose.ci.yml` and seeds the therapist + 
    `global-setup.ts`: `therapist@example.com` / `VerifyPass1!`. Override via
    env vars (see below) if your seed differs.
 3. **Wait for the dashboard dev server to compile** the first time after
-   `docker-compose up` — `docker-compose logs -f dashboard` and wait for
+   `docker-compose up` - `docker-compose logs -f dashboard` and wait for
    `Local: http://localhost:4200/`.
 
 ## Running
@@ -37,7 +37,7 @@ From the repo root:
 docker-compose --profile e2e run --rm playwright
 ```
 
-After the run, start `docker-compose --profile e2e up playwright-report` and open <http://localhost:9323> to replay each test step-by-step (DOM snapshots, video, network, console). See [Opening the report](#opening-the-report) below — `file://` does NOT work for the trace viewer.
+After the run, start `docker-compose --profile e2e up playwright-report` and open <http://localhost:9323> to replay each test step-by-step (DOM snapshots, video, network, console). See [Opening the report](#opening-the-report) below - `file://` does NOT work for the trace viewer.
 
 That single command:
 1. Spawns the playwright container (downloads the image on first run, ~2 GB).
@@ -56,7 +56,7 @@ docker-compose --profile e2e run --rm playwright \
 
 1. **Waits** for the dashboard (`/`) and MailHog (`/`) to respond. The dashboard
    container starts before the Angular dev server finishes compiling on first
-   boot — without the wait, the suite would race the build.
+   boot - without the wait, the suite would race the build.
 2. **Clears** the MailHog inbox via `DELETE /api/v1/messages` so each run starts
    from an empty mailbox.
 3. **Logs in once** as the therapist through a real browser (Chromium) and
@@ -102,16 +102,16 @@ Set them in a `.env` at the repo root, or export them before the
 
 ## Reports & artifacts (how to "see" what the browser did)
 
-The container is headless — no browser window pops up on your host. Every run writes a full HTML report + per-test trace to host-mounted volumes:
+The container is headless - no browser window pops up on your host. Every run writes a full HTML report + per-test trace to host-mounted volumes:
 
-- **HTML report:** `dashboard/playwright-report/index.html` — see "Opening the report" below.
-- **Traces:** `dashboard/test-results/<test-name>/trace.zip` — captured for every test (not just failures).
+- **HTML report:** `dashboard/playwright-report/index.html` - see "Opening the report" below.
+- **Traces:** `dashboard/test-results/<test-name>/trace.zip` - captured for every test (not just failures).
 
 Both `dashboard/playwright-report/` and `dashboard/test-results/` are gitignored.
 
 ### Opening the report
 
-The trace viewer uses Service Workers and **does not work over `file://`** — opening `index.html` directly in your browser will give you the top-level report but every trace link will fail with a "must be loaded over http://" error.
+The trace viewer uses Service Workers and **does not work over `file://`** - opening `index.html` directly in your browser will give you the top-level report but every trace link will fail with a "must be loaded over http://" error.
 
 Serve it via the dedicated container instead:
 

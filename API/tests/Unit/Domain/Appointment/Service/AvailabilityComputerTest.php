@@ -563,7 +563,7 @@ final class AvailabilityComputerTest extends TestCase
                 // 08:00 and 09:30 local
                 '2026-06-01T12:00:00Z',
                 '2026-06-01T13:30:00Z',
-                // 13:30, 15:00, 16:30 and 18:00 local — the last ends at 19:30
+                // 13:30, 15:00, 16:30 and 18:00 local - the last ends at 19:30
                 '2026-06-01T17:30:00Z',
                 '2026-06-01T19:00:00Z',
                 '2026-06-01T20:30:00Z',

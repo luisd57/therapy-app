@@ -43,7 +43,7 @@ final class TimezoneTest extends TestCase
 
     /**
      * new DateTimeZone('-04:00') is perfectly valid in PHP, so merely constructing
-     * one proves nothing — a fixed offset must be rejected explicitly or it would
+     * one proves nothing - a fixed offset must be rejected explicitly or it would
      * be wrong for half of every DST year.
      */
     public function testRejectsAFixedOffset(): void

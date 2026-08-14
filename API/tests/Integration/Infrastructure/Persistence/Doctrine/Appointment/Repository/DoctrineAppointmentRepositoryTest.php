@@ -136,7 +136,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
     {
         $targetDate = new DateTimeImmutable('2026-09-15');
 
-        // Confirmed on target date — should be included
+        // Confirmed on target date - should be included
         $confirmedOnDate = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-09-15 09:00:00'),
             email: 'confirmed-on-date@test.com',
@@ -144,7 +144,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $confirmedOnDate->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate);
 
-        // Another confirmed on target date — should be included
+        // Another confirmed on target date - should be included
         $confirmedOnDate2 = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-09-15 14:00:00'),
             email: 'confirmed-on-date2@test.com',
@@ -152,14 +152,14 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $confirmedOnDate2->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate2);
 
-        // Requested on target date — should NOT be included
+        // Requested on target date - should NOT be included
         $requestedOnDate = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-09-15 11:00:00'),
             email: 'requested-on-date@test.com',
         );
         $this->repository->save($requestedOnDate);
 
-        // Confirmed on different date — should NOT be included
+        // Confirmed on different date - should NOT be included
         $confirmedOtherDate = $this->createAppointment(
             startTime: new DateTimeImmutable('2026-09-16 09:00:00'),
             email: 'confirmed-other-date@test.com',
@@ -241,7 +241,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
      * Doctrine's ParameterTypeInferer binds a bare DateTimeImmutable through the
      * naive datetime type, writing a literal without an offset. A range whose
      * bounds are expressed in the practice zone must still match a row written
-     * in UTC — this is the cheapest detector for a missing setParameter() type.
+     * in UTC - this is the cheapest detector for a missing setParameter() type.
      */
     public function testDateRangeQueryMatchesInstantsWrittenWithADifferentOffset(): void
     {
@@ -255,7 +255,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $this->repository->save($appointment);
         $this->entityManager->clear();
 
-        // 08:00–10:00 in Caracas is 12:00–14:00 UTC, so the 13:00 UTC row is inside.
+        // 08:00-10:00 in Caracas is 12:00-14:00 UTC, so the 13:00 UTC row is inside.
         $results = $this->repository->findConfirmedByDateRange(
             new DateTimeImmutable('2026-06-01 08:00:00', $caracas),
             new DateTimeImmutable('2026-06-01 10:00:00', $caracas),

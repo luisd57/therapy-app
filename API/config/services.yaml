@@ -101,7 +101,7 @@ services:
 
     App\Domain\Appointment\Service\AvailabilityComputerInterface:
         # `class:` is only safe because AvailabilityComputer takes no constructor
-        # arguments — slot rules are passed per call. Anything with an explicit
+        # arguments - slot rules are passed per call. Anything with an explicit
         # `arguments:` block must use `alias:` instead (see below).
         class: App\Domain\Appointment\Service\AvailabilityComputer
 
@@ -109,7 +109,7 @@ services:
         arguments:
             $practiceTimezone: '%app.practice_timezone%'
 
-    # `alias:`, NOT `class:` — `class:` would create a second definition under the
+    # `alias:`, NOT `class:` - `class:` would create a second definition under the
     # interface id that does not inherit the arguments block above, leaving
     # $practiceTimezone unresolved and failing container compilation.
     App\Domain\Appointment\Service\PracticeTimezoneProviderInterface:

@@ -97,7 +97,7 @@ Domain entities use `reconstitute()` static factory methods to create objects in
 
 - **Testing**: Creating entities in controlled states (expired tokens, inactive users, confirmed appointments, etc.) via `DomainTestHelper` and directly in unit/integration tests
 
-Doctrine hydrates entities directly via reflection — `reconstitute()` is not involved in persistence.
+Doctrine hydrates entities directly via reflection - `reconstitute()` is not involved in persistence.
 
 `reconstitute()` must **never** be called in handlers or controllers. If you see it outside of test helpers, it's a code smell.
 
@@ -106,24 +106,24 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 ### Authentication & Secrets
 
 - JWT with `jti`-based revocation via Redis blocklist (`POST /api/auth/logout`)
-- JWT delivered via a single httpOnly cookie `THERAPY_JWT` (one session per browser — login of either role replaces it; logout clears it and revokes the `jti`). Read by Lexik's built-in cookie token extractor; Bearer token also supported for API clients (Postman, tests)
+- JWT delivered via a single httpOnly cookie `THERAPY_JWT` (one session per browser - login of either role replaces it; logout clears it and revokes the `jti`). Read by Lexik's built-in cookie token extractor; Bearer token also supported for API clients (Postman, tests)
 - Auth state check endpoint: `GET /api/auth/me` (JWT-protected, used by dashboard on page refresh)
 - CORS with `allow_credentials: true` to support cookie-based auth
-- Therapist creation is CLI-only (`app:create-therapist`) — no HTTP endpoint exposed
-- Passwords hashed with bcrypt (cost 12), policy enforced at 8–72 characters in both HTTP and CLI flows
-- Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` — must be replaced before deploying
+- Therapist creation is CLI-only (`app:create-therapist`) - no HTTP endpoint exposed
+- Passwords hashed with bcrypt (cost 12), policy enforced at 8-72 characters in both HTTP and CLI flows
+- Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` - must be replaced before deploying
 
 ### Input Validation & Output Encoding
 
 - Max-length validation on all user-supplied text fields (`full_name` 255, `phone` 50, `city` 255, `country` 255)
 - Email format validation on therapist-created appointments
 - HTML output escaping (`htmlspecialchars`) applied in all email templates to prevent XSS
-- Domain exceptions use static messages — no user input is reflected in error responses
+- Domain exceptions use static messages - no user input is reflected in error responses
 
 ### Rate Limiting
 
 - **Login**: 5 requests/min per IP
-- **Public endpoints**: 10 requests/min per IP — covers forgot-password, lock-slot, request-appointment, validate-invitation, register, reset-password
+- **Public endpoints**: 10 requests/min per IP - covers forgot-password, lock-slot, request-appointment, validate-invitation, register, reset-password
 - Client IP detection respects `TRUSTED_PROXIES` for correct behavior behind reverse proxies
 
 ### Infrastructure
@@ -137,7 +137,7 @@ Doctrine hydrates entities directly via reflection — `reconstitute()` is not i
 ### Slot Lock Validation
 
 - Lock tokens are verified against the submitted time slot and modality, preventing reuse of a lock acquired for a different slot
-- Locks are an optional concurrency hint — they do **not** hide slots from the public browser. Only CONFIRMED appointments and schedule exceptions affect slot visibility
+- Locks are an optional concurrency hint - they do **not** hide slots from the public browser. Only CONFIRMED appointments and schedule exceptions affect slot visibility
 
 ## Quick Start
 
@@ -154,7 +154,7 @@ docker-compose up -d --build
 # 3. Apply database migrations (dev DB)
 docker-compose exec php php bin/console doctrine:migrations:migrate --no-interaction
 
-# 4. Create the therapist account (single-therapist system — only one allowed)
+# 4. Create the therapist account (single-therapist system - only one allowed)
 docker-compose exec php php bin/console app:create-therapist "email@example.com" "Dr. Name" "password"
 ```
 
@@ -686,7 +686,7 @@ This README describes the `API/` subdirectory of the monorepo. Repo-wide layout:
 
 ```
 therapy/
-├── API/                          # this directory — Symfony 8.0 backend
+├── API/                          # this directory - Symfony 8.0 backend
 │   ├── src/
 │   │   ├── Domain/               # Pure business logic (entities, value objects, ports)
 │   │   ├── Application/          # Use cases (handlers, DTOs)

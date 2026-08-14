@@ -14,7 +14,7 @@ users
   |
   '-- 0:N <-- appointments           (patient_id   -> users.id, nullable)
 
-slot_locks                            (standalone, no FK — ephemeral records)
+slot_locks                            (standalone, no FK - ephemeral records)
 ```
 
 ---
@@ -47,7 +47,7 @@ Stores both therapists and patients. Differentiated by `role`.
 
 **Design notes**:
 
-- Address is stored as flattened columns (not a JSON blob) — the Address value object is mapped as a Doctrine `#[ORM\Embeddable]` directly on the User domain entity, with column prefix `address_`.
+- Address is stored as flattened columns (not a JSON blob) - the Address value object is mapped as a Doctrine `#[ORM\Embeddable]` directly on the User domain entity, with column prefix `address_`.
 - `password` is nullable because patients are created in an inactive state via invitation. They set a password during registration.
 - Single table for both roles avoids joins while the user count is small (single-therapist practice).
 
@@ -112,15 +112,15 @@ Recurring weekly availability blocks. A therapist defines their working hours as
 
 **Design notes**:
 
-- **Why VARCHAR(5) instead of TIME?** These represent recurring wall-clock times ("every Monday at 09:00"), not specific datetime instances. Storing as plain strings keeps the domain model simple — the `AvailabilityComputer` combines them with a concrete date at query time to produce actual `DateTimeImmutable` slot boundaries.
-- **Overlap rule**: Two active schedule blocks on the same day cannot overlap in time, regardless of modality. A therapist is one person — they can't be in two places at once. Each block can support both modalities simultaneously (`supports_online=true, supports_in_person=true`).
+- **Why VARCHAR(5) instead of TIME?** These represent recurring wall-clock times ("every Monday at 09:00"), not specific datetime instances. Storing as plain strings keeps the domain model simple - the `AvailabilityComputer` combines them with a concrete date at query time to produce actual `DateTimeImmutable` slot boundaries.
+- **Overlap rule**: Two active schedule blocks on the same day cannot overlap in time, regardless of modality. A therapist is one person - they can't be in two places at once. Each block can support both modalities simultaneously (`supports_online=true, supports_in_person=true`).
 - **Soft-delete via `is_active`**: Allows deactivating a block without losing its history.
 
 ---
 
 ### `schedule_exceptions`
 
-One-off time blocks where the therapist is unavailable (holidays, personal time, appointments outside the practice). These override `therapist_schedules` — any slot that falls within an exception's range is excluded from public availability.
+One-off time blocks where the therapist is unavailable (holidays, personal time, appointments outside the practice). These override `therapist_schedules` - any slot that falls within an exception's range is excluded from public availability.
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
@@ -165,7 +165,7 @@ The core business entity. Tracks appointment requests from submission through co
 
 **Design notes**:
 
-- **Why store contact info directly instead of referencing `users`?** Public appointment requests come from unauthenticated visitors who may not have an account. The contact fields are denormalized intentionally — they capture the requester's info at submission time, independent of any user record.
+- **Why store contact info directly instead of referencing `users`?** Public appointment requests come from unauthenticated visitors who may not have an account. The contact fields are denormalized intentionally - they capture the requester's info at submission time, independent of any user record.
 - **`patient_id` is nullable**: NULL for public requests. Can be linked to a `users` record later if the requester creates an account or is matched to an existing patient.
 - **`idx_appointment_blocking` composite index**: Optimized for availability queries. The public slot browser uses `findConfirmedByDateRange` (only CONFIRMED appointments block visible slots). The booking service also uses `findConfirmedByDateRange` to allow multiple REQUESTED appointments for the same slot. The index covers both query patterns efficiently.
 
@@ -182,8 +182,8 @@ CANCELLED      CANCELLED
 - `CONFIRMED`: Therapist manually approves after verifying payment.
 - `COMPLETED`: Session took place.
 - `CANCELLED`: Rejected or cancelled at any pre-completion stage.
-- Only `CONFIRMED` appointments **block** a slot (hide it from the public slot browser). Multiple `REQUESTED` appointments can coexist on the same slot — the therapist resolves conflicts manually.
-- `COMPLETED` and `CANCELLED` are terminal states — no further transitions.
+- Only `CONFIRMED` appointments **block** a slot (hide it from the public slot browser). Multiple `REQUESTED` appointments can coexist on the same slot - the therapist resolves conflicts manually.
+- `COMPLETED` and `CANCELLED` are terminal states - no further transitions.
 
 ---
 
@@ -226,6 +226,6 @@ All tables referencing `users` have physical FK constraints enforced at the data
 
 - **CASCADE**: Deleting a user automatically removes their associated tokens, schedules, and exceptions.
 - **SET NULL**: Deleting a patient nullifies `patient_id` on their appointments, preserving appointment history.
-- `slot_locks` has no FK — these are standalone ephemeral records with no user reference.
+- `slot_locks` has no FK - these are standalone ephemeral records with no user reference.
 
 The domain layer still enforces business rules (e.g., validating that a therapist exists before creating a schedule). FK constraints act as a safety net against orphaned records.

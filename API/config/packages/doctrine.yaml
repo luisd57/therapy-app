@@ -14,7 +14,7 @@ doctrine:
             token_id: App\Infrastructure\Persistence\Doctrine\Type\TokenIdType
             hashed_string: App\Infrastructure\Persistence\Doctrine\Type\HashedStringType
             timezone: App\Infrastructure\Persistence\Doctrine\Type\TimezoneType
-            # Every instant column uses this instead of datetime_immutable —
+            # Every instant column uses this instead of datetime_immutable -
             # see the type's docblock for why the stock one loses the offset.
             utc_datetime_immutable: App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType
     orm:

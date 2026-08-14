@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// The landing app is public/anonymous — no auth, no storageState.
+// The landing app is public/anonymous - no auth, no storageState.
 // We run our OWN Astro dev server (webServer below) inside the e2e container so
 // the page is served from a loopback origin the API's CORS allows
 // (^https?://(localhost|127\.0\.0\.1)(:port)?$). The browser fetches the API at

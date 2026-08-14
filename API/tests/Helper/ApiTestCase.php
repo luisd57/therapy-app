@@ -111,7 +111,7 @@ abstract class ApiTestCase extends WebTestCase
      * tests can pin "now" to a fixed instant. Must be called before the test triggers
      * the request that resolves the clock-using handlers.
      *
-     * $now is read as UTC unless it carries its own offset — never as the process
+     * $now is read as UTC unless it carries its own offset - never as the process
      * timezone, which the suite deliberately sets to something absurd.
      */
     protected function freezeClock(string $now): MockClock

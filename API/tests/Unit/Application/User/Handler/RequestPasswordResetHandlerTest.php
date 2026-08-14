@@ -133,7 +133,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
             ->expects($this->once())
             ->method('error');
 
-        // Should NOT throw — token is saved, email failure is logged
+        // Should NOT throw - token is saved, email failure is logged
         $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'active@example.com'));
     }
 }

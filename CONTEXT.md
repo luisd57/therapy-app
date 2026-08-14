@@ -23,7 +23,7 @@ _Avoid_: time, recurring time, schedule time
 
 **Day key**:
 A bare `YYYY-MM-DD` naming a calendar day in some stated zone. Which zone is
-never implicit — the same Instant has different Day keys for the therapist and
+never implicit - the same Instant has different Day keys for the therapist and
 for a patient abroad.
 _Avoid_: date, date string
 
@@ -38,7 +38,7 @@ time. Distinct from the patient's profile timezone, because people travel.
 _Avoid_: user timezone, client timezone
 
 **Viewer Zone**:
-Whichever zone a given screen is rendering in — the visitor's own for the public
+Whichever zone a given screen is rendering in - the visitor's own for the public
 slot browser, the therapist's for the dashboard.
 
 ### Scheduling
@@ -57,7 +57,7 @@ May or may not become a Patient.
 _Avoid_: visitor, guest, lead
 
 **Schedule Block**:
-A recurring weekly availability window — a day of week plus a start and end
+A recurring weekly availability window - a day of week plus a start and end
 Wall-clock rule, plus which Modalities it supports. The end means *sessions must
 finish by*, not *last session starts at*.
 _Avoid_: availability, shift, working hours
@@ -85,7 +85,7 @@ hide the Slot from other browsers.
 _Avoid_: reservation, hold
 
 **Appointment**:
-A requested or confirmed session. Only CONFIRMED Appointments block a Slot —
+A requested or confirmed session. Only CONFIRMED Appointments block a Slot -
 several Requesters may hold REQUESTED Appointments for the same Slot, and the
 therapist resolves the conflict manually.
 _Avoid_: booking, session, meeting

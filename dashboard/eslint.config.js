@@ -61,7 +61,7 @@ module.exports = tseslint.config(
         },
       ],
 
-      // Must be OFF — otherwise it strips "redundant" annotations
+      // Must be OFF - otherwise it strips "redundant" annotations
       "@typescript-eslint/no-inferrable-types": "off",
 
       // Angular components are decorated empty classes by design
@@ -86,7 +86,7 @@ module.exports = tseslint.config(
     },
   },
 
-  // Route files — relax arrow typing for lazy-load patterns
+  // Route files - relax arrow typing for lazy-load patterns
   {
     files: ["**/app.routes.ts", "**/*-shell.routes.ts"],
     rules: {
