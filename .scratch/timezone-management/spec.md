@@ -286,15 +286,15 @@ that the selected Slot and confirmation show the Practice time alongside the
 Requester's. That is the substance of ticket 09, and a green suite does not make
 it redundant.
 
-**When it fails, it is currently finding a real bug.** CI run 31750161621 failed
-two specs because the browser's "all modalities" filter shows In-Person-only
-Slots and then books them as Online. It is date-dependent - it fires only when
-the first offered Slot falls in an In-Person-only Schedule Block - which is why
-earlier runs passed. See ticket 05, reclassified as an active defect.
+**When it fails, it is currently finding a real bug.** Two of them, and they mask
+each other, so each was mistaken for the whole story in turn. They fire on
+different days: ticket 05 when the first offered Slot is In-Person only, ticket
+12 from Friday afternoon through Sunday. See those tickets for the mechanisms.
 
 So: do not read a green run as verification, and do not read a red run as
-flakiness. Until ticket 05 lands, the suite's colour is mostly a function of
-which weekday CI happened to run on.
+flakiness. Until both 05 and 12 land, the suite's colour is mostly a function of
+which weekday CI happened to run on, and fixing either alone leaves it red on
+the other's days.
 
 Two further caveats remain live: the seeded schedule is still the old generic
 Monday-to-Friday pattern rather than the Therapist's real hours (ticket 08), and
