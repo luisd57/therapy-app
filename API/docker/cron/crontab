@@ -1,3 +1,7 @@
+# Times below are practice-local (America/Caracas): the cron service sets TZ, and
+# cron reads the container zone. CRON_TZ is deliberately absent - Debian cron
+# (3.0pl1-197) ignores it, which would silently leave these hours in UTC.
+# The lock sweep runs all day because locks expire on a short TTL.
 */15 * * * * php /var/www/html/bin/console app:cleanup-slot-locks --env=prod >> /proc/1/fd/1 2>&1
 0 7 * * * php /var/www/html/bin/console app:send-daily-agenda --env=prod >> /proc/1/fd/1 2>&1
 0 2 * * * php /var/www/html/bin/console app:cleanup-tokens --env=prod >> /proc/1/fd/1 2>&1

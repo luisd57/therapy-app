@@ -31,9 +31,12 @@ WORKDIR /var/www/html
 RUN useradd -ms /bin/bash symfony \
     && chown -R symfony:symfony /var/www/html
 
-# Install crontab for symfony user
+# Install crontab for symfony user. Strip CR first: a CRLF copy ends every job
+# line in \r, and sh fails it with "Bad fd number" instead of running anything.
 COPY docker/cron/crontab /tmp/crontab
-RUN crontab -u symfony /tmp/crontab && rm /tmp/crontab
+RUN sed -i 's/\r$//' /tmp/crontab \
+    && crontab -u symfony /tmp/crontab \
+    && rm /tmp/crontab
 
 # Cron must run as root to manage user crontabs
 CMD ["cron", "-f"]

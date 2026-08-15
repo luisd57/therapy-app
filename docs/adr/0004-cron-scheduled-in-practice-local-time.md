@@ -1,60 +1,55 @@
-# Scheduled jobs should run on practice local time via CRON_TZ
+# Scheduled jobs run on practice local time
 
-Status: **proposed - NOT implemented.** The current behaviour is wrong; see below.
+Status: accepted, implemented on 2026-08-15. Supersedes the CRON_TZ approach this
+ADR originally proposed, which does not work on the image we run.
 
-## Current behaviour in the code
+## The behaviour this replaced
 
-`API/docker/cron/crontab` contains no `CRON_TZ` line:
+`API/docker/cron/crontab` declared its hours with no zone, and the cron container
+had `TZ=UTC`, so the daily agenda intended for 07:00 fired at 07:00 UTC, which is
+03:00 in Caracas. Token cleanup at 02:00 UTC landed at 22:00 local, inside the
+therapist's Wednesday-to-Sunday working window.
 
-```
-*/15 * * * * ... app:cleanup-slot-locks
-0 7  * * *   ... app:send-daily-agenda
-0 2  * * *   ... app:cleanup-tokens
-```
+`SendDailyAgendaCommand` compounded it by computing `date('Y-m-d')`, which
+resolves in the process zone. That was the Caracas date before ADR-0001 and the
+UTC date after it.
 
-The cron container has `TZ=UTC` (set in `docker-compose.yml`), and cron reads the
-container OS zone, not `php.ini`. So the daily agenda intended for 07:00 fires at
-**07:00 UTC, which is 03:00 in Caracas** - the therapist receives her day's
-agenda in the middle of the night.
+## Decision
 
-`SendDailyAgendaCommand.php:41` compounds this: it still computes
-`date('Y-m-d')`, which now resolves in UTC rather than the Practice Timezone.
+The cron service sets `TZ=America/Caracas`, so cron reads the practice zone and
+the crontab hours mean what they say. The agenda's day key comes from the
+injected clock converted to the practice zone, never from `date()`.
 
-Neither is new to this branch as a *symptom* - the container was already UTC
-while PHP was Caracas - but the second half is: before this work `date('Y-m-d')`
-returned the Caracas date, and now it returns the UTC date.
+PHP is unaffected by the container zone: `docker/php/php.ini` pins
+`date.timezone = UTC`, verified in the running container. `PGTZ=UTC` stays set
+explicitly, so the Postgres session zone does not move either.
 
-## Proposed decision
+## Why not CRON_TZ, as first proposed
 
-Add `CRON_TZ=America/Caracas` at the top of the crontab, and derive the agenda
-date from the injected clock converted to the Practice Timezone rather than from
-`date()`.
+Debian's cron does not support it. Measured on the image we run (cron
+3.0pl1-197): with `CRON_TZ=America/Caracas` at the top of the crontab, a job
+scheduled for a Caracas minute two minutes away never fired, while an
+every-minute control job kept firing. A plain `TZ=` line behaves the same way.
+Neither string appears in the `cron` or `crontab` binaries.
 
-## Why CRON_TZ rather than a UTC-shifted schedule
+This is the worst kind of failure: the crontab reads as though it is zone-aware
+and the schedule silently stays UTC. `CRON_TZ` is a cronie extension, not a Vixie
+one. Do not reintroduce it without re-running that probe.
 
-Writing `0 11 * * *` to mean "07:00 Caracas" encodes the offset into the schedule.
-It is correct only while the offset is; it silently breaks if Venezuela changes
-its rules (it has, in 2007 and 2016), and it forces a reader to do arithmetic to
-learn when the job actually runs. `CRON_TZ` states the intent directly and lets
-the tz database handle the rest. Debian/Vixie cron supports it.
+## Why not a UTC-shifted hour
 
-## Considered and rejected
-
-**Setting the whole cron container to `TZ=America/Caracas`.** Rejected: the
-container also runs PHP, and the codebase depends on the process default being
-UTC (ADR-0001). `CRON_TZ` scopes the change to schedule interpretation only.
-
-**Leaving it UTC and accepting the offset.** Rejected: 03:00 is not a plausible
-time to send someone their working day, and `cleanup-tokens` at 02:00 UTC is
-22:00 local - inside her Wednesday-to-Sunday working window rather than safely
-outside it.
+Writing `0 11 * * *` to mean "07:00 Caracas" encodes the offset into the
+schedule. It is correct only while the offset is, breaks silently if Venezuela
+changes its rules again (2007 and 2016), and forces a reader to do arithmetic to
+learn when a job runs.
 
 ## Consequences
 
-Jobs will run at the same wall-clock hour year-round. Were the practice ever to
-move to a DST zone, `CRON_TZ` would make jobs skip or repeat around transitions -
-the standard cron caveat, and the reason this must stay a named zone rather than
-being "fixed" back into a UTC offset later.
+Jobs run at the same wall-clock hour year-round. Were the practice ever to move
+to a zone with daylight saving, jobs would skip or repeat around transitions -
+the standard cron caveat, and the reason this stays a named zone rather than
+being "fixed" into a UTC offset later.
 
-Needs a ticket: "Schedule cron in practice local time". Not yet filed -
-`.scratch/timezone-management/` is created by `/to-tickets`.
+The slot-lock sweep still runs every 15 minutes around the clock. It reaps locks
+on a short TTL, so confining it to off-hours would leave stale locks all day.
+Only the two daily jobs are placed relative to the working window.
