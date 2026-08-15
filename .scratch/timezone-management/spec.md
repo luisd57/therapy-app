@@ -2,7 +2,7 @@
 
 Status: ready-for-agent
 
-Branch: `feat/timezone-management` · 8 of 14 planned steps landed
+Branch: `feat/timezone-management` · progress in `docs/STATUS.md`, follow-up work in `issues/`
 Related decisions: ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005
 
 ## Problem Statement
