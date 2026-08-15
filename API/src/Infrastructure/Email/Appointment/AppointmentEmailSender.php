@@ -32,7 +32,7 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void {
         $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
@@ -52,7 +52,7 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         string $requesterName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void {
         $times = $this->therapistTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
@@ -186,7 +186,7 @@ HTML;
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void {
         $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
@@ -206,7 +206,7 @@ HTML;
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void {
         $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
@@ -597,7 +597,7 @@ TEXT;
         DateTimeZone $recipientZone,
         DateTimeZone $otherPartyZone,
     ): ?string {
-        if ($recipientZone->getName() === $otherPartyZone->getName()) {
+        if (self::sameClock($recipientZone, $otherPartyZone)) {
             return null;
         }
 
@@ -609,15 +609,25 @@ TEXT;
     {
         $requesterTimezone = $appointment->getRequesterTimezone();
 
-        if ($requesterTimezone === null
-            || $requesterTimezone->getValue() === $this->practiceTimezoneProvider->getIdentifier()) {
+        if ($requesterTimezone === null) {
+            return null;
+        }
+
+        $requesterZone = $requesterTimezone->toDateTimeZone();
+
+        if (self::sameClock($this->practiceTimezoneProvider->getTimeZone(), $requesterZone)) {
             return null;
         }
 
         return RenderedTime::in(
             $appointment->getTimeSlot()->getStartTime(),
-            $requesterTimezone->toDateTimeZone(),
+            $requesterZone,
         )->timeWithZone();
+    }
+
+    private static function sameClock(DateTimeZone $timeZone, DateTimeZone $otherTimeZone): bool
+    {
+        return $timeZone->getName() === $otherTimeZone->getName();
     }
 
     private static function otherPartyParagraph(?string $otherPartyLine): string

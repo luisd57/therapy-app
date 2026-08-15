@@ -21,7 +21,7 @@ interface AppointmentEmailSenderInterface
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void;
 
     /**
@@ -32,7 +32,7 @@ interface AppointmentEmailSenderInterface
         string $requesterName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void;
 
     /**
@@ -43,7 +43,7 @@ interface AppointmentEmailSenderInterface
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void;
 
     /**
@@ -54,7 +54,7 @@ interface AppointmentEmailSenderInterface
         string $fullName,
         DateTimeImmutable $appointmentTime,
         AppointmentModality $modality,
-        ?Timezone $requesterTimezone = null,
+        ?Timezone $requesterTimezone,
     ): void;
 
     /**

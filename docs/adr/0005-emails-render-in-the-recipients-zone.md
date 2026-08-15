@@ -34,9 +34,12 @@ Convert before formatting, choosing the zone by recipient:
 ## Why name the zone in the body
 
 The recipient cannot infer it. An email is read outside the app, often days
-later, with no banner to explain which clock is meant. Printing "9:00 a. m.
+later, with no banner to explain which clock is meant. Printing "9:00 AM
 (Caracas)" costs nothing and removes the only remaining place in the system where
 a time appears without its zone.
+
+Email copy is English throughout, so the rendered time is too. The dashboard's
+Spanish sweep does not reach the mail templates.
 
 ## Considered and rejected
 

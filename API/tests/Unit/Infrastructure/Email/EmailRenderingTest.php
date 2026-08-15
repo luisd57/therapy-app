@@ -80,7 +80,7 @@ final class EmailRenderingTest extends TestCase
         $this->assertStringContainsString($expectedUrl, $this->sentEmail->getTextBody());
     }
 
-    public function testRequestAcknowledgmentEmailSentWithCorrectDetails(): void
+    public function testRequestAcknowledgmentCarriesRequesterNameAndModality(): void
     {
         $sender = $this->appointmentSender();
 
@@ -164,13 +164,13 @@ final class EmailRenderingTest extends TestCase
     public function testTherapistNewRequestAlertContainsDashboardButton(): void
     {
         $sender = $this->appointmentSender();
-        $time = new DateTimeImmutable('2026-06-15 14:30:00');
 
         $sender->sendNewRequestAlertToTherapist(
             Email::fromString('therapist@example.com'),
             'John Smith',
-            $time,
+            self::instant(),
             AppointmentModality::IN_PERSON,
+            Timezone::fromString('Europe/Madrid'),
         );
 
         $this->assertNotNull($this->sentEmail);
@@ -205,16 +205,34 @@ final class EmailRenderingTest extends TestCase
         $this->assertStringNotContainsString('2:30 PM', $html);
     }
 
+    public function testTherapistNewRequestAlertFallsBackToPracticeZoneWithoutRequesterZone(): void
+    {
+        $sender = $this->appointmentSender();
+
+        $sender->sendNewRequestAlertToTherapist(
+            Email::fromString('therapist@example.com'),
+            'John Smith',
+            self::instant(),
+            AppointmentModality::IN_PERSON,
+            null,
+        );
+
+        $this->assertNotNull($this->sentEmail);
+        $html = (string) $this->sentEmail->getHtmlBody();
+        $this->assertStringContainsString('10:30 AM (Caracas)', $html);
+        $this->assertStringNotContainsString("Requester's time", $html);
+    }
+
     public function testConfirmationEmailSentWithCorrectDetails(): void
     {
         $sender = $this->appointmentSender();
-        $time = new DateTimeImmutable('2026-06-15 14:30:00');
 
         $sender->sendConfirmationToPatient(
             Email::fromString('patient@example.com'),
             'Jane Doe',
-            $time,
+            self::instant(),
             AppointmentModality::ONLINE,
+            Timezone::fromString('Europe/Madrid'),
         );
 
         $this->assertNotNull($this->sentEmail);
@@ -227,13 +245,13 @@ final class EmailRenderingTest extends TestCase
     public function testCancellationEmailSentWithCorrectDetails(): void
     {
         $sender = $this->appointmentSender();
-        $time = new DateTimeImmutable('2026-06-15 14:30:00');
 
         $sender->sendCancellationToPatient(
             Email::fromString('patient@example.com'),
             'Jane Doe',
-            $time,
+            self::instant(),
             AppointmentModality::ONLINE,
+            Timezone::fromString('Europe/Madrid'),
         );
 
         $this->assertNotNull($this->sentEmail);
