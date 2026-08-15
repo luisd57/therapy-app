@@ -19,7 +19,9 @@ See ADR-0005 for the decision and the alternatives rejected.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #25](https://github.com/luisd57/therapy-app/pull/25)
 
 - [x] Appointment request, confirmation, and cancellation mail render times in the Requester Timezone when one is recorded
 - [x] The same mail falls back to the Practice Timezone when the Requester Timezone is null
