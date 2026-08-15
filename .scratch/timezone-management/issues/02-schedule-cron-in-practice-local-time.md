@@ -24,11 +24,27 @@ See ADR-0004 for the decision and the alternatives rejected.
 
 **Status:** ready-for-agent
 
-- [ ] Scheduled jobs are declared in the Practice Timezone, not as a UTC-shifted hour
-- [ ] The daily agenda fires in the Therapist's morning
-- [ ] The agenda's Day key comes from the injected clock converted to the Practice Timezone, not from the process clock
-- [ ] The agenda covers the Therapist's calendar day, not a UTC day
+- [x] Scheduled jobs are declared in the Practice Timezone, not as a UTC-shifted hour
+- [x] The daily agenda fires in the Therapist's morning
+- [x] The agenda's Day key comes from the injected clock converted to the Practice Timezone, not from the process clock
+- [x] The agenda covers the Therapist's calendar day, not a UTC day
 - [ ] Token and Slot Lock cleanup run outside her working window in local terms
-- [ ] The crontab reads as intent - a reader can see when a job runs without computing an offset
-- [ ] A test pins the agenda's day-boundary behaviour with a frozen clock
-- [ ] Full API suite green
+- [x] The crontab reads as intent - a reader can see when a job runs without computing an offset
+- [x] A test pins the agenda's day-boundary behaviour with a frozen clock
+- [x] Full API suite green
+
+## Comments
+
+**2026-08-15, [PR #27](https://github.com/luisd57/therapy-app/pull/27) merged.** Seven
+of the eight criteria are met and verified. Left open: Slot Lock cleanup cannot run
+outside the working window. It sweeps every 15 minutes because locks expire on a
+short TTL, so confining it to off-hours would leave stale locks all day. Token
+cleanup does now run outside the window, at 02:00 practice-local. The criterion needs
+either a reword covering the daily jobs only, or a decision to accept the sweep as
+continuous - hence this ticket stays open rather than resolved.
+
+Two findings worth carrying forward. `CRON_TZ` does not work on this image: Debian
+cron ignores it, measured, so the crontab hours depend on the container `TZ`. And the
+jobs were not running at all before this work, for two reasons unrelated to zones - a
+CRLF crontab that sh rejected, and a `when@prod` Doctrine block referencing cache
+pools that were never declared. Both are fixed. See ADR-0004.
