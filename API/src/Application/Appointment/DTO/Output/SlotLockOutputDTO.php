@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Appointment\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\Entity\SlotLock;
-use DateTimeInterface;
 
 final readonly class SlotLockOutputDTO
 {
@@ -21,9 +21,9 @@ final readonly class SlotLockOutputDTO
     {
         return new self(
             lockToken: $lock->getLockToken(),
-            slotStartTime: $lock->getTimeSlot()->getStartTime()->format(DateTimeInterface::ATOM),
-            slotEndTime: $lock->getTimeSlot()->getEndTime()->format(DateTimeInterface::ATOM),
-            expiresAt: $lock->getExpiresAt()->format(DateTimeInterface::ATOM),
+            slotStartTime: InstantFormatter::toAtomUtc($lock->getTimeSlot()->getStartTime()),
+            slotEndTime: InstantFormatter::toAtomUtc($lock->getTimeSlot()->getEndTime()),
+            expiresAt: InstantFormatter::toAtomUtc($lock->getExpiresAt()),
         );
     }
 

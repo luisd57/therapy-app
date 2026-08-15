@@ -216,6 +216,50 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         $this->assertArrayHasKey('message', $data['data']);
     }
 
+    public function testAddAllDayExceptionSnapsToThePracticeLocalDay(): void
+    {
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+        $token = $this->createTherapistAndGetToken();
+
+        // A caller on UTC+14 marking their own day off. Read in Caracas the
+        // submitted range is 1 June 10:00 to 18:00, so 1 June is the day blocked.
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-02T04:00:00+14:00',
+            'end_date_time' => '2026-06-02T12:00:00+14:00',
+            'reason' => 'Away',
+            'is_all_day' => true,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $exception = $this->getResponseData()['data']['exception'];
+
+        // Caracas is UTC-4, so its midnight is 04:00 the same day in UTC.
+        $this->assertSame('2026-06-01T04:00:00+00:00', $exception['start_date_time']);
+        $this->assertSame('2026-06-02T04:00:00+00:00', $exception['end_date_time']);
+    }
+
+    public function testAddNonAllDayExceptionKeepsTheSubmittedRangeAndEmitsItInUtc(): void
+    {
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-02T04:00:00+14:00',
+            'end_date_time' => '2026-06-02T12:00:00+14:00',
+            'reason' => 'Doctor appointment',
+            'is_all_day' => false,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $exception = $this->getResponseData()['data']['exception'];
+
+        // The instants the caller sent, unsnapped and restated in UTC. Echoing
+        // their offset would disagree with the list response. See ADR-0001.
+        $this->assertSame('2026-06-01T14:00:00+00:00', $exception['start_date_time']);
+        $this->assertSame('2026-06-01T22:00:00+00:00', $exception['end_date_time']);
+        $this->assertSame('2026-05-01T00:00:00+00:00', $exception['created_at']);
+    }
+
     public function testAddExceptionReturns422WithMissingFields(): void
     {
         $token = $this->createTherapistAndGetToken();

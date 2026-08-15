@@ -122,6 +122,28 @@ final class PublicAppointmentControllerTest extends ApiTestCase
         $this->assertArrayHasKey('expires_at', $data['data']);
     }
 
+    public function testLockSlotResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
+    {
+        $this->freezeClock('2026-05-30T09:00:00+00:00');
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = $this->getResponseData()['data'];
+
+        // The handler parses the caller's string, so the lock carries their zone
+        // until it is formatted. See ADR-0001.
+        $this->assertSame('2026-06-01T13:00:00+00:00', $data['slot_start_time']);
+        // End and expiry follow from configured duration and TTL, so pin the zone
+        // rather than a value that moves when either is retuned.
+        $this->assertStringEndsWith('+00:00', $data['slot_end_time']);
+        $this->assertStringEndsWith('+00:00', $data['expires_at']);
+    }
+
     public function testLockSlotReturns422WithMissingFields(): void
     {
         $this->jsonRequest('POST', '/api/appointments/lock-slot', []);
