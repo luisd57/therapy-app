@@ -18,8 +18,11 @@ Two plugins provide them. Invoke the skills; do NOT restate their guidance here.
 - **mattpocock-skills** - tdd, code-review, domain-modeling, grilling, and the spec/ticket
   flows (`to-spec`, `to-tickets`, `wayfinder`) that `docs/agents/` and the ADRs reference.
 
-Both ship a TDD skill. Here, TDD means **`mattpocock-skills:tdd`**. Testing expectations are
-in `.claude/rules/testing-policy.md`.
+TDD means **`mattpocock-skills:tdd`**. Testing expectations are in
+`.claude/rules/testing-policy.md`.
+
+`to-spec`, `to-tickets` and `wayfinder` are user-invocable only. Ask for them rather than
+writing a ticket or spec by hand.
 
 Keep this file and `.claude/rules/` focused on project facts the plugins don't cover.
 
