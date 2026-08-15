@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\Appointment;
 
 use App\Tests\Helper\ApiTestCase;
-use DateTimeImmutable;
 use Symfony\Component\Uid\Uuid;
 
 final class TherapistScheduleControllerTest extends ApiTestCase
@@ -239,32 +238,7 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         $this->assertSame('2026-06-02T04:00:00+00:00', $exception['end_date_time']);
     }
 
-    public function testAddNonAllDayExceptionKeepsTheSubmittedRange(): void
-    {
-        $this->freezeClock('2026-05-01T00:00:00+00:00');
-        $token = $this->createTherapistAndGetToken();
-
-        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
-            'start_date_time' => '2026-06-02T04:00:00+14:00',
-            'end_date_time' => '2026-06-02T12:00:00+14:00',
-            'reason' => 'Away',
-            'is_all_day' => false,
-        ], $token);
-
-        $this->assertResponseStatusCodeSame(201);
-        $exception = $this->getResponseData()['data']['exception'];
-
-        $this->assertEquals(
-            new DateTimeImmutable('2026-06-01T14:00:00+00:00'),
-            new DateTimeImmutable($exception['start_date_time']),
-        );
-        $this->assertEquals(
-            new DateTimeImmutable('2026-06-01T22:00:00+00:00'),
-            new DateTimeImmutable($exception['end_date_time']),
-        );
-    }
-
-    public function testAddExceptionResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
+    public function testAddNonAllDayExceptionKeepsTheSubmittedRangeAndEmitsItInUtc(): void
     {
         $this->freezeClock('2026-05-01T00:00:00+00:00');
         $token = $this->createTherapistAndGetToken();
@@ -279,9 +253,8 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $exception = $this->getResponseData()['data']['exception'];
 
-        // Same instants the caller sent, restated in UTC. A create response that
-        // echoed the caller's offset would disagree with the list response for
-        // the same row, which reads back through the DBAL type. See ADR-0001.
+        // The instants the caller sent, unsnapped and restated in UTC. Echoing
+        // their offset would disagree with the list response. See ADR-0001.
         $this->assertSame('2026-06-01T14:00:00+00:00', $exception['start_date_time']);
         $this->assertSame('2026-06-01T22:00:00+00:00', $exception['end_date_time']);
         $this->assertSame('2026-05-01T00:00:00+00:00', $exception['created_at']);

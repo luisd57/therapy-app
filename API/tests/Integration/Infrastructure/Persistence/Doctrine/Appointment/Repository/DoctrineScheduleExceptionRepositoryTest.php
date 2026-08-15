@@ -41,7 +41,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             reason: 'Day off',
             isAllDay: false,
             now: new DateTimeImmutable(),
-            practiceTimeZone: new DateTimeZone("America/Caracas"),
+            practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);
 
@@ -69,7 +69,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: new DateTimeImmutable('2026-04-10 17:00:00'),
             reason: 'Conference',
             now: new DateTimeImmutable(),
-            practiceTimeZone: new DateTimeZone("America/Caracas"),
+            practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($inRange);
 
@@ -80,7 +80,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: new DateTimeImmutable('2026-06-15 17:00:00'),
             reason: 'Vacation',
             now: new DateTimeImmutable(),
-            practiceTimeZone: new DateTimeZone("America/Caracas"),
+            practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($outOfRange);
 
@@ -104,7 +104,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: new DateTimeImmutable('2026-07-01 17:00:00'),
             reason: 'Holiday',
             now: new DateTimeImmutable(),
-            practiceTimeZone: new DateTimeZone("America/Caracas"),
+            practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);
 
@@ -126,7 +126,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: new DateTimeImmutable('2026-05-20 16:00:00'),
             reason: 'Personal',
             now: new DateTimeImmutable(),
-            practiceTimeZone: new DateTimeZone("America/Caracas"),
+            practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);
 

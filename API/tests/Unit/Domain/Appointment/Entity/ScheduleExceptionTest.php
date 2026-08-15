@@ -152,8 +152,8 @@ final class ScheduleExceptionTest extends TestCase
             isAllDay: true,
         );
 
-        // 19:00 in Caracas is already the next UTC day, which is what makes a
-        // late-evening slot the one an unsnapped range misses.
+        // A 19:00 Caracas slot sits past the end of the range the caller sent,
+        // so only the snapped range reaches it.
         $evening = TimeSlot::fromStartEnd(
             new DateTimeImmutable('2026-06-01T23:00:00+00:00'),
             new DateTimeImmutable('2026-06-01T23:50:00+00:00'),
@@ -197,6 +197,24 @@ final class ScheduleExceptionTest extends TestCase
 
         self::assertInstantIs('2026-06-01T04:00:00+00:00', $exception->getStartDateTime());
         self::assertInstantIs('2026-06-04T04:00:00+00:00', $exception->getEndDateTime());
+    }
+
+    public function testAllDayExceptionStraddlingTwoPracticeDaysBlocksBoth(): void
+    {
+        // A caller in Madrid marking their own 2 June off. Read in Caracas that
+        // is 1 June 18:00 to 2 June 18:00, so it touches two practice days.
+        $exception = ScheduleException::create(
+            id: ExceptionId::generate(),
+            therapistId: UserId::generate(),
+            startDateTime: new DateTimeImmutable('2026-06-02T00:00:00+02:00'),
+            endDateTime: new DateTimeImmutable('2026-06-03T00:00:00+02:00'),
+            now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
+            practiceTimeZone: self::practiceTimeZone(),
+            isAllDay: true,
+        );
+
+        self::assertInstantIs('2026-06-01T04:00:00+00:00', $exception->getStartDateTime());
+        self::assertInstantIs('2026-06-03T04:00:00+00:00', $exception->getEndDateTime());
     }
 
     public function testAllDayExceptionAlreadyOnPracticeMidnightsIsLeftAlone(): void
