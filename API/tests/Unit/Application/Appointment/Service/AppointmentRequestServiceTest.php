@@ -22,6 +22,7 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
+use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -150,6 +151,36 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->assertSame('Berlin', $result->city);
         $this->assertSame('Germany', $result->country);
         $this->assertNull($result->patientId);
+    }
+
+    public function testRequestAppointmentPassesRequesterTimezoneToBothEmails(): void
+    {
+        $this->stubAvailabilityCheck();
+
+        $isMadrid = $this->callback(
+            fn (?Timezone $requesterTimezone): bool => $requesterTimezone?->getValue() === 'Europe/Madrid',
+        );
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendRequestAcknowledgment')
+            ->with($this->anything(), $this->anything(), $this->anything(), $this->anything(), $isMadrid);
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendNewRequestAlertToTherapist')
+            ->with($this->anything(), $this->anything(), $this->anything(), $this->anything(), $isMadrid);
+
+        $this->service->requestAppointment(
+            slotStartTime: '2025-06-02 09:00:00',
+            modality: 'ONLINE',
+            fullName: 'Jane Doe',
+            phone: '+1234567890',
+            email: 'jane@example.com',
+            city: 'Madrid',
+            country: 'Spain',
+            requesterTimezone: 'Europe/Madrid',
+        );
     }
 
     public function testRequestAppointmentSuccessWithValidLockToken(): void

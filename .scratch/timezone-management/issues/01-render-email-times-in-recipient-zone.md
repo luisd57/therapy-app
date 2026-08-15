@@ -19,14 +19,16 @@ See ADR-0005 for the decision and the alternatives rejected.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Appointment request, confirmation, and cancellation mail render times in the Requester Timezone when one is recorded
-- [ ] The same mail falls back to the Practice Timezone when the Requester Timezone is null
-- [ ] Therapist-facing mail, including the daily agenda, renders in the Practice Timezone
-- [ ] Every rendered time is accompanied by its zone, readable without app context
-- [ ] Each mail shows the other party's time as a secondary line
-- [ ] The existing email rendering seam asserts on rendered times and zone labels - it currently asserts neither, which is how this regression reached committed code
-- [ ] A test covers the null Requester Timezone fallback
-- [ ] A test fails if the conversion is ever removed again
-- [ ] Full API suite green
+**Resolved by:** [PR #25](https://github.com/luisd57/therapy-app/pull/25)
+
+- [x] Appointment request, confirmation, and cancellation mail render times in the Requester Timezone when one is recorded
+- [x] The same mail falls back to the Practice Timezone when the Requester Timezone is null
+- [x] Therapist-facing mail, including the daily agenda, renders in the Practice Timezone
+- [x] Every rendered time is accompanied by its zone, readable without app context
+- [x] Each mail shows the other party's time as a secondary line
+- [x] The existing email rendering seam asserts on rendered times and zone labels - it currently asserts neither, which is how this regression reached committed code
+- [x] A test covers the null Requester Timezone fallback
+- [x] A test fails if the conversion is ever removed again
+- [x] Full API suite green

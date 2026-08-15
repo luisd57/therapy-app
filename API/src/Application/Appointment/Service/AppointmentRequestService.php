@@ -88,6 +88,10 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
 
         $patientUserId = $patientId !== null ? UserId::fromString($patientId) : null;
 
+        $requesterTimezoneVO = $requesterTimezone !== null
+            ? Timezone::fromString($requesterTimezone)
+            : null;
+
         $appointment = Appointment::request(
             id: AppointmentId::generate(),
             timeSlot: $timeSlot,
@@ -99,9 +103,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             country: $country,
             now: $now,
             patientId: $patientUserId,
-            requesterTimezone: $requesterTimezone !== null
-                ? Timezone::fromString($requesterTimezone)
-                : null,
+            requesterTimezone: $requesterTimezoneVO,
         );
 
         $this->appointmentRepository->save($appointment);
@@ -112,6 +114,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
                 fullName: $fullName,
                 appointmentTime: $startTime,
                 modality: $appointmentModality,
+                requesterTimezone: $requesterTimezoneVO,
             );
 
             $therapist = $this->userRepository->findSingleTherapist();
@@ -120,6 +123,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
                 requesterName: $fullName,
                 appointmentTime: $startTime,
                 modality: $appointmentModality,
+                requesterTimezone: $requesterTimezoneVO,
             );
         } catch (\Throwable $e) {
             $this->logger->error('Failed to send appointment request email: {message}', [
