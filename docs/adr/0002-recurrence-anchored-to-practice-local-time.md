@@ -86,6 +86,12 @@ presentation defect into an availability one. And a caller whose own 24 hours
 straddle two practice-local days blocks both of them, since both are days the
 submitted range touches.
 
+The straddle case is where ticket 03's first and fifth criteria pull apart: one
+asks for exactly one practice-local day, the other for multi-day ranges to snap
+at both ends, and no rule satisfies both. Blocking both days was confirmed with
+the developer on 2026-08-15, on the grounds that the alternative shrinks the
+blocked window.
+
 Until 2026-08-15 the flag was a passthrough boolean that nothing read, so "all
 day" meant only what the caller's own range happened to mean. Availability was
 never wrong - `overlapsTimeSlot` compares Instants - but the caller could not
