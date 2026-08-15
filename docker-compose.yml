@@ -91,9 +91,9 @@ services:
     environment:
       - APP_ENV=dev
       - DATABASE_URL=postgresql://therapy_user:therapy_pass@postgres:5432/therapy_db?serverVersion=16&charset=utf8
-      # cron reads the container OS zone, not php.ini. Scheduling stays in the
-      # practice zone via CRON_TZ in docker/cron/crontab.
-      - TZ=UTC
+      # cron reads the container OS zone, so this is what puts the crontab on the
+      # therapist's clock. PHP is unaffected: php.ini pins date.timezone to UTC.
+      - TZ=America/Caracas
       - PGTZ=UTC
 
   landing:

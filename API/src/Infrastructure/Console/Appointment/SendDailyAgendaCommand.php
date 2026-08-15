@@ -6,6 +6,8 @@ namespace App\Infrastructure\Console\Appointment;
 
 use App\Application\Appointment\DTO\Input\SendDailyAgendaInputDTO;
 use App\Application\Appointment\Handler\SendDailyAgendaHandler;
+use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,6 +23,8 @@ final class SendDailyAgendaCommand extends Command
 {
     public function __construct(
         private readonly SendDailyAgendaHandler $sendDailyAgendaHandler,
+        private readonly ClockInterface $clock,
+        private readonly PracticeTimezoneProviderInterface $practiceTimezoneProvider,
     ) {
         parent::__construct();
     }
@@ -38,7 +42,11 @@ final class SendDailyAgendaCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $dateString = $input->getArgument('date') ?? date('Y-m-d');
+        // "Today" is the therapist's day, not the container's. The process zone is
+        // UTC, where anything after 20:00 in Caracas already counts as tomorrow.
+        $dateString = $input->getArgument('date') ?? $this->clock->now()
+            ->setTimezone($this->practiceTimezoneProvider->getTimeZone())
+            ->format('Y-m-d');
 
         $appointmentCount = $this->sendDailyAgendaHandler->__invoke(
             new SendDailyAgendaInputDTO(date: $dateString),

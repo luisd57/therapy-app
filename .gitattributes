@@ -1,0 +1,5 @@
+# Files a Linux container executes keep LF, whatever the host checkout does.
+# A CRLF crontab ends every job line in \r, which sh rejects with "Bad fd number",
+# so the jobs silently never run - and core.autocrlf=true is the Windows default.
+API/docker/cron/crontab text eol=lf
+*.sh text eol=lf

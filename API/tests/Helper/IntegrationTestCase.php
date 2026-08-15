@@ -9,6 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 abstract class IntegrationTestCase extends KernelTestCase
 {
+    use FreezesClock;
+
     protected EntityManagerInterface $entityManager;
 
     protected function setUp(): void

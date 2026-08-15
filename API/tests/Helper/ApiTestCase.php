@@ -13,11 +13,11 @@ use App\Infrastructure\Security\JwtCookieManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Clock\ClockInterface;
-use Symfony\Component\Clock\MockClock;
 
 abstract class ApiTestCase extends WebTestCase
 {
+    use FreezesClock;
+
     protected KernelBrowser $client;
     protected EntityManagerInterface $entityManager;
 
@@ -104,22 +104,6 @@ abstract class ApiTestCase extends WebTestCase
         ]);
 
         return $this->extractTokenFromCookie(JwtCookieManager::COOKIE_NAME);
-    }
-
-    /**
-     * Replace the container's ClockInterface with a frozen MockClock so date-dependent
-     * tests can pin "now" to a fixed instant. Must be called before the test triggers
-     * the request that resolves the clock-using handlers.
-     *
-     * $now is read as UTC unless it carries its own offset - never as the process
-     * timezone, which the suite deliberately sets to something absurd.
-     */
-    protected function freezeClock(string $now): MockClock
-    {
-        $clock = new MockClock(new \DateTimeImmutable($now, new \DateTimeZone('UTC')));
-        self::getContainer()->set(ClockInterface::class, $clock);
-
-        return $clock;
     }
 
     private function extractTokenFromCookie(string $cookieName): string
