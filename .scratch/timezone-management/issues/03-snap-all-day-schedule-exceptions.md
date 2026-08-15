@@ -20,12 +20,49 @@ See ADR-0002 for the anchoring decision this follows from.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] An all-day Schedule Exception covers exactly one Practice-local calendar day
-- [ ] A non-all-day Schedule Exception stores the submitted Instant range unchanged
-- [ ] An all-day Exception submitted from a far-away zone blocks the Therapist's day, not the caller's
-- [ ] The Slot most at risk - one late in the Practice's evening - is correctly blocked, and the equivalent Slot on the following day is not
-- [ ] Multi-day all-day ranges snap on both ends
-- [ ] A test pins the snapping: an all-day Exception submitted from a far-away zone blocks the Practice-local day, and the equivalent Slot on the following day survives
-- [ ] Full API suite green
+**Resolved by:** [PR #30](https://github.com/luisd57/therapy-app/pull/30)
+
+- [x] An all-day Schedule Exception covers exactly one Practice-local calendar day (holds for any range inside one Practice day; a straddling range blocks both - criterion interpreted on 2026-08-15, see Comments)
+- [x] A non-all-day Schedule Exception stores the submitted Instant range unchanged
+- [x] An all-day Exception submitted from a far-away zone blocks the Therapist's day, not the caller's
+- [x] The Slot most at risk - one late in the Practice's evening - is correctly blocked, and the equivalent Slot on the following day is not
+- [x] Multi-day all-day ranges snap on both ends
+- [x] A test pins the snapping: an all-day Exception submitted from a far-away zone blocks the Practice-local day, and the equivalent Slot on the following day survives
+- [x] Full API suite green
+
+## Comments
+
+**2026-08-15, [PR #30](https://github.com/luisd57/therapy-app/pull/30) merged.** The snap
+moves an all-day start back to practice-local midnight and the end forward to the next
+one, leaving an end already on midnight alone because the range is half-open. It lives in
+`ScheduleException::create` rather than the handler, so the flag cannot be set without it.
+
+The first criterion was **interpreted rather than met word for word**, recorded here so the
+change is visible. It asks for "exactly one Practice-local calendar day", which is true for
+any submitted range sitting inside one Practice day. A caller whose own 24 hours straddle
+two Practice-local days blocks both, because both are days the range touches. That follows
+from the fifth criterion (snap at both ends) combined with never shrinking a blocked window,
+and no rule satisfies both criteria for a straddling range. Confirmed with the developer:
+block both days, since shrinking would leave a Slot open on a day the Therapist is away.
+ADR-0002 carries the reasoning and a test pins the behaviour. No code changed as a result.
+
+Availability was never wrong before this. `overlapsTimeSlot` compares Instants, so the
+defect was confined to what a caller could express.
+
+One finding worth carrying forward, fixed in the same PR because the create response is how
+the criteria were verified. `ScheduleExceptionOutputDTO`, `SlotLockOutputDTO` and
+`InvitationOutputDTO` formatted instants with a bare `ATOM` call on whatever zone the value
+carried, so the create and lock endpoints echoed the caller's offset while the list response
+for the same row came back UTC. All three now use `InstantFormatter`, which had no test of
+its own and has one now.
+
+Three pre-existing items were flagged and left alone: practice-local midnight is computed
+inline in `AvailabilityComputer`, `GetNextAvailableWeekHandler` and
+`AppointmentRequestService`; `create()` now takes seven parameters with start and end still
+travelling as a raw pair; and `HealthController` still formats a bare `ATOM` timestamp in the
+server zone.
+
+Landing e2e was red on the merge run for ticket 12's reason (Saturday). It reproduces on
+`main` and is unrelated to this work.
