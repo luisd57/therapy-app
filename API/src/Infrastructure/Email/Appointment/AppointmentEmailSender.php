@@ -34,72 +34,17 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         AppointmentModality $modality,
         ?Timezone $requesterTimezone = null,
     ): void {
-        $requesterZone = $this->requesterZone($requesterTimezone);
-        $requesterTime = RenderedTime::in($appointmentTime, $requesterZone);
-        $therapistLine = $this->otherPartyLine(
-            "Therapist's time",
-            $appointmentTime,
-            $requesterZone,
-            $this->practiceTimezoneProvider->getTimeZone(),
-        );
+        $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
 
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($to->getValue())
             ->subject('Your Appointment Request Has Been Received')
-            ->html($this->getAcknowledgmentTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel))
-            ->text($this->getAcknowledgmentTextTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel));
+            ->html($this->getAcknowledgmentTemplate($fullName, $times, $modalityLabel))
+            ->text($this->getAcknowledgmentTextTemplate($fullName, $times, $modalityLabel));
 
         $this->mailer->send($email);
-    }
-
-    // Bookings taken before the requester's zone was captured fall back to the practice zone.
-    private function requesterZone(?Timezone $requesterTimezone): DateTimeZone
-    {
-        return $requesterTimezone?->toDateTimeZone() ?? $this->practiceTimezoneProvider->getTimeZone();
-    }
-
-    /** The other party's time, or null when both parties read the same clock. */
-    private function otherPartyLine(
-        string $label,
-        DateTimeImmutable $instant,
-        DateTimeZone $recipientZone,
-        DateTimeZone $otherPartyZone,
-    ): ?string {
-        if ($recipientZone->getName() === $otherPartyZone->getName()) {
-            return null;
-        }
-
-        return "{$label}: " . RenderedTime::in($instant, $otherPartyZone)->full();
-    }
-
-    /** The patient's own time, or null when they read the same clock as the practice. */
-    private function patientTime(Appointment $appointment): ?string
-    {
-        $requesterTimezone = $appointment->getRequesterTimezone();
-
-        if ($requesterTimezone === null
-            || $requesterTimezone->getValue() === $this->practiceTimezoneProvider->getIdentifier()) {
-            return null;
-        }
-
-        return RenderedTime::in(
-            $appointment->getTimeSlot()->getStartTime(),
-            $requesterTimezone->toDateTimeZone(),
-        )->timeWithZone();
-    }
-
-    private static function otherPartyParagraph(?string $otherPartyLine): string
-    {
-        return $otherPartyLine === null
-            ? ''
-            : "\n            <p style=\"color: #666; font-size: 13px;\">{$otherPartyLine}</p>";
-    }
-
-    private static function otherPartyTextLine(?string $otherPartyLine): string
-    {
-        return $otherPartyLine === null ? '' : "\n- {$otherPartyLine}";
     }
 
     public function sendNewRequestAlertToTherapist(
@@ -109,14 +54,7 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
         AppointmentModality $modality,
         ?Timezone $requesterTimezone = null,
     ): void {
-        $practiceZone = $this->practiceTimezoneProvider->getTimeZone();
-        $practiceTime = RenderedTime::in($appointmentTime, $practiceZone);
-        $requesterLine = $this->otherPartyLine(
-            "Requester's time",
-            $appointmentTime,
-            $practiceZone,
-            $this->requesterZone($requesterTimezone),
-        );
+        $times = $this->therapistTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
 
         $dashboardUrl = "{$this->frontendUrl}/login";
@@ -125,22 +63,21 @@ final readonly class AppointmentEmailSender implements AppointmentEmailSenderInt
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($therapistEmail->getValue())
             ->subject('New Appointment Request')
-            ->html($this->getTherapistAlertTemplate($requesterName, $practiceTime, $requesterLine, $modalityLabel, $dashboardUrl))
-            ->text($this->getTherapistAlertTextTemplate($requesterName, $practiceTime, $requesterLine, $modalityLabel, $dashboardUrl));
+            ->html($this->getTherapistAlertTemplate($requesterName, $times, $modalityLabel, $dashboardUrl))
+            ->text($this->getTherapistAlertTextTemplate($requesterName, $times, $modalityLabel, $dashboardUrl));
 
         $this->mailer->send($email);
     }
 
     private function getAcknowledgmentTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
         $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyHtml = self::otherPartyParagraph($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyHtml = self::otherPartyParagraph($times->otherPartyLine);
 
         return <<<HTML
 <!DOCTYPE html>
@@ -176,13 +113,12 @@ HTML;
 
     private function getAcknowledgmentTextTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyText = self::otherPartyTextLine($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyText = self::otherPartyTextLine($times->otherPartyLine);
 
         return <<<TEXT
 Appointment Request Received
@@ -204,16 +140,15 @@ TEXT;
 
     private function getTherapistAlertTemplate(
         string $requesterName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
         string $dashboardUrl,
     ): string {
         $requesterName = htmlspecialchars($requesterName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $dashboardUrl = htmlspecialchars($dashboardUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyHtml = self::otherPartyParagraph($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyHtml = self::otherPartyParagraph($times->otherPartyLine);
 
         return <<<HTML
 <!DOCTYPE html>
@@ -253,22 +188,15 @@ HTML;
         AppointmentModality $modality,
         ?Timezone $requesterTimezone = null,
     ): void {
-        $requesterZone = $this->requesterZone($requesterTimezone);
-        $requesterTime = RenderedTime::in($appointmentTime, $requesterZone);
-        $therapistLine = $this->otherPartyLine(
-            "Therapist's time",
-            $appointmentTime,
-            $requesterZone,
-            $this->practiceTimezoneProvider->getTimeZone(),
-        );
+        $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
 
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($to->getValue())
             ->subject('Your Appointment Has Been Confirmed')
-            ->html($this->getConfirmationTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel))
-            ->text($this->getConfirmationTextTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel));
+            ->html($this->getConfirmationTemplate($fullName, $times, $modalityLabel))
+            ->text($this->getConfirmationTextTemplate($fullName, $times, $modalityLabel));
 
         $this->mailer->send($email);
     }
@@ -280,36 +208,28 @@ HTML;
         AppointmentModality $modality,
         ?Timezone $requesterTimezone = null,
     ): void {
-        $requesterZone = $this->requesterZone($requesterTimezone);
-        $requesterTime = RenderedTime::in($appointmentTime, $requesterZone);
-        $therapistLine = $this->otherPartyLine(
-            "Therapist's time",
-            $appointmentTime,
-            $requesterZone,
-            $this->practiceTimezoneProvider->getTimeZone(),
-        );
+        $times = $this->requesterTimes($appointmentTime, $requesterTimezone);
         $modalityLabel = $modality->getDisplayName();
 
         $email = (new MimeEmail())
             ->from("{$this->fromName} <{$this->fromEmail}>")
             ->to($to->getValue())
             ->subject('Your Appointment Has Been Cancelled')
-            ->html($this->getCancellationTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel))
-            ->text($this->getCancellationTextTemplate($fullName, $requesterTime, $therapistLine, $modalityLabel));
+            ->html($this->getCancellationTemplate($fullName, $times, $modalityLabel))
+            ->text($this->getCancellationTextTemplate($fullName, $times, $modalityLabel));
 
         $this->mailer->send($email);
     }
 
     private function getConfirmationTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
         $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyHtml = self::otherPartyParagraph($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyHtml = self::otherPartyParagraph($times->otherPartyLine);
 
         return <<<HTML
 <!DOCTYPE html>
@@ -345,13 +265,12 @@ HTML;
 
     private function getConfirmationTextTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyText = self::otherPartyTextLine($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyText = self::otherPartyTextLine($times->otherPartyLine);
 
         return <<<TEXT
 Appointment Confirmed
@@ -373,14 +292,13 @@ TEXT;
 
     private function getCancellationTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
         $fullName = htmlspecialchars($fullName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyHtml = self::otherPartyParagraph($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyHtml = self::otherPartyParagraph($times->otherPartyLine);
 
         return <<<HTML
 <!DOCTYPE html>
@@ -416,13 +334,12 @@ HTML;
 
     private function getCancellationTextTemplate(
         string $fullName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
     ): string {
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyText = self::otherPartyTextLine($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyText = self::otherPartyTextLine($times->otherPartyLine);
 
         return <<<TEXT
 Appointment Cancelled
@@ -444,14 +361,13 @@ TEXT;
 
     private function getTherapistAlertTextTemplate(
         string $requesterName,
-        RenderedTime $renderedTime,
-        ?string $otherPartyLine,
+        RecipientTimes $times,
         string $modality,
         string $dashboardUrl,
     ): string {
-        $date = $renderedTime->date;
-        $time = $renderedTime->timeWithZone();
-        $otherPartyText = self::otherPartyTextLine($otherPartyLine);
+        $date = $times->recipient->date;
+        $time = $times->recipient->timeWithZone();
+        $otherPartyText = self::otherPartyTextLine($times->otherPartyLine);
 
         return <<<TEXT
 New Appointment Request
@@ -639,5 +555,80 @@ Open your dashboard: {$dashboardUrl}
 ---
 This is an automated daily agenda summary from Therapy App.
 TEXT;
+    }
+
+    /** Requester-facing mail: their own zone, or the practice zone when none was captured. */
+    private function requesterTimes(
+        DateTimeImmutable $appointmentTime,
+        ?Timezone $requesterTimezone,
+    ): RecipientTimes {
+        $requesterZone = $requesterTimezone?->toDateTimeZone()
+            ?? $this->practiceTimezoneProvider->getTimeZone();
+
+        return new RecipientTimes(
+            RenderedTime::in($appointmentTime, $requesterZone),
+            $this->otherPartyLine(
+                "Therapist's time",
+                $appointmentTime,
+                $requesterZone,
+                $this->practiceTimezoneProvider->getTimeZone(),
+            ),
+        );
+    }
+
+    /** Therapist-facing mail: the practice zone, with the requester's time alongside. */
+    private function therapistTimes(
+        DateTimeImmutable $appointmentTime,
+        ?Timezone $requesterTimezone,
+    ): RecipientTimes {
+        $practiceZone = $this->practiceTimezoneProvider->getTimeZone();
+        $requesterZone = $requesterTimezone?->toDateTimeZone() ?? $practiceZone;
+
+        return new RecipientTimes(
+            RenderedTime::in($appointmentTime, $practiceZone),
+            $this->otherPartyLine("Requester's time", $appointmentTime, $practiceZone, $requesterZone),
+        );
+    }
+
+    /** The other party's time, or null when both parties read the same clock. */
+    private function otherPartyLine(
+        string $label,
+        DateTimeImmutable $instant,
+        DateTimeZone $recipientZone,
+        DateTimeZone $otherPartyZone,
+    ): ?string {
+        if ($recipientZone->getName() === $otherPartyZone->getName()) {
+            return null;
+        }
+
+        return "{$label}: " . RenderedTime::in($instant, $otherPartyZone)->full();
+    }
+
+    /** The patient's own time, or null when they read the same clock as the practice. */
+    private function patientTime(Appointment $appointment): ?string
+    {
+        $requesterTimezone = $appointment->getRequesterTimezone();
+
+        if ($requesterTimezone === null
+            || $requesterTimezone->getValue() === $this->practiceTimezoneProvider->getIdentifier()) {
+            return null;
+        }
+
+        return RenderedTime::in(
+            $appointment->getTimeSlot()->getStartTime(),
+            $requesterTimezone->toDateTimeZone(),
+        )->timeWithZone();
+    }
+
+    private static function otherPartyParagraph(?string $otherPartyLine): string
+    {
+        return $otherPartyLine === null
+            ? ''
+            : "\n            <p style=\"color: #666; font-size: 13px;\">{$otherPartyLine}</p>";
+    }
+
+    private static function otherPartyTextLine(?string $otherPartyLine): string
+    {
+        return $otherPartyLine === null ? '' : "\n- {$otherPartyLine}";
     }
 }

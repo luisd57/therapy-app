@@ -26,25 +26,6 @@ final class EmailRenderingTest extends TestCase
     private MailerInterface&MockObject $mailer;
     private ?MimeEmail $sentEmail = null;
 
-    /**
-     * 14:30 UTC on 15 June 2026: 10:30 in Caracas (UTC-4 year round) and 16:30
-     * in Madrid (UTC+2 in summer). Both times are hand-derived, never formatted
-     * from this instant - see ADR-0003.
-     */
-    private static function instant(): DateTimeImmutable
-    {
-        return new DateTimeImmutable('2026-06-15T14:30:00+00:00');
-    }
-
-    private function appointmentSender(): AppointmentEmailSender
-    {
-        return new AppointmentEmailSender(
-            $this->mailer,
-            new EnvPracticeTimezoneProvider(self::PRACTICE_TIMEZONE),
-            self::FRONTEND_URL,
-        );
-    }
-
     protected function setUp(): void
     {
         $this->mailer = $this->createMock(MailerInterface::class);
@@ -416,5 +397,24 @@ final class EmailRenderingTest extends TestCase
         $this->assertStringContainsString('No confirmed appointments for today', $html);
         $expectedUrl = self::FRONTEND_URL . '/login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
+    }
+
+    /**
+     * 14:30 UTC on 15 June 2026: 10:30 in Caracas (UTC-4 year round) and 16:30
+     * in Madrid (UTC+2 in summer). Both times are hand-derived, never formatted
+     * from this instant - see ADR-0003.
+     */
+    private static function instant(): DateTimeImmutable
+    {
+        return new DateTimeImmutable('2026-06-15T14:30:00+00:00');
+    }
+
+    private function appointmentSender(): AppointmentEmailSender
+    {
+        return new AppointmentEmailSender(
+            $this->mailer,
+            new EnvPracticeTimezoneProvider(self::PRACTICE_TIMEZONE),
+            self::FRONTEND_URL,
+        );
     }
 }
