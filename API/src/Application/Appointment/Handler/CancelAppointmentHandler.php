@@ -42,6 +42,7 @@ final readonly class CancelAppointmentHandler
                 fullName: $appointment->getFullName(),
                 appointmentTime: $appointment->getTimeSlot()->getStartTime(),
                 modality: $appointment->getModality(),
+                requesterTimezone: $appointment->getRequesterTimezone(),
             );
         } catch (\Throwable $e) {
             $this->logger->error('Failed to send cancellation email: {message}', [

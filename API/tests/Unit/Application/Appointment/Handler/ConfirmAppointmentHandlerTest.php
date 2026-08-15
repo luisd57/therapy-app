@@ -10,6 +10,7 @@ use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Exception\InvalidStatusTransitionException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
+use App\Domain\User\ValueObject\Timezone;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentStatus;
@@ -59,6 +60,37 @@ final class ConfirmAppointmentHandlerTest extends TestCase
         ));
 
         $this->assertSame('CONFIRMED', $result->status);
+    }
+
+    public function testConfirmPassesRequesterTimezoneToTheEmailSender(): void
+    {
+        $id = AppointmentId::generate();
+        $appointment = DomainTestHelper::createRequestedAppointment(
+            id: $id,
+            requesterTimezone: Timezone::fromString('Europe/Madrid'),
+        );
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($appointment);
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendConfirmationToPatient')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->callback(
+                    fn (?Timezone $requesterTimezone): bool => $requesterTimezone?->getValue() === 'Europe/Madrid',
+                ),
+            );
+
+        $this->handler->__invoke(new ConfirmAppointmentInputDTO(
+            appointmentId: $id->getValue(),
+        ));
     }
 
     public function testConfirmNonExistentAppointmentThrowsException(): void

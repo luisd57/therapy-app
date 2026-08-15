@@ -9,6 +9,7 @@ use App\Application\Appointment\Handler\CancelAppointmentHandler;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
+use App\Domain\User\ValueObject\Timezone;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
@@ -95,6 +96,37 @@ final class CancelAppointmentHandlerTest extends TestCase
 
         $this->handler->__invoke(new CancelAppointmentInputDTO(
             appointmentId: AppointmentId::generate()->getValue(),
+        ));
+    }
+
+    public function testCancelPassesRequesterTimezoneToTheEmailSender(): void
+    {
+        $id = AppointmentId::generate();
+        $appointment = DomainTestHelper::createRequestedAppointment(
+            id: $id,
+            requesterTimezone: Timezone::fromString('Europe/Madrid'),
+        );
+
+        $this->appointmentRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($appointment);
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendCancellationToPatient')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->callback(
+                    fn (?Timezone $requesterTimezone): bool => $requesterTimezone?->getValue() === 'Europe/Madrid',
+                ),
+            );
+
+        $this->handler->__invoke(new CancelAppointmentInputDTO(
+            appointmentId: $id->getValue(),
         ));
     }
 

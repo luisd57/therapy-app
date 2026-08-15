@@ -15,6 +15,7 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\ValueObject\Address;
+use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
@@ -154,6 +155,7 @@ final class DomainTestHelper
         string $city = 'New York',
         string $country = 'USA',
         ?UserId $patientId = null,
+        ?Timezone $requesterTimezone = null,
     ): Appointment {
         return Appointment::request(
             id: $id ?? AppointmentId::generate(),
@@ -166,6 +168,7 @@ final class DomainTestHelper
             country: $country,
             now: new DateTimeImmutable(),
             patientId: $patientId,
+            requesterTimezone: $requesterTimezone,
         );
     }
 
@@ -179,6 +182,7 @@ final class DomainTestHelper
         string $city = 'New York',
         string $country = 'USA',
         ?UserId $patientId = null,
+        ?Timezone $requesterTimezone = null,
     ): Appointment {
         return Appointment::reconstitute(
             id: $id ?? AppointmentId::generate(),
@@ -193,6 +197,7 @@ final class DomainTestHelper
             patientId: $patientId,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
+            requesterTimezone: $requesterTimezone,
         );
     }
 

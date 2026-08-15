@@ -1,10 +1,10 @@
 # Emails should render times in the recipient's zone
 
-Status: **proposed - NOT implemented. Current behaviour is a regression.**
+Status: accepted, implemented on 2026-08-15.
 
-## Current behaviour in the code
+## The behaviour this replaced
 
-`API/src/Infrastructure/Email/Appointment/AppointmentEmailSender.php` formats
+`API/src/Infrastructure/Email/Appointment/AppointmentEmailSender.php` formatted
 appointment times with bare calls - `format('l, F j, Y')`, `format('g:i A')` -
 at ten or more call sites, with **no `setTimezone` anywhere**.
 
@@ -13,15 +13,15 @@ Before this branch, instants were hydrated in PHP's default zone, which was
 moved storage to UTC and `UtcDateTimeImmutableType` now hydrates every instant in
 UTC. The formatting calls were not updated.
 
-**Every appointment email therefore currently renders UTC.** A 09:00 Caracas
-session is emailed as "1:00 PM". This is a regression introduced by the storage
-change in commit `495cd63` and is present in the committed code.
+**Every appointment email therefore rendered UTC.** A 09:00 Caracas session was
+emailed as "1:00 PM". The regression came in with the storage change in commit
+`495cd63`.
 
-It is not a data problem - stored instants are correct - but every notification
-the practice sends states a time four hours off, to both the patient and the
+It was not a data problem - stored instants were correct - but every notification
+the practice sent stated a time four hours off, to both the patient and the
 therapist.
 
-## Proposed decision
+## Decision
 
 Convert before formatting, choosing the zone by recipient:
 
@@ -53,9 +53,12 @@ people travel. Profile zone is the fallback, not the source.
 
 ## Consequences
 
-Email tests will need to assert on rendered strings including the zone label, and
-`EmailRenderingTest` currently asserts none.
+`EmailRenderingTest` asserted nothing about times; it now pins the rendered time,
+the zone label, and the other party's line for each mail.
 
-Needs a ticket, and it is the highest-priority one on this branch: every
-notification the practice sends is currently four hours wrong. Not yet filed -
-`.scratch/timezone-management/` is created by `/to-tickets`.
+The secondary line is dropped when both parties read the same clock - repeating
+the same time under a different label reads as a bug.
+
+The daily agenda's date now names a day in the practice zone, so
+`SendDailyAgendaHandler` anchors the parsed date there rather than in the process
+zone. The rest of that job's scheduling is ADR-0004.

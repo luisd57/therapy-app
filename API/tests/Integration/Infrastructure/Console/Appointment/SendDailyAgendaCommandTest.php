@@ -56,9 +56,11 @@ final class SendDailyAgendaCommandTest extends IntegrationTestCase
 
     public function testCommandWithAppointments(): void
     {
+        // 09:00 on the therapist's 10 October. The agenda covers her calendar day,
+        // so a naive instant would land on a different day in the process zone.
         $appointment = Appointment::request(
             id: AppointmentId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-10-10 09:00:00'), 50),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-10-10T09:00:00-04:00'), 50),
             modality: AppointmentModality::ONLINE,
             fullName: 'Agenda Patient',
             email: Email::fromString('agenda@test.com'),

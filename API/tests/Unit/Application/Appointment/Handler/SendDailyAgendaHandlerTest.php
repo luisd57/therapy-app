@@ -9,6 +9,7 @@ use App\Application\Appointment\Handler\SendDailyAgendaHandler;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -30,6 +31,7 @@ final class SendDailyAgendaHandlerTest extends TestCase
             $this->userRepository,
             $this->appointmentRepository,
             $this->emailSender,
+            new EnvPracticeTimezoneProvider('America/Caracas'),
         );
     }
 
@@ -64,6 +66,29 @@ final class SendDailyAgendaHandlerTest extends TestCase
         $count = $this->handler->__invoke(new SendDailyAgendaInputDTO(date: '2026-06-01'));
 
         $this->assertSame(2, $count);
+    }
+
+    public function testAgendaDateIsAnchoredInThePracticeZone(): void
+    {
+        $this->userRepository
+            ->method('findSingleTherapist')
+            ->willReturn(DomainTestHelper::createTherapist());
+
+        $this->appointmentRepository
+            ->method('findConfirmedByDate')
+            ->willReturn(new ArrayCollection());
+
+        // Midnight on 1 June in Caracas is 04:00 UTC that day, not midnight UTC.
+        $isPracticeMidnight = $this->callback(
+            fn (\DateTimeImmutable $date): bool => $date->format('c') === '2026-06-01T00:00:00-04:00',
+        );
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendDailyAgendaToTherapist')
+            ->with($this->anything(), $this->anything(), $isPracticeMidnight, $this->anything());
+
+        $this->handler->__invoke(new SendDailyAgendaInputDTO(date: '2026-06-01'));
     }
 
     public function testSendAgendaWithNoAppointments(): void
