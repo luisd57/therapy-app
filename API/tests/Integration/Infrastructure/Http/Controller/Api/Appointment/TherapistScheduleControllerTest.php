@@ -264,6 +264,29 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         );
     }
 
+    public function testAddExceptionResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
+    {
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-02T04:00:00+14:00',
+            'end_date_time' => '2026-06-02T12:00:00+14:00',
+            'reason' => 'Doctor appointment',
+            'is_all_day' => false,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $exception = $this->getResponseData()['data']['exception'];
+
+        // Same instants the caller sent, restated in UTC. A create response that
+        // echoed the caller's offset would disagree with the list response for
+        // the same row, which reads back through the DBAL type. See ADR-0001.
+        $this->assertSame('2026-06-01T14:00:00+00:00', $exception['start_date_time']);
+        $this->assertSame('2026-06-01T22:00:00+00:00', $exception['end_date_time']);
+        $this->assertSame('2026-05-01T00:00:00+00:00', $exception['created_at']);
+    }
+
     public function testAddExceptionReturns422WithMissingFields(): void
     {
         $token = $this->createTherapistAndGetToken();

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Appointment\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\Appointment\Entity\ScheduleException;
-use DateTimeInterface;
 
 final readonly class ScheduleExceptionOutputDTO
 {
@@ -23,11 +23,11 @@ final readonly class ScheduleExceptionOutputDTO
     {
         return new self(
             id: $exception->getId()->getValue(),
-            startDateTime: $exception->getStartDateTime()->format(DateTimeInterface::ATOM),
-            endDateTime: $exception->getEndDateTime()->format(DateTimeInterface::ATOM),
+            startDateTime: InstantFormatter::toAtomUtc($exception->getStartDateTime()),
+            endDateTime: InstantFormatter::toAtomUtc($exception->getEndDateTime()),
             reason: $exception->getReason(),
             isAllDay: $exception->isAllDay(),
-            createdAt: $exception->getCreatedAt()->format(DateTimeInterface::ATOM),
+            createdAt: InstantFormatter::toAtomUtc($exception->getCreatedAt()),
         );
     }
 

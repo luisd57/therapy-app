@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\DTO\Output;
 
+use App\Application\Shared\InstantFormatter;
 use App\Domain\User\Entity\InvitationToken;
 use DateTimeImmutable;
 
@@ -33,8 +34,8 @@ final readonly class InvitationOutputDTO
             email: $token->getEmail()->getValue(),
             patientName: $token->getPatientName(),
             status: $status,
-            createdAt: $token->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            expiresAt: $token->getExpiresAt()->format(\DateTimeInterface::ATOM),
+            createdAt: InstantFormatter::toAtomUtc($token->getCreatedAt()),
+            expiresAt: InstantFormatter::toAtomUtc($token->getExpiresAt()),
         );
     }
 
