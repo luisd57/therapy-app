@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\Appointment;
 
 use App\Tests\Helper\ApiTestCase;
+use DateTimeImmutable;
 use Symfony\Component\Uid\Uuid;
 
 final class TherapistScheduleControllerTest extends ApiTestCase
@@ -214,6 +215,53 @@ final class TherapistScheduleControllerTest extends ApiTestCase
         $this->assertTrue($data['success']);
         $this->assertArrayHasKey('exception', $data['data']);
         $this->assertArrayHasKey('message', $data['data']);
+    }
+
+    public function testAddAllDayExceptionSnapsToThePracticeLocalDay(): void
+    {
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+        $token = $this->createTherapistAndGetToken();
+
+        // A caller on UTC+14 marking their own day off. Read in Caracas the
+        // submitted range is 1 June 10:00 to 18:00, so 1 June is the day blocked.
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-02T04:00:00+14:00',
+            'end_date_time' => '2026-06-02T12:00:00+14:00',
+            'reason' => 'Away',
+            'is_all_day' => true,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $exception = $this->getResponseData()['data']['exception'];
+
+        // Caracas is UTC-4, so its midnight is 04:00 the same day in UTC.
+        $this->assertSame('2026-06-01T04:00:00+00:00', $exception['start_date_time']);
+        $this->assertSame('2026-06-02T04:00:00+00:00', $exception['end_date_time']);
+    }
+
+    public function testAddNonAllDayExceptionKeepsTheSubmittedRange(): void
+    {
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-02T04:00:00+14:00',
+            'end_date_time' => '2026-06-02T12:00:00+14:00',
+            'reason' => 'Away',
+            'is_all_day' => false,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $exception = $this->getResponseData()['data']['exception'];
+
+        $this->assertEquals(
+            new DateTimeImmutable('2026-06-01T14:00:00+00:00'),
+            new DateTimeImmutable($exception['start_date_time']),
+        );
+        $this->assertEquals(
+            new DateTimeImmutable('2026-06-01T22:00:00+00:00'),
+            new DateTimeImmutable($exception['end_date_time']),
+        );
     }
 
     public function testAddExceptionReturns422WithMissingFields(): void

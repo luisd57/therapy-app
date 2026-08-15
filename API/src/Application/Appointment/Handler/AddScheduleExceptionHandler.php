@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\AddScheduleExceptionInputDTO;
 use App\Application\Appointment\DTO\Output\ScheduleExceptionOutputDTO;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
+use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Id\UserId;
 use Symfony\Component\Clock\ClockInterface;
@@ -18,6 +19,7 @@ final readonly class AddScheduleExceptionHandler
     public function __construct(
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
         private ClockInterface $clock,
+        private PracticeTimezoneProviderInterface $practiceTimezoneProvider,
     ) {
     }
 
@@ -33,6 +35,7 @@ final readonly class AddScheduleExceptionHandler
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
             now: $this->clock->now(),
+            practiceTimeZone: $this->practiceTimezoneProvider->getTimeZone(),
             reason: $dto->reason,
             isAllDay: $dto->isAllDay,
         );

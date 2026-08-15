@@ -67,19 +67,26 @@ starts would shift after a transition inside a long block. Unreachable while the
 practice is in `America/Caracas` (no DST since 2016). Deliberate, and flagged in a
 comment at the stepping site so a future zone change is a conscious decision.
 
-## Unintended: `is_all_day` does not snap to a practice-local day
+## `is_all_day` snaps to practice-local days
 
-The intended behaviour was that a Schedule Exception flagged `is_all_day` would
-be normalised to practice-local midnight-to-midnight. **The code does not do
-this.** `is_all_day` is a pure passthrough boolean - set on the DTO, stored on the
-entity, echoed in the output, and read by nothing. The stored range is whatever
-Instants the client sent.
+An all-day Schedule Exception is normalised in `ScheduleException::create`: the
+start moves back to practice-local midnight, and the end forward to the next
+practice-local midnight. An end already on midnight stays put - the range is
+half-open, so rounding it up would add a day the caller never covered. This makes
+the flag mean the therapist's calendar day rather than the caller's, which is the
+same anchoring the Schedule Blocks above use.
 
-The practical effect is that "all day" means only what the caller's own range
-happened to mean, so an all-day block submitted by a client in another zone
-covers the wrong 24 hours. Availability itself is still correct, because
-`ScheduleException::overlapsTimeSlot` compares Instants - the defect is confined
-to what a caller can express.
+Snapping is in the entity, not the handler, so the flag cannot be set without it.
+`create()` therefore takes the practice zone; `reconstitute()` does not, because a
+stored row is already snapped.
 
-Needs a ticket: "Snap `is_all_day` schedule exceptions to a practice-local day".
-Not yet filed - `.scratch/timezone-management/` is created by `/to-tickets`.
+Two consequences worth stating. The rule only ever widens a range, so an all-day
+Exception blocks at least what the caller asked for - shrinking would turn a
+presentation defect into an availability one. And a caller whose own 24 hours
+straddle two practice-local days blocks both of them, since both are days the
+submitted range touches.
+
+Until 2026-08-15 the flag was a passthrough boolean that nothing read, so "all
+day" meant only what the caller's own range happened to mean. Availability was
+never wrong - `overlapsTimeSlot` compares Instants - but the caller could not
+express a day off in the therapist's terms. Fixed by ticket 03.
