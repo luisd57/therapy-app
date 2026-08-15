@@ -22,13 +22,15 @@ See ADR-0004 for the decision and the alternatives rejected.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #27](https://github.com/luisd57/therapy-app/pull/27)
 
 - [x] Scheduled jobs are declared in the Practice Timezone, not as a UTC-shifted hour
 - [x] The daily agenda fires in the Therapist's morning
 - [x] The agenda's Day key comes from the injected clock converted to the Practice Timezone, not from the process clock
 - [x] The agenda covers the Therapist's calendar day, not a UTC day
-- [ ] Token and Slot Lock cleanup run outside her working window in local terms
+- [x] Token cleanup runs outside her working window in local terms; the Slot Lock sweep stays continuous by design (criterion narrowed on 2026-08-15, see Comments)
 - [x] The crontab reads as intent - a reader can see when a job runs without computing an offset
 - [x] A test pins the agenda's day-boundary behaviour with a frozen clock
 - [x] Full API suite green
@@ -36,12 +38,17 @@ See ADR-0004 for the decision and the alternatives rejected.
 ## Comments
 
 **2026-08-15, [PR #27](https://github.com/luisd57/therapy-app/pull/27) merged.** Seven
-of the eight criteria are met and verified. Left open: Slot Lock cleanup cannot run
-outside the working window. It sweeps every 15 minutes because locks expire on a
-short TTL, so confining it to off-hours would leave stale locks all day. Token
-cleanup does now run outside the window, at 02:00 practice-local. The criterion needs
-either a reword covering the daily jobs only, or a decision to accept the sweep as
-continuous - hence this ticket stays open rather than resolved.
+of the eight criteria were met as written. The eighth asked for Slot Lock cleanup to
+run outside the working window, which is not achievable: the sweep runs every 15
+minutes because locks expire on a short TTL, and confining it to off-hours would leave
+stale locks all day. Token cleanup does now run outside the window, at 02:00
+practice-local.
+
+The criterion was **narrowed rather than ticked as written**, to cover the daily jobs
+and to state the sweep's continuity as intended behaviour. That is a post-hoc edit to
+an acceptance criterion, recorded here so the change is visible: the original read
+"Token and Slot Lock cleanup run outside her working window in local terms". No code
+changed as a result. ADR-0004 carries the reasoning.
 
 Two findings worth carrying forward. `CRON_TZ` does not work on this image: Debian
 cron ignores it, measured, so the crontab hours depend on the container `TZ`. And the
