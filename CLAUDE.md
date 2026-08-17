@@ -82,7 +82,7 @@ Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: IS
 
 These files are NOT loaded automatically. Reference them with @ when needed:
 - `@API/docs/database-schema.md` - entity relationships, column details
-- `@API/Product-Requirements.md` - the original client-discussion synthesis, frozen 2026-05-26. Historical only; requirements have moved since. For current status use `docs/STATUS.md`
+- `@API/Product-Requirements.md` - the original client-discussion synthesis, frozen 2026-05-26. Historical only, requirements have moved since. For current status use `docs/STATUS.md`
 - `@API/postman/Therapy_App_API.postman_collection.json` - API contract with example requests/responses
 
 ## Adding Project-Specific Rules

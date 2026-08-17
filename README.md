@@ -15,7 +15,7 @@ Application web pour la gestion d'un cabinet de psychothérapie individuel. Les 
 
 Projet conçu à partir d'un besoin réel : le cabinet d'une psychothérapeute, sans outil de gestion.
 
-**État du projet** : en développement. L'API est complète ; la landing et le dashboard ne le sont pas encore. L'état à jour de chaque composant est dans [`docs/STATUS.md`](docs/STATUS.md) - c'est la référence, pas ce README.
+**État du projet** : en développement. L'API est complète, la landing et le dashboard ne le sont pas encore. L'état à jour de chaque composant est dans [`docs/STATUS.md`](docs/STATUS.md) - c'est la référence, pas ce README.
 
 ---
 
@@ -105,7 +105,7 @@ Site public destiné aux visiteurs. Les pages sont générées en HTML statique 
 
 **Dashboard** (`dashboard/`) - Angular 21 + Angular Material
 
-Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère aujourd'hui l'authentification, les patients et les invitations ; les écrans planning et rendez-vous sont des routes vides en attente d'implémentation.
+Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère aujourd'hui l'authentification, les patients et les invitations. Les écrans planning et rendez-vous sont des routes vides en attente d'implémentation.
 
 ---
 
@@ -198,6 +198,9 @@ docker-compose exec php php bin/console app:send-daily-agenda
 # Seed de créneaux d'exemple pour le développement
 docker-compose exec php php bin/console app:seed-schedule
 
+# Supprimer les verrous de créneaux expirés (normalement déclenché par cron)
+docker-compose exec php php bin/console app:cleanup-slot-locks
+
 # Vider la boîte MailHog
 curl -X DELETE http://localhost:8025/api/v1/messages
 
@@ -210,7 +213,7 @@ docker-compose exec php php bin/console cache:clear --env=test
 
 ## Aperçu API
 
-37 endpoints REST organisés par domaine, avec un format de réponse uniforme :
+Endpoints REST organisés par domaine, avec un format de réponse uniforme :
 
 ```json
 {

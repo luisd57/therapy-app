@@ -9,10 +9,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 
 /**
  * Guards the mapping attributes that only schema tooling can observe.
- *
- * Entities declare no Doctrine relation attributes here (see api-architecture.md), so the
- * update SQL always proposes dropping the hand-written FK constraints and indexes. That noise
- * is expected. These assertions target single objects instead of the whole diff.
+ * Asserts per object, not on the whole diff: see ORM Pragmatism in api-architecture.md.
  */
 final class MappingMatchesSchemaTest extends IntegrationTestCase
 {
@@ -31,19 +28,19 @@ final class MappingMatchesSchemaTest extends IntegrationTestCase
 
     public function testScheduleExceptionIndexKeepsTheNameTheMigrationCreated(): void
     {
-        // Version20260215000000 creates idx_exception_therapist_range. A mapping that names the
-        // index differently makes Doctrine want to rename the real one.
-        $renames = $this->statementsMatching('/RENAME TO idx_exception/i');
+        // Version20260215000000 creates idx_exception_therapist_range. Matching the object rather
+        // than the RENAME form so a fresh DB or a different comparator output still fails here.
+        $touchingTheIndex = $this->statementsMatching('/idx_exception/i');
 
-        self::assertSame([], $renames);
+        self::assertSame([], $touchingTheIndex);
     }
 
     public function testDayOfWeekMatchesTheIntegerColumnTheMigrationCreated(): void
     {
         // Version20260215000000 creates day_of_week as INT.
-        $typeChanges = $this->statementsMatching('/ALTER day_of_week TYPE/i');
+        $touchingTheColumn = $this->statementsMatching('/day_of_week/i');
 
-        self::assertSame([], $typeChanges);
+        self::assertSame([], $touchingTheColumn);
     }
 
     /** @return list<string> */

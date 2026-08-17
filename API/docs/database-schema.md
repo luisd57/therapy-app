@@ -181,7 +181,7 @@ The core business entity. Tracks appointment requests from submission through co
 | `country` | VARCHAR(100) | NO | Requester's country |
 | `patient_id` | UUID | YES | FK to `users.id`. ON DELETE SET NULL. NULL for public (unauthenticated) requests |
 | `payment_verified` | BOOLEAN | NO | Whether payment (Zelle/Pago Movil) has been verified by the therapist. Default `FALSE` |
-| `requester_timezone` | VARCHAR(64) | YES | IANA zone id. The zone the requester was in when they booked. NULL for bookings made before it was captured; readers fall back to the practice zone |
+| `requester_timezone` | VARCHAR(64) | YES | IANA zone id. The zone the Requester was in when they made the request. NULL for Appointments created before it was captured, and readers fall back to the practice zone |
 | `created_at` | TIMESTAMPTZ | NO | Immutable |
 | `updated_at` | TIMESTAMPTZ | NO | Last status change |
 

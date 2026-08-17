@@ -48,7 +48,7 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
 - **Payment tracking**
   - Manual boolean toggle on the appointment, verified by the therapist out of band. No payment gateway
 
-- **Patient self-booking**
+- **Patient self-service requests**
   - Authenticated request endpoint that fills contact data from the patient profile and links `patient_id` automatically
 
 ### 4. Notifications
@@ -62,8 +62,8 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
 
 - All instants stored as UTC `timestamptz` and rendered in the reader's zone
 - Recurring schedule blocks anchored to the practice zone (`PRACTICE_TIMEZONE`), so a "Monday 09:00" block stays at 09:00 for the therapist across a DST change
-- Requester and patient zones captured per booking, so the therapist sees what time an appointment is for the other party
-- Decisions recorded in [`docs/adr/`](../docs/adr/); the PHPUnit suite runs in `Pacific/Kiritimati` to catch implicit-local assumptions
+- Requester and patient zones captured per appointment, so the therapist sees what time an appointment is for the other party
+- Decisions recorded in [`docs/adr/`](../docs/adr/). The PHPUnit suite runs in `Pacific/Kiritimati` to catch implicit-local assumptions
 
 ## Architecture
 
@@ -142,7 +142,7 @@ Doctrine hydrates entities directly via reflection - `reconstitute()` is not inv
 - CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) - no HTTP endpoint exposed
 - Passwords hashed with Symfony's `auto` hasher (`config/packages/security.yaml`), which picks the strongest algorithm available at runtime. The test environment overrides it to `cost: 4` so the suite is not bound by hashing time - that override is under `when@test:` and never applies elsewhere
-- Password policy enforced at 8-72 characters in both HTTP and CLI flows (`PasswordValidator`). The upper bound is bcrypt's input limit, not a product decision
+- Password policy enforced at 8-72 characters in both HTTP and CLI flows (`PasswordValidator`). The upper bound is there because bcrypt truncates past 72 bytes, so it holds whenever `auto` resolves to bcrypt. It is not a product decision
 - Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` - must be replaced before deploying
 
 ### Input Validation & Output Encoding
@@ -396,7 +396,8 @@ tests/
     └── Infrastructure/
         ├── Persistence/Doctrine/
         │   ├── User/Repository/          # User repository integration tests
-        │   └── Appointment/Repository/   # Appointment repository integration tests
+        │   ├── Appointment/Repository/   # Appointment repository integration tests
+        │   └── MappingMatchesSchemaTest.php  # ORM mapping vs migrations
         ├── Http/Controller/Api/
         │   ├── User/                     # Auth, Patient, Therapist controller tests
         │   └── Appointment/              # Public appointment, Schedule controller tests
