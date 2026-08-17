@@ -11,9 +11,11 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-Application web (en phase de mise en production) pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
+Application web pour la gestion d'un cabinet de psychothérapie individuel. Les visiteurs consultent les disponibilités et soumettent des demandes de rendez-vous. La thérapeute gère son planning, confirme ou annule les rendez-vous, et intègre ses patients via un système d'invitation.
 
 Projet conçu à partir d'un besoin réel : le cabinet d'une psychothérapeute, sans outil de gestion.
+
+**État du projet** : en développement. L'API est complète, la landing et le dashboard ne le sont pas encore. L'état à jour de chaque composant est dans [`docs/STATUS.md`](docs/STATUS.md) - c'est la référence, pas ce README.
 
 ---
 
@@ -26,14 +28,22 @@ Projet conçu à partir d'un besoin réel : le cabinet d'une psychothérapeute, 
 - Inscription patient sur invitation uniquement (lien à usage unique, durée limitée)
 - Réinitialisation de mot de passe par email
 
-**Côté thérapeute**
+**Côté thérapeute - disponible dans le dashboard**
+
+- Gestion des patients et des invitations (envoi, renvoi, révocation)
+- Navigation par rôle, login thérapeute et patient, réinitialisation de mot de passe
+
+**Côté thérapeute - implémenté côté API, interface pas encore construite**
 
 - Planning hebdomadaire récurrent avec créneaux configurables par jour et par modalité
 - Exceptions de planning (vacances, indisponibilités ponctuelles)
 - Cycle de vie complet des rendez-vous : `REQUESTED → CONFIRMED → COMPLETED / CANCELLED`
 - Création manuelle de rendez-vous pour les patients existants
 - Email d'agenda quotidien (envoyé par cron)
-- Gestion des patients et des invitations en cours
+
+**Fuseaux horaires**
+
+Les instants sont stockés en UTC (`timestamptz`) et rendus dans le fuseau du lecteur. Le planning récurrent est ancré au fuseau du cabinet (`PRACTICE_TIMEZONE`), pas à celui du serveur : un bloc « lundi 09:00 » reste à 09:00 pour la thérapeute quel que soit le changement d'heure. Décisions détaillées dans [`docs/adr/`](docs/adr/).
 
 ---
 
@@ -95,7 +105,7 @@ Site public destiné aux visiteurs. Les pages sont générées en HTML statique 
 
 **Dashboard** (`dashboard/`) - Angular 21 + Angular Material
 
-Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère le planning, les rendez-vous, les patients et les invitations.
+Portail privé pour la thérapeute et les patients. Application SPA avec navigation par rôle, formulaires réactifs, et composants Material Design. Gère aujourd'hui l'authentification, les patients et les invitations. Les écrans planning et rendez-vous sont des routes vides en attente d'implémentation.
 
 ---
 
@@ -148,6 +158,7 @@ Suite end-to-end qui pilote un vrai Chromium contre le dashboard en cours d'exé
 - Couvre : invitation patient (happy path), authentification (login, logout, route guards, réinitialisation de mot de passe), resend + revoke, et 4 chemins d'erreur (token utilisé, token invalide, email invalide, mots de passe non-correspondants).
 - `globalSetup` se connecte une fois en tant que thérapeute et persiste la session via `storageState` - réutilisée par tous les tests pour éviter de saturer le rate limiter (5 logins/min/IP).
 - Exécutée aussi en CI (job `e2e`), qui démarre la stack via `docker-compose.ci.yml`. Une suite e2e distincte couvre le landing (`landing/e2e/`, service `playwright-landing`).
+- Le job `e2e` est indicatif : il ne bloque pas la fusion, seul le job `test` est requis. Voir [`docs/STATUS.md`](docs/STATUS.md) avant de supposer qu'un `e2e` rouge vient de vos changements.
 
 ```bash
 # Lancer la suite E2E complète
@@ -187,6 +198,9 @@ docker-compose exec php php bin/console app:send-daily-agenda
 # Seed de créneaux d'exemple pour le développement
 docker-compose exec php php bin/console app:seed-schedule
 
+# Supprimer les verrous de créneaux expirés (normalement déclenché par cron)
+docker-compose exec php php bin/console app:cleanup-slot-locks
+
 # Vider la boîte MailHog
 curl -X DELETE http://localhost:8025/api/v1/messages
 
@@ -199,7 +213,7 @@ docker-compose exec php php bin/console cache:clear --env=test
 
 ## Aperçu API
 
-40+ endpoints REST organisés par domaine, avec un format de réponse uniforme :
+Endpoints REST organisés par domaine, avec un format de réponse uniforme :
 
 ```json
 {
@@ -222,7 +236,7 @@ Pour la référence complète des endpoints, voir le [README de l'API](API/READM
 **Prérequis** : Docker Desktop
 
 ```bash
-git clone <repo-url> && cd therapy-app
+git clone <repo-url> therapy && cd therapy
 
 # Variables d'environnement (le .env est gitignoré)
 cp API/.env.example API/.env
@@ -267,6 +281,7 @@ therapy/
 ├── landing/                      # Site public Astro + Svelte
 │   ├── src/
 │   │   ├── pages/                # Routes Astro (index.astro)
+│   │   ├── layouts/              # Layout de base partagé
 │   │   ├── components/
 │   │   │   ├── astro/            # Composants serveur (layout, bio, services)
 │   │   │   └── svelte/           # Composants client (flux rendez-vous)
@@ -280,12 +295,24 @@ therapy/
 │   ├── src/app/
 │   │   ├── auth/                 # Login, registration, reset password
 │   │   ├── layout/               # Navigation et structure par rôle
-│   │   ├── appointments/         # Gestion des rendez-vous
+│   │   ├── appointments/         # Gestion des rendez-vous (route vide pour l'instant)
 │   │   ├── patients/             # Gestion des patients
-│   │   ├── schedule/             # Planning et disponibilités
+│   │   ├── schedule/             # Planning et disponibilités (route vide pour l'instant)
 │   │   └── shared/               # Services, guards, interceptors
 │   └── e2e/                      # Tests Playwright (config + fixtures + specs)
 │
 ├── docker-compose.yml            # 9 services (PHP, Nginx, PostgreSQL, Redis, MailHog, pgAdmin, cron, landing, dashboard) + 3 services Playwright sous le profil e2e (playwright = e2e dashboard, playwright-landing = e2e landing, playwright-report = serveur HTML du rapport)
 └── Makefile                      # Commandes raccourcies
 ```
+
+---
+
+## Documentation
+
+| Fichier | Contenu |
+| ------- | ------- |
+| [`docs/STATUS.md`](docs/STATUS.md) | État d'avancement par composant. La référence pour savoir ce qui est fait. |
+| [`docs/adr/`](docs/adr/) | Décisions d'architecture (stockage UTC, ancrage des récurrences, tests, jobs planifiés). |
+| [`API/docs/database-schema.md`](API/docs/database-schema.md) | Schéma de base : tables, colonnes, index, contraintes. |
+| [`API/README.md`](API/README.md) | Référence complète de l'API : endpoints, architecture, tests. |
+| [`CONTEXT.md`](CONTEXT.md) | Glossaire du domaine. À lire avant de nommer quoi que ce soit. |

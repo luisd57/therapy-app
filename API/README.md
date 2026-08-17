@@ -38,6 +38,33 @@ A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreS
   - Schedule exceptions / blockers (holidays, personal time)
   - Overlap validation (time-based, regardless of modality)
 
+### 3. Appointment Lifecycle & Therapist Administration
+
+- **Status transitions**
+  - `REQUESTED` to `CONFIRMED` to `COMPLETED`, or `CANCELLED` from either pre-terminal state
+  - Invalid transitions rejected with 409
+  - Manual creation straight into `CONFIRMED` for patients who called instead of using the site
+
+- **Payment tracking**
+  - Manual boolean toggle on the appointment, verified by the therapist out of band. No payment gateway
+
+- **Patient self-service requests**
+  - Authenticated request endpoint that fills contact data from the patient profile and links `patient_id` automatically
+
+### 4. Notifications
+
+- Request acknowledgment, confirmation, and cancellation emails to the requester
+- New-request alert to the therapist
+- Daily agenda email (`app:send-daily-agenda`, run by cron on the therapist's clock)
+- Invitation, welcome, and password-reset emails
+
+### 5. Timezone Handling
+
+- All instants stored as UTC `timestamptz` and rendered in the reader's zone
+- Recurring schedule blocks anchored to the practice zone (`PRACTICE_TIMEZONE`), so a "Monday 09:00" block stays at 09:00 for the therapist across a DST change
+- Requester and patient zones captured per appointment, so the therapist sees what time an appointment is for the other party
+- Decisions recorded in [`docs/adr/`](../docs/adr/). The PHPUnit suite runs in `Pacific/Kiritimati` to catch implicit-local assumptions
+
 ## Architecture
 
 ```
@@ -45,13 +72,17 @@ src/
 ├── Domain/                    # Core business logic (no dependencies)
 │   ├── User/
 │   │   ├── Entity/           # User, InvitationToken, PasswordResetToken
-│   │   ├── ValueObject/      # UserId, Email, Phone, Address, UserRole
+│   │   ├── ValueObject/      # Email, Phone, Address, Timezone
+│   │   ├── Id/               # UserId, TokenId
+│   │   ├── Enum/             # UserRole
 │   │   ├── Repository/       # Repository interfaces (ports)
 │   │   ├── Service/          # Domain service interfaces
 │   │   └── Exception/        # Domain exceptions
 │   ├── Appointment/
 │   │   ├── Entity/           # Appointment, TherapistSchedule, ScheduleException, SlotLock
-│   │   ├── ValueObject/      # AppointmentId, AppointmentStatus, AppointmentModality, TimeSlot, WeekDay
+│   │   ├── ValueObject/      # TimeSlot
+│   │   ├── Id/               # AppointmentId, ScheduleId, ExceptionId, SlotLockId
+│   │   ├── Enum/             # AppointmentStatus, AppointmentModality, WeekDay
 │   │   ├── Repository/       # Repository interfaces (ports)
 │   │   ├── Service/          # AvailabilityComputer, service interfaces
 │   │   └── Exception/        # Domain exceptions
@@ -110,7 +141,8 @@ Doctrine hydrates entities directly via reflection - `reconstitute()` is not inv
 - Auth state check endpoint: `GET /api/auth/me` (JWT-protected, used by dashboard on page refresh)
 - CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) - no HTTP endpoint exposed
-- Passwords hashed with bcrypt (cost 12), policy enforced at 8-72 characters in both HTTP and CLI flows
+- Passwords hashed with Symfony's `auto` hasher (`config/packages/security.yaml`), which picks the strongest algorithm available at runtime. The test environment overrides it to `cost: 4` so the suite is not bound by hashing time - that override is under `when@test:` and never applies elsewhere
+- Password policy enforced at 8-72 characters in both HTTP and CLI flows (`PasswordValidator`). The upper bound is there because bcrypt truncates past 72 bytes, so it holds whenever `auto` resolves to bcrypt. It is not a product decision
 - Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` - must be replaced before deploying
 
 ### Input Validation & Output Encoding
@@ -173,6 +205,7 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/` | API index |
 | GET | `/api/health` | Health check |
 | POST | `/api/auth/therapist/login` | Therapist login |
 | POST | `/api/auth/patient/login` | Patient login |
@@ -189,6 +222,7 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/auth/me` | Current auth state (used by the dashboard on page refresh) |
 | POST | `/api/auth/logout` | Revoke JWT token |
 
 ### Protected Endpoints (Therapist)
@@ -221,7 +255,7 @@ docker-compose exec php php bin/console app:create-therapist "email@example.com"
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/patient/me` | Get patient profile |
-| PUT | `/api/patient/profile` | Update profile |
+| PUT, PATCH | `/api/patient/profile` | Update profile |
 | POST | `/api/patient/appointments` | Request appointment (self-booking) |
 
 ## Testing with Postman
@@ -333,28 +367,41 @@ tests/
 ├── Helper/
 │   ├── DomainTestHelper.php      # Factory methods for test fixtures
 │   ├── IntegrationTestCase.php   # Base class for repository tests
-│   └── ApiTestCase.php           # Base class for API/controller tests
+│   ├── ApiTestCase.php           # Base class for API/controller tests
+│   └── FreezesClock.php          # Trait pinning "now" so date tests do not drift
 ├── Unit/                         # no database needed
 │   ├── Domain/
 │   │   ├── User/
 │   │   │   ├── Entity/           # User, InvitationToken, PasswordResetToken tests
-│   │   │   └── ValueObject/      # UserId, Email, Phone, Address, UserRole tests
+│   │   │   ├── ValueObject/      # Email, Phone, Address, Timezone tests
+│   │   │   └── Enum/             # UserRole tests
 │   │   ├── Appointment/
 │   │   │   ├── Entity/           # Appointment, Schedule, Exception, SlotLock tests
-│   │   │   └── ValueObject/      # AppointmentId, Status, Modality, TimeSlot, WeekDay tests
-│   │   ├── Service/              # Domain service tests (AvailabilityComputer)
+│   │   │   ├── ValueObject/      # TimeSlot tests
+│   │   │   ├── Enum/             # Status, Modality, WeekDay tests
+│   │   │   └── Service/          # AvailabilityComputer tests
 │   │   └── Exception/            # Domain exception tests
-│   └── Application/
-│       ├── User/Handler/         # User use case handler tests (with mocks)
-│       └── Appointment/Handler/  # Appointment handler tests (with mocks)
+│   ├── Application/
+│   │   ├── User/
+│   │   │   ├── Handler/          # User use case handler tests (with mocks)
+│   │   │   └── DTO/Output/       # Output DTO shape tests
+│   │   ├── Appointment/
+│   │   │   ├── Handler/          # Appointment handler tests (with mocks)
+│   │   │   └── Service/          # AppointmentRequestService tests
+│   │   └── Shared/DTO/           # Shared DTO tests
+│   └── Infrastructure/
+│       ├── Config/               # Practice timezone provider tests
+│       └── Email/                # Email rendering tests
 └── Integration/                  # requires test database
     └── Infrastructure/
         ├── Persistence/Doctrine/
         │   ├── User/Repository/          # User repository integration tests
-        │   └── Appointment/Repository/   # Appointment repository integration tests
-        └── Http/Controller/Api/
-            ├── User/                     # Auth, Patient, Therapist controller tests
-            └── Appointment/              # Public appointment, Schedule controller tests
+        │   ├── Appointment/Repository/   # Appointment repository integration tests
+        │   └── MappingMatchesSchemaTest.php  # ORM mapping vs migrations
+        ├── Http/Controller/Api/
+        │   ├── User/                     # Auth, Patient, Therapist controller tests
+        │   └── Appointment/              # Public appointment, Schedule controller tests
+        └── Console/Appointment/          # Console command tests (daily agenda, lock cleanup)
 ```
 
 ### Writing Unit Tests
@@ -626,6 +673,9 @@ docker-compose exec php php bin/console app:cleanup-slot-locks
 # Send daily agenda email (defaults to today, or specify a date)
 docker-compose exec php php bin/console app:send-daily-agenda
 docker-compose exec php php bin/console app:send-daily-agenda 2026-06-01
+
+# Seed example schedule blocks for development (also a prerequisite for the landing e2e suite)
+docker-compose exec php php bin/console app:seed-schedule
 ```
 
 ## Troubleshooting

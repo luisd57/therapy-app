@@ -85,7 +85,7 @@ affects availability - the therapist resolves double-booking manually, so a lock
 does not hide the Slot from other browsers or block a request. Every caller of
 `AvailabilityComputer` passes an empty lock collection deliberately; the
 filtering code is scaffolding kept in case the client changes their mind. See
-`Product-Requirements.md:129`. Locks do conflict with *each other*: taking one
+`API/Product-Requirements.md#slot-lock-token-flow`. Locks do conflict with *each other*: taking one
 over a window that overlaps an active lock is rejected.
 _Avoid_: reservation, hold
 

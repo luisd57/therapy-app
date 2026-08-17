@@ -29,7 +29,7 @@ class TherapistSchedule
         private readonly ScheduleId $id,
         #[ORM\Column(type: 'user_id')]
         private readonly UserId $therapistId,
-        #[ORM\Column(type: Types::SMALLINT, enumType: WeekDay::class)]
+        #[ORM\Column(type: Types::INTEGER, enumType: WeekDay::class)]
         private WeekDay $dayOfWeek,
         #[ORM\Column(type: Types::STRING, length: 5)]
         private string $startTime,
