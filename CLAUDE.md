@@ -1,34 +1,31 @@
-Deliver what was asked, at the scope intended. Make routine judgment calls yourself, and check
-in only when different readings of the request would lead to materially different work. If the
-request seems mistaken or a better approach exists, say so in a sentence and continue with the
-task as asked rather than quietly narrowing or widening it.
-
-Keep responses focused and brief, and lead with the outcome. Match written documents to what
-the task needs - no filler sections or redundant summaries.
-
 Delegate to a subagent only for large, genuinely independent investigations. Don't delegate work
 you can finish in a handful of tool calls, and don't use subagents to double-check your own work.
 
 ## Process Skills
 
-Two plugins provide them. Invoke the skills; do NOT restate their guidance here.
+All from the **mattpocock-skills** plugin. Invoke them; do NOT restate their guidance here.
 
-- **superpowers** - brainstorming, systematic-debugging, verification-before-completion,
-  executing-plans.
-- **mattpocock-skills** - tdd, code-review, domain-modeling, grilling, and the spec/ticket
-  flows (`to-spec`, `to-tickets`, `wayfinder`) that `docs/agents/` and the ADRs reference.
+| Situation | Skill |
+|---|---|
+| Idea too big for one session, route unclear | `wayfinder` |
+| Plan or decision that needs stress-testing | `grilling` |
+| Conversation has settled, needs writing up | `to-spec`, then `to-tickets` |
+| Question dialogue can't answer | `prototype` |
+| Implementing anything | `tdd` |
+| Something broken, throwing, or slow | `diagnosing-bugs` |
+| Before opening a PR | `code-review` |
+| Terminology or an ADR | `domain-modeling` |
 
-TDD means **`mattpocock-skills:tdd`**. Testing expectations are in
-`.claude/rules/testing-policy.md`.
+`to-spec`, `to-tickets` and `wayfinder` are user-invocable only. Ask for them rather than writing
+a spec or ticket by hand. `docs/agents/` and the ADRs assume these flows.
 
-`to-spec`, `to-tickets` and `wayfinder` are user-invocable only. Ask for them rather than
-writing a ticket or spec by hand.
+Testing expectations are in `.claude/rules/testing-policy.md`.
 
-Keep this file and `.claude/rules/` focused on project facts the plugins don't cover.
+Keep this file and `.claude/rules/` focused on project facts the plugin doesn't cover.
 
 # Therapy Practice Management System
 
-Single-therapist practice. Visitors and patients can browse slots and submit appointment requests. Therapist manages schedules, confirms/cancels appointments, onboards patients via invitation-only registration. Payments verified manually.
+Single-therapist practice. Requesters and Patients browse Slots and submit Appointment requests. The Therapist manages schedules, confirms/cancels Appointments, and onboards Patients via invitation-only registration. Payments verified manually.
 
 ## Project Structure
 
@@ -44,25 +41,12 @@ docker-compose exec php bash                  # Shell into PHP container
 make test                                     # Full suite
 ```
 
-The check that proves the tree is green: `make test`.
-
 | Service   | URL                          |
 |-----------|------------------------------|
 | API       | http://localhost:8080/api     |
 | Frontend  | http://localhost:4321         |
 | MailHog   | http://localhost:8025         |
 | pgAdmin   | http://localhost:5050         |
-
-## Domain Terminology
-
-- **Therapist**: Single admin user (ROLE_THERAPIST). Exactly one.
-- **Patient**: Registered user (ROLE_PATIENT), created via invitation flow.
-- **Visitor / Requester**: Unauthenticated person browsing slots or submitting a request.
-- **Appointment Modality**: `ONLINE` or `IN_PERSON`.
-- **Schedule Block**: Recurring weekly availability window (day of week, start/end time, supported modalities).
-- **Schedule Exception**: One-off unavailability that overrides schedule blocks.
-- **Slot**: Concrete bookable time window computed from schedule blocks - exceptions - confirmed appointments. Duration: `APPOINTMENT_DURATION_MINUTES` (default 50 min).
-- **Slot Lock**: Optional concurrency hint. Does NOT hide slots from the browser.
 
 ## Appointment Status Lifecycle
 
@@ -90,9 +74,9 @@ Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: IS
 
 - Single-therapist system. API guards against creating a second therapist.
 - Patient registration is invitation-only (time-limited token via email).
-- Slot availability = schedule blocks - exceptions - confirmed appointments.
-- Multiple visitors CAN request the same slot. Therapist resolves conflicts manually.
+- Multiple Requesters CAN request the same Slot. Therapist resolves conflicts manually.
 - Payment verification is a manual boolean toggle, not an automated gateway.
+- Session duration is `APPOINTMENT_DURATION_MINUTES` (default 50 min).
 
 ## On-Demand Documentation
 
@@ -103,7 +87,7 @@ These files are NOT loaded automatically. Reference them with @ when needed:
 
 ## Adding Project-Specific Rules
 
-Stack/architecture conventions go in `.claude/rules/*.md`. Add `paths:` frontmatter to scope a rule to matching files (lazy-loaded); omit it for always-on rules. Repeatable multi-step workflows go in `.claude/skills/` instead. Follow `.claude/rules/documentation-style.md`.
+Where a new convention goes, and how to write it: `.claude/rules/documentation-style.md`.
 
 ## Status
 
@@ -111,4 +95,6 @@ Current per-component status: `docs/STATUS.md`. Read it when the state of an unf
 
 ## Agent skills
 
-Issue tracker (local markdown in `.scratch/`), triage labels, and domain-doc layout: see `docs/agents/`. Glossary is `CONTEXT.md`; decisions are `docs/adr/`.
+Issue tracker (local markdown in `.scratch/`), triage labels, and domain-doc layout: see `docs/agents/`. Decisions are `docs/adr/`.
+
+`CONTEXT.md` is the glossary - every domain term with the wordings to avoid. Read it before naming anything.
