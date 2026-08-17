@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'schedule_exceptions')]
-#[ORM\Index(columns: ['therapist_id', 'start_date_time', 'end_date_time'], name: 'idx_exception_range')]
+#[ORM\Index(columns: ['therapist_id', 'start_date_time', 'end_date_time'], name: 'idx_exception_therapist_range')]
 class ScheduleException
 {
     public function __construct(
