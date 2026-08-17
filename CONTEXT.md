@@ -69,8 +69,8 @@ _Avoid_: holiday, block-out, time off
 
 **Slot**:
 A concrete bookable window computed from Schedule Blocks minus Schedule
-Exceptions minus blocking Appointments minus active Slot Locks. Always returned
-as Instants.
+Exceptions minus blocking Appointments. Always returned as Instants. Slot Locks
+are *not* subtracted - see below.
 _Avoid_: appointment time, opening
 
 **Start Increment**:
@@ -80,8 +80,13 @@ candidates, and booking one suppresses those it overlaps.
 _Avoid_: step, interval, granularity
 
 **Slot Lock**:
-A short-lived, optional hold taken while a Requester fills in the form. Does not
-hide the Slot from other browsers.
+A short-lived UI helper taken while a Requester fills in the form. It never
+affects availability - the therapist resolves double-booking manually, so a lock
+does not hide the Slot from other browsers or block a request. Every caller of
+`AvailabilityComputer` passes an empty lock collection deliberately; the
+filtering code is scaffolding kept in case the client changes their mind. See
+`Product-Requirements.md:129`. Locks do conflict with *each other*: taking one
+over a window that overlaps an active lock is rejected.
 _Avoid_: reservation, hold
 
 **Appointment**:
