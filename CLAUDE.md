@@ -76,13 +76,13 @@ Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: IS
 - Patient registration is invitation-only (time-limited token via email).
 - Multiple Requesters CAN request the same Slot. Therapist resolves conflicts manually.
 - Payment verification is a manual boolean toggle, not an automated gateway.
-- Session duration is `APPOINTMENT_DURATION_MINUTES` (default 50 min).
+- Session duration is `APPOINTMENT_DURATION_MINUTES`. Read it, never hardcode the number, and never assume it equals the Slot start increment - they are separate rules (see `CONTEXT.md`).
 
 ## On-Demand Documentation
 
 These files are NOT loaded automatically. Reference them with @ when needed:
 - `@API/docs/database-schema.md` - entity relationships, column details
-- `@API/Product-Requirements.md` - feature specs and implementation status
+- `@API/Product-Requirements.md` - the original client-discussion synthesis, frozen 2026-05-26. Historical only; requirements have moved since. For current status use `docs/STATUS.md`
 - `@API/postman/Therapy_App_API.postman_collection.json` - API contract with example requests/responses
 
 ## Adding Project-Specific Rules

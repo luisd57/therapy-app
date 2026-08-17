@@ -1,6 +1,25 @@
 # Dashboard
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.1.
+Private portal for the therapist and her patients. Angular 21 + Angular Material, generated with
+[Angular CLI](https://github.com/angular/angular-cli) 21.2.1.
+
+## Layout
+
+`src/app/` is organized by domain, not by technical type. Each domain holds `feature/` (routed
+pages), `ui/` (presentational), `data-access/` (API services, stores), and `utils/`, creating only
+the sub-folders it needs.
+
+| Domain | State |
+| ------ | ----- |
+| `auth/` | Login (therapist + patient), registration, forgot/reset password |
+| `layout/` | Role-based navigation and shell |
+| `patients/` | Patient list, invite, resend, revoke |
+| `appointments/` | Route stub, not implemented yet |
+| `schedule/` | Route stub, not implemented yet |
+| `shared/` | Services, guards, interceptors used across domains |
+
+The full conventions (dependency flow, file naming, no NgModules) are in
+`.claude/rules/dashboard-angular.md`.
 
 ## Development server
 
@@ -14,17 +33,19 @@ Once the server is running, open your browser and navigate to `http://localhost:
 
 ## Code scaffolding
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+The CLI schematics do not match this project's layout, so generated files need moving and
+renaming. Placing files by hand is usually quicker: pages are `<name>.page.ts`, presentational
+components are `<name>.component.ts`, and both live under the owning domain rather than a
+top-level `components/` folder.
+
+## Linting
 
 ```bash
-ng generate component component-name
+npm run lint
+npm run lint:fix
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
+The CI `test` job runs `lint` and fails the build on any error, so run it before pushing.
 
 ## Building
 
