@@ -5,8 +5,7 @@ wrapping, how to run suites) see `.claude/rules/api-testing.md` - don't duplicat
 
 ## Test-first
 
-Implementation is test-first via `mattpocock-skills:tdd`. Write the failing test, then the
-smallest code that passes it. One slice at a time, not all tests then all implementation.
+Implementation goes through `mattpocock-skills:tdd`.
 
 ## Every change carries coverage at a level that can observe it
 
@@ -25,15 +24,13 @@ A green suite proves nothing was broken. It does not prove the new behaviour is 
 satisfied by writing no tests at all. A ticket whose only test criterion is "suite green" is
 under-specified; name the behaviour that must fail if the code regresses.
 
-## Expected values come from an independent source
+## Why the Tautological anti-pattern matters here
 
-A hand-written literal, a worked example, the spec. **Never** from formatting or re-deriving the
-object under test - such a test shifts with the code and can never disagree with it.
-
-This is not theoretical here. The whole PHPUnit suite was moved to `Pacific/Kiritimati` (UTC+14)
-to expose implicit-local timezone bugs and produced zero new failures, because the existing date
-tests built fixtures naively and derived expectations by formatting those same fixtures. It only
-started catching anything once the assertions became absolute UTC instants. See ADR-0003.
+`mattpocock-skills:tdd` defines it. This is the case that proves it bit this repo: the whole
+PHPUnit suite was moved to `Pacific/Kiritimati` (UTC+14) to expose implicit-local timezone bugs
+and produced zero new failures, because the existing date tests built fixtures naively and derived
+expectations by formatting those same fixtures. It only started catching anything once the
+assertions became absolute UTC instants. See ADR-0003.
 
 ## Run the full suite before pushing API changes
 
