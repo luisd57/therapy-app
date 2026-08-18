@@ -8,6 +8,7 @@
     dayKeyInZone,
     todayKeyInZone,
     weekStartKey,
+    weekStartForAvailability,
     weekKeys,
     addDaysToKey,
     windowForKeys,
@@ -54,6 +55,11 @@
   );
 
   const showsBothZones = $derived(viewerZone !== practiceZone);
+
+  /** Slots landing in the rendered columns, which is what the viewer can act on. */
+  const visibleSlotCount = $derived(
+    weekDates.reduce((total, key) => total + (slotsByDay[key]?.length ?? 0), 0),
+  );
 
   async function loadSlots() {
     isLoading = true;
@@ -116,10 +122,16 @@
       practiceZone = response.practice_timezone;
 
       if (response.found && response.week_start) {
-        // week_start is an instant; which day it belongs to depends on who is
-        // looking, so resolve it in the viewer's zone before picking the week.
-        weekStart = weekStartKey(dayKeyInZone(response.week_start, viewerZone));
-        slots = response.slots;
+        // Resolved in the viewer's zone: which day an instant belongs to
+        // depends on who is looking.
+        weekStart = weekStartForAvailability(
+          response.week_start,
+          response.slots.map((slot) => slot.start_time),
+          viewerZone,
+        );
+        // Refetch rather than keep response.slots: the rolling window covers
+        // only part of the week we just picked, so later columns would be wrong.
+        await loadSlots();
       } else {
         slots = [];
       }
@@ -187,6 +199,16 @@
         </div>
       {/each}
     </div>
+  {:else if visibleSlotCount === 0 && !error}
+    <!-- Seven "Sin disponibilidad" columns and nothing else is indistinguishable
+         from a broken grid, so say it once and drop the grid. Not shown on
+         error: a failed request is not the same as no availability. -->
+    <p
+      class="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600"
+      data-testid="week-empty"
+    >
+      No hay horarios disponibles en esta semana. Usa "Siguiente" para ver la próxima.
+    </p>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
       {#each weekDates as dayKey}

@@ -20,13 +20,17 @@ export function slotButtons(page: Page): Locator {
 }
 
 /**
- * Open the slot browser. The AppointmentFlow island uses `client:visible` and
- * sits below the fold, so we must scroll it into view to trigger hydration (and
- * its initial slot fetch). Resolves once a slot button or the empty-state renders.
+ * Open the slot browser. The AppointmentFlow island is `client:visible` and sits
+ * below the fold, so it needs a scroll to hydrate and run its initial fetch.
  */
-export async function gotoSlotBrowser(page: Page): Promise<void> {
+export async function openSlotBrowser(page: Page): Promise<void> {
   await page.goto('/');
   await page.getByText('Agenda tu cita').scrollIntoViewIfNeeded();
+}
+
+/** Open the slot browser and wait for real availability to render. */
+export async function gotoSlotBrowser(page: Page): Promise<void> {
+  await openSlotBrowser(page);
   // globalSetup guarantees seeded availability, so a slot button always appears
   // once the island hydrates and finishes its initial fetch.
   await expect(slotButtons(page).first()).toBeVisible();
