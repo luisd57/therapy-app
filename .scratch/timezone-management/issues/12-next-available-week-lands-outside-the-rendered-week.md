@@ -63,9 +63,23 @@ grid has to render Slots at all before the modality of a selected Slot matters.
 
 **Status:** ready-for-agent
 
-- [ ] The rendered week always contains the Slots the component is holding
+- [x] The rendered week always contains the Slots the component is holding
 - [ ] Landing e2e passes on a Saturday, a Sunday, and a Friday afternoon practice-local
-- [ ] A unit test pins the case where the next available Slot falls in the following calendar week
-- [ ] An empty rendered week shows an empty state rather than a silent blank grid
-- [ ] Landing unit suite green
-- [ ] Landing build green
+- [x] A unit test pins the case where the next available Slot falls in the following calendar week
+- [x] An empty rendered week shows an empty state rather than a silent blank grid
+- [x] Landing unit suite green
+- [x] Landing build green
+
+## Comments
+
+**2026-08-18** - Shipped in PR #37 (squashed to `875ffb5`). `SlotBrowser` now picks
+the week from the earliest Slot via `weekStartForAvailability`, then refetches that
+full calendar week rather than keeping the truncated rolling-window response. An
+empty week renders an empty state in place of the grid, suppressed on error.
+
+Five of six criteria verified. The weekend one is not: 2026-08-18 is a Tuesday, so
+the eight pre-existing landing specs would have passed with or without the fix. A
+new spec (`landing/e2e/next-available-week.spec.ts`) stubs the API with
+`page.route` and pins the scenario on any day, but that is a proxy, not the
+real-clock run the criterion asks for. Status stays open until a Friday-afternoon,
+Saturday or Sunday CI run goes green on its own.
