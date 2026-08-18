@@ -11,8 +11,8 @@ describe means they travel with the branch that implements them.
 - One feature per directory: `.scratch/<feature-slug>/`
 - The spec is `.scratch/<feature-slug>/spec.md`
 - Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` - never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- A finished ticket ends at `Status: resolved` with a `Resolved by:` line naming the PR, its verified acceptance criteria ticked, and the file kept. The `/done` skill does this alongside the `docs/STATUS.md` update
+- Triage state is recorded as a `**Status:**` line near the top of each issue file (see `triage-labels.md` for the role strings). Bolded, matching the `to-tickets` template that writes it - a plain `Status:` will not be found by anything scanning for the frontier
+- A finished ticket ends at `**Status:** resolved` with a `**Resolved by:**` line naming the PR, its verified acceptance criteria ticked, and the file kept. The `/done` skill does this alongside the `docs/STATUS.md` update
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 
 ## When a skill says "publish to the issue tracker"
