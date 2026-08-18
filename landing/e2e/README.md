@@ -50,6 +50,7 @@ docker-compose --profile e2e run --rm playwright-landing \
 | `reservation-happy-path.spec.ts`      | Browse → pick slot → submit request → "Solicitud recibida" |
 | `reservation-form-validation.spec.ts` | Native required + email validation block submission     |
 | `slot-browser.spec.ts`                | Availability + weekend gaps, week nav, modality toggle  |
+| `next-available-week.spec.ts`         | Stubbed API: rolling window past the calendar week, empty week |
 | `reservation-navigation.spec.ts`      | "Cambiar horario" back nav + "Reservar otra cita" restart |
 | `fixtures/helpers.ts`                 | Slot/form helpers + env constants                       |
 | `global-setup.ts`                     | Waits for API, asserts availability is seeded           |

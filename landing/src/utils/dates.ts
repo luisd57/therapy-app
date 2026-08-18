@@ -62,6 +62,25 @@ export function weekStartKey(dayKey: string): string {
   return addDaysToKey(dayKey, weekday === 0 ? -6 : 1 - weekday);
 }
 
+/**
+ * Monday of the week holding the earliest slot of a rolling availability window.
+ * The window is anchored on now, so its slots can fall past that week's Sunday.
+ */
+export function weekStartForAvailability(
+  windowStartInstant: string,
+  slotInstants: string[],
+  timeZone: string,
+): string {
+  // Earliest by instant, not by position: the API promises no ordering.
+  const earliest = slotInstants.reduce<string | null>(
+    (found, instant) =>
+      found === null || new Date(instant) < new Date(found) ? instant : found,
+    null,
+  );
+
+  return weekStartKey(dayKeyInZone(earliest ?? windowStartInstant, timeZone));
+}
+
 /** The seven day keys, Monday to Sunday, starting at `startKey`. */
 export function weekKeys(startKey: string): string[] {
   return Array.from({ length: 7 }, (_, index) => addDaysToKey(startKey, index));

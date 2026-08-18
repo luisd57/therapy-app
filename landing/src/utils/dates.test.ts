@@ -6,6 +6,7 @@ import {
   formatTime,
   offsetHoursBetween,
   weekKeys,
+  weekStartForAvailability,
   weekStartKey,
   windowForKeys,
   zoneLabel,
@@ -156,5 +157,77 @@ describe('offsetHoursBetween', () => {
 
   it('is zero between a zone and itself', () => {
     expect(offsetHoursBetween(CARACAS, CARACAS)).toBe(0);
+  });
+});
+
+describe('weekStartForAvailability', () => {
+  // The Friday 2026-08-14 report: snapping the window start gave 2026-08-10,
+  // a week holding none of the slots.
+  it('picks the week holding the first slot, not the one the window opens in', () => {
+    const weekStart = weekStartForAvailability(
+      '2026-08-14T04:00:00+00:00',
+      ['2026-08-17T12:00:00+00:00'],
+      CARACAS,
+    );
+
+    expect(weekStart).toBe('2026-08-17');
+    expect(weekStartKey(dayKeyInZone('2026-08-14T04:00:00+00:00', CARACAS))).toBe(
+      '2026-08-10',
+    );
+  });
+
+  it('keeps the week the window opens in when the first slot is already there', () => {
+    expect(
+      weekStartForAvailability(
+        '2026-08-11T04:00:00+00:00',
+        ['2026-08-13T12:00:00+00:00'],
+        CARACAS,
+      ),
+    ).toBe('2026-08-10');
+  });
+
+  it('takes the earliest slot, whatever order the API returned them in', () => {
+    expect(
+      weekStartForAvailability(
+        '2026-08-14T04:00:00+00:00',
+        [
+          '2026-08-24T12:00:00+00:00',
+          '2026-08-17T12:00:00+00:00',
+          '2026-08-20T12:00:00+00:00',
+        ],
+        CARACAS,
+      ),
+    ).toBe('2026-08-17');
+  });
+
+  it('falls back to the window start when there are no slots', () => {
+    expect(
+      weekStartForAvailability('2026-08-14T04:00:00+00:00', [], CARACAS),
+    ).toBe('2026-08-10');
+  });
+
+  it('resolves the slot in the viewer zone, so the week can differ by viewer', () => {
+    // Sunday 21:00 in Caracas is already Monday 03:00 in Madrid, which is the
+    // first day of the next week for the Madrid viewer.
+    const instant = '2026-08-17T01:00:00+00:00';
+
+    expect(weekStartForAvailability(instant, [instant], CARACAS)).toBe('2026-08-10');
+    expect(weekStartForAvailability(instant, [instant], MADRID)).toBe('2026-08-17');
+  });
+
+  it('always returns a week containing the first slot', () => {
+    const instants = [
+      '2026-08-17T12:00:00+00:00',
+      '2026-08-23T23:30:00+00:00',
+      '2026-03-29T01:00:00+00:00',
+      '2026-12-31T18:00:00+00:00',
+    ];
+
+    for (const instant of instants) {
+      for (const zone of [CARACAS, MADRID]) {
+        const weekStart = weekStartForAvailability(instant, [instant], zone);
+        expect(weekKeys(weekStart)).toContain(dayKeyInZone(instant, zone));
+      }
+    }
   });
 });
