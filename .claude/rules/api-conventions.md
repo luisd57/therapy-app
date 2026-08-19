@@ -26,14 +26,19 @@ paths:
 
 | Type           | Pattern                    | Example                    |
 |----------------|----------------------------|----------------------------|
+| Controller     | `{Action}Controller` *     | `TherapistLoginController` |
 | Handler        | `{Action}{Entity}Handler`  | `InvitePatientHandler`     |
 | Input DTO      | `{Action}{Entity}InputDTO` | `InvitePatientInputDTO`    |
 | Output DTO     | `{Entity}OutputDTO`        | `UserOutputDTO`            |
 | Interface      | `{Name}Interface`          | `UserRepositoryInterface`  |
 | Custom DBAL    | `{VO}Type`                 | `EmailType`, `UserIdType`  |
 
+\* Applies to controllers this convention splits. One that already held a single action keeps its
+existing name, so `PatientAppointmentController` is not a breach.
+
 ## Handlers
-- One handler = one file = one public action via `__invoke()`
+- One handler = one file = one public action via `__invoke()`. Controllers follow the same shape, so
+  both layers read alike (see `## Controllers` in api-architecture.md)
 - `__invoke()` receives a single InputDTO parameter named `$dto`
 - Call explicitly: `$this->handler->__invoke(new FooInputDTO(...))`
   - ❌ `($this->handler)(new FooInputDTO(...))`
