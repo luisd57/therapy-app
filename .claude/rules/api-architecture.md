@@ -18,7 +18,7 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 - Repositories flush; handlers NEVER call flush or manage transactions. No transaction middleware - an accepted trade-off.
 
 ## Domain Layer
-Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, InvitationToken, PasswordResetToken), Value Objects (immutable, self-validating: UserId, Email, Phone, Address, UserRole, AppointmentId, AppointmentStatus, AppointmentModality, TimeSlot, WeekDay), Repository Interfaces (driven ports), Service Interfaces (driven ports: EmailSenderInterface, JwtTokenGeneratorInterface, PasswordHasherInterface), Domain Services (AvailabilityComputer), Parameter Objects (AvailabilityContext), Exceptions.
+Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, InvitationToken, PasswordResetToken), Value Objects (immutable, self-validating, private constructors - the `Id/` types plus Email, Phone, Timezone, Address, TimeSlot), Enums (backed: UserRole, AppointmentStatus, AppointmentModality, WeekDay - these are NOT Value Objects, so the private-constructor and static-factory rules cannot apply to them), Repository Interfaces (driven ports), Service Interfaces (driven ports: EmailSenderInterface, JwtTokenGeneratorInterface, PasswordHasherInterface), Domain Services (AvailabilityComputer), Parameter Objects (AvailabilityContext - public constructor by design, it carries arguments rather than modelling a value), Exceptions.
 
 ## Application Layer
 Handlers (one per use case, `__invoke()` entry point), DTOs (Input/ and Output/), Application Services (orchestration, e.g. AppointmentRequestService).
