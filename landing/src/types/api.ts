@@ -73,4 +73,3 @@ export interface NextAvailableWeekResponse {
 }
 
 export type Modality = 'ONLINE' | 'IN_PERSON';
-export type ModalityFilter = Modality | 'ALL';

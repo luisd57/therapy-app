@@ -22,7 +22,8 @@ src/
 ├── pages/             # Astro page routes
 ├── services/          # Typed API client functions
 ├── types/             # TypeScript interfaces
-└── utils/             # Date/time helpers
+├── utils/             # Date/time helpers
+└── config.ts          # Values the app assumes before the API reports them
 ```
 
 ## Conventions

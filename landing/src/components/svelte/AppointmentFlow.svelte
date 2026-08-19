@@ -2,7 +2,10 @@
   import type { SlotData, Modality, LockResponse, AppointmentSummary } from '../../types/api';
   import { ApiError } from '../../types/api';
   import { lockSlot } from '../../services/api';
+  import { PRACTICE_TIMEZONE_FALLBACK } from '../../config';
   import { detectTimeZone } from '../../utils/dates';
+  import { preselectedModality } from '../../utils/modality';
+  import ModalityChooser from './ModalityChooser.svelte';
   import SlotBrowser from './SlotBrowser.svelte';
   import AppointmentForm from './AppointmentForm.svelte';
   import ThankYou from './ThankYou.svelte';
@@ -10,14 +13,24 @@
   // Held here so the form and confirmation keep showing both times after the
   // browser is unmounted.
   let viewerZone = $state(detectTimeZone());
-  let practiceZone = $state('America/Caracas');
+  let practiceZone = $state(PRACTICE_TIMEZONE_FALLBACK);
 
+  // Modality rides on every step after the choice, so no step can render
+  // without one and nothing has to guess a default later.
   type FlowStep =
-    | { step: 'browsing'; errorMessage?: string }
+    | { step: 'choosing_modality'; preselected: Modality | null }
+    | { step: 'browsing'; modality: Modality; errorMessage?: string }
     | { step: 'filling_form'; slot: SlotData; modality: Modality; lockData: LockResponse | null; lockWarning?: string }
-    | { step: 'success'; appointment: AppointmentSummary };
+    | { step: 'success'; modality: Modality; appointment: AppointmentSummary };
 
-  let current: FlowStep = $state({ step: 'browsing' });
+  let current: FlowStep = $state({
+    step: 'choosing_modality',
+    preselected: preselectedModality(viewerZone, practiceZone),
+  });
+
+  function handleModalityChosen(modality: Modality) {
+    current = { step: 'browsing', modality };
+  }
 
   function handleSlotSelected(
     slot: SlotData,
@@ -48,21 +61,30 @@
   }
 
   function handleBack(errorMessage?: string) {
-    current = { step: 'browsing', errorMessage };
+    if (current.step !== 'filling_form') return;
+    current = { step: 'browsing', modality: current.modality, errorMessage };
   }
 
   function handleSuccess(appointment: AppointmentSummary) {
-    current = { step: 'success', appointment };
+    if (current.step !== 'filling_form') return;
+    current = { step: 'success', modality: current.modality, appointment };
   }
 
   function handleRestart() {
-    current = { step: 'browsing' };
+    if (current.step !== 'success') return;
+    current = { step: 'browsing', modality: current.modality };
   }
 </script>
 
 <div>
-  {#if current.step === 'browsing'}
+  {#if current.step === 'choosing_modality'}
+    <ModalityChooser
+      preselected={current.preselected}
+      onChoose={handleModalityChosen}
+    />
+  {:else if current.step === 'browsing'}
     <SlotBrowser
+      initialModality={current.modality}
       onSlotSelected={handleSlotSelected}
       errorMessage={current.errorMessage}
     />

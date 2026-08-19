@@ -185,6 +185,9 @@ services:
       LANDING_URL: ${LANDING_URL:-http://127.0.0.1:4321}
       API_BASE_URL: ${LANDING_API_BASE_URL:-http://nginx/api}
       PUBLIC_API_BASE_URL: ${LANDING_API_BASE_URL:-http://nginx/api}
+      # One spec swaps the schedule for an in-person-only block and puts it back.
+      THERAPIST_EMAIL: ${THERAPIST_EMAIL:-therapist@example.com}
+      THERAPIST_PASSWORD: ${THERAPIST_PASSWORD:-VerifyPass1!}
       CI: "1"
     command: sh -c "npm install --no-audit --no-fund && npx playwright test"
     depends_on:

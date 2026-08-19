@@ -13,9 +13,11 @@
  * saving, which a fixed offset cannot.
  */
 
+import { PRACTICE_TIMEZONE_FALLBACK } from '../config';
+
 /** The viewer's IANA zone, e.g. "Europe/Madrid". */
 export function detectTimeZone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Caracas';
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || PRACTICE_TIMEZONE_FALLBACK;
 }
 
 /**

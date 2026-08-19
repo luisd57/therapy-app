@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { SlotData, ModalityFilter, Modality } from '../../types/api';
+  import type { SlotData, Modality } from '../../types/api';
   import { ApiError } from '../../types/api';
+  import { PRACTICE_TIMEZONE_FALLBACK } from '../../config';
   import { fetchAvailableSlots, fetchNextAvailableWeek } from '../../services/api';
   import {
     detectTimeZone,
@@ -21,6 +22,8 @@
   import ErrorBanner from './ErrorBanner.svelte';
 
   interface Props {
+    /** Chosen before the grid renders. The toggle below can still change it. */
+    initialModality: Modality;
     onSlotSelected: (
       slot: SlotData,
       modality: Modality,
@@ -29,15 +32,15 @@
     errorMessage?: string;
   }
 
-  let { onSlotSelected, errorMessage = '' }: Props = $props();
+  let { initialModality, onSlotSelected, errorMessage = '' }: Props = $props();
 
   // The grid is laid out in the viewer's zone, so someone in Madrid sees each
   // slot under the day it falls on for them, not for the practice.
   let viewerZone = $state(detectTimeZone());
-  let practiceZone = $state('America/Caracas');
+  let practiceZone = $state(PRACTICE_TIMEZONE_FALLBACK);
 
   let weekStart = $state(weekStartKey(todayKeyInZone(detectTimeZone())));
-  let modality: ModalityFilter = $state('ALL');
+  let modality: Modality = $state(initialModality);
   let slots: SlotData[] = $state([]);
   let isLoading = $state(false);
   let isInitialLoading = $state(true);
@@ -67,12 +70,15 @@
     try {
       const response = await fetchAvailableSlots({
         ...windowForKeys(weekDates),
-        modality: modality === 'ALL' ? undefined : modality,
+        modality,
       });
 
       slots = response.slots;
       practiceZone = response.practice_timezone;
     } catch (err) {
+      // Drop what is on screen. It was fetched for another week or another
+      // modality, and clicking it would submit a slot nobody can host.
+      slots = [];
       error =
         err instanceof ApiError
           ? err.message
@@ -93,15 +99,20 @@
     loadSlots();
   }
 
-  function onModalityChange(value: ModalityFilter) {
+  function onModalityChange(value: Modality) {
+    if (value === modality) return;
     modality = value;
+    // Cleared before the refetch, so a slow or failed response never leaves the
+    // previous modality's slots on screen under the new label.
+    slots = [];
     if (isInitialLoading) return;
     loadSlots();
   }
 
   function handleSlotClick(slot: SlotData) {
-    const selectedModality: Modality = modality === 'ALL' ? 'ONLINE' : modality;
-    onSlotSelected(slot, selectedModality, practiceZone);
+    // The browsed modality, never a substitute: the slot came from a schedule
+    // block filtered on this value, and anything else the API refuses.
+    onSlotSelected(slot, modality, practiceZone);
   }
 
   /**
@@ -115,9 +126,7 @@
 
   onMount(async () => {
     try {
-      const response = await fetchNextAvailableWeek({
-        modality: modality === 'ALL' ? undefined : modality,
-      });
+      const response = await fetchNextAvailableWeek({ modality });
 
       practiceZone = response.practice_timezone;
 
