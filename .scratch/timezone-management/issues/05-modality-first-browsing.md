@@ -47,16 +47,36 @@ value the API reports and should not be duplicated.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Modality is an explicit choice before Slots render
-- [ ] Online is preselected when the Viewer Zone differs from the Practice Timezone
-- [ ] The Modality shown in the grid is the Modality submitted - no silent substitution
-- [ ] Switching Modality refetches Slots
-- [ ] Hardcoded Practice Timezone fallbacks are reduced to a single definition
-- [ ] A test pins the preselection: Online is chosen when the Viewer Zone differs from the Practice Timezone, and not forced when they match
-- [ ] A test pins that the browsed Modality is the one submitted, so the silent substitution cannot come back
-- [ ] A Requester can never select a Slot whose Schedule Block does not support the Modality being booked
-- [ ] The landing e2e suite passes on a day where the first offered Slot is In-Person only - the case that exposed this
-- [ ] Landing unit suite green
-- [ ] Landing build green
+**Resolved by:** [PR #39](https://github.com/luisd57/therapy-app/pull/39)
+
+- [x] Modality is an explicit choice before Slots render
+- [x] Online is preselected when the Viewer Zone differs from the Practice Timezone
+- [x] The Modality shown in the grid is the Modality submitted - no silent substitution
+- [x] Switching Modality refetches Slots
+- [x] Hardcoded Practice Timezone fallbacks are reduced to a single definition
+- [x] A test pins the preselection: Online is chosen when the Viewer Zone differs from the Practice Timezone, and not forced when they match
+- [x] A test pins that the browsed Modality is the one submitted, so the silent substitution cannot come back
+- [x] A Requester can never select a Slot whose Schedule Block does not support the Modality being booked
+- [x] The landing e2e suite passes on a day where the first offered Slot is In-Person only - the case that exposed this (made reachable on any day rather than waited for, see Comments)
+- [x] Landing unit suite green
+- [x] Landing build green
+
+## Comments
+
+**2026-08-19** - The last criterion was not met by waiting for a Thursday.
+Availability is computed server-side from the real clock, so no browser-side
+control (`timezoneId`, `page.clock`) can reach that day, and freezing the API's
+clock would apply to lock expiry, `created_at` and the cron container too.
+
+`e2e/in-person-only-schedule.spec.ts` moves the data instead: it logs in as the
+Therapist, swaps the active Schedule Blocks for a single In-Person-only block,
+and restores them afterwards. With one block in the schedule it is the first
+offered Slot on every day of the week, so the case runs on every CI run rather
+than one evening a week. Verified green in the `e2e` job of run 32248456451.
+
+Two defects surfaced during review that the ticket had not named, both the same
+substitution by another route: a failed refetch left the previous Modality's
+Slots on screen and clickable, and switching Modality mid-load changed the label
+without refetching. Both fixed, the first pinned by a test.
