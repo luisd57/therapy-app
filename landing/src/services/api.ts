@@ -38,19 +38,20 @@ async function apiRequest<T>(
   return json.data as T;
 }
 
-/** `from` and `to` are ISO-8601 instants with an offset, `to` exclusive. */
+/**
+ * `from` and `to` are ISO-8601 instants with an offset, `to` exclusive.
+ * `modality` is required, or the window includes blocks that cannot host it.
+ */
 export async function fetchAvailableSlots(params: {
   from: string;
   to: string;
-  modality?: Modality;
+  modality: Modality;
 }): Promise<SlotsResponse> {
   const searchParams = new URLSearchParams({
     from: params.from,
     to: params.to,
+    modality: params.modality,
   });
-  if (params.modality) {
-    searchParams.set('modality', params.modality);
-  }
 
   return apiRequest<SlotsResponse>(
     `/appointments/available-slots?${searchParams}`,
@@ -58,15 +59,11 @@ export async function fetchAvailableSlots(params: {
 }
 
 export async function fetchNextAvailableWeek(params: {
-  modality?: Modality;
+  modality: Modality;
 }): Promise<NextAvailableWeekResponse> {
-  const searchParams = new URLSearchParams();
-  if (params.modality) {
-    searchParams.set('modality', params.modality);
-  }
-  const query = searchParams.toString();
+  const searchParams = new URLSearchParams({ modality: params.modality });
   return apiRequest<NextAvailableWeekResponse>(
-    `/appointments/next-available-week${query ? `?${query}` : ''}`,
+    `/appointments/next-available-week?${searchParams}`,
   );
 }
 

@@ -16,6 +16,8 @@ using `mcr.microsoft.com/playwright:v1.49.1-noble`:
   the `landing/.env` default (`http://localhost:8080/api`) is unreachable from
   inside the container, and Vite prioritizes the inline env var.
 - The landing app is public/anonymous - no auth, no `storageState`.
+- The flow opens on a modality chooser and fetches nothing until one is picked,
+  so any spec that needs a grid goes through `chooseModality`.
 - `node_modules` lives in a named volume (`landing_playwright_node_modules`).
 - Kept out of `docker-compose up` via `profiles: [e2e]`.
 
@@ -51,8 +53,9 @@ docker-compose --profile e2e run --rm playwright-landing \
 | `reservation-form-validation.spec.ts` | Native required + email validation block submission     |
 | `slot-browser.spec.ts`                | Availability + weekend gaps, week nav, modality toggle  |
 | `next-available-week.spec.ts`         | Stubbed API: rolling window past the calendar week, empty week |
+| `modality-first.spec.ts`              | Modality gate, preselection by zone, browsed modality is submitted |
 | `reservation-navigation.spec.ts`      | "Cambiar horario" back nav + "Reservar otra cita" restart |
-| `fixtures/helpers.ts`                 | Slot/form helpers + env constants                       |
+| `fixtures/helpers.ts`                 | Modality/slot/form helpers + env constants              |
 | `global-setup.ts`                     | Waits for API, asserts availability is seeded           |
 
 ## Env overrides

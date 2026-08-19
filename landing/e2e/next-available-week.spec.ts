@@ -1,12 +1,15 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { openSlotBrowser, slotButtons } from './fixtures/helpers';
+import {
+  chooseModality,
+  openSlotBrowser,
+  PRACTICE_ZONE,
+  slotButtons,
+} from './fixtures/helpers';
 
 /**
  * The only specs here that stub the API: neither case is reachable from the
  * seeded schedule, which recurs weekly and never leaves a future week empty.
  */
-
-const PRACTICE_ZONE = 'America/Caracas';
 
 // Pinned so the assertions are absolute rather than derived from the fixtures
 // (ADR-0003). Nothing here reads the clock: the rendered week comes from the
@@ -81,6 +84,8 @@ test.describe('Next available week', (): void => {
     );
 
     await openSlotBrowser(page);
+    // Nothing is preselected here: the viewer sits in the practice zone.
+    await chooseModality(page, 'ONLINE');
 
     // The week-range label is the only element containing an en dash.
     const rangeLabel: Locator = page.locator('span').filter({ hasText: '–' });
@@ -109,6 +114,7 @@ test.describe('Next available week', (): void => {
     );
 
     await openSlotBrowser(page);
+    await chooseModality(page, 'ONLINE');
 
     await expect(page.getByTestId('week-empty')).toBeVisible();
     await expect(slotButtons(page)).toHaveCount(0);

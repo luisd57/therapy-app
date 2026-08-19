@@ -30,17 +30,16 @@ test.describe('Slot browser', (): void => {
   });
 
   test('modality toggle reflects the active selection', async ({ page }): Promise<void> => {
-    await gotoSlotBrowser(page);
-    await expect(slotButtons(page).first()).toBeVisible();
+    await gotoSlotBrowser(page, 'ONLINE');
 
-    await page.getByRole('button', { name: 'Online', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Online', exact: true })).toHaveClass(
-      /bg-white/,
-    );
+    const online: Locator = page.getByRole('button', { name: 'Online', exact: true });
+    const inPerson: Locator = page.getByRole('button', { name: 'Presencial', exact: true });
 
-    await page.getByRole('button', { name: 'Presencial', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Presencial', exact: true })).toHaveClass(
-      /bg-white/,
-    );
+    // The chosen modality carries into the browser rather than resetting.
+    await expect(online).toHaveAttribute('aria-pressed', 'true');
+
+    await inPerson.click();
+    await expect(inPerson).toHaveAttribute('aria-pressed', 'true');
+    await expect(online).toHaveAttribute('aria-pressed', 'false');
   });
 });
