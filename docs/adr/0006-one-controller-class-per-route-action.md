@@ -7,8 +7,8 @@ convert under `.scratch/controller-per-action/`.
 
 Controllers were grouped by resource: one class per area, holding every action for it. The
 `Http/Controller` layer had 8 classes covering 37 route actions. `AuthController` was the worst of
-them at 343 lines and 8 actions, with three private validation helpers wedged in at lines 199 to 282
-and two public routes declared after them. Its tests were a single 400-line `AuthControllerTest`
+them at 343 lines and 8 actions, with three private validation helpers wedged into the middle of the
+class and two public routes declared after them. Its tests were a single 400-line `AuthControllerTest`
 holding 25 test methods for 8 endpoints.
 
 The repo had no written rule on the subject. The whole specification was one parenthetical in

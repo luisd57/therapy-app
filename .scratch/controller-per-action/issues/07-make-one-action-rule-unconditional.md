@@ -37,4 +37,5 @@ the assertion fails while any grouped controller remains.
 - [ ] The one-action assertion covers every controller in the route collection, with no exemptions
 - [ ] The stale-entry test is removed rather than left asserting over an empty list
 - [ ] `.claude/rules/api-architecture.md` and ADR-0006 describe the rule as settled, not as a migration in progress
+- [ ] Reintroducing a second route action on any existing controller makes `RouteConventionsTest` fail. Prove it by adding one temporarily, watching it go red, then reverting
 - [ ] Full API suite green

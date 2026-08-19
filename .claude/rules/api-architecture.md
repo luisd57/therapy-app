@@ -35,8 +35,9 @@ method is `__invoke()`. `AuthController::therapistLogin` became `Api/User/Auth/T
 - Full path literal in the `#[Route]`, no class-level prefix, `name:` always explicit. Route names are
   matched by `RateLimitSubscriber` and paths by `security.yaml`, so copy both verbatim when moving an
   action - a rename silently drops rate limiting or an access rule.
-- Per-action `#[IsGranted]`, since there is no class left to hang it on. `RouteConventionsTest` is
-  the net that catches a forgotten one.
+- Per-action `#[IsGranted]`, since there is no class left to hang it on. `RouteConventionsTest`
+  catches a forgotten one under `/api/therapist` or `/api/patient`, which is where roles are required
+  today. Extend its prefix list if a new protected area appears.
 - Constructor takes only what this action uses. Handlers stay injected as method arguments.
 - A helper used by two or more actions is a trait in `Http/Controller/`. One caller means a private
   method on that controller.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http;
 
-use App\Tests\Helper\IntegrationTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -14,8 +14,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Splitting a grouped controller drops its class-level #[IsGranted], so the role check becomes
  * something a new action can silently forget. These tests are what notices.
  */
-final class RouteConventionsTest extends IntegrationTestCase
+final class RouteConventionsTest extends KernelTestCase
 {
+    // Not IntegrationTestCase: this reads the router and reflection, never the database, so the
+    // transaction wrapping that base class provides would buy nothing.
+
     /**
      * Controllers still holding more than one action, shrinking as each conversion ticket lands.
      * Never add to this list: a new endpoint gets its own controller class.
@@ -41,7 +44,7 @@ final class RouteConventionsTest extends IntegrationTestCase
     {
         $missing = [];
 
-        foreach ($this->apiControllers() as $routeName => [$class, $method, $path]) {
+        foreach ($this->apiControllers() as $routeName => ['class' => $class, 'method' => $method, 'path' => $path]) {
             foreach (self::PROTECTED_PREFIXES as $prefix => $role) {
                 if (!str_starts_with($path, $prefix)) {
                     continue;
@@ -62,7 +65,7 @@ final class RouteConventionsTest extends IntegrationTestCase
         foreach (self::PROTECTED_PREFIXES as $prefix => $role) {
             $matched = array_filter(
                 $this->apiControllers(),
-                static fn (array $route): bool => str_starts_with($route[2], $prefix),
+                static fn (array $route): bool => str_starts_with($route['path'], $prefix),
             );
 
             self::assertNotEmpty($matched, sprintf('No route found under %s, so %s is never checked', $prefix, $role));
@@ -73,7 +76,7 @@ final class RouteConventionsTest extends IntegrationTestCase
     {
         $actionsPerClass = [];
 
-        foreach ($this->apiControllers() as [$class, $method]) {
+        foreach ($this->apiControllers() as ['class' => $class, 'method' => $method]) {
             $actionsPerClass[$class][$method] = true;
         }
 
@@ -91,7 +94,7 @@ final class RouteConventionsTest extends IntegrationTestCase
     {
         $actionsPerClass = [];
 
-        foreach ($this->apiControllers() as [$class, $method]) {
+        foreach ($this->apiControllers() as ['class' => $class, 'method' => $method]) {
             $actionsPerClass[$class][$method] = true;
         }
 
@@ -106,7 +109,7 @@ final class RouteConventionsTest extends IntegrationTestCase
     }
 
     /**
-     * @return array<string, array{0: class-string, 1: string, 2: string}> route name => [class, method, path]
+     * @return array<string, array{class: class-string, method: string, path: string}> keyed by route name
      */
     private function apiControllers(): array
     {
@@ -122,7 +125,11 @@ final class RouteConventionsTest extends IntegrationTestCase
 
             // Symfony registers an invokable controller as the bare class name, no "::method"
             $parts = explode('::', $controller);
-            $controllers[$routeName] = [$parts[0], $parts[1] ?? '__invoke', $route->getPath()];
+            $controllers[$routeName] = [
+                'class' => $parts[0],
+                'method' => $parts[1] ?? '__invoke',
+                'path' => $route->getPath(),
+            ];
         }
 
         return $controllers;
