@@ -26,6 +26,7 @@ paths:
 
 | Type           | Pattern                    | Example                    |
 |----------------|----------------------------|----------------------------|
+| Controller     | `{Action}Controller`       | `TherapistLoginController` |
 | Handler        | `{Action}{Entity}Handler`  | `InvitePatientHandler`     |
 | Input DTO      | `{Action}{Entity}InputDTO` | `InvitePatientInputDTO`    |
 | Output DTO     | `{Entity}OutputDTO`        | `UserOutputDTO`            |
@@ -33,7 +34,8 @@ paths:
 | Custom DBAL    | `{VO}Type`                 | `EmailType`, `UserIdType`  |
 
 ## Handlers
-- One handler = one file = one public action via `__invoke()`
+- One handler = one file = one public action via `__invoke()`. Controllers follow the same shape, so
+  both layers read alike (see `## Controllers` in api-architecture.md)
 - `__invoke()` receives a single InputDTO parameter named `$dto`
 - Call explicitly: `$this->handler->__invoke(new FooInputDTO(...))`
   - ❌ `($this->handler)(new FooInputDTO(...))`

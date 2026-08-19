@@ -13,7 +13,10 @@ paths:
 
 ## Access Control
 - Therapist setup: CLI only via `app:create-therapist` (no HTTP endpoint)
-- All therapist endpoints: class-level `#[IsGranted('ROLE_THERAPIST')]` on `TherapistController`
+- Controllers are one action per class, so `#[IsGranted]` sits on each action, not on a shared class.
+  `security.yaml` `access_control` enforces the same roles by path as a backstop, and
+  `RouteConventionsTest` fails the build if an action under `/api/therapist` or `/api/patient` is
+  missing its attribute
 - Public endpoints: `/api/appointments/` (unauthenticated)
 
 ## Rate Limiting

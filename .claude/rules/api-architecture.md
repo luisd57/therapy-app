@@ -24,7 +24,27 @@ Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, Inv
 Handlers (one per use case, `__invoke()` entry point), DTOs (Input/ and Output/), Application Services (orchestration, e.g. AppointmentRequestService).
 
 ## Infrastructure Layer
-Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/Repository (implementations), Security (password hasher, JWT, Redis blocklist), Email (mailer), Http/Controller (thin, delegate to handlers), Http/EventSubscriber (rate limiting, security headers), Console (CLI commands).
+Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/Repository (implementations), Security (password hasher, JWT, Redis blocklist), Email (mailer), Http/Controller (one action per class, delegate to handlers - see `## Controllers`), Http/EventSubscriber (rate limiting, security headers), Console (CLI commands).
+
+## Controllers
+
+One route action per class, one class per file, one test file per class:
+`Http/Controller/Api/{Group}/{Resource}/{Action}Controller.php`, a `final` class whose only public
+method is `__invoke()`. `AuthController::therapistLogin` became `Api/User/Auth/TherapistLoginController`.
+
+- Full path literal in the `#[Route]`, no class-level prefix, `name:` always explicit. Route names are
+  matched by `RateLimitSubscriber` and paths by `security.yaml`, so copy both verbatim when moving an
+  action - a rename silently drops rate limiting or an access rule.
+- Per-action `#[IsGranted]`, since there is no class left to hang it on. `RouteConventionsTest` is
+  the net that catches a forgotten one.
+- Constructor takes only what this action uses. Handlers stay injected as method arguments.
+- A helper used by two or more actions is a trait in `Http/Controller/`. One caller means a private
+  method on that controller.
+- The rule splits, it does not rename. A controller already holding exactly one action stays as it is.
+
+Why: `## Errors` in api-conventions.md requires every action to catch the domain exceptions it can
+produce, so a grouped controller grows with each endpoint and has no natural stopping point. Splitting
+also gives each action a test file of its own, which one shared controller test cannot.
 
 ## File Patterns
 
@@ -42,6 +62,8 @@ Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/
 6. Migration: review `doctrine:migrations:diff` output before keeping it - entities declare no relations, so Doctrine does not know about the hand-written FK constraints and indexes in `migrations/` and will propose dropping them
 
 ### New API Endpoint
-1. Route method in controller in `src/Infrastructure/Http/Controller/Api/`
+1. `{Action}Controller` in `src/Infrastructure/Http/Controller/Api/{Group}/{Resource}/` - never a
+   second method on an existing controller
 2. Input DTO + Handler if new use case
 3. Update `config/packages/security.yaml` if new access rules needed
+4. Test file mirroring the controller under `tests/Integration/Infrastructure/Http/Controller/`

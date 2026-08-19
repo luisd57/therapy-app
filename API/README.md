@@ -348,7 +348,7 @@ make test-integration
 
 ```powershell
 docker-compose exec php vendor/bin/phpunit tests/Unit/Domain/User/Entity/UserTest.php
-docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/User/AuthControllerTest.php
+docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/User/Auth/TherapistLoginControllerTest.php
 ```
 
 #### Run Specific Test Method
@@ -565,17 +565,15 @@ Extend `ApiTestCase` for HTTP client + authentication helpers:
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\User;
+namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\User\Auth;
 
-use App\Domain\User\Entity\User;
-use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\Service\PasswordHasherInterface;
-use App\Domain\User\ValueObject\Email;
-use App\Domain\User\Id\UserId;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\SeedsAuthFixtures;
 
-final class AuthControllerTest extends ApiTestCase
+final class TherapistLoginControllerTest extends ApiTestCase
 {
+    use SeedsAuthFixtures;
+
     public function testTherapistLoginSuccess(): void
     {
         $token = $this->createTherapistAndGetToken();
@@ -589,42 +587,20 @@ final class AuthControllerTest extends ApiTestCase
         $this->seedTherapist();
 
         $this->jsonRequest('POST', '/api/auth/therapist/login', [
-            'email' => 'therapist@test.com',
+            'email' => self::THERAPIST_EMAIL,
             'password' => 'wrongpassword',
         ]);
 
         $this->assertResponseStatusCodeSame(401);
     }
-
-    public function testFullLoginThenAccessProtectedResourceFlow(): void
-    {
-        $token = $this->createTherapistAndGetToken();
-
-        $this->jsonRequest('GET', '/api/therapist/me', [], $token);
-
-        $this->assertResponseIsSuccessful();
-        $data = $this->getResponseData();
-        $this->assertTrue($data['success']);
-        $this->assertSame('therapist@test.com', $data['data']['email']);
-    }
-
-    private function seedTherapist(): void
-    {
-        $hasher = self::getContainer()->get(PasswordHasherInterface::class);
-        $repo = self::getContainer()->get(UserRepositoryInterface::class);
-
-        $therapist = User::createTherapist(
-            id: UserId::generate(),
-            email: Email::fromString('therapist@test.com'),
-            fullName: 'Test Therapist',
-            hashedPassword: $hasher->hash('password123'),
-        );
-        $repo->save($therapist);
-    }
 }
 ```
 
-> **Auth helpers**: `createTherapistAndGetToken()` and `createPatientAndGetToken()` seed data directly via repositories (not API endpoints) for isolation, then call the login endpoint to get a real JWT token. For tests that need a user without a token, use private `seedTherapist()`/`seedInvitation()` methods that persist directly via the container's repositories.
+One test class per controller class, mirroring `src/` (see `## Controllers` in
+`.claude/rules/api-architecture.md`). Behaviour spanning several endpoints goes in a file named for
+the behaviour instead, such as `JwtCookieTransportTest`.
+
+> **Auth helpers**: `createTherapistAndGetToken()` and `createPatientAndGetToken()` seed data directly via repositories (not API endpoints) for isolation, then call the login endpoint to get a real JWT token. For tests that need a user without a token, use the `SeedsAuthFixtures` trait's `seedTherapist()`/`seedActivatedPatient()`/`seedInvitation()`, which persist directly via the container's repositories.
 
 ### Key Testing Patterns
 
