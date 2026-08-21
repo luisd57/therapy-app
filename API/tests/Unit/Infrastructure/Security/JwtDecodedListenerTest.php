@@ -34,7 +34,7 @@ final class JwtDecodedListenerTest extends TestCase
     public function testRejectsATokenIssuedBeforeTheUsersCutoff(): void
     {
         $this->jwtBlocklist->method('isRevoked')->willReturn(false);
-        $this->jwtBlocklist->method('isIssuedAtOrBefore')->willReturn(true);
+        $this->jwtBlocklist->method('isRevokedByCutoff')->willReturn(true);
         $event = new JWTDecodedEvent(['jti' => 'abc', 'iat' => 1787306400, 'email' => 'user@example.com']);
 
         $this->listener->onJWTDecoded($event);
@@ -45,7 +45,7 @@ final class JwtDecodedListenerTest extends TestCase
     public function testAcceptsATokenIssuedAfterTheCutoff(): void
     {
         $this->jwtBlocklist->method('isRevoked')->willReturn(false);
-        $this->jwtBlocklist->method('isIssuedAtOrBefore')->willReturn(false);
+        $this->jwtBlocklist->method('isRevokedByCutoff')->willReturn(false);
         $event = new JWTDecodedEvent(['jti' => 'abc', 'iat' => 1787306400, 'email' => 'user@example.com']);
 
         $this->listener->onJWTDecoded($event);
@@ -60,7 +60,7 @@ final class JwtDecodedListenerTest extends TestCase
     public function testLeavesAPayloadWithoutIatOrEmailAlone(): void
     {
         $this->jwtBlocklist->method('isRevoked')->willReturn(false);
-        $this->jwtBlocklist->expects($this->never())->method('isIssuedAtOrBefore');
+        $this->jwtBlocklist->expects($this->never())->method('isRevokedByCutoff');
         $event = new JWTDecodedEvent(['jti' => 'abc']);
 
         $this->listener->onJWTDecoded($event);
@@ -71,11 +71,33 @@ final class JwtDecodedListenerTest extends TestCase
     public function testDoesNotConsultTheCutoffWhenTheJtiIsAlreadyRevoked(): void
     {
         $this->jwtBlocklist->method('isRevoked')->willReturn(true);
-        $this->jwtBlocklist->expects($this->never())->method('isIssuedAtOrBefore');
+        $this->jwtBlocklist->expects($this->never())->method('isRevokedByCutoff');
         $event = new JWTDecodedEvent(['jti' => 'abc', 'iat' => 1787306400, 'email' => 'user@example.com']);
 
         $this->listener->onJWTDecoded($event);
 
         $this->assertFalse($event->isValid());
+    }
+
+    public function testLeavesAPayloadWithoutEmailAlone(): void
+    {
+        $this->jwtBlocklist->method('isRevoked')->willReturn(false);
+        $this->jwtBlocklist->expects($this->never())->method('isRevokedByCutoff');
+        $event = new JWTDecodedEvent(['jti' => 'abc', 'iat' => 1787306400]);
+
+        $this->listener->onJWTDecoded($event);
+
+        $this->assertTrue($event->isValid());
+    }
+
+    public function testLeavesAPayloadWithoutIatAlone(): void
+    {
+        $this->jwtBlocklist->method('isRevoked')->willReturn(false);
+        $this->jwtBlocklist->expects($this->never())->method('isRevokedByCutoff');
+        $event = new JWTDecodedEvent(['jti' => 'abc', 'email' => 'user@example.com']);
+
+        $this->listener->onJWTDecoded($event);
+
+        $this->assertTrue($event->isValid());
     }
 }

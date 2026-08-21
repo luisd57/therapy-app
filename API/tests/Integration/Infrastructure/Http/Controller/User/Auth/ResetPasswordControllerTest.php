@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
-use App\Domain\User\Entity\PasswordResetToken;
-use App\Domain\User\Id\TokenId;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Infrastructure\Security\RedisJwtBlocklist;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\DomainTestHelper;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 final class ResetPasswordControllerTest extends ApiTestCase
@@ -42,6 +41,8 @@ final class ResetPasswordControllerTest extends ApiTestCase
      */
     public function testResetInvalidatesSessionsIssuedBeforeIt(): void
     {
+        // Real clock on purpose: iat comes from Lexik's time(), not ClockInterface,
+        // so freezing the clock would desync it from the cutoff.
         $this->useBlocklistThatSurvivesRequests();
 
         $email = 'reset-revokes-sessions@test.com';
@@ -64,8 +65,7 @@ final class ResetPasswordControllerTest extends ApiTestCase
 
     /**
      * The test container's cache.app is an ArrayAdapter that Symfony resets between
-     * requests, so a cutoff written by one request is gone by the next. Prod runs a
-     * RedisAdapter, which does not. Same class under test, storage that persists.
+     * requests, so a cutoff written by one request is gone by the next.
      */
     private function useBlocklistThatSurvivesRequests(): void
     {
@@ -81,13 +81,7 @@ final class ResetPasswordControllerTest extends ApiTestCase
         $raw = self::getContainer()->get(TokenGeneratorInterface::class)->generate();
 
         self::getContainer()->get(PasswordResetTokenRepositoryInterface::class)->save(
-            PasswordResetToken::create(
-                id: TokenId::generate(),
-                token: $raw,
-                userId: $user->getId(),
-                ttlSeconds: 3600,
-                now: new \DateTimeImmutable(),
-            ),
+            DomainTestHelper::createValidPasswordResetToken(token: $raw, userId: $user->getId()),
         );
 
         return $raw;

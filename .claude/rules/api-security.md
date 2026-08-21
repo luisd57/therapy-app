@@ -24,11 +24,11 @@ paths:
 - Covers: login, forgot-password, lock-slot, request-appointment, validate-invitation, register, reset-password
 
 ## Token Security
-- Invitation, password reset, and slot lock tokens stored hashed (SHA-256); raw only at creation time.
-  `HashedStringType` hashes every value with no "already hashed" shortcut - generator output is 64 hex
-  chars, so a shape check on the digest would skip hashing real tokens
-- A password reset writes a per-user `iat` cutoff to the blocklist, so tokens issued at or before the
-  reset stop authenticating. Otherwise a stolen session outlives the reset meant to kill it
+- Invitation, password reset, and slot lock tokens stored hashed (SHA-256); raw only at creation time
+- `HashedStringType` hashes unconditionally. Never add an "already hashed" shortcut: generator output is
+  64 hex chars and would take it
+- Password reset writes a per-user `iat` cutoff to the blocklist, so sessions older than the reset die
+  with it
 
 ## Environment Variables
 - `DATABASE_URL`, `JWT_PASSPHRASE`, `APP_FRONTEND_URL`

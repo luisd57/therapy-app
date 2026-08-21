@@ -35,12 +35,17 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
-        $this->handler = new ResetPasswordHandler(
+        $this->handler = $this->makeHandler($this->jwtBlocklist, $this->clock);
+    }
+
+    private function makeHandler(JwtBlocklistInterface $jwtBlocklist, ClockInterface $clock): ResetPasswordHandler
+    {
+        return new ResetPasswordHandler(
             $this->resetTokenRepository,
             $this->userRepository,
             $this->passwordHasher,
-            $this->jwtBlocklist,
-            $this->clock,
+            $jwtBlocklist,
+            $clock,
             jwtTokenTtl: 3600,
         );
     }
@@ -110,14 +115,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $clock->method('now')->willReturn($resetAt);
 
         $jwtBlocklist = $this->createMock(JwtBlocklistInterface::class);
-        $handler = new ResetPasswordHandler(
-            $this->resetTokenRepository,
-            $this->userRepository,
-            $this->passwordHasher,
-            $jwtBlocklist,
-            $clock,
-            jwtTokenTtl: 3600,
-        );
+        $handler = $this->makeHandler($jwtBlocklist, $clock);
 
         $userId = \App\Domain\User\Id\UserId::generate();
         $resetToken = DomainTestHelper::createValidPasswordResetToken(token: 'valid-reset', userId: $userId);

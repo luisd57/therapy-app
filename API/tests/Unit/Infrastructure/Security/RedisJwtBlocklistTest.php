@@ -23,7 +23,7 @@ final class RedisJwtBlocklistTest extends TestCase
     {
         $this->blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
 
-        $this->assertTrue($this->blocklist->isIssuedAtOrBefore('user@example.com', self::CUTOFF - 1));
+        $this->assertTrue($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
     }
 
     /**
@@ -34,26 +34,26 @@ final class RedisJwtBlocklistTest extends TestCase
     {
         $this->blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
 
-        $this->assertTrue($this->blocklist->isIssuedAtOrBefore('user@example.com', self::CUTOFF));
+        $this->assertTrue($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF));
     }
 
     public function testATokenIssuedAfterTheCutoffSurvives(): void
     {
         $this->blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
 
-        $this->assertFalse($this->blocklist->isIssuedAtOrBefore('user@example.com', self::CUTOFF + 1));
+        $this->assertFalse($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF + 1));
     }
 
     public function testACutoffOnlyAppliesToItsOwnUser(): void
     {
         $this->blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
 
-        $this->assertFalse($this->blocklist->isIssuedAtOrBefore('other@example.com', self::CUTOFF - 1));
+        $this->assertFalse($this->blocklist->isRevokedByCutoff('other@example.com', self::CUTOFF - 1));
     }
 
     public function testNoCutoffMeansNothingIsRejected(): void
     {
-        $this->assertFalse($this->blocklist->isIssuedAtOrBefore('user@example.com', self::CUTOFF));
+        $this->assertFalse($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF));
     }
 
     public function testJtiRevocationStillWorksAlongsideCutoffs(): void

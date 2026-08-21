@@ -27,7 +27,7 @@ final class JwtDecodedListener
         $issuedAt = $payload['iat'] ?? null;
         $email = $payload['email'] ?? null;
 
-        if ($issuedAt !== null && $email !== null && $this->jwtBlocklist->isIssuedAtOrBefore((string) $email, (int) $issuedAt)) {
+        if ($issuedAt !== null && $email !== null && $this->jwtBlocklist->isRevokedByCutoff((string) $email, (int) $issuedAt)) {
             $jwtDecodedEvent->markAsInvalid();
         }
     }

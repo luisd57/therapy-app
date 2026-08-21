@@ -34,7 +34,7 @@ final class RedisJwtBlocklist implements JwtBlocklistInterface
         $this->cache->save($item);
     }
 
-    public function isIssuedAtOrBefore(string $userIdentifier, int $issuedAt): bool
+    public function isRevokedByCutoff(string $userIdentifier, int $issuedAt): bool
     {
         $item = $this->cache->getItem($this->cutoffKey($userIdentifier));
 

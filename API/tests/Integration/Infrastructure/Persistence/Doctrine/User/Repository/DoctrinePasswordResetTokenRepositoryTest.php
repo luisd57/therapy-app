@@ -169,4 +169,24 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->assertNotSame($raw, $found->getToken());
         $this->assertSame(hash('sha256', $raw), $found->getToken());
     }
+
+    public function testResavingAfterUseKeepsTheTokenFindable(): void
+    {
+        $generator = self::getContainer()->get(TokenGeneratorInterface::class);
+        $raw = $generator->generate();
+
+        $token = DomainTestHelper::createValidPasswordResetToken(token: $raw, userId: $this->persistUser());
+        $this->repository->save($token);
+
+        $this->entityManager->clear();
+
+        $reloaded = $this->repository->findByToken($raw);
+        $this->assertNotNull($reloaded);
+        $reloaded->use(new \DateTimeImmutable());
+        $this->repository->save($reloaded);
+
+        $this->entityManager->clear();
+
+        $this->assertNotNull($this->repository->findByToken($raw));
+    }
 }

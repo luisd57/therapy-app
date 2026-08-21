@@ -13,5 +13,5 @@ interface JwtBlocklistInterface
     // Ends every session for a user at once, which the per-jti pair cannot do.
     public function revokeIssuedAtOrBefore(string $userIdentifier, int $cutoff, int $ttlSeconds): void;
 
-    public function isIssuedAtOrBefore(string $userIdentifier, int $issuedAt): bool;
+    public function isRevokedByCutoff(string $userIdentifier, int $issuedAt): bool;
 }
