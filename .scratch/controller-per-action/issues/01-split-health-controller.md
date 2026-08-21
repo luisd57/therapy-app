@@ -19,7 +19,7 @@ current method name survives the `{Action}Controller` form on its own:
 - `index` becomes `Health/ApiRootController`
 
 Both routes are frozen. `api_health` serves `GET /api/health` and `api_index`
-serves `GET /api/`. The trailing slash on the root path is load-bearing:
+serves `GET /api/`. The trailing slash on that second URL is load-bearing:
 `security.yaml` matches `^/api/$` exactly, so dropping it moves the endpoint
 behind authentication.
 
@@ -35,7 +35,7 @@ would add transaction wrapping these tests have no use for.
 
 - [ ] Each action lives in its own `final` class whose only public method is `__invoke()`
 - [ ] `Health/HealthController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after: same route names, methods and paths
+- [ ] `debug:router` output is byte-identical before and after: same route names, methods and URLs
 - [ ] The test file is split to mirror the two classes, still extending `WebTestCase`
 - [ ] `HealthController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
 - [ ] `RouteConventionsTest` stays green, including its stale-entry check on that list

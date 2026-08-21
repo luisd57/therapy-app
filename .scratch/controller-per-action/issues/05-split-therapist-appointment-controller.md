@@ -20,7 +20,7 @@ Frozen route names, all seven: `api_therapist_appointments_list`,
 `api_therapist_appointments_show`, `api_therapist_appointments_confirm`,
 `api_therapist_appointments_complete`, `api_therapist_appointments_cancel`,
 `api_therapist_appointments_book`, `api_therapist_appointments_payment`. Note
-that `list` and `book` share the path `/api/therapist/appointments` and are
+that `list` and `book` share the URL `/api/therapist/appointments` and are
 separated only by verb, so both `#[Route]` attributes must keep their `methods:`.
 
 `validateBookRequest` has a single caller, so it stays private on the book
@@ -36,7 +36,7 @@ being moved, so keep their assertions intact rather than rewriting them.
 
 - [ ] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
-- [ ] The two actions sharing `/api/therapist/appointments` keep their distinct `methods:`
+- [ ] The two actions sharing the URL `/api/therapist/appointments` keep their distinct `methods:`
 - [ ] `Appointment/TherapistAppointmentController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] The test file is split to mirror the seven classes

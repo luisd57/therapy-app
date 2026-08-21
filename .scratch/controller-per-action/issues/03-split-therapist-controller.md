@@ -17,10 +17,10 @@ Suggested placement under `User/Therapist/`, one class per action:
 
 Frozen route names, all six: `api_therapist_me`, `api_therapist_list_patients`,
 `api_therapist_invite_patient`, `api_therapist_list_invitations`,
-`api_therapist_resend_invitation`, `api_therapist_revoke_invitation`. Note the
-paths do not follow the names in any regular way, so read each `#[Route]` rather
-than deriving it. `/api/therapist/patients/invite` and
-`/api/therapist/invitations/{id}/resend` are not siblings.
+`api_therapist_resend_invitation`, `api_therapist_revoke_invitation`. The URLs do
+not follow the route names in any regular way, so read each `#[Route]` rather
+than deriving it: `POST /api/therapist/patients/invite` and
+`POST /api/therapist/invitations/{id}/resend` are not siblings.
 
 `validateInviteRequest` has a single caller, so it stays a private method on the
 invite controller.

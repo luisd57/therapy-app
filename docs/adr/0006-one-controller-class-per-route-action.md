@@ -28,7 +28,7 @@ One route action per class, one class per file, one test file per class:
 src/Infrastructure/Http/Controller/{Group}/{Resource}/{Action}Controller.php
 ```
 
-A `final` class whose only public method is `__invoke()`, carrying the full path in its `#[Route]`
+A `final` class whose only public method is `__invoke()`, carrying the full URL in its `#[Route]`
 attribute and its own `#[IsGranted]` where a role is required. This is the rule the Application layer
 already follows for handlers, so both sides of the boundary now read the same way.
 
@@ -55,19 +55,19 @@ argument every time it is approached, and `api-architecture.md` already had a so
 did nothing.
 
 **Keeping class-level `#[Route]` prefixes via a shared base class.** Rejected: it reintroduces the
-grouping through inheritance and hides the real path from the file that serves it.
+grouping through inheritance and hides the real URL from the file that serves it.
 
 ## Consequences
 
-Each action now repeats its full path literal and its `#[IsGranted]`. The second of those is the real
+Each action now repeats its full URL literal and its `#[IsGranted]`. The second of those is the real
 risk, because a forgotten role attribute is silent. Two things cover it. `security.yaml`
-`access_control` already enforces the same roles by path, and `RouteConventionsTest` walks the router
+`access_control` already enforces the same roles by URL, and `RouteConventionsTest` walks the router
 and fails the build when a route under `/api/therapist` or `/api/patient` reaches a controller with no
 matching attribute. That test also holds the shrinking `PENDING_CONVERSION` list of controllers not
 yet split, which is the ratchet for the remaining tickets.
 
-Route names and paths are load-bearing beyond the tests. `RateLimitSubscriber` keys off route names
-and `security.yaml` matches on paths, with `^/api/auth/me$` anchored. A conversion that changes either
+Route names and URLs are load-bearing beyond the tests. `RateLimitSubscriber` keys off route names
+and `security.yaml` matches on URLs, with `^/api/auth/me$` anchored. A conversion that changes either
 silently drops rate limiting or an access rule, so the route table is diffed before and after.
 
 Multi-request behaviour has no single controller to belong to. Cookie transport, single-session
