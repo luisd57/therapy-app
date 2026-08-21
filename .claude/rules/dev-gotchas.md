@@ -36,3 +36,8 @@ more. Incident history and dates belong in project memory, not here.
 
 - The test database is separate and persistent. Run `make test-db-setup` once after a fresh clone,
   and again after `down -v` or any new migration - otherwise integration tests fail confusingly.
+- Under `APP_ENV=test`, `cache.app` is an `ArrayAdapter` that Symfony resets between requests, so
+  anything cached in one request is gone by the next and `disableReboot()` does not help. Put a
+  `FilesystemAdapter`-backed pool behind the service first, as
+  `ResetPasswordControllerTest::useBlocklistThatSurvivesRequests()` does. Dev and prod use Redis,
+  so the code is fine - only the test cannot see it.
