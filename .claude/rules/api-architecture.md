@@ -26,6 +26,19 @@ Handlers (one per use case, `__invoke()` entry point), DTOs (Input/ and Output/)
 ## Infrastructure Layer
 Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/Repository (implementations), Security (password hasher, JWT, Redis blocklist), Email (mailer), Http/Controller (one action per class, delegate to handlers - see `## Controllers`), Http/EventSubscriber (rate limiting, security headers), Console (CLI commands).
 
+## Interfaces
+
+Package by role, not by construct. An interface lives next to the concept it names, never in an
+`Interface/` sibling namespace: the `Interface` suffix already marks the construct, so the namespace
+would only repeat it. The split that would carry meaning is port vs domain logic, not interface vs
+class, and `Repository/` already names the port kind worth separating.
+
+A single-implementation interface over a `final readonly` class is a deliberate test seam, not
+ceremony. PHPUnit cannot mock a final class and the toolchain carries no bypass-finals, so
+`AvailabilityComputerInterface` (Domain) and `AppointmentRequestServiceInterface` (Application)
+exist to give unit tests something to double. Deleting one costs either the `final` or the isolation
+of the tests that mock it.
+
 ## Controllers
 
 One route action per class, one class per file, one test file per class:
