@@ -6,16 +6,16 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
-use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
-use App\Infrastructure\Security\RedisJwtBlocklist;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use App\Tests\Helper\KeepsBlocklistAcrossRequests;
 
 final class ResetPasswordControllerTest extends ApiTestCase
 {
+    use KeepsBlocklistAcrossRequests;
+
     public function testResetPasswordMissingTokenReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/password/reset', [
@@ -61,18 +61,6 @@ final class ResetPasswordControllerTest extends ApiTestCase
 
         $this->jsonRequest('GET', '/api/auth/me', [], $jwt);
         $this->assertResponseStatusCodeSame(401);
-    }
-
-    /**
-     * The test container's cache.app is an ArrayAdapter that Symfony resets between
-     * requests, so a cutoff written by one request is gone by the next.
-     */
-    private function useBlocklistThatSurvivesRequests(): void
-    {
-        $pool = new FilesystemAdapter('jwt-blocklist-test', 0, sys_get_temp_dir());
-        $pool->clear();
-
-        self::getContainer()->set(JwtBlocklistInterface::class, new RedisJwtBlocklist($pool));
     }
 
     private function issueResetTokenFor(string $email): string
