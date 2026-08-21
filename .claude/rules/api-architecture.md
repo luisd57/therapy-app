@@ -20,6 +20,19 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 ## Domain Layer
 Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, InvitationToken, PasswordResetToken), Value Objects (immutable, self-validating, private constructors - the `Id/` types plus Email, Phone, Timezone, Address, TimeSlot), Enums (backed: UserRole, AppointmentStatus, AppointmentModality, WeekDay - these are NOT Value Objects, so the private-constructor and static-factory rules cannot apply to them), Repository Interfaces (driven ports), Service Interfaces (driven ports: EmailSenderInterface, JwtTokenGeneratorInterface, PasswordHasherInterface), Domain Services (AvailabilityComputer), Parameter Objects (AvailabilityContext - public constructor by design, it carries arguments rather than modelling a value), Exceptions.
 
+Package by role, not by construct. An interface lives next to the concept it names, never in an
+`Interface/` sibling namespace. The `Interface` suffix already marks the construct, so the namespace
+would only repeat it. `Service/` deliberately holds three roles: driven ports whose adapters sit in
+Infrastructure (`AppointmentEmailSenderInterface`, `PracticeTimezoneProviderInterface`), domain
+services implemented in-layer (`AvailabilityComputer`), and parameter objects. The split that would
+carry meaning is port vs domain logic, not interface vs class, and `Repository/` already names the
+port kind worth separating.
+
+A single-implementation interface over a `final readonly` class is a deliberate test seam, not
+ceremony. PHPUnit cannot mock a final class and the toolchain carries no bypass-finals, so
+`AvailabilityComputerInterface` and `AppointmentRequestServiceInterface` exist to give unit tests
+something to double. Deleting one costs either the `final` or the isolation of the tests that mock it.
+
 ## Application Layer
 Handlers (one per use case, `__invoke()` entry point), DTOs (Input/ and Output/), Application Services (orchestration, e.g. AppointmentRequestService).
 
