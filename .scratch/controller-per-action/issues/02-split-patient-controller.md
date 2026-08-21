@@ -10,9 +10,9 @@ controller has to declare it for itself. That is the part to get right, and it i
 why this ticket comes before the larger ones.
 
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
-the reasoning in ADR-0006. `Api/User/Auth/` is the worked example.
+the reasoning in ADR-0006. `User/Auth/` is the worked example.
 
-Suggested placement under `Api/User/Patient/`, following the `CurrentUserController`
+Suggested placement under `User/Patient/`, following the `CurrentUserController`
 naming already used for `/api/auth/me`:
 
 - `me` becomes `CurrentPatientController`
@@ -36,7 +36,7 @@ manual check.
 
 - [ ] Each action lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Both classes carry `#[IsGranted('ROLE_PATIENT')]` on the action
-- [ ] `Api/User/PatientController.php` is deleted
+- [ ] `User/PatientController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after, with `PUT|PATCH` preserved on the profile route
 - [ ] The test file is split to mirror the two classes
 - [ ] `PatientController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

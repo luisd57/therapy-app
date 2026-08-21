@@ -11,7 +11,7 @@ Therapist can perform.
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
 the reasoning in ADR-0006.
 
-Suggested placement under `Api/Appointment/TherapistAppointment/`, one class per
+Suggested placement under `Appointment/TherapistAppointment/`, one class per
 action: `list`, `show`, `confirm`, `complete`, `cancel`, `book`, `updatePayment`.
 `list` and `show` are not usable as class name stems on their own, so name them
 for what they return rather than the method they replace.
@@ -37,7 +37,7 @@ being moved, so keep their assertions intact rather than rewriting them.
 - [ ] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
 - [ ] The two actions sharing `/api/therapist/appointments` keep their distinct `methods:`
-- [ ] `Api/Appointment/TherapistAppointmentController.php` is deleted
+- [ ] `Appointment/TherapistAppointmentController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] The test file is split to mirror the seven classes
 - [ ] `TherapistAppointmentController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

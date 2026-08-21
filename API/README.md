@@ -113,10 +113,10 @@ src/
     │   ├── User/             # User email sender (invitations, password reset, welcome)
     │   └── Appointment/      # Appointment email sender (acknowledgment, alert)
     ├── Http/
-    │   └── Controller/Api/
+    │   └── Controller/       # Shared traits at the root, controllers grouped below
     │       ├── User/         # Auth, Patient, Therapist controllers
     │       ├── Appointment/  # Public appointments, Schedule management
-    │       └── HealthController.php
+    │       └── Health/       # Health check and API root
     └── Console/
         ├── User/             # create-therapist, cleanup-tokens
         └── Appointment/      # cleanup-slot-locks, send-daily-agenda
@@ -348,7 +348,7 @@ make test-integration
 
 ```powershell
 docker-compose exec php vendor/bin/phpunit tests/Unit/Domain/User/Entity/UserTest.php
-docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/Api/User/Auth/TherapistLoginControllerTest.php
+docker-compose exec php vendor/bin/phpunit tests/Integration/Infrastructure/Http/Controller/User/Auth/TherapistLoginControllerTest.php
 ```
 
 #### Run Specific Test Method
@@ -398,9 +398,10 @@ tests/
         │   ├── User/Repository/          # User repository integration tests
         │   ├── Appointment/Repository/   # Appointment repository integration tests
         │   └── MappingMatchesSchemaTest.php  # ORM mapping vs migrations
-        ├── Http/Controller/Api/
+        ├── Http/Controller/
         │   ├── User/                     # Auth, Patient, Therapist controller tests
-        │   └── Appointment/              # Public appointment, Schedule controller tests
+        │   ├── Appointment/              # Public appointment, Schedule controller tests
+        │   └── Health/                   # Health check and API root tests
         └── Console/Appointment/          # Console command tests (daily agenda, lock cleanup)
 ```
 
@@ -565,7 +566,7 @@ Extend `ApiTestCase` for HTTP client + authentication helpers:
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Infrastructure\Http\Controller\Api\User\Auth;
+namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\SeedsAuthFixtures;

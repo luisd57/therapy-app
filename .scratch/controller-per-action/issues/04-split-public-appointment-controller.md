@@ -12,8 +12,8 @@ The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
 the reasoning in ADR-0006.
 
 **`Public` cannot be a namespace segment.** It is a PHP reserved word, so
-`App\Infrastructure\Http\Controller\Api\Appointment\Public` is a parse error, not
-a style choice. Use `Api/Appointment/PublicAppointment/` and keep the directory
+`App\Infrastructure\Http\Controller\Appointment\Public` is a parse error, not
+a style choice. Use `Appointment/PublicAppointment/` and keep the directory
 name matching the namespace segment exactly, or both the PSR-4 route loader and
 the DI glob will skip the classes silently.
 
@@ -40,7 +40,7 @@ the end-to-end proof for this ticket.
 
 - [ ] Each of the four actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] The namespace avoids the reserved word `Public`, and directory names match namespace segments
-- [ ] `Api/Appointment/PublicAppointmentController.php` is deleted
+- [ ] `Appointment/PublicAppointmentController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] Every route name `RateLimitSubscriber` keys off still resolves in the router
 - [ ] The test file is split to mirror the four classes
