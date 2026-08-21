@@ -8,6 +8,7 @@ use App\Domain\User\Id\UserId;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
+use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 
@@ -137,5 +138,42 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $this->repository->delete($invitation);
 
         $this->assertNull($this->repository->findById($invitation->getId()));
+    }
+
+    public function testTokenFromTheGeneratorIsStoredHashed(): void
+    {
+        $generator = self::getContainer()->get(TokenGeneratorInterface::class);
+        $raw = $generator->generate();
+
+        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapistId);
+        $this->repository->save($invitation);
+
+        $this->entityManager->clear();
+
+        $found = $this->repository->findByToken($raw);
+
+        $this->assertNotNull($found);
+        $this->assertNotSame($raw, $found->getToken());
+        $this->assertSame(hash('sha256', $raw), $found->getToken());
+    }
+
+    public function testResavingAfterRevokeKeepsTheTokenFindable(): void
+    {
+        $generator = self::getContainer()->get(TokenGeneratorInterface::class);
+        $raw = $generator->generate();
+
+        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapistId);
+        $this->repository->save($invitation);
+
+        $this->entityManager->clear();
+
+        $reloaded = $this->repository->findByToken($raw);
+        $this->assertNotNull($reloaded);
+        $reloaded->revoke(new \DateTimeImmutable());
+        $this->repository->save($reloaded);
+
+        $this->entityManager->clear();
+
+        $this->assertNotNull($this->repository->findByToken($raw));
     }
 }
