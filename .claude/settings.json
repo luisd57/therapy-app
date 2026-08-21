@@ -26,6 +26,21 @@
       "Read(./API/Product-brainstorm-with-client.md)"
     ]
   },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node C:/Users/luisr/.claude/hooks/tracker-match.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking the issue tracker"
+          }
+        ]
+      }
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright"
