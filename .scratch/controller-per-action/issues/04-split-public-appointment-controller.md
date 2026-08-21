@@ -11,11 +11,16 @@ conversion in the Appointment area and the first with a test file large enough
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
 the reasoning in ADR-0006.
 
-**`Public` cannot be a namespace segment.** It is a PHP reserved word, so
-`App\Infrastructure\Http\Controller\Appointment\Public` is a parse error, not
-a style choice. Use `Appointment/PublicAppointment/` and keep the directory
-name matching the namespace segment exactly, or both the PSR-4 route loader and
-the DI glob will skip the classes silently.
+**Placement.** Use `Appointment/PublicAppointment/`, which mirrors the sibling
+`Appointment/TherapistAppointment/` and matches the name the class already has.
+`Appointment/Public/` is a legal alternative rather than a forbidden one, so
+choose on symmetry: `Public` works as a namespace segment on PHP 8.4, checked as
+a declaration, a `use` import and a fully qualified instantiation. It just breaks
+the pattern its neighbours follow and reads like a web root.
+
+Whichever you pick, the directory name has to match the namespace segment
+exactly, or both the PSR-4 route loader and the DI glob skip the classes in
+silence.
 
 Frozen routes: `api_available_slots`, `api_next_available_week`, `api_lock_slot`,
 `api_request_appointment`. Two of those are rate limited by name in
@@ -39,7 +44,7 @@ the end-to-end proof for this ticket.
 **Status:** ready-for-agent
 
 - [ ] Each of the four actions lives in its own `final` class whose only public method is `__invoke()`
-- [ ] The namespace avoids the reserved word `Public`, and directory names match namespace segments
+- [ ] Every directory name matches its namespace segment exactly, so the route loader and DI glob find all four classes
 - [ ] `Appointment/PublicAppointmentController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] Every route name `RateLimitSubscriber` keys off still resolves in the router
