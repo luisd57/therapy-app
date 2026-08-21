@@ -10,7 +10,7 @@ is settled by the earlier tickets.
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
 the reasoning in ADR-0006.
 
-Suggested placement under `Api/Appointment/TherapistSchedule/`, one class per
+Suggested placement under `Appointment/TherapistSchedule/`, one class per
 action: `listSchedules`, `createSchedule`, `updateSchedule`, `deleteSchedule`,
 `listExceptions`, `addException`, `removeException`.
 
@@ -42,7 +42,7 @@ rederiving them from fixtures.
 - [ ] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
 - [ ] Each of the three helpers is placed by caller count, not by convenience
-- [ ] `Api/Appointment/TherapistScheduleController.php` is deleted
+- [ ] `Appointment/TherapistScheduleController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] The test file is split to mirror the seven classes, with timezone assertions unchanged
 - [ ] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

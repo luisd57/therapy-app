@@ -9,9 +9,9 @@ job, and the invitation actions make it the first conversion where a single
 directory holds a meaningful group.
 
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
-the reasoning in ADR-0006. `Api/User/Auth/` is the worked example.
+the reasoning in ADR-0006. `User/Auth/` is the worked example.
 
-Suggested placement under `Api/User/Therapist/`, one class per action:
+Suggested placement under `User/Therapist/`, one class per action:
 `me`, `listPatients`, `invitePatient`, `listInvitations`, `resendInvitation`,
 `revokeInvitation`.
 
@@ -35,7 +35,7 @@ Those specs are the end-to-end proof for this ticket and are worth running.
 
 - [ ] Each of the six actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
-- [ ] `Api/User/TherapistController.php` is deleted
+- [ ] `User/TherapistController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after
 - [ ] The test file is split to mirror the six classes
 - [ ] `TherapistController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

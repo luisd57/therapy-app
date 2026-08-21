@@ -9,14 +9,14 @@ dependencies, one shared trait. Do it first to prove the shape end to end before
 the larger controllers.
 
 The convention is `## Controllers` in `.claude/rules/api-architecture.md`, and
-the reasoning behind it is ADR-0006. `Api/User/Auth/` is the worked example, so
+the reasoning behind it is ADR-0006. `User/Auth/` is the worked example, so
 copy its shape rather than inventing one.
 
 The class names were decided when this ticket was written, because neither
 current method name survives the `{Action}Controller` form on its own:
 
-- `health` becomes `Api/Health/HealthCheckController`
-- `index` becomes `Api/Health/ApiRootController`
+- `health` becomes `Health/HealthCheckController`
+- `index` becomes `Health/ApiRootController`
 
 Both routes are frozen. `api_health` serves `GET /api/health` and `api_index`
 serves `GET /api/`. The trailing slash on the root path is load-bearing:
@@ -34,7 +34,7 @@ would add transaction wrapping these tests have no use for.
 **Status:** ready-for-agent
 
 - [ ] Each action lives in its own `final` class whose only public method is `__invoke()`
-- [ ] `Api/HealthController.php` is deleted
+- [ ] `Health/HealthController.php` is deleted
 - [ ] `debug:router` output is byte-identical before and after: same route names, methods and paths
 - [ ] The test file is split to mirror the two classes, still extending `WebTestCase`
 - [ ] `HealthController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

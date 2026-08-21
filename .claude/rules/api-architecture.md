@@ -29,8 +29,10 @@ Persistence/Doctrine/Type (custom DBAL types for VO↔DB), Persistence/Doctrine/
 ## Controllers
 
 One route action per class, one class per file, one test file per class:
-`Http/Controller/Api/{Group}/{Resource}/{Action}Controller.php`, a `final` class whose only public
-method is `__invoke()`. `AuthController::therapistLogin` became `Api/User/Auth/TherapistLoginController`.
+`Http/Controller/{Group}/{Resource}/{Action}Controller.php`, a `final` class whose only public
+method is `__invoke()`. `AuthController::therapistLogin` became `User/Auth/TherapistLoginController`.
+`{Group}` matches the module names in `src/Domain/` and `src/Application/`, so the three trees line
+up. There is no `Api/` segment: this deployable serves nothing else, so it named only itself.
 
 - Full path literal in the `#[Route]`, no class-level prefix, `name:` always explicit. Route names are
   matched by `RateLimitSubscriber` and paths by `security.yaml`, so copy both verbatim when moving an
@@ -63,7 +65,7 @@ also gives each action a test file of its own, which one shared controller test 
 6. Migration: review `doctrine:migrations:diff` output before keeping it - entities declare no relations, so Doctrine does not know about the hand-written FK constraints and indexes in `migrations/` and will propose dropping them
 
 ### New API Endpoint
-1. `{Action}Controller` in `src/Infrastructure/Http/Controller/Api/{Group}/{Resource}/` - never a
+1. `{Action}Controller` in `src/Infrastructure/Http/Controller/{Group}/{Resource}/` - never a
    second method on an existing controller
 2. Input DTO + Handler if new use case
 3. Update `config/packages/security.yaml` if new access rules needed

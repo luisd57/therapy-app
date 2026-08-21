@@ -25,7 +25,7 @@ try/catch block, and a grouped class has no natural stopping point.
 One route action per class, one class per file, one test file per class:
 
 ```
-src/Infrastructure/Http/Controller/Api/{Group}/{Resource}/{Action}Controller.php
+src/Infrastructure/Http/Controller/{Group}/{Resource}/{Action}Controller.php
 ```
 
 A `final` class whose only public method is `__invoke()`, carrying the full path in its `#[Route]`
