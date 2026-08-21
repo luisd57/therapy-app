@@ -113,10 +113,10 @@ src/
     │   ├── User/             # User email sender (invitations, password reset, welcome)
     │   └── Appointment/      # Appointment email sender (acknowledgment, alert)
     ├── Http/
-    │   └── Controller/       # One class per route action, plus shared traits at the root
+    │   └── Controller/       # Shared traits at the root, controllers grouped below
     │       ├── User/         # Auth, Patient, Therapist controllers
     │       ├── Appointment/  # Public appointments, Schedule management
-    │       └── Health/
+    │       └── Health/       # Health check and API root
     └── Console/
         ├── User/             # create-therapist, cleanup-tokens
         └── Appointment/      # cleanup-slot-locks, send-daily-agenda
