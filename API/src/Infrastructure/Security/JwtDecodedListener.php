@@ -20,6 +20,15 @@ final class JwtDecodedListener
 
         if ($jti !== null && $this->jwtBlocklist->isRevoked($jti)) {
             $jwtDecodedEvent->markAsInvalid();
+
+            return;
+        }
+
+        $issuedAt = $payload['iat'] ?? null;
+        $email = $payload['email'] ?? null;
+
+        if ($issuedAt !== null && $email !== null && $this->jwtBlocklist->isRevokedByCutoff((string) $email, (int) $issuedAt)) {
+            $jwtDecodedEvent->markAsInvalid();
         }
     }
 }

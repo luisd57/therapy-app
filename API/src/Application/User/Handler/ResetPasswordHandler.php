@@ -9,6 +9,7 @@ use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use Symfony\Component\Clock\ClockInterface;
 
@@ -18,7 +19,9 @@ final readonly class ResetPasswordHandler
         private PasswordResetTokenRepositoryInterface $resetTokenRepository,
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
+        private JwtBlocklistInterface $jwtBlocklist,
         private ClockInterface $clock,
+        private int $jwtTokenTtl,
     ) {}
 
     public function __invoke(ResetPasswordInputDTO $dto): void
@@ -55,5 +58,13 @@ final readonly class ResetPasswordHandler
         // Save changes
         $this->userRepository->save($user);
         $this->resetTokenRepository->save($resetToken);
+
+        // A reset is how a stolen session gets cut off, so sessions older than it
+        // have to die with it. iat has second resolution, hence at-or-before.
+        $this->jwtBlocklist->revokeIssuedAtOrBefore(
+            $user->getEmail()->getValue(),
+            $now->getTimestamp(),
+            $this->jwtTokenTtl,
+        );
     }
 }

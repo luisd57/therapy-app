@@ -19,11 +19,8 @@ final class HashedStringType extends StringType
 
         $value = (string) $value;
 
-        // If already a SHA-256 hash (64 hex chars), return as-is to prevent double-hashing
-        if (strlen($value) === 64 && ctype_xdigit($value)) {
-            return $value;
-        }
-
+        // No "already hashed" shortcut: raw tokens are 64 hex chars too, so a
+        // shape check on the digest skips hashing every real token.
         return hash('sha256', $value);
     }
 }

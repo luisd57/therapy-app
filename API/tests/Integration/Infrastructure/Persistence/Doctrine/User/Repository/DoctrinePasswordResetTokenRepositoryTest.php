@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Reposit
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Id\UserId;
+use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 
@@ -150,5 +151,42 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $this->repository->delete($token);
 
         $this->assertNull($this->repository->findById($token->getId()));
+    }
+
+    public function testTokenFromTheGeneratorIsStoredHashed(): void
+    {
+        $generator = self::getContainer()->get(TokenGeneratorInterface::class);
+        $raw = $generator->generate();
+
+        $token = DomainTestHelper::createValidPasswordResetToken(token: $raw, userId: $this->persistUser());
+        $this->repository->save($token);
+
+        $this->entityManager->clear();
+
+        $found = $this->repository->findByToken($raw);
+
+        $this->assertNotNull($found);
+        $this->assertNotSame($raw, $found->getToken());
+        $this->assertSame(hash('sha256', $raw), $found->getToken());
+    }
+
+    public function testResavingAfterUseKeepsTheTokenFindable(): void
+    {
+        $generator = self::getContainer()->get(TokenGeneratorInterface::class);
+        $raw = $generator->generate();
+
+        $token = DomainTestHelper::createValidPasswordResetToken(token: $raw, userId: $this->persistUser());
+        $this->repository->save($token);
+
+        $this->entityManager->clear();
+
+        $reloaded = $this->repository->findByToken($raw);
+        $this->assertNotNull($reloaded);
+        $reloaded->use(new \DateTimeImmutable());
+        $this->repository->save($reloaded);
+
+        $this->entityManager->clear();
+
+        $this->assertNotNull($this->repository->findByToken($raw));
     }
 }

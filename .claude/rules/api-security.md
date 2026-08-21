@@ -25,6 +25,10 @@ paths:
 
 ## Token Security
 - Invitation, password reset, and slot lock tokens stored hashed (SHA-256); raw only at creation time
+- `HashedStringType` hashes unconditionally. Never add an "already hashed" shortcut: generator output is
+  64 hex chars and would take it
+- Password reset writes a per-user `iat` cutoff to the blocklist, so sessions older than the reset die
+  with it
 
 ## Environment Variables
 - `DATABASE_URL`, `JWT_PASSPHRASE`, `APP_FRONTEND_URL`

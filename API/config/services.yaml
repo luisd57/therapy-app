@@ -81,6 +81,11 @@ services:
             $frontendUrl: '%app.frontend_url%'
             $passwordResetTtl: '%app.password_reset_ttl%'
 
+    App\Application\User\Handler\ResetPasswordHandler:
+        arguments:
+            # At least JWT_TOKEN_TTL, or a token can outlive the cutoff that revokes it.
+            $jwtTokenTtl: '%env(int:JWT_TOKEN_TTL)%'
+
     App\Application\User\Handler\ResendInvitationHandler:
         arguments:
             $frontendUrl: '%app.frontend_url%'
