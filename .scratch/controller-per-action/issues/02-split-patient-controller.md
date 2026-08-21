@@ -13,7 +13,7 @@ The convention is `## Controllers` in `.claude/rules/api-architecture.md`, with
 the reasoning in ADR-0006. `User/Auth/` is the worked example.
 
 Suggested placement under `User/Patient/`, following the `CurrentUserController`
-naming already used for `/api/auth/me`:
+naming already used for the `api_auth_me` route:
 
 - `me` becomes `CurrentPatientController`
 - `updateProfile` becomes `UpdatePatientProfileController`
@@ -26,8 +26,8 @@ on the update route.
 a private method on the update controller rather than becoming a trait.
 
 Forgetting the role attribute on one of the two will not show up as a failing
-request, because `security.yaml` `access_control` still guards `^/api/patient` by
-path. `RouteConventionsTest` is what catches it, so trust that test rather than a
+request, because `security.yaml` `access_control` still guards the URL pattern
+`^/api/patient`. `RouteConventionsTest` is what catches it, so trust that test rather than a
 manual check.
 
 **Blocked by:** None - can start immediately.

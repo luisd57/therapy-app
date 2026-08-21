@@ -19,8 +19,8 @@ Frozen route names, all seven: `api_therapist_schedule_list`,
 `api_therapist_schedule_delete`, `api_therapist_schedule_exceptions_list`,
 `api_therapist_schedule_exceptions_create`,
 `api_therapist_schedule_exceptions_delete`. Watch the two `access_control` rules
-that match these paths: `^/api/therapist/schedule` sits above the broader
-`^/api/therapist`, and both must keep matching.
+matching these URLs: the pattern `^/api/therapist/schedule` sits above the
+broader `^/api/therapist`, and both must keep matching.
 
 This is the ticket where helper placement actually bites. `validateScheduleRequest`
 looks shared between create and update, and `validateDateRange` looks shared
