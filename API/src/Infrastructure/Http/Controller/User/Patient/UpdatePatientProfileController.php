@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Http\Controller\User;
+namespace App\Infrastructure\Http\Controller\User\Patient;
 
 use App\Application\User\DTO\Input\UpdatePatientProfileInputDTO;
-use App\Application\User\Handler\GetUserHandler;
 use App\Application\User\Handler\UpdatePatientProfileHandler;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
-use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,34 +17,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/patient')]
-#[IsGranted('ROLE_PATIENT')]
-final class PatientController extends AbstractController
+final class UpdatePatientProfileController extends AbstractController
 {
     use ApiResponseTrait;
-    use ValidatesRequestTrait;
 
     public function __construct(
         private readonly ValidatorInterface $validator,
     ) {}
 
-    #[Route('/me', name: 'api_patient_me', methods: ['GET'])]
-    public function me(GetUserHandler $handler): JsonResponse
-    {
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-
-        try {
-            $user = $handler->__invoke($currentUser->getId()->getValue());
-
-            return $this->success($user->toArray());
-        } catch (UserNotFoundException $exception) {
-            return $this->notFound($exception->getMessage());
-        }
-    }
-
-    #[Route('/profile', name: 'api_patient_update_profile', methods: ['PUT', 'PATCH'])]
-    public function updateProfile(Request $request, UpdatePatientProfileHandler $handler): JsonResponse
+    #[Route('/api/patient/profile', name: 'api_patient_update_profile', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_PATIENT')]
+    public function __invoke(Request $request, UpdatePatientProfileHandler $handler): JsonResponse
     {
         $data = json_decode($request->getContent(), true) ?? [];
 
