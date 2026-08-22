@@ -31,13 +31,15 @@ Those specs are the end-to-end proof for this ticket and are worth running.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each of the six actions lives in its own `final` class whose only public method is `__invoke()`
-- [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
-- [ ] `User/TherapistController.php` is deleted
-- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
-- [ ] The test file is split to mirror the six classes
-- [ ] `TherapistController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
-- [ ] Dashboard invitation Playwright specs pass
+**Resolved by:** [PR #57](https://github.com/luisd57/therapy-app/pull/57)
+
+- [x] Each of the six actions lives in its own `final` class whose only public method is `__invoke()`
+- [x] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
+- [x] `User/TherapistController.php` is deleted
+- [x] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
+- [x] The test file is split to mirror the six classes
+- [x] `TherapistController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
+- [x] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
+- [x] Dashboard invitation Playwright specs pass
