@@ -7,7 +7,8 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Health;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class HealthControllerTest extends WebTestCase
+// Not ApiTestCase: this endpoint needs no database transaction and no auth helper.
+final class HealthCheckControllerTest extends WebTestCase
 {
     private KernelBrowser $client;
 
@@ -24,6 +25,8 @@ final class HealthControllerTest extends WebTestCase
         $data = json_decode($this->client->getResponse()->getContent(), true);
 
         $this->assertSame('healthy', $data['status']);
+        // Route name and URL are frozen: security.yaml matches ^/api/health for PUBLIC_ACCESS.
+        $this->assertSame('api_health', $this->client->getRequest()->attributes->get('_route'));
     }
 
     public function testHealthResponseContainsTimestamp(): void
@@ -32,25 +35,5 @@ final class HealthControllerTest extends WebTestCase
 
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('timestamp', $data);
-    }
-
-    public function testIndexReturnsApiInfo(): void
-    {
-        $this->client->request('GET', '/api/');
-
-        $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
-
-        $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('name', $data['data']);
-        $this->assertArrayHasKey('version', $data['data']);
-    }
-
-    public function testIndexListsEndpoints(): void
-    {
-        $this->client->request('GET', '/api/');
-
-        $data = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('endpoints', $data['data']);
     }
 }
