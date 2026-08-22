@@ -39,5 +39,5 @@ Those specs are the end-to-end proof for this ticket and are worth running.
 - [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] The test file is split to mirror the six classes
 - [ ] `TherapistController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green with no drop in assertion count
+- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
 - [ ] Dashboard invitation Playwright specs pass

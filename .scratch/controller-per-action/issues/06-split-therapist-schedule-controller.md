@@ -46,4 +46,4 @@ rederiving them from fixtures.
 - [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] The test file is split to mirror the seven classes, with timezone assertions unchanged
 - [ ] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green with no drop in assertion count
+- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
