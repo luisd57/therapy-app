@@ -55,7 +55,8 @@ existing name, so `PatientAppointmentController` is not a breach.
 - Private constructors, immutable (readonly), self-validating
 
 ## Validation (deliberate, do not "fix")
-- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array via `ValidatesRequestTrait` (422, `details` = field → first message). Value Objects are the real guard - attribute validation duplicates their rules and drifts out of sync with them.
+- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array with an injected `ValidatorInterface` and return `validationError()` (422, `details` = field → first message). Value Objects are the real guard - attribute validation duplicates their rules and drifts out of sync with them.
+- `ValidatesRequestTrait` is dead: nothing calls `violationsToErrors()`, and every controller reads `$violations[0]->getMessage()` itself. The four controllers still declaring it drop it as they convert; delete the trait once the last one has.
 
 ## Errors (deliberate, do not "fix")
 - NO kernel exception listener. Each action catches the specific domain exceptions it can produce - a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.

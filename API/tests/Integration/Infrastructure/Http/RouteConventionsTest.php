@@ -24,7 +24,6 @@ final class RouteConventionsTest extends KernelTestCase
      * Never add to this list: a new endpoint gets its own controller class.
      */
     private const PENDING_CONVERSION = [
-        'App\Infrastructure\Http\Controller\User\TherapistController',
         'App\Infrastructure\Http\Controller\Appointment\PublicAppointmentController',
         'App\Infrastructure\Http\Controller\Appointment\TherapistAppointmentController',
         'App\Infrastructure\Http\Controller\Appointment\TherapistScheduleController',

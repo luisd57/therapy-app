@@ -38,7 +38,7 @@ being moved, so keep their assertions intact rather than rewriting them.
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
 - [ ] The two actions sharing the URL `/api/therapist/appointments` keep their distinct `methods:`
 - [ ] `Appointment/TherapistAppointmentController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after
+- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] The test file is split to mirror the seven classes
 - [ ] `TherapistAppointmentController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green with no drop in assertion count
+- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
