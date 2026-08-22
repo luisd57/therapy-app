@@ -47,3 +47,24 @@ rederiving them from fixtures.
 - [ ] The test file is split to mirror the seven classes, with timezone assertions unchanged
 - [ ] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
 - [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
+
+## Cleanup this ticket carries
+
+Ticket 06 is the last conversion, so two things that were deliberately deferred land here rather
+than being spread across earlier tickets.
+
+`/** @var User $currentUser */ $currentUser = $this->getUser();` followed by
+`$currentUser->getId()->getValue()` is repeated in every action that needs the caller's id - 4
+sites after ticket 03, roughly 12 once 05 and 06 land. Extract it once, here, rather than editing
+the same files in each ticket. The convention wants a trait in `Http/Controller/` for a helper
+with two or more callers. Watch the Middle Man risk: a trait method that only wraps `getUser()`
+earns nothing, so pull out the id, not the user.
+
+`ValidatesRequestTrait` is dead - `violationsToErrors()` has no callers and every controller reads
+`$violations[0]->getMessage()` itself. The four `Appointment/` controllers that still declare it
+drop it as tickets 04 to 06 convert them. Delete `ValidatesRequestTrait.php` once this ticket has
+removed the last declaration, and drop its mention from `## Validation` in
+`.claude/rules/api-conventions.md`.
+
+- [ ] The current-user idiom is extracted once and the converted controllers use it
+- [ ] `ValidatesRequestTrait.php` is deleted and `api-conventions.md` no longer mentions it
