@@ -29,7 +29,7 @@ classes individually would be busywork, since most are constructor-to-array with
 nothing to get wrong. What is worth pinning is the serialised shape of what
 crosses the wire and the error body the traits build.
 
-**Blocked by:** `controller-per-action/01` to `06`. Those tickets are rewriting
+**Blocked by:** `controller-per-action` 01, 02, 03, 04, 05, 06. Those tickets are rewriting
 the controller test files this work would touch, so landing first guarantees
 conflicts for no benefit.
 

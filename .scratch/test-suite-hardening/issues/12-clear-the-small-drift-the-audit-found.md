@@ -37,4 +37,5 @@ and not being deleted, this is only about the docs that send people to it.
 - [ ] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
 - [ ] The Practice Timezone is declared once and the e2e helpers read it rather than repeating it
 - [ ] No document instructs the reader to run a `make` target
-- [ ] Landing e2e suite green
+- [ ] Landing e2e suite green, which is the level that can observe the Viewer Zone pin and the shared Practice Timezone
+- [ ] The compose and documentation items are verified by a normal compose up and by following the changed docs end to end, since no suite can observe either

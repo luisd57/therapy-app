@@ -28,4 +28,5 @@ configured to be. Those attributes are the part an accident would silently drop.
 - [ ] The session cookie's http-only, same-site, path and secure attributes are each asserted
 - [ ] The password hasher verifies its own output and rejects a wrong password
 - [ ] The secure token generator produces distinct values across calls
+- [ ] The JWT generator produces a token carrying the claims the application relies on, and the created listener's additions to the payload are asserted
 - [ ] Full API suite green

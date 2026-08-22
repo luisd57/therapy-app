@@ -1,9 +1,14 @@
 # Test suite hardening
 
+Status: ready-for-agent
+
+Branch: `test-suite-hardening`, tickets in `issues/`
+Related decisions: ADR-0001, ADR-0003
+
 Source: a full audit of all three deployables run on 2026-08-22, with every suite
-executed rather than read. Findings were reviewed one by one and eight of eleven
-were granted. This spec records what was granted, what was rejected and why, and
-the seams the resulting twelve tickets land on.
+executed rather than read. Eleven findings were reviewed one by one and eight were
+granted. This spec records what was granted, what was rejected and why, and the
+seams the tickets land on.
 
 ## Problem Statement
 
@@ -44,8 +49,11 @@ so many words. The audit is what measured how far it had drifted.
 
 ## Solution
 
-Twelve tickets, each closing one granted finding, all landing on seams that
-already exist.
+Twelve tickets closing the eight granted findings, all landing on seams that
+already exist. The counts differ because the largest finding, the untested edges
+of the API, splits across four tickets, and because two tickets come from
+decisions taken during the review rather than from a finding: static analysis and
+the bundle of small drift.
 
 The work divides into four kinds. **Make lying tests honest**: rewrite the
 fixtures whose expectations are derived from the object under test, and fix the
@@ -118,7 +126,10 @@ below uses a coverage percentage as an acceptance criterion.
 **No dashboard unit-test seam.** The maintainer values e2e over unit for
 frontend. The dashboard has zero `*.spec.ts` files, its Angular test target
 declares a builder with no options, and its `tsconfig.spec.json` globs a pattern
-matching no files. None of that is being wired up. The consequence is that the
+matching no files. **No unit-test runner is being wired up.** Ticket 10 does bring
+the dashboard's e2e directory under a typecheck, which is a different thing: it
+type-checks Playwright specs that already exist, and creates no seam for asserting
+behaviour in isolation. The consequence is that the
 password-rule coverage, which would naturally be a unit suite over a pure
 function, is an e2e spec instead. This matches the decision already recorded for
 the landing app in `timezone-management/15`.
@@ -222,8 +233,13 @@ decision worth stating rather than a reflex.
    lint and typecheck, the landing typecheck gets called, and static analysis is
    added.
 
-The only new machinery is the surviving cache pool in ticket 03, and that follows
-an existing helper rather than introducing a mechanism.
+**No new test seam** is the claim, and seam 5 is the caveat. Ticket 11 does add a
+tool the repo has never had, and ticket 10 widens gates that already exist. What
+neither does is create a new place where behaviour is asserted, which is the thing
+`testing-policy.md` asks to be deliberate about.
+
+The only new test machinery is the surviving cache pool in ticket 03, and that
+follows an existing helper rather than introducing a mechanism.
 
 ### Prior art
 
@@ -272,6 +288,12 @@ freeze the clock. Most genuinely do not need to.
 - **Rewriting the pagination assertions that use a lower bound where the
   transaction guarantees an exact count.** Real but low value, and touching the
   same controller tests `controller-per-action` is rewriting.
+- **The two integration tests that assert a 409 on an Instant now in the past.**
+  Named in Testing Decisions as an example of passing for the wrong reason, and
+  deliberately left unticketed: the maintainer has not ruled on it, and it sits in
+  controller test files `controller-per-action` is rewriting. Worth raising again
+  once that sequence lands, since the tests will keep passing either way and
+  nothing will prompt a second look.
 
 ## Further Notes
 
@@ -292,11 +314,16 @@ the development database held 43 Patients. Continuous integration runs `down -v`
 every time, so continuous integration is always the failing case and a local run
 is always the passing one.
 
-**The landing run happened on a Friday evening practice-local**, which is the day
-class `timezone-management/05` and `12` historically fired on and one of the
-three days `timezone-management/13` requires green before the gate goes on. It
-passed, and the Schedule Blocks were confirmed restored to 8 active afterwards.
-That is one of the three days, not the set.
+**The landing run happened on a Friday evening practice-local, and that does not
+count toward `timezone-management/13`.** That ticket asks for a Friday
+*afternoon*, a Saturday and a Sunday. 22:45 is not an afternoon, and by then the
+day's Schedule Blocks are behind the clock, so the run exercises less than an
+afternoon run would. Read this as one green run on a Friday, nothing more. Of the
+two defects 13 cites as the reason for those days, `timezone-management/05` is
+already resolved by PR #39 and only `12` is still open on its weekend criterion.
+
+The run passed and the Schedule Blocks were confirmed restored to 8 active
+afterwards.
 
 **Assertion density is 2.3 per test**, and there are no data providers anywhere
 in the API suite. Neither is a defect on its own. Both are worth knowing when
