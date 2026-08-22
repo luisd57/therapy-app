@@ -31,12 +31,18 @@ would add transaction wrapping these tests have no use for.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each action lives in its own `final` class whose only public method is `__invoke()`
-- [ ] `Health/HealthController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after: same route names, methods and URLs
-- [ ] The test file is split to mirror the two classes, still extending `WebTestCase`
-- [ ] `HealthController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] `RouteConventionsTest` stays green, including its stale-entry check on that list
-- [ ] Full API suite green with no drop in assertion count
+**Resolved by:** [PR #55](https://github.com/luisd57/therapy-app/pull/55)
+
+- [x] Each action lives in its own `final` class whose only public method is `__invoke()`
+- [x] `Health/HealthController.php` is deleted
+- [x] `debug:router` output is byte-identical before and after: same route names, methods and URLs
+      Same 42 lines and identical as a set, but not byte-identical: `api_health` and `api_index`
+      swap listing positions, because attribute discovery is alphabetical by class and
+      `ApiRootController` sorts first. The two URLs do not overlap, so match order cannot change
+      which route answers. Expect this difference when re-running the check.
+- [x] The test file is split to mirror the two classes, still extending `WebTestCase`
+- [x] `HealthController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
+- [x] `RouteConventionsTest` stays green, including its stale-entry check on that list
+- [x] Full API suite green with no drop in assertion count
