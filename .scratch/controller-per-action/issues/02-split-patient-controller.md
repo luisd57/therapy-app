@@ -32,12 +32,14 @@ manual check.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each action lives in its own `final` class whose only public method is `__invoke()`
-- [ ] Both classes carry `#[IsGranted('ROLE_PATIENT')]` on the action
-- [ ] `User/PatientController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after, with `PUT|PATCH` preserved on the profile route
-- [ ] The test file is split to mirror the two classes
-- [ ] `PatientController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green with no drop in assertion count
+**Resolved by:** [PR #56](https://github.com/luisd57/therapy-app/pull/56)
+
+- [x] Each action lives in its own `final` class whose only public method is `__invoke()`
+- [x] Both classes carry `#[IsGranted('ROLE_PATIENT')]` on the action
+- [x] `User/PatientController.php` is deleted
+- [x] `debug:router` output is byte-identical before and after, with `PUT|PATCH` preserved on the profile route
+- [x] The test file is split to mirror the two classes
+- [x] `PatientController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
+- [x] Full API suite green with no drop in assertion count

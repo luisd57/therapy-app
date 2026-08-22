@@ -2,45 +2,31 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Integration\Infrastructure\Http\Controller\User;
+namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Patient;
 
 use App\Tests\Helper\ApiTestCase;
 
-final class PatientControllerTest extends ApiTestCase
+final class UpdatePatientProfileControllerTest extends ApiTestCase
 {
-    public function testMeAuthenticatedReturns200(): void
-    {
-        $token = $this->createPatientAndGetToken();
-
-        $this->jsonRequest('GET', '/api/patient/me', [], $token);
-
-        $this->assertResponseIsSuccessful();
-        $data = $this->getResponseData();
-        $this->assertTrue($data['success']);
-        $this->assertSame('ROLE_PATIENT', $data['data']['role']);
-    }
-
-    public function testMeUnauthenticatedReturns401(): void
-    {
-        $this->jsonRequest('GET', '/api/patient/me');
-
-        $this->assertResponseStatusCodeSame(401);
-    }
-
-    public function testMeTherapistTokenReturns403(): void
-    {
-        $therapistToken = $this->createTherapistAndGetToken();
-
-        $this->jsonRequest('GET', '/api/patient/me', [], $therapistToken);
-
-        $this->assertResponseStatusCodeSame(403);
-    }
-
     public function testUpdateProfilePhoneOnlyReturns200(): void
     {
         $token = $this->createPatientAndGetToken();
 
         $this->jsonRequest('PUT', '/api/patient/profile', [
+            'phone' => '+1234567890',
+        ], $token);
+
+        $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+    }
+
+    // Pins PATCH; PUT is covered above.
+    public function testUpdateProfileAcceptsPatch(): void
+    {
+        $token = $this->createPatientAndGetToken();
+
+        $this->jsonRequest('PATCH', '/api/patient/profile', [
             'phone' => '+1234567890',
         ], $token);
 
@@ -88,6 +74,19 @@ final class PatientControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    // Behaviour only. This still passes with #[IsGranted] removed, since security.yaml guards
+    // ^/api/patient too - RouteConventionsTest is what catches a missing attribute.
+    public function testUpdateProfileTherapistTokenReturns403(): void
+    {
+        $therapistToken = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('PUT', '/api/patient/profile', [
+            'phone' => '+1234567890',
+        ], $therapistToken);
+
+        $this->assertResponseStatusCodeSame(403);
     }
 
     public function testUpdateProfileUnauthenticatedReturns401(): void
