@@ -43,7 +43,7 @@ rederiving them from fixtures.
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
 - [ ] Each of the three helpers is placed by caller count, not by convenience
 - [ ] `Appointment/TherapistScheduleController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after
+- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] The test file is split to mirror the seven classes, with timezone assertions unchanged
 - [ ] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
 - [ ] Full API suite green with no drop in assertion count

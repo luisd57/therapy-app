@@ -46,7 +46,7 @@ the end-to-end proof for this ticket.
 - [ ] Each of the four actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every directory name matches its namespace segment exactly, so the route loader and DI glob find all four classes
 - [ ] `Appointment/PublicAppointmentController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after
+- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] Every route name `RateLimitSubscriber` keys off still resolves in the router
 - [ ] The test file is split to mirror the four classes
 - [ ] `PublicAppointmentController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`

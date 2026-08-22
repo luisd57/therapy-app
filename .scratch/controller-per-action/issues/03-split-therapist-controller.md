@@ -36,7 +36,7 @@ Those specs are the end-to-end proof for this ticket and are worth running.
 - [ ] Each of the six actions lives in its own `final` class whose only public method is `__invoke()`
 - [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
 - [ ] `User/TherapistController.php` is deleted
-- [ ] `debug:router` output is byte-identical before and after
+- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
 - [ ] The test file is split to mirror the six classes
 - [ ] `TherapistController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
 - [ ] Full API suite green with no drop in assertion count
