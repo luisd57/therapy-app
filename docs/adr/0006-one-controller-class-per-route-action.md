@@ -1,7 +1,7 @@
 # One controller class per route action
 
-Status: accepted, implemented on 2026-08-19 for `/api/auth`. The other six grouped controllers
-convert under `.scratch/controller-per-action/`.
+Status: accepted, implemented on 2026-08-19 for `/api/auth` and completed on 2026-08-23, after the
+conversions tracked in `.scratch/controller-per-action/`.
 
 ## The shape this replaced
 
@@ -63,8 +63,8 @@ Each action now repeats its full URL literal and its `#[IsGranted]`. The second 
 risk, because a forgotten role attribute is silent. Two things cover it. `security.yaml`
 `access_control` already enforces the same roles by URL, and `RouteConventionsTest` walks the router
 and fails the build when a route under `/api/therapist` or `/api/patient` reaches a controller with no
-matching attribute. That test also holds the shrinking `PENDING_CONVERSION` list of controllers not
-yet split, which is the ratchet for the remaining tickets.
+matching attribute. The same test fails when any controller serves more than one action, with no
+exemption list to add to.
 
 Route names and URLs are load-bearing beyond the tests. `RateLimitSubscriber` keys off route names
 and `security.yaml` matches on URLs, with `^/api/auth/me$` anchored. A conversion that changes either

@@ -20,12 +20,6 @@ final class RouteConventionsTest extends KernelTestCase
     // transaction wrapping that base class provides would buy nothing.
 
     /**
-     * Controllers still holding more than one action, shrinking as each conversion ticket lands.
-     * Never add to this list: a new endpoint gets its own controller class.
-     */
-    private const PENDING_CONVERSION = [];
-
-    /**
      * @var array<string, string> path prefix => role the routes under it must require
      */
     private const PROTECTED_PREFIXES = [
@@ -75,36 +69,12 @@ final class RouteConventionsTest extends KernelTestCase
 
         $offenders = [];
         foreach ($actionsPerClass as $class => $methods) {
-            if (count($methods) > 1 && !in_array($class, self::PENDING_CONVERSION, true)) {
+            if (count($methods) > 1) {
                 $offenders[] = sprintf('%s has %d actions: %s', $class, count($methods), implode(', ', array_keys($methods)));
             }
         }
 
         self::assertSame([], $offenders, "Controllers holding more than one action:\n" . implode("\n", $offenders));
-    }
-
-    public function testPendingConversionListHasNoStaleEntries(): void
-    {
-        if (self::PENDING_CONVERSION === []) {
-            // An empty list means zero assertions, which failOnRisky treats as a failure.
-            // Ticket 07 drops the list and this test with it.
-            self::markTestSkipped('Every controller is converted, so there is no pending entry to go stale.');
-        }
-
-        $actionsPerClass = [];
-
-        foreach ($this->apiControllers() as ['class' => $class, 'method' => $method]) {
-            $actionsPerClass[$class][$method] = true;
-        }
-
-        foreach (self::PENDING_CONVERSION as $class) {
-            self::assertArrayHasKey($class, $actionsPerClass, sprintf('%s no longer exists, drop it from PENDING_CONVERSION', $class));
-            self::assertGreaterThan(
-                1,
-                count($actionsPerClass[$class]),
-                sprintf('%s is already down to one action, drop it from PENDING_CONVERSION', $class),
-            );
-        }
     }
 
     /**
