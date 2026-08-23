@@ -31,11 +31,22 @@ Both mention the ratchet, and both should read as settled rather than in progres
 **Blocked by:** 01, 02, 03, 04, 05, 06. Every conversion must land first, because
 the assertion fails while any grouped controller remains.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `PENDING_CONVERSION` and the check that consults it are gone
-- [ ] The one-action assertion covers every controller in the route collection, with no exemptions
-- [ ] The stale-entry test is removed rather than left asserting over an empty list
-- [ ] `.claude/rules/api-architecture.md` and ADR-0006 describe the rule as settled, not as a migration in progress
-- [ ] Reintroducing a second route action on any existing controller makes `RouteConventionsTest` fail. Prove it by adding one temporarily, watching it go red, then reverting
-- [ ] Full API suite green
+**Resolved by:** [PR #62](https://github.com/luisd57/therapy-app/pull/62)
+
+- [x] `PENDING_CONVERSION` and the check that consults it are gone
+- [x] The one-action assertion covers every controller in the route collection, with no exemptions
+- [x] The stale-entry test is removed rather than left asserting over an empty list
+- [x] `.claude/rules/api-architecture.md` and ADR-0006 describe the rule as settled, not as a migration in progress
+- [x] Reintroducing a second route action on any existing controller makes `RouteConventionsTest` fail. Prove it by adding one temporarily, watching it go red, then reverting
+- [x] Full API suite green
+
+## What the hardening turned up
+
+`api-architecture.md` needed no edit. It describes the rule and the test without ever naming
+`PENDING_CONVERSION`, so it already read as settled. Only ADR-0006 mentioned the ratchet.
+
+The assertion counts distinct method names per class, not routes, so two stacked `#[Route]`
+attributes on one `__invoke()` would still pass it. No controller does that today. Found in review
+and left out of scope rather than widened into this ticket.
