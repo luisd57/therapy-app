@@ -1,7 +1,7 @@
 # One controller class per route action
 
-Status: accepted, implemented on 2026-08-19 for `/api/auth` and completed on 2026-08-23, when the
-last grouped controller was split under `.scratch/controller-per-action/`.
+Status: accepted, implemented on 2026-08-19 for `/api/auth` and completed on 2026-08-23, after the
+conversions tracked in `.scratch/controller-per-action/`.
 
 ## The shape this replaced
 
