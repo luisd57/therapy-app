@@ -50,3 +50,10 @@ the assertion fails while any grouped controller remains.
 The assertion counts distinct method names per class, not routes, so two stacked `#[Route]`
 attributes on one `__invoke()` would still pass it. No controller does that today. Found in review
 and left out of scope rather than widened into this ticket.
+
+## Superseded
+
+PR #63 deleted the one-action assertion this ticket hardened. With every controller converted it
+only restated what the controller tree shows, so the rule is now documented in `## Controllers`
+rather than test-enforced. `RouteConventionsTest` became `ProtectedRouteRolesTest`, keeping the role
+check, which inspection cannot cover. The criteria above are left as they were verified on the day.
