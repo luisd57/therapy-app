@@ -81,6 +81,11 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertFalse($data['success']);
     }
 
+    /**
+     * A datetime with no offset would have to be guessed against some zone.
+     * Guessing is exactly the ambiguity this contract removes, so it is a 422
+     * rather than a silent reinterpretation.
+     */
     public function testLockSlotRejectsADatetimeWithoutAnOffset(): void
     {
         $this->createTherapistWithSchedule();
@@ -115,6 +120,10 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(409);
     }
 
+    /**
+     * createFromFormat rolls 2026-02-31 forward into March instead of failing,
+     * so the validator needs a round-trip check on top of it.
+     */
     public function testLockSlotRejectsACalendarDateThatDoesNotExist(): void
     {
         $this->createTherapistWithSchedule();
