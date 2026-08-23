@@ -37,16 +37,18 @@ rederiving them from fixtures.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
-- [ ] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
-- [ ] Each of the three helpers is placed by caller count, not by convenience
-- [ ] `Appointment/TherapistScheduleController.php` is deleted
-- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
-- [ ] The test file is split to mirror the seven classes, with timezone assertions unchanged
-- [ ] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
+**Resolved by:** PR #61
+
+- [x] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
+- [x] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
+- [x] Each of the three helpers is placed by caller count, not by convenience
+- [x] `Appointment/TherapistScheduleController.php` is deleted
+- [x] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
+- [x] The test file is split to mirror the seven classes, with timezone assertions unchanged
+- [x] `TherapistScheduleController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
+- [x] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
 
 ## Cleanup this ticket carries
 
@@ -67,5 +69,11 @@ too and holds a single action, so the convention leaves that class alone and no 
 it. Strip its dead `use` here by hand, then delete `ValidatesRequestTrait.php` and drop its
 mention from `## Validation` in `.claude/rules/api-conventions.md`.
 
-- [ ] The current-user idiom is extracted once and the converted controllers use it
-- [ ] `ValidatesRequestTrait.php` is deleted and `api-conventions.md` no longer mentions it
+- [x] The current-user idiom is extracted once and the converted controllers use it
+- [x] `ValidatesRequestTrait.php` is deleted and `api-conventions.md` no longer mentions it
+
+## What the split turned up
+
+Emptying `PENDING_CONVERSION` leaves `testPendingConversionListHasNoStaleEntries` asserting
+nothing, and `failOnRisky="true"` fails a zero-assertion test. It skips itself while the list is
+empty rather than gaining a filler assertion. Ticket 07 removes the list and the test together.
