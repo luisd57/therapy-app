@@ -250,9 +250,11 @@ equally correct and much shorter.
 
 `KeepsBlocklistAcrossRequests` is the reference for ticket 03's cache pool.
 `SendDailyAgendaCommandTest` is the reference for ticket 06, being the only
-existing command test. `RouteConventionsTest` and `MappingMatchesSchemaTest` are
-the reference for a guard test that asserts a convention rather than a behaviour,
-and both are worth reading before writing ticket 07.
+existing command test. `ProtectedRouteRolesTest` and `MappingMatchesSchemaTest`
+are the reference for a guard test that asserts a convention rather than a
+behaviour, and both are worth reading before writing ticket 07. The first was
+`RouteConventionsTest` until PR #63 cut it back to the role check, which is worth
+knowing: a guard test earns its place only where inspection cannot do the job.
 
 Integration tests run inside a rolled-back transaction and pin "now" through the
 frozen-clock helper before issuing any request, because handlers resolve the
