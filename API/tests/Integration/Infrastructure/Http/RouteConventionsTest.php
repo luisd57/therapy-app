@@ -86,9 +86,8 @@ final class RouteConventionsTest extends KernelTestCase
     public function testPendingConversionListHasNoStaleEntries(): void
     {
         if (self::PENDING_CONVERSION === []) {
-            // Nothing left to convert. Asserting anything here would only be theatre, and
-            // failOnRisky turns a zero-assertion test into a failure. Ticket 07 drops the
-            // list and this test with it.
+            // An empty list means zero assertions, which failOnRisky treats as a failure.
+            // Ticket 07 drops the list and this test with it.
             self::markTestSkipped('Every controller is converted, so there is no pending entry to go stale.');
         }
 

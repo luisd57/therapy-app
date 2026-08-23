@@ -15,7 +15,7 @@ trait ValidatesScheduleBlockRequestTrait
     /**
      * @return array<string, string>
      */
-    private function validateScheduleRequest(ValidatorInterface $validator, array $data): array
+    private function validateScheduleBlockRequest(ValidatorInterface $validator, array $data): array
     {
         $errors = [];
 

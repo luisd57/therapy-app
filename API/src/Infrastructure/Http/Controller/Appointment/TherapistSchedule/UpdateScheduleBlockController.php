@@ -33,7 +33,7 @@ final class UpdateScheduleBlockController extends AbstractController
     {
         $data = json_decode($request->getContent(), true) ?? [];
 
-        $errors = $this->validateScheduleRequest($this->validator, $data);
+        $errors = $this->validateScheduleBlockRequest($this->validator, $data);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
