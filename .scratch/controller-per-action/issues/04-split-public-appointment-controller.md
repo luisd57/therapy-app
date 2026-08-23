@@ -41,14 +41,16 @@ the end-to-end proof for this ticket.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each of the four actions lives in its own `final` class whose only public method is `__invoke()`
-- [ ] Every directory name matches its namespace segment exactly, so the route loader and DI glob find all four classes
-- [ ] `Appointment/PublicAppointmentController.php` is deleted
-- [ ] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
-- [ ] Every route name `RateLimitSubscriber` keys off still resolves in the router
-- [ ] The test file is split to mirror the four classes
-- [ ] `PublicAppointmentController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
-- [ ] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
-- [ ] Landing reservation Playwright specs pass
+**Resolved by:** [PR #58](https://github.com/luisd57/therapy-app/pull/58)
+
+- [x] Each of the four actions lives in its own `final` class whose only public method is `__invoke()`
+- [x] Every directory name matches its namespace segment exactly, so the route loader and DI glob find all four classes
+- [x] `Appointment/PublicAppointmentController.php` is deleted
+- [x] `debug:router` lists the same route names, methods and URLs before and after; listing order follows class names and may change
+- [x] Every route name `RateLimitSubscriber` keys off still resolves in the router
+- [x] The test file is split to mirror the four classes
+- [x] `PublicAppointmentController` is removed from `PENDING_CONVERSION` in `RouteConventionsTest`
+- [x] Full API suite green, with every test that existed before the split still present and passing. Expect the count to fall by 2: the stale-entry loop in `RouteConventionsTest` asserts twice per `PENDING_CONVERSION` entry, and this ticket removes one. Never add assertions to restore the number
+- [x] Landing reservation Playwright specs pass
