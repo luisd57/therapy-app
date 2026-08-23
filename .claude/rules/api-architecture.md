@@ -52,7 +52,7 @@ deployable serves nothing but the API, so the segment named only itself.
   matched by `RateLimitSubscriber` and URLs by `security.yaml`, so copy both verbatim when moving an
   action - a rename silently drops rate limiting or an access rule. Say URL, not path, when you mean
   one: this layer names directories and URLs in the same breath.
-- Per-action `#[IsGranted]`, since there is no class left to hang it on. `RouteConventionsTest`
+- Per-action `#[IsGranted]`, since there is no class left to hang it on. `ProtectedRouteRolesTest`
   catches a forgotten one under `/api/therapist` or `/api/patient`, which is where roles are required
   today. Extend its prefix list if a new protected area appears.
 - Constructor takes only what this action uses. Handlers stay injected as method arguments.

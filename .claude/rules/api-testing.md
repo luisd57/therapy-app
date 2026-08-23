@@ -8,7 +8,7 @@ paths:
 - **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly.
 - **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
-- Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `RouteConventionsTest` are the cases. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
+- Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
 ## Key Rules
 - All integration tests run in transactions that rollback in `tearDown()` - no data persists.
