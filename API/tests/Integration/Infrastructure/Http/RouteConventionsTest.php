@@ -23,9 +23,7 @@ final class RouteConventionsTest extends KernelTestCase
      * Controllers still holding more than one action, shrinking as each conversion ticket lands.
      * Never add to this list: a new endpoint gets its own controller class.
      */
-    private const PENDING_CONVERSION = [
-        'App\Infrastructure\Http\Controller\Appointment\TherapistScheduleController',
-    ];
+    private const PENDING_CONVERSION = [];
 
     /**
      * @var array<string, string> path prefix => role the routes under it must require
@@ -87,6 +85,13 @@ final class RouteConventionsTest extends KernelTestCase
 
     public function testPendingConversionListHasNoStaleEntries(): void
     {
+        if (self::PENDING_CONVERSION === []) {
+            // Nothing left to convert. Asserting anything here would only be theatre, and
+            // failOnRisky turns a zero-assertion test into a failure. Ticket 07 drops the
+            // list and this test with it.
+            self::markTestSkipped('Every controller is converted, so there is no pending entry to go stale.');
+        }
+
         $actionsPerClass = [];
 
         foreach ($this->apiControllers() as ['class' => $class, 'method' => $method]) {

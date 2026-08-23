@@ -10,9 +10,8 @@ use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\User\Exception\IncompleteProfileException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
-use App\Infrastructure\Http\Controller\ValidatesRequestTrait;
-use App\Domain\User\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,8 +25,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class PatientAppointmentController extends AbstractController
 {
     use ApiResponseTrait;
+    use ResolvesCurrentUserTrait;
     use ValidationHelperTrait;
-    use ValidatesRequestTrait;
 
     public function __construct(
         private readonly ValidatorInterface $validator,
@@ -45,12 +44,9 @@ final class PatientAppointmentController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-
         try {
             $result = $handler->__invoke(new PatientRequestAppointmentInputDTO(
-                patientId: $currentUser->getId()->getValue(),
+                patientId: $this->currentUserId(),
                 slotStartTime: $data['slot_start_time'],
                 modality: $data['modality'],
                 lockToken: $data['lock_token'] ?? null,
