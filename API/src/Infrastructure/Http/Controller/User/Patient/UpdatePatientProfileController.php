@@ -6,9 +6,9 @@ namespace App\Infrastructure\Http\Controller\User\Patient;
 
 use App\Application\User\DTO\Input\UpdatePatientProfileInputDTO;
 use App\Application\User\Handler\UpdatePatientProfileHandler;
-use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class UpdatePatientProfileController extends AbstractController
 {
     use ApiResponseTrait;
+    use ResolvesCurrentUserTrait;
 
     public function __construct(
         private readonly ValidatorInterface $validator,
@@ -36,12 +37,9 @@ final class UpdatePatientProfileController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-
         try {
             $user = $handler->__invoke(new UpdatePatientProfileInputDTO(
-                userId: $currentUser->getId()->getValue(),
+                userId: $this->currentUserId(),
                 phone: $data['phone'] ?? null,
                 street: $data['address']['street'] ?? null,
                 city: $data['address']['city'] ?? null,

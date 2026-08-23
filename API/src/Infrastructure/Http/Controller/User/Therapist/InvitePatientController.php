@@ -6,9 +6,9 @@ namespace App\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Application\User\DTO\Input\InvitePatientInputDTO;
 use App\Application\User\Handler\InvitePatientHandler;
-use App\Domain\User\Entity\User;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class InvitePatientController extends AbstractController
 {
     use ApiResponseTrait;
+    use ResolvesCurrentUserTrait;
 
     public function __construct(
         private readonly ValidatorInterface $validator,
@@ -36,14 +37,11 @@ final class InvitePatientController extends AbstractController
             return $this->validationError($errors);
         }
 
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-
         try {
             $invitation = $handler->__invoke(new InvitePatientInputDTO(
                 email: $data['email'],
                 patientName: $data['patient_name'],
-                therapistId: $currentUser->getId()->getValue(),
+                therapistId: $this->currentUserId(),
             ));
 
             return $this->created([
