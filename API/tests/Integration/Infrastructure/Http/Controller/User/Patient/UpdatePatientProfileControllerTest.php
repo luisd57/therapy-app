@@ -77,7 +77,7 @@ final class UpdatePatientProfileControllerTest extends ApiTestCase
     }
 
     // Behaviour only. This still passes with #[IsGranted] removed, since security.yaml guards
-    // ^/api/patient too - RouteConventionsTest is what catches a missing attribute.
+    // ^/api/patient too - ProtectedRouteRolesTest is what catches a missing attribute.
     public function testUpdateProfileTherapistTokenReturns403(): void
     {
         $therapistToken = $this->createTherapistAndGetToken();

@@ -9,12 +9,12 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Guards the one-action-per-controller convention in `.claude/rules/api-architecture.md`.
+ * Every route under a protected prefix reaches an action carrying the matching #[IsGranted].
  *
- * Splitting a grouped controller drops its class-level #[IsGranted], so the role check becomes
- * something a new action can silently forget. These tests are what notices.
+ * One action per class means the attribute sits on each action, so a new one can silently forget
+ * it. That is invisible on inspection, which is why it is a test.
  */
-final class RouteConventionsTest extends KernelTestCase
+final class ProtectedRouteRolesTest extends KernelTestCase
 {
     // Not IntegrationTestCase: this reads the router and reflection, never the database, so the
     // transaction wrapping that base class provides would buy nothing.
@@ -57,24 +57,6 @@ final class RouteConventionsTest extends KernelTestCase
 
             self::assertNotEmpty($matched, sprintf('No route found under %s, so %s is never checked', $prefix, $role));
         }
-    }
-
-    public function testEachControllerClassServesExactlyOneAction(): void
-    {
-        $actionsPerClass = [];
-
-        foreach ($this->apiControllers() as ['class' => $class, 'method' => $method]) {
-            $actionsPerClass[$class][$method] = true;
-        }
-
-        $offenders = [];
-        foreach ($actionsPerClass as $class => $methods) {
-            if (count($methods) > 1) {
-                $offenders[] = sprintf('%s has %d actions: %s', $class, count($methods), implode(', ', array_keys($methods)));
-            }
-        }
-
-        self::assertSame([], $offenders, "Controllers holding more than one action:\n" . implode("\n", $offenders));
     }
 
     /**

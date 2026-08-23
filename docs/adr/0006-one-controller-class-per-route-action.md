@@ -61,10 +61,15 @@ grouping through inheritance and hides the real URL from the file that serves it
 
 Each action now repeats its full URL literal and its `#[IsGranted]`. The second of those is the real
 risk, because a forgotten role attribute is silent. Two things cover it. `security.yaml`
-`access_control` already enforces the same roles by URL, and `RouteConventionsTest` walks the router
+`access_control` already enforces the same roles by URL, and `ProtectedRouteRolesTest` walks the router
 and fails the build when a route under `/api/therapist` or `/api/patient` reaches a controller with no
-matching attribute. The same test fails when any controller serves more than one action, with no
-exemption list to add to.
+matching attribute.
+
+The one-action rule itself is not test-enforced. It was, through the conversions, but a test that
+walks the router to count actions per class only restates what the controller tree already shows:
+every file holds one `__invoke()`, and a second public action is visible in review. The rule lives in
+`## Controllers` in `.claude/rules/api-architecture.md`. The role attribute is the opposite case, and
+keeps its test, because a missing one looks like nothing at all.
 
 Route names and URLs are load-bearing beyond the tests. `RateLimitSubscriber` keys off route names
 and `security.yaml` matches on URLs, with `^/api/auth/me$` anchored. A conversion that changes either
