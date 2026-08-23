@@ -32,7 +32,9 @@ being moved, so keep their assertions intact rather than rewriting them.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** done
+**Status:** resolved
+
+**Resolved by:** PR #59
 
 - [x] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [x] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
