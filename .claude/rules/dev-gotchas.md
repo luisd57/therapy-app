@@ -36,6 +36,11 @@ more. Incident history and dates belong in project memory, not here.
 
 - The test database is separate and persistent. Run `make test-db-setup` once after a fresh clone,
   and again after `down -v` or any new migration - otherwise integration tests fail confusingly.
+- An *edited* migration needs more than that. The version is already recorded as applied, so
+  `test-db-setup` re-runs nothing and the old schema survives. Drop first
+  (`doctrine:database:drop --force --if-exists --env=test`), then `make test-db-setup`, and do the
+  same for the dev database without `--env=test`. Editing in place is allowed while the series is
+  unreleased, so this comes up.
 - Under `APP_ENV=test`, `cache.app` is an `ArrayAdapter` that Symfony resets between requests, so
   anything cached in one request is gone by the next and `disableReboot()` does not help. Put a
   `FilesystemAdapter`-backed pool behind the service first, as

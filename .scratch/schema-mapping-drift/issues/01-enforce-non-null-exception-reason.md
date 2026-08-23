@@ -43,13 +43,15 @@ from the migrations on every run, so it needs nothing.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The column is declared `NOT NULL` in the migration that creates it, keeping the empty-string default so inserts that omit it still succeed
-- [ ] The change is made by editing the existing migration, not by adding a new one
-- [ ] No foreign key constraint or index is dropped as a side effect
-- [ ] A rebuilt database reports the column as non-nullable
-- [ ] `MappingMatchesSchemaTest` gains an assertion for this column that fails if the mapping and the database disagree again
-- [ ] The schema diff no longer proposes `ALTER reason SET NOT NULL`
-- [ ] `API/docs/database-schema.md` records the column as non-nullable and drops the note that the entity is stricter than the DDL
-- [ ] Full API suite green against the rebuilt database
+**Resolved by:** https://github.com/luisd57/therapy-app/pull/65
+
+- [x] The column is declared `NOT NULL` in the migration that creates it, keeping the empty-string default so inserts that omit it still succeed
+- [x] The change is made by editing the existing migration, not by adding a new one
+- [x] No foreign key constraint or index is dropped as a side effect
+- [x] A rebuilt database reports the column as non-nullable
+- [x] `MappingMatchesSchemaTest` gains an assertion for this column that fails if the mapping and the database disagree again
+- [x] The schema diff no longer proposes `ALTER reason SET NOT NULL`
+- [x] `API/docs/database-schema.md` records the column as non-nullable and drops the note that the entity is stricter than the DDL
+- [x] Full API suite green against the rebuilt database
