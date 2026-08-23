@@ -4,37 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment;
 
-use App\Domain\Appointment\Entity\TherapistSchedule;
-use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
-use App\Domain\Appointment\Id\ScheduleId;
-use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\SeedsTherapistSchedule;
 
 final class PublicAppointmentControllerTest extends ApiTestCase
 {
-    private function createTherapistWithSchedule(): void
-    {
-        $userRepo = self::getContainer()->get(UserRepositoryInterface::class);
-        $scheduleRepo = self::getContainer()->get(TherapistScheduleRepositoryInterface::class);
-
-        $therapist = DomainTestHelper::createTherapist();
-        $userRepo->save($therapist);
-
-        // Create a Monday schedule (day_of_week = 1), 08:00-18:00
-        $schedule = TherapistSchedule::create(
-            id: ScheduleId::generate(),
-            therapistId: $therapist->getId(),
-            dayOfWeek: WeekDay::MONDAY,
-            startTime: '08:00',
-            endTime: '18:00',
-            supportsOnline: true,
-            supportsInPerson: true,
-            now: new \DateTimeImmutable(),
-        );
-        $scheduleRepo->save($schedule);
-    }
+    use SeedsTherapistSchedule;
 
     // ── available-slots ──────────────────────────────────────────────────
 
