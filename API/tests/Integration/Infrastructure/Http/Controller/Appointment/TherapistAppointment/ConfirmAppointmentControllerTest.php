@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistAppointment;
 
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\SeedsAppointment;
@@ -22,7 +23,7 @@ final class ConfirmAppointmentControllerTest extends ApiTestCase
 
     public function testConfirmAppointment(): void
     {
-        $appointment = $this->createTestAppointment('REQUESTED');
+        $appointment = $this->createTestAppointment(AppointmentStatus::REQUESTED);
 
         $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/confirm', [], $this->therapistToken);
 
@@ -35,7 +36,7 @@ final class ConfirmAppointmentControllerTest extends ApiTestCase
 
     public function testConfirmAlreadyConfirmedAppointment(): void
     {
-        $appointment = $this->createTestAppointment('CONFIRMED');
+        $appointment = $this->createTestAppointment(AppointmentStatus::CONFIRMED);
 
         $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/confirm', [], $this->therapistToken);
 

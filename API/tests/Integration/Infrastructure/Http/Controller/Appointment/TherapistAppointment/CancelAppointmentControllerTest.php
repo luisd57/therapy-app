@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistAppointment;
 
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\SeedsAppointment;
 
@@ -21,7 +22,7 @@ final class CancelAppointmentControllerTest extends ApiTestCase
 
     public function testCancelAppointment(): void
     {
-        $appointment = $this->createTestAppointment('REQUESTED');
+        $appointment = $this->createTestAppointment(AppointmentStatus::REQUESTED);
 
         $this->jsonRequest('POST', '/api/therapist/appointments/' . $appointment->getId()->getValue() . '/cancel', [], $this->therapistToken);
 

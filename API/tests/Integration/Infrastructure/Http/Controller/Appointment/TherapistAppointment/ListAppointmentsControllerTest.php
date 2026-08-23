@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistAppointment;
 
+use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\SeedsAppointment;
 
@@ -37,7 +38,7 @@ final class ListAppointmentsControllerTest extends ApiTestCase
 
     public function testListAppointmentsByStatus(): void
     {
-        $this->createTestAppointment('REQUESTED');
+        $this->createTestAppointment(AppointmentStatus::REQUESTED);
 
         $this->jsonRequest('GET', '/api/therapist/appointments?status=REQUESTED', [], $this->therapistToken);
 
@@ -69,8 +70,8 @@ final class ListAppointmentsControllerTest extends ApiTestCase
 
     public function testListAppointmentsPaginationWithStatusFilter(): void
     {
-        $this->createTestAppointment('REQUESTED');
-        $this->createTestAppointment('REQUESTED');
+        $this->createTestAppointment(AppointmentStatus::REQUESTED);
+        $this->createTestAppointment(AppointmentStatus::REQUESTED);
 
         $this->jsonRequest('GET', '/api/therapist/appointments?status=REQUESTED&page=1&limit=1', [], $this->therapistToken);
 
