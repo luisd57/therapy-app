@@ -34,7 +34,7 @@ being moved, so keep their assertions intact rather than rewriting them.
 
 **Status:** resolved
 
-**Resolved by:** PR #59
+**Resolved by:** [PR #59](https://github.com/luisd57/therapy-app/pull/59)
 
 - [x] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [x] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
