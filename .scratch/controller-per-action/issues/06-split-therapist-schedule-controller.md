@@ -39,7 +39,7 @@ rederiving them from fixtures.
 
 **Status:** resolved
 
-**Resolved by:** PR #61
+**Resolved by:** [PR #61](https://github.com/luisd57/therapy-app/pull/61)
 
 - [x] Each of the seven actions lives in its own `final` class whose only public method is `__invoke()`
 - [x] Every class carries `#[IsGranted('ROLE_THERAPIST')]` on the action
