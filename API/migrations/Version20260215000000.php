@@ -42,7 +42,7 @@ final class Version20260215000000 extends AbstractMigration
             therapist_id UUID NOT NULL,
             start_date_time TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
             end_date_time TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-            reason VARCHAR(500) DEFAULT \'\',
+            reason VARCHAR(500) NOT NULL DEFAULT \'\',
             is_all_day BOOLEAN NOT NULL DEFAULT FALSE,
             created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
             PRIMARY KEY(id)

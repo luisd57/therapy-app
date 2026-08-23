@@ -149,7 +149,7 @@ One-off time blocks where the therapist is unavailable (holidays, personal time,
 | `therapist_id` | UUID | NO | FK to `users.id`. ON DELETE CASCADE |
 | `start_date_time` | TIMESTAMPTZ | NO | Exception period start, inclusive |
 | `end_date_time` | TIMESTAMPTZ | NO | Exception period end, exclusive |
-| `reason` | VARCHAR(500) | YES | Human-readable note (e.g., "Holiday"). Defaults to empty string |
+| `reason` | VARCHAR(500) | NO | Human-readable note (e.g., "Holiday"). Defaults to empty string |
 | `is_all_day` | BOOLEAN | NO | Whether the range was normalized to whole practice-local days at creation |
 | `created_at` | TIMESTAMPTZ | NO | Immutable |
 
@@ -157,7 +157,6 @@ One-off time blocks where the therapist is unavailable (holidays, personal time,
 
 **Design notes**:
 
-- **`reason` is nullable in the database, not in the entity.** The DDL is `VARCHAR(500) DEFAULT ''` with no `NOT NULL` (`Version20260215000000.php:45`), while `ScheduleException` declares a non-nullable `string`. The entity is the stricter of the two, so nothing writes NULL today.
 - **`is_all_day` normalizes the range, it is not a display flag.** `ScheduleException::create()` snaps the start back to practice-local midnight and the end forward to the *next* practice-local midnight. The range is half-open, so an end already sitting on midnight is left where it is rather than gaining a day it never covered. The `+1 day` is done in the practice zone, not as a flat 24 hours on a UTC value, so it survives a DST change. See [ADR-0002](../../docs/adr/0002-recurrence-anchored-to-practice-local-time.md).
 - Overlap is then a plain half-open range test (`overlapsTimeSlot`), which is why the normalization has to happen at creation rather than at query time.
 

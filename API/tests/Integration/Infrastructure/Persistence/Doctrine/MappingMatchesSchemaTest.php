@@ -43,6 +43,15 @@ final class MappingMatchesSchemaTest extends IntegrationTestCase
         self::assertSame([], $touchingTheColumn);
     }
 
+    public function testExceptionReasonMatchesTheNonNullColumnTheMigrationCreated(): void
+    {
+        // Version20260215000000 creates reason as NOT NULL. Matching both directions, so a mapping
+        // that turns nullable fails too; the expected DROP DEFAULT line is what keeps this narrow.
+        $touchingNullability = $this->statementsMatching('/reason (SET|DROP) NOT NULL/i');
+
+        self::assertSame([], $touchingNullability);
+    }
+
     /** @return list<string> */
     private function statementsMatching(string $pattern): array
     {
