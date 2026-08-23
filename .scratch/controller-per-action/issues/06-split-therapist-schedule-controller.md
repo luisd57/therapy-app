@@ -61,10 +61,11 @@ with two or more callers. Watch the Middle Man risk: a trait method that only wr
 earns nothing, so pull out the id, not the user.
 
 `ValidatesRequestTrait` is dead - `violationsToErrors()` has no callers and every controller reads
-`$violations[0]->getMessage()` itself. The four `Appointment/` controllers that still declare it
-drop it as tickets 04 to 06 convert them. Delete `ValidatesRequestTrait.php` once this ticket has
-removed the last declaration, and drop its mention from `## Validation` in
-`.claude/rules/api-conventions.md`.
+`$violations[0]->getMessage()` itself. Ticket 04 dropped the first declaration and ticket 05 drops
+another, but conversion alone does not finish the job: `PatientAppointmentController` declares it
+too and holds a single action, so the convention leaves that class alone and no ticket converts
+it. Strip its dead `use` here by hand, then delete `ValidatesRequestTrait.php` and drop its
+mention from `## Validation` in `.claude/rules/api-conventions.md`.
 
 - [ ] The current-user idiom is extracted once and the converted controllers use it
 - [ ] `ValidatesRequestTrait.php` is deleted and `api-conventions.md` no longer mentions it
