@@ -187,6 +187,25 @@ indistinguishable from not having the tool. Whichever is chosen, it goes in an
 ADR, because `documentation-style.md` is right that a bare rule with no recorded
 reason gets helpfully undone by the next person to hit a red build.
 
+### The conventions get enforced, not just written down
+
+Tickets 01 to 13 fix what the audit found. Nothing in them stops it coming back,
+and prose has already failed at that: the tickets themselves acquired three wrong
+claims and one unsatisfiable criterion during this effort, each caught by review
+rather than by any gate. Tickets 14, 15 and 16 are the enforcement layer.
+
+They divide by what each can see. **14** is off-the-shelf lint over both frontends,
+catching the shapes. **15** is custom PHPStan rules over `API/tests/`, chosen over a
+guard test because a syntax tree cannot be fooled by formatting the way a regex can.
+**16** is mutation testing, the only one that measures rather than pattern-matches,
+and the only one that costs anything real: it wants a coverage driver the image
+lacks. Each ticket carries its own reasoning.
+
+None of the three reaches the Slot value-object tautology. No mutation operator
+resolves a datetime against a different zone, and "both sides of the comparison
+move together" is not a shape a rule can see. That one stays with ADR-0003 and a
+reader who is paying attention.
+
 ### The Makefile is left alone
 
 It does not parse, because a block of prose sits in rule position with space
@@ -361,9 +380,14 @@ documented in `controller-per-action/01`, not drift.
 them, and it did some of the work: ticket 02 lost half its scope because the split
 removed the bare relative-plus-wall-clock fixture, and the helper that was
 copy-pasted into two controller tests became `SeedsTherapistSchedule`. Ticket 07
-is unblocked as a result. Nothing here is blocked by anything any more.
+is unblocked as a result.
 
-What remains is one soft ordering constraint against `timezone-management`. Ticket
+Two blockers remain, both internal and both real: ticket 14 waits on 10, which is
+what brings the e2e directories into lint scope at all, and ticket 15 waits on 11,
+which is what installs the analyser its rules run inside.
+
+What remains otherwise is one soft ordering constraint against
+`timezone-management`. Ticket
 01 should precede `timezone-management/04`, which moves sessions to 90 minutes: if
 the fixtures still equate duration with Start Increment when it lands, they become
 90 and 90 and the wrong grid outlives the change meant to fix it. It is a
