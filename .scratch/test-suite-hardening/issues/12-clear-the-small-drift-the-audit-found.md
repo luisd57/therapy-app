@@ -29,13 +29,21 @@ integration has never used it. Point the docs at the direct commands they alread
 document elsewhere. **Leave the Makefile itself alone** - it is not being fixed
 and not being deleted, this is only about the docs that send people to it.
 
+**The two API test base classes share a teardown.** `ApiTestCase` and
+`IntegrationTestCase` carry a byte-identical eleven-line `tearDown()` that rolls
+the transaction back and closes the entity manager. Isolation for the whole suite
+rests on those eleven lines existing in two places and staying in step. Extract
+them once.
+
 **Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 
+- [ ] The transaction teardown exists in one place and both base classes use it
 - [ ] The orphaned compose override is gone and no stray container is created by a normal compose run
 - [ ] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
 - [ ] The Practice Timezone is declared once and the e2e helpers read it rather than repeating it
 - [ ] No document instructs the reader to run a `make` target
+- [ ] Full API suite green, which is what observes the teardown extraction: break the rollback and integration tests start leaking into each other
 - [ ] Landing e2e suite green, which is the level that can observe the Viewer Zone pin and the shared Practice Timezone
 - [ ] The compose and documentation items are verified by a normal compose up and by following the changed docs end to end, since no suite can observe either
