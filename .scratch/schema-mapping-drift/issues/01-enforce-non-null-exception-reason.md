@@ -45,7 +45,7 @@ from the migrations on every run, so it needs nothing.
 
 **Status:** resolved
 
-**Resolved by:** https://github.com/luisd57/therapy-app/pull/65
+**Resolved by:** [PR #65](https://github.com/luisd57/therapy-app/pull/65)
 
 - [x] The column is declared `NOT NULL` in the migration that creates it, keeping the empty-string default so inserts that omit it still succeed
 - [x] The change is made by editing the existing migration, not by adding a new one
