@@ -36,6 +36,6 @@ layers. Those are the places where analysis pays for itself.
 - [ ] A static analysis tool is installed and configured for the API
 - [ ] The chosen level and the baseline stance are recorded in an ADR, with the reasoning
 - [ ] The analysis runs in continuous integration and a violation fails the build
-- [ ] The tests directory is in scope or is deliberately excluded with a stated reason
+- [ ] The tests directory is in scope, or the reason for excluding it is stated and ticket 15 is updated, since that ticket adds rules over `API/tests/` and has nowhere to run if this excludes them
 - [ ] Introducing a deliberate violation fails the pipeline, proving the gate is connected
 - [ ] Full pipeline green

@@ -187,6 +187,33 @@ indistinguishable from not having the tool. Whichever is chosen, it goes in an
 ADR, because `documentation-style.md` is right that a bare rule with no recorded
 reason gets helpfully undone by the next person to hit a red build.
 
+### The conventions get enforced, not just written down
+
+Tickets 01 to 13 fix what the audit found. Nothing in them stops it coming back,
+and prose has already failed at that: the tickets themselves acquired three wrong
+claims and one unsatisfiable criterion during this effort, each caught by review
+rather than by any gate. Tickets 14, 15 and 16 are the enforcement layer.
+
+They divide by what each can actually see:
+
+- **14, lint.** Off-the-shelf Playwright and Vitest rules over both frontends.
+  Every one passes today, so this is lock-in rather than migration.
+- **15, static analysis.** Custom PHPStan rules over `API/tests/`. Chosen over a
+  guard test that greps its own source, because the syntax tree cannot be fooled by
+  formatting or by a mention in a docblock. This audit got a figure wrong twice by
+  matching text that looked right.
+- **16, mutation testing.** The only one that measures rather than pattern-matches.
+  It reports lines that can be broken without failing a test, which is the question
+  the effort started from. It needs a coverage driver, which the image lacks, and
+  that is a real cost to weigh against the earlier decision to skip coverage. The
+  distinction that makes it worth paying: coverage asks whether a line ran,
+  mutation asks whether breaking it is noticed.
+
+None of the three reaches the Slot value-object tautology. No mutation operator
+resolves a datetime against a different zone, and "both sides of the comparison
+move together" is not a shape a rule can see. That one stays with ADR-0003 and a
+reader who is paying attention.
+
 ### The Makefile is left alone
 
 It does not parse, because a block of prose sits in rule position with space
@@ -361,9 +388,14 @@ documented in `controller-per-action/01`, not drift.
 them, and it did some of the work: ticket 02 lost half its scope because the split
 removed the bare relative-plus-wall-clock fixture, and the helper that was
 copy-pasted into two controller tests became `SeedsTherapistSchedule`. Ticket 07
-is unblocked as a result. Nothing here is blocked by anything any more.
+is unblocked as a result.
 
-What remains is one soft ordering constraint against `timezone-management`. Ticket
+Two blockers remain, both internal and both real: ticket 14 waits on 10, which is
+what brings the e2e directories into lint scope at all, and ticket 15 waits on 11,
+which is what installs the analyser its rules run inside.
+
+What remains otherwise is one soft ordering constraint against
+`timezone-management`. Ticket
 01 should precede `timezone-management/04`, which moves sessions to 90 minutes: if
 the fixtures still equate duration with Start Increment when it lands, they become
 90 and 90 and the wrong grid outlives the change meant to fix it. It is a
