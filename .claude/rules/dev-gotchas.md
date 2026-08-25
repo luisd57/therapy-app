@@ -34,6 +34,17 @@ more. Incident history and dates belong in project memory, not here.
 
 ## Testing
 
+- Auditing the suite with `grep -l` measures the file, not the test. Several files call
+  `freezeClock()` in one method and leave every other method on the wall clock, so
+  `grep -l freezeClock SomeTest.php` reports a file as frozen when the test you care about is not.
+  Walk it per method instead:
+  ```bash
+  find API/tests -name '*Test.php' -exec awk '/public function test/{fn=$0} /freezeClock/{print FILENAME": "fn}' {} +
+  ```
+  Use `find`, not `**/*.php`. Git Bash has `globstar` off, so `**` silently collapses to one
+  level and the sweep returns nothing at all - the same class of mistake this entry is about.
+  The same trap applies to any per-method fact: mocked clocks, skipped assertions, seeded fixtures.
+  A file-level count always overstates coverage.
 - The test database is separate and persistent. Run `make test-db-setup` once after a fresh clone,
   and again after `down -v` or any new migration - otherwise integration tests fail confusingly.
 - An *edited* migration needs more than that. The version is already recorded as applied, so
