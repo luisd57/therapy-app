@@ -259,10 +259,11 @@ knowing: a guard test earns its place only where inspection cannot do the job.
 
 Integration tests run inside a rolled-back transaction and pin "now" through the
 frozen-clock helper before issuing any request, because handlers resolve the
-clock lazily at dispatch. Note that only 6 of 48 integration files freeze the
-clock today, and 18 of 19 unit tests that double `ClockInterface` hand it the real
-current instant. Many genuinely do not need to. Ticket 13 is the judgement call
-over which do.
+clock lazily at dispatch. As measured on 2026-08-25, only 6 of 48 integration
+files freeze the clock, and 20 of 23 unit stubs of `ClockInterface` hand back the
+real current instant. Many genuinely do not need to. Ticket 13 is the judgement
+call over which do, and it warns that a file-level search overstates the freezing,
+because a file can freeze in one method and not in the next.
 
 ## Out of Scope
 
@@ -295,10 +296,12 @@ over which do.
   an over-count, which is the only thing they could usefully catch.
 - **The integration tests that assert a 409 on an Instant now in the past.**
   Named in Testing Decisions as an example of passing for the wrong reason, and
-  still unticketed because the maintainer has not ruled on it. The two that carry
-  the stale date now freeze the clock, so they are no longer wall-clock coupled.
-  Worth raising again rather than leaving indefinitely, since the tests keep
-  passing either way and nothing will prompt a second look.
+  still unticketed because the maintainer has not ruled on it. They are still
+  wall-clock coupled: their files call the frozen-clock helper in *other* test
+  methods, never inside the 409 tests themselves, which is a trap for anyone
+  checking this with a file-level search. Worth raising again rather than leaving
+  indefinitely, since the tests keep passing either way and nothing will prompt a
+  second look.
 
 ## Further Notes
 
@@ -334,11 +337,12 @@ afterwards.
 in the API suite. Neither is a defect on its own. Both are worth knowing when
 reading 602 as a number.
 
-**These figures are the 2026-08-22 snapshot and are already superseded.** PRs #55
-to #66 landed afterwards, taking the API suite to 603 tests across 106 files, 403
-unit and 200 integration. The file count jumped because the controller split
-produced one test file per route action. Do not quote the table above as current;
-re-measure.
+**Every figure in this spec carries the date it was measured, and none is
+maintained.** The table above is the 2026-08-22 audit run. PRs #55 to #66 landed
+afterwards and took the API suite to 603 tests across 106 files, 403 unit and 200
+integration, measured 2026-08-25. The file count jumped because the controller
+split produced one test file per route action. Re-measure before quoting any of
+it, including the 2026-08-25 numbers, which will rot the same way.
 
 ### What the audit found that is genuinely healthy
 
@@ -355,8 +359,7 @@ documented in `controller-per-action/01`, not drift.
 `controller-per-action` is resolved as of PRs #55 to #63, and
 `schema-mapping-drift/01` as of #65. That settled every edge this effort had with
 them, and it did some of the work: ticket 02 lost half its scope because the split
-removed the bare relative-plus-wall-clock fixture, the two 409 tests that used to
-pass for the calendar's reason now freeze the clock, and the helper that was
+removed the bare relative-plus-wall-clock fixture, and the helper that was
 copy-pasted into two controller tests became `SeedsTherapistSchedule`. Ticket 07
 is unblocked as a result. Nothing here is blocked by anything any more.
 
