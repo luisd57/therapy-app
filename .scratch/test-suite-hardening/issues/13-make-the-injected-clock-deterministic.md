@@ -23,8 +23,9 @@ fixture without noticing.
 **The codebase already argues this ticket.** `GetNextAvailableWeekHandlerTest`
 pins its instant and says why in a comment directly above the stub: a real "now"
 would make the expected date depend on when the suite runs. That is the pattern to
-spread. `AddScheduleExceptionHandlerTest` and the password-reset handler test are
-the other two that already do it.
+spread. `AddScheduleExceptionHandlerTest` is the only other file that does it
+throughout. `ResetPasswordHandlerTest` does both, pinning in one test and taking
+the real clock in another, which is the mixed state to expect across the suite.
 
 **Six of forty-eight integration files freeze the clock.** The helper for it
 exists and is used correctly where it is used. Beware of judging this by whether a
@@ -42,17 +43,14 @@ Note the ordering constraint the helper carries: the clock must be frozen before
 the service that reads it is resolved, because handlers resolve it lazily at
 dispatch.
 
-**A green run does not verify this ticket, and here the trap is sharper than
-usual.** Pinning an instant in all twenty stubs and watching the suite stay green
-proves nothing, because most of those tests do not assert on time in the first
-place. That is the whole reason they pass today. Swapping a real clock for a
-frozen one in a test that never observes the clock changes no outcome and pins no
-behaviour, so the work can be done in full and be worth nothing.
-
-The check that separates the two: after pinning, move the instant somewhere that
-should matter and confirm something goes red. A stub nobody can make fail by
-changing "now" was not worth pinning, and either the test needs an assertion that
-depends on time or the injection should come out. Say which, per test.
+**A green run does not verify this ticket.** These twenty tests split two ways and
+the suite cannot tell you which is which. Some already depend on time and will go
+red the moment a pinned instant is wrong. Others assert only on identity or
+status, and pinning their clock changes no outcome whatsoever. Move the instant
+after pinning it and confirm something goes red. Where nothing does, name the test
+in the pull request rather than counting it done: the clock stays injected, since
+the handler requires it, but nothing about that test is any more pinned than
+before.
 
 **Blocked by:** None - can start immediately.
 
@@ -62,8 +60,7 @@ depends on time or the injection should come out. Say which, per test.
 - [ ] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant
 - [ ] Integration test methods asserting on a date, an expiry or an ordering freeze the clock before the request, judged per method rather than per file
 - [ ] Methods deliberately left unfrozen are named with a reason, rather than silently skipped
-- [ ] Moving the frozen instant across a boundary that should matter, such as an expiry, fails the test that covers it
-- [ ] Every test whose clock was pinned is shown to fail when the pinned instant moves, or is recorded as one where pinning bought nothing and the injection came out instead
+- [ ] Each pinned test is shown to go red when the instant moves, and any that cannot are named in the pull request rather than counted as done
 - [ ] Full API suite green
 
 ## Comments
