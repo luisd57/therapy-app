@@ -1,10 +1,11 @@
 # 09 - Exercise every password rule in the dashboard e2e
 
-**What to build:** a Patient setting a password sees the specific rule they broke,
-and each rule is covered by a spec.
+**What to build:** every password rule is covered by a spec, so deleting one
+fails the suite.
 
-The dashboard validates passwords against six independent conditions plus a
-maximum length, on both the registration and the reset screens. No spec reaches
+The dashboard validates passwords against six independent conditions, minimum and
+maximum length plus four character classes, on both the registration and the reset
+screens. No spec reaches
 any of them individually. The closest is a mismatch check, which exercises a
 different validator entirely. Every rule could be deleted and the suite would
 stay green.
@@ -20,14 +21,19 @@ rather than duplicating seven cases twice.
 
 **One generic message covers all six rules today**, so a spec cannot read which
 rule fired off the screen. It does not need to. Each case feeds a password that
-breaks exactly one rule, so the strength error appearing is proof that rule fired,
-because nothing else could have produced it.
+breaks exactly one rule, so the strength message appearing is proof that rule
+fired, because nothing else could have produced it. Assert that message rather
+than a disabled submit button, which a missing required field would also satisfy.
 
-Assert that error by locating it inside the password field, not by matching its
-text. The field holds two mutually exclusive errors, and the required one only
-fires on an empty field, so an error next to a non-empty password is the strength
-error. Matching the text instead would tie these specs to an English string that
-the Spanish sweep in `timezone-management/07` rewrites, and buy nothing for it.
+**Both errors are gated on `touched`.** Filling the field is not enough to render
+either one: Playwright's `fill()` does not blur. `auth-login.spec.ts` already
+handles this and says so in a comment, so follow it rather than rediscovering it.
+
+**These specs will bind to English UI text**, as every existing dashboard spec
+does. `timezone-management/07` rewrites that text. Scoping to the field instead of
+the message does not escape it, since the only handle on the field is its label
+and the sweep rewrites labels too. So either land 07 first, or accept rewriting
+these strings once. Not a blocker either way, just a cost to choose knowingly.
 
 Splitting the generic message into six is a product decision about what the
 Patient should see, not test hardening. Out of scope here.
@@ -43,7 +49,8 @@ inventing new session handling.
 
 - [ ] Each rule has a case whose input violates only that rule, so a passing case cannot be explained by a different rule firing
 - [ ] The maximum length bound is exercised at the boundary
-- [ ] Each case asserts the strength error itself, located structurally within the password field and not matched on its text, so a missing required field cannot satisfy the assertion and the Spanish sweep cannot break it
+- [ ] Each case asserts the strength message, not a disabled submit button
+- [ ] Each case blurs the field, since the error does not render until the control is touched
 - [ ] A valid password is accepted, so the specs cannot pass by rejecting everything
 - [ ] The second screen is covered enough to catch it drifting from the shared validator
 - [ ] No test dependency is added to the dashboard

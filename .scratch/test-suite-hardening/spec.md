@@ -368,6 +368,9 @@ What remains is one soft ordering constraint against `timezone-management`. Tick
 the fixtures still equate duration with Start Increment when it lands, they become
 90 and 90 and the wrong grid outlives the change meant to fix it. It is a
 cross-reference, not a blocker, since either order works if someone notices.
+Ticket 09 is cheaper after `timezone-management/07`: its specs bind to English UI
+text, as every existing dashboard spec does, and the Spanish sweep rewrites it.
+Also not a blocker, just a rewrite you can choose to avoid.
 
 **The lesson worth keeping.** Tickets written against a snapshot rot when a large
 effort lands beside them. This one needed a refresh three days after publication,
