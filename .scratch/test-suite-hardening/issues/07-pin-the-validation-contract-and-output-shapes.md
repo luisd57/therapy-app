@@ -29,9 +29,9 @@ classes individually would be busywork, since most are constructor-to-array with
 nothing to get wrong. What is worth pinning is the serialised shape of what
 crosses the wire and the error body the traits build.
 
-**Blocked by:** `controller-per-action` 01, 02, 03, 04, 05, 06. Those tickets are rewriting
-the controller test files this work would touch, so landing first guarantees
-conflicts for no benefit.
+**Blocked by:** None - can start immediately. The `controller-per-action` split
+that gated this landed in PRs #55 to #62, so the controller test files this work
+touches are now in their final shape.
 
 **Status:** ready-for-agent
 

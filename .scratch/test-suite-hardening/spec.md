@@ -49,11 +49,12 @@ so many words. The audit is what measured how far it had drifted.
 
 ## Solution
 
-Twelve tickets closing the eight granted findings, all landing on seams that
+Thirteen tickets closing the eight granted findings, all landing on seams that
 already exist. The counts differ because the largest finding, the untested edges
-of the API, splits across four tickets, and because two tickets come from
-decisions taken during the review rather than from a finding: static analysis and
-the bundle of small drift.
+of the API, splits across four tickets, because two tickets come from decisions
+taken during the review rather than from a finding (static analysis and the bundle
+of small drift), and because ticket 13 was added afterwards, when re-checking the
+suite against `main` showed the clock work was too large to sit inside ticket 02.
 
 The work divides into four kinds. **Make lying tests honest**: rewrite the
 fixtures whose expectations are derived from the object under test, and fix the
@@ -258,8 +259,11 @@ knowing: a guard test earns its place only where inspection cannot do the job.
 
 Integration tests run inside a rolled-back transaction and pin "now" through the
 frozen-clock helper before issuing any request, because handlers resolve the
-clock lazily at dispatch. Note that 20 of 24 integration files do not currently
-freeze the clock. Most genuinely do not need to.
+clock lazily at dispatch. As measured on 2026-08-25, only 6 of 48 integration
+files freeze the clock, and 20 of 23 unit stubs of `ClockInterface` hand back the
+real current instant. Many genuinely do not need to. Ticket 13 is the judgement
+call over which do, and it warns that a file-level search overstates the freezing,
+because a file can freeze in one method and not in the next.
 
 ## Out of Scope
 
@@ -287,15 +291,17 @@ freeze the clock. Most genuinely do not need to.
 - **Hardcoded session duration in fixtures.** Already covered by
   `timezone-management/04`. Ticket 01 covers the Start Increment, which that
   ticket does not.
-- **Rewriting the pagination assertions that use a lower bound where the
-  transaction guarantees an exact count.** Real but low value, and touching the
-  same controller tests `controller-per-action` is rewriting.
-- **The two integration tests that assert a 409 on an Instant now in the past.**
+- **Rewriting the four pagination assertions that use a lower bound where the
+  transaction guarantees an exact count.** Real but low value. They cannot catch
+  an over-count, which is the only thing they could usefully catch.
+- **The integration tests that assert a 409 on an Instant now in the past.**
   Named in Testing Decisions as an example of passing for the wrong reason, and
-  deliberately left unticketed: the maintainer has not ruled on it, and it sits in
-  controller test files `controller-per-action` is rewriting. Worth raising again
-  once that sequence lands, since the tests will keep passing either way and
-  nothing will prompt a second look.
+  still unticketed because the maintainer has not ruled on it. They are still
+  wall-clock coupled: their files call the frozen-clock helper in *other* test
+  methods, never inside the 409 tests themselves, which is a trap for anyone
+  checking this with a file-level search. Worth raising again rather than leaving
+  indefinitely, since the tests keep passing either way and nothing will prompt a
+  second look.
 
 ## Further Notes
 
@@ -331,6 +337,13 @@ afterwards.
 in the API suite. Neither is a defect on its own. Both are worth knowing when
 reading 602 as a number.
 
+**Every figure in this spec carries the date it was measured, and none is
+maintained.** The table above is the 2026-08-22 audit run. PRs #55 to #66 landed
+afterwards and took the API suite to 603 tests across 106 files, 403 unit and 200
+integration, measured 2026-08-25. The file count jumped because the controller
+split produced one test file per route action. Re-measure before quoting any of
+it, including the 2026-08-25 numbers, which will rot the same way.
+
 ### What the audit found that is genuinely healthy
 
 Worth recording so it does not get "improved". No skipped or incomplete tests. No
@@ -343,8 +356,22 @@ documented in `controller-per-action/01`, not drift.
 
 ### Relationship to the other effort directories
 
-This effort overlaps `timezone-management` and `controller-per-action` at three
-points, all recorded above. Ticket 07 is genuinely blocked by the controller
-split. Ticket 01 should precede `timezone-management/04` but does not block it.
-Ticket 02 touches a file `controller-per-action/05` will move, and whichever
-lands second carries the fix forward.
+`controller-per-action` is resolved as of PRs #55 to #63, and
+`schema-mapping-drift/01` as of #65. That settled every edge this effort had with
+them, and it did some of the work: ticket 02 lost half its scope because the split
+removed the bare relative-plus-wall-clock fixture, and the helper that was
+copy-pasted into two controller tests became `SeedsTherapistSchedule`. Ticket 07
+is unblocked as a result. Nothing here is blocked by anything any more.
+
+What remains is one soft ordering constraint against `timezone-management`. Ticket
+01 should precede `timezone-management/04`, which moves sessions to 90 minutes: if
+the fixtures still equate duration with Start Increment when it lands, they become
+90 and 90 and the wrong grid outlives the change meant to fix it. It is a
+cross-reference, not a blocker, since either order works if someone notices.
+Ticket 09 should follow `timezone-management/07` for the simpler reason that the
+Spanish sweep rewrites the strings it asserts on.
+
+**The lesson worth keeping.** Tickets written against a snapshot rot when a large
+effort lands beside them. This one needed a refresh three days after publication,
+and the parts that rotted were the file paths and the counts, not the reasoning.
+Re-measure before picking one up.
