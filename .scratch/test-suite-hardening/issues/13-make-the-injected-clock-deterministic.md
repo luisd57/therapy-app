@@ -42,6 +42,18 @@ Note the ordering constraint the helper carries: the clock must be frozen before
 the service that reads it is resolved, because handlers resolve it lazily at
 dispatch.
 
+**A green run does not verify this ticket, and here the trap is sharper than
+usual.** Pinning an instant in all twenty stubs and watching the suite stay green
+proves nothing, because most of those tests do not assert on time in the first
+place. That is the whole reason they pass today. Swapping a real clock for a
+frozen one in a test that never observes the clock changes no outcome and pins no
+behaviour, so the work can be done in full and be worth nothing.
+
+The check that separates the two: after pinning, move the instant somewhere that
+should matter and confirm something goes red. A stub nobody can make fail by
+changing "now" was not worth pinning, and either the test needs an assertion that
+depends on time or the injection should come out. Say which, per test.
+
 **Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
@@ -51,6 +63,7 @@ dispatch.
 - [ ] Integration test methods asserting on a date, an expiry or an ordering freeze the clock before the request, judged per method rather than per file
 - [ ] Methods deliberately left unfrozen are named with a reason, rather than silently skipped
 - [ ] Moving the frozen instant across a boundary that should matter, such as an expiry, fails the test that covers it
+- [ ] Every test whose clock was pinned is shown to fail when the pinned instant moves, or is recorded as one where pinning bought nothing and the injection came out instead
 - [ ] Full API suite green
 
 ## Comments
