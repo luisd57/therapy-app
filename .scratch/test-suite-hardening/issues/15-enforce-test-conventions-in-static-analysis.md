@@ -5,13 +5,15 @@ rules that fail the build, so a new test cannot reintroduce a defect this effort
 just spent thirteen tickets removing.
 
 Custom PHPStan rules over `API/tests/`, deliberately chosen over a guard test that
-greps its own source. Regex reads text; PHPStan reads the syntax tree, so it sees
+greps its own source. Regex reads text. PHPStan reads the syntax tree, so it sees
 a naive `DateTimeImmutable` construction regardless of how the line is formatted
 and cannot be fooled by a mention in a docblock. That distinction is not academic
 here: an audit of this suite reported the wrong figure twice by matching text that
 looked right.
 
-Rules worth writing, roughly in value order:
+Rules worth writing, roughly in value order. Confirm what PHPStan can express
+against the version ticket 11 installs, rather than assuming this list is buildable
+as written:
 
 - A `ClockInterface` double whose `now()` returns a `DateTimeImmutable` built with
   no arguments. This is the whole of ticket 13's defect, expressed as a shape.
@@ -46,7 +48,7 @@ layout rather than syntax. Prose and review still carry those.
 
 - [ ] The clock-stub rule and the naive-literal rule each exist and are scoped to the tests directory
 - [ ] Each rule is added by the ticket that clears its existing violations, so none lands against a red suite and no allowlist is introduced
-- [ ] The banned-assertion and banned-function rules cover `assertEquals`, `markTestSkipped`, `markTestIncomplete` and `sleep`
+- [ ] The banned-assertion and banned-function rules cover `assertEquals`, `assertNotEquals`, `markTestSkipped`, `markTestIncomplete`, `sleep` and `usleep`
 - [ ] Every rule carries a message naming the convention and where it is written down, not just the violation
 - [ ] Introducing each violation deliberately fails the pipeline, one at a time, proving no rule is inert
 - [ ] Full pipeline green

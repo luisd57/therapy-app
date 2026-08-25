@@ -194,20 +194,12 @@ and prose has already failed at that: the tickets themselves acquired three wron
 claims and one unsatisfiable criterion during this effort, each caught by review
 rather than by any gate. Tickets 14, 15 and 16 are the enforcement layer.
 
-They divide by what each can actually see:
-
-- **14, lint.** Off-the-shelf Playwright and Vitest rules over both frontends.
-  Every one passes today, so this is lock-in rather than migration.
-- **15, static analysis.** Custom PHPStan rules over `API/tests/`. Chosen over a
-  guard test that greps its own source, because the syntax tree cannot be fooled by
-  formatting or by a mention in a docblock. This audit got a figure wrong twice by
-  matching text that looked right.
-- **16, mutation testing.** The only one that measures rather than pattern-matches.
-  It reports lines that can be broken without failing a test, which is the question
-  the effort started from. It needs a coverage driver, which the image lacks, and
-  that is a real cost to weigh against the earlier decision to skip coverage. The
-  distinction that makes it worth paying: coverage asks whether a line ran,
-  mutation asks whether breaking it is noticed.
+They divide by what each can see. **14** is off-the-shelf lint over both frontends,
+catching the shapes. **15** is custom PHPStan rules over `API/tests/`, chosen over a
+guard test because a syntax tree cannot be fooled by formatting the way a regex can.
+**16** is mutation testing, the only one that measures rather than pattern-matches,
+and the only one that costs anything real: it wants a coverage driver the image
+lacks. Each ticket carries its own reasoning.
 
 None of the three reaches the Slot value-object tautology. No mutation operator
 resolves a datetime against a different zone, and "both sides of the comparison
