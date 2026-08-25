@@ -34,6 +34,17 @@ more. Incident history and dates belong in project memory, not here.
 
 ## Testing
 
+- Auditing the suite with `grep -l` measures the file, not the test. Every file that freezes the
+  clock also leaves methods on the wall clock, so a file-level hit says nothing about the method
+  you care about. Walk it per method, and match a call rather than the bare name, or a docblock
+  mentioning the helper counts as a freeze:
+  ```bash
+  find API/tests -name '*Test.php' -exec awk '/public function test/{fn=$0} /->freezeClock\(/{print FILENAME": "fn}' {} +
+  ```
+  Use `find`, not `**/*.php`. Git Bash has `globstar` off, so `**` collapses to a single level and
+  silently sweeps a fraction of the tree.
+  The same trap applies to any per-method fact: mocked clocks, skipped assertions, seeded fixtures.
+  A file-level count always overstates coverage.
 - The test database is separate and persistent. Run `make test-db-setup` once after a fresh clone,
   and again after `down -v` or any new migration - otherwise integration tests fail confusingly.
 - An *edited* migration needs more than that. The version is already recorded as applied, so
@@ -43,6 +54,6 @@ more. Incident history and dates belong in project memory, not here.
   unreleased, so this comes up.
 - Under `APP_ENV=test`, `cache.app` is an `ArrayAdapter` that Symfony resets between requests, so
   anything cached in one request is gone by the next and `disableReboot()` does not help. Put a
-  `FilesystemAdapter`-backed pool behind the service first, as
-  `ResetPasswordControllerTest::useBlocklistThatSurvivesRequests()` does. Dev and prod use Redis,
-  so the code is fine - only the test cannot see it.
+  `FilesystemAdapter`-backed pool behind the service first, as the
+  `KeepsBlocklistAcrossRequests` trait does. Dev and prod use Redis, so the code is fine - only
+  the test cannot see it.

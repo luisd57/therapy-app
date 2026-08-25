@@ -5,10 +5,25 @@ paths:
 # API Testing Conventions
 
 ## Test Infrastructure
+
+All of it lives in `API/tests/Helper/`. Read the list before writing a fixture by hand.
+
+Base classes:
 - **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly.
 - **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
 - Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
+
+Traits:
+- **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset.
+- **SeedsAuthFixtures**: seeds a therapist, an activated patient or an invitation. Credentials match the `ApiTestCase` defaults, so a seeded user logs in with them.
+- **SeedsTherapistSchedule**: seeds a therapist plus a Schedule Block wide enough that Slot queries return something.
+- **SeedsAppointment**: seeds one Appointment. Takes REQUESTED or CONFIRMED only, and throws on a terminal status rather than silently seeding REQUESTED.
+- **KeepsBlocklistAcrossRequests**: puts the JWT blocklist on storage that outlives a request. See the `ArrayAdapter` entry in `dev-gotchas.md` for why it is needed.
+
+Adding or changing a file in `Helper/` updates this list in the same pull request. An undocumented
+helper gets reimplemented: `createTherapistWithSchedule` was copy-pasted into two controller tests
+before it became a trait.
 
 ## Key Rules
 - All integration tests run in transactions that rollback in `tearDown()` - no data persists.
