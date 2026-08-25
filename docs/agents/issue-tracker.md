@@ -14,7 +14,7 @@ describe means they travel with the branch that implements them.
 - Triage state is recorded as a `**Status:**` line near the top of each issue file (see `triage-labels.md` for the role strings). Bolded, matching the `to-tickets` template that writes it - a plain `Status:` will not be found by anything scanning for the frontier
 - A finished ticket ends at `**Status:** resolved` with a `**Resolved by:**` line naming the PR, its verified acceptance criteria ticked, and the file kept. The `/done` skill does this alongside the `docs/STATUS.md` update
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
-- A count, a file path or any other measurement quoted in a spec or ticket carries the date it was taken, and nothing keeps it current. Re-measure before acting on one. `test-suite-hardening` needed a refresh three days after publication because a large effort landed beside it: the reasoning held, the numbers and paths did not
+- A count or file path quoted in a spec or ticket carries the date it was taken. These files are frozen markdown and nothing recomputes them, so a neighbouring effort landing silently invalidates them while they still read as current. Re-measure before acting on one
 
 ## When a skill says "publish to the issue tracker"
 
