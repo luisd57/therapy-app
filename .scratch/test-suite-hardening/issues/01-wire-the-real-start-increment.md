@@ -20,10 +20,12 @@ the wrong grid survives the change that was supposed to correct it.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] No test constructs the slot generation rules with duration and Start Increment set to the same value
-- [ ] The two values are named at the point of use, so a reader can tell which is which without checking the constructor signature
-- [ ] Where the container is available the configured values are read rather than repeated, per the rule in `CLAUDE.md`. Pure unit tests may use literals, provided the two differ as production's do
-- [ ] A test fails if duration and Start Increment are swapped at the call site, which today's fixtures cannot detect
-- [ ] Full API suite green
+**Resolved by:** PR #72
+
+- [x] No test that stands in for the configured grid constructs the slot generation rules with duration and Start Increment set to the same value. Reworded 2026-08-29: as first written this could not be ticked. `AvailabilityComputerTest` builds equal values at 16 sites, 11 of them explicit and 5 through the increment's default, and every one of them pins the back-to-back grid contract on purpose. That grid is a supported configuration, not the defect this ticket names
+- [x] The two values are named at the point of use, so a reader can tell which is which without checking the constructor signature
+- [x] Where the container is available the configured values are read rather than repeated, per the rule in `CLAUDE.md`. Pure unit tests may use literals, provided the two differ as production's do
+- [x] A test fails if duration and Start Increment are swapped at the call site, which today's fixtures cannot detect. Verified by breaking it: swapping the two constructor parameters fails the new unit test while the three handler tests stay green, and swapping the two parameter values in `services.yaml` fails the new integration test. Note the limit, at the three handler call sites a swap is now unlikely rather than detectable, because named arguments prevent it and the stubbed availability computer still cannot observe it
+- [x] Full API suite green

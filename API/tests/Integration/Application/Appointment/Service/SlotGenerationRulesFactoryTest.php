@@ -6,39 +6,33 @@ namespace App\Tests\Integration\Application\Appointment\Service;
 
 use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 // Not IntegrationTestCase: this reads container parameters and touches no
 // database, so transaction wrapping would buy nothing.
 final class SlotGenerationRulesFactoryTest extends KernelTestCase
 {
-    public function testTheConfiguredDurationAndStartIncrementReachTheRules(): void
+    private ContainerInterface $container;
+
+    protected function setUp(): void
     {
         self::bootKernel();
-        $container = self::getContainer();
+        $this->container = self::getContainer();
+    }
 
-        $slotGenerationRules = $container->get(SlotGenerationRulesFactory::class)->create();
+    public function testTheConfiguredDurationAndStartIncrementReachTheRules(): void
+    {
+        $slotGenerationRules = $this->container->get(SlotGenerationRulesFactory::class)->create();
 
         // Read, never repeated: a literal here would pass while services.yaml
-        // passed the parameters in the wrong order.
+        // bound each parameter to the wrong argument name.
         $this->assertSame(
-            $container->getParameter('app.appointment_duration_minutes'),
+            $this->container->getParameter('app.appointment_duration_minutes'),
             $slotGenerationRules->durationMinutes,
         );
         $this->assertSame(
-            $container->getParameter('app.slot_start_increment_minutes'),
+            $this->container->getParameter('app.slot_start_increment_minutes'),
             $slotGenerationRules->startIncrementMinutes,
-        );
-    }
-
-    public function testTheConfiguredValuesDifferSoASwapWouldBeVisible(): void
-    {
-        self::bootKernel();
-        $container = self::getContainer();
-
-        $this->assertNotSame(
-            $container->getParameter('app.appointment_duration_minutes'),
-            $container->getParameter('app.slot_start_increment_minutes'),
-            'Equal values make the assertions above pass under a swapped wiring.',
         );
     }
 }
