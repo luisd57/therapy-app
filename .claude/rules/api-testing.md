@@ -12,7 +12,7 @@ Base classes:
 - **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly.
 - **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
-- Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
+- Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. A test that only reads container parameters extends `KernelTestCase` directly for the same reason: `Application/Appointment/Service/SlotGenerationRulesFactoryTest` is the case. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
 Traits:
 - **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset.

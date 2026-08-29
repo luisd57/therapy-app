@@ -58,7 +58,11 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
             $this->exceptionRepository,
             $this->appointmentRepository,
             $this->availabilityComputer,
-            new SlotGenerationRulesFactory($practiceTimezoneProvider, 50, 50),
+            new SlotGenerationRulesFactory(
+                practiceTimezoneProvider: $practiceTimezoneProvider,
+                appointmentDurationMinutes: 50,
+                slotStartIncrementMinutes: 30,
+            ),
             $practiceTimezoneProvider,
             $this->clock,
             $maxLookaheadWeeks,
