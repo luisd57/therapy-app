@@ -87,11 +87,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $scheduleExceptions;
 
     public function __construct(
-        // Not readonly, unlike every other identifier here: User is the only entity another
-        // maps a ManyToOne onto, so it is the only one Doctrine builds proxies for. Initializing
-        // a proxy re-sets the id, and Doctrine's ReadonlyAccessor compares with !== - two UserId
-        // value objects holding the same UUID fail that and it throws. No setter exists, so the
-        // field is still immutable in practice.
+        // Not readonly: a readonly VO identifier breaks proxy initialization. See ADR-0007.
         #[ORM\Id]
         #[ORM\Column(type: 'user_id')]
         private UserId $id,

@@ -35,7 +35,7 @@ final class SetTherapistScheduleHandlerTest extends TestCase
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $this->therapist = DomainTestHelper::createTherapist();
-        $this->userRepository->method('findById')->willReturn($this->therapist);
+        $this->userRepository->method('getByIdOrFail')->willReturn($this->therapist);
 
         $this->handler = new SetTherapistScheduleHandler(
             $this->scheduleRepository,

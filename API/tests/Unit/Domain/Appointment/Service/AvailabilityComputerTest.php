@@ -21,7 +21,6 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use DateTimeZone;

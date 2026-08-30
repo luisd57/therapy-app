@@ -7,7 +7,6 @@ namespace App\Tests\Unit\Application\User\Handler;
 use App\Application\User\DTO\Input\ResetPasswordInputDTO;
 use App\Application\User\Handler\ResetPasswordHandler;
 use App\Domain\User\Exception\InvalidTokenException;
-use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\JwtBlocklistInterface;

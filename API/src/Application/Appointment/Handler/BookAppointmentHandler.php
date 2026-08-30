@@ -13,7 +13,6 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -36,15 +35,9 @@ final readonly class BookAppointmentHandler
         $modality = AppointmentModality::from($dto->modality);
         $email = Email::fromString($dto->email);
         $phone = Phone::fromString($dto->phone);
-        $patient = null;
-
-        if ($dto->patientId !== null) {
-            $patient = $this->userRepository->findById(UserId::fromString($dto->patientId));
-
-            if ($patient === null) {
-                throw new UserNotFoundException($dto->patientId);
-            }
-        }
+        $patient = $dto->patientId !== null
+            ? $this->userRepository->getByIdOrFail(UserId::fromString($dto->patientId))
+            : null;
 
         $appointment = Appointment::book(
             id: AppointmentId::generate(),

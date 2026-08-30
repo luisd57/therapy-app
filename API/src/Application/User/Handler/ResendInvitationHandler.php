@@ -57,7 +57,7 @@ final readonly class ResendInvitationHandler
             token: $rawToken,
             email: $original->getEmail(),
             patientName: $original->getPatientName(),
-            invitedBy: $original->getInvitedByUser(),
+            invitedBy: $original->getInvitedBy(),
             ttlSeconds: $this->invitationTtl,
             now: $now,
         );

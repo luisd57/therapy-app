@@ -18,7 +18,7 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 
 ## ORM Relations
 
-Every relation points at `User`; `SlotLock` has none. Pin each join column with an explicit
+Every relation points at `User`, and `SlotLock` has none. Pin each join column with an explicit
 `#[ORM\JoinColumn(name:, referencedColumnName: 'id', onDelete:)]` so the mapping states the
 delete rule instead of leaving it in a migration only.
 
@@ -33,7 +33,7 @@ delete rule instead of leaving it in a migration only.
 - **Never `fetch: 'EAGER'`.** It is global and fires on `find()` too. When a caller genuinely
   reads through an association, put `->join(...)->addSelect(...)` in that one repository method.
 - **Do not iterate the inverse collections in application code.** The practice has one therapist,
-  so `getSentInvitations()` and `getScheduleExceptions()` are whole tables with no `LIMIT`; both
+  so `getSentInvitations()` and `getScheduleExceptions()` are whole tables with no `LIMIT`. Both
   are `EXTRA_LAZY` so `count`/`contains`/`slice` stay in SQL. The paginated repository methods are
   the read path for user-scoped lists.
 - **Repository ports still take `UserId`, not `User`** - a read should not force callers to load a

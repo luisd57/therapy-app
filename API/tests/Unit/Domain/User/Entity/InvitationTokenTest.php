@@ -7,7 +7,6 @@ namespace App\Tests\Unit\Domain\User\Entity;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
-use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -34,8 +33,8 @@ final class InvitationTokenTest extends TestCase
         $therapist = DomainTestHelper::createTherapist();
         $invitation = DomainTestHelper::createValidInvitation(invitedBy: $therapist);
 
-        $this->assertSame($therapist, $invitation->getInvitedByUser());
-        $this->assertTrue($therapist->getId()->equals($invitation->getInvitedBy()));
+        $this->assertSame($therapist, $invitation->getInvitedBy());
+        $this->assertTrue($therapist->getId()->equals($invitation->getInvitedById()));
     }
 
     public function testCreateExpiresAtIsInFuture(): void
@@ -154,7 +153,7 @@ final class InvitationTokenTest extends TestCase
         $this->assertSame('recon-token', $invitation->getToken());
         $this->assertTrue($email->equals($invitation->getEmail()));
         $this->assertSame('Recon Patient', $invitation->getPatientName());
-        $this->assertTrue($invitedBy->getId()->equals($invitation->getInvitedBy()));
+        $this->assertTrue($invitedBy->getId()->equals($invitation->getInvitedById()));
         $this->assertTrue($invitation->isUsed());
         $this->assertSame($createdAt, $invitation->getCreatedAt());
         $this->assertSame($expiresAt, $invitation->getExpiresAt());

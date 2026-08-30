@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\User\Repository;
 
 use App\Domain\User\Entity\User;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
@@ -36,6 +37,11 @@ final class DoctrineUserRepository implements UserRepositoryInterface
     public function findById(UserId $id): ?User
     {
         return $this->entityManager->find(User::class, $id->getValue());
+    }
+
+    public function getByIdOrFail(UserId $id): User
+    {
+        return $this->findById($id) ?? throw new UserNotFoundException($id->getValue());
     }
 
     public function findByEmail(Email $email): ?User

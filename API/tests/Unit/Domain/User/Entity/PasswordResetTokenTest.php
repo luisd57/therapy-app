@@ -6,7 +6,6 @@ namespace App\Tests\Unit\Domain\User\Entity;
 
 use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Id\TokenId;
-use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -33,14 +32,6 @@ final class PasswordResetTokenTest extends TestCase
         $token = DomainTestHelper::createValidPasswordResetToken(user: $user);
 
         $this->assertSame($user, $token->getUser());
-    }
-
-    public function testUserIdDelegatesToTheAssociatedUser(): void
-    {
-        $user = DomainTestHelper::createActivePatient();
-        $token = DomainTestHelper::createValidPasswordResetToken(user: $user);
-
-        $this->assertTrue($user->getId()->equals($token->getUserId()));
     }
 
     public function testCreateExpiresAtIsInFuture(): void

@@ -29,7 +29,7 @@ final class BookAppointmentHandlerTest extends TestCase
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $userRepository->method('findById')->willReturn(
+        $userRepository->method('getByIdOrFail')->willReturn(
             DomainTestHelper::createActivePatient(id: UserId::fromString(self::PATIENT_ID)),
         );
 

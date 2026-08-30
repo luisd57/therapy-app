@@ -13,6 +13,7 @@ use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
+use Doctrine\ORM\Tools\SchemaValidator;
 
 /**
  * The guarantees the ManyToOne/OneToMany mappings are supposed to buy, and the one
@@ -20,6 +21,28 @@ use App\Tests\Helper\IntegrationTestCase;
  */
 final class EntityRelationsTest extends IntegrationTestCase
 {
+    /**
+     * The criterion the whole change exists for: the entities are the schema's source of truth.
+     */
+    public function testTheMappingAgreesWithTheDatabase(): void
+    {
+        $validator = new SchemaValidator($this->entityManager);
+
+        // doctrine_migration_versions is the migrations bundle's own bookkeeping and maps to no
+        // entity. The console command filters it out; a validator built here does not.
+        $drift = array_values(array_filter(
+            $validator->getUpdateSchemaList(),
+            static fn (string $sql): bool => !str_contains($sql, 'doctrine_migration_versions'),
+        ));
+
+        $this->assertSame([], $validator->validateMapping(), 'The ORM mapping is invalid.');
+        $this->assertSame(
+            [],
+            $drift,
+            'The database schema has drifted from the mapping. Run doctrine:migrations:diff.',
+        );
+    }
+
     public function testReadingAPatientIdDoesNotLoadThePatient(): void
     {
         $userRepository = self::getContainer()->get(UserRepositoryInterface::class);
@@ -37,10 +60,7 @@ final class EntityRelationsTest extends IntegrationTestCase
         $appointments = $appointmentRepository->findAllPaginated(0, 20);
         $unitOfWork = $this->entityManager->getUnitOfWork();
 
-        // Mapping to the response DTO is the hot path. It reads the id and nothing else,
-        // so every patient must still be an untouched proxy afterwards. If someone adds a
-        // getPatient()->getFullName() to the DTO this fails, which is the point: that call
-        // is one query per row and reads like a plain getter.
+        // The DTO reads the id and nothing else, so the proxies must survive untouched.
         foreach ($appointments as $appointment) {
             AppointmentOutputDTO::fromEntity($appointment);
         }

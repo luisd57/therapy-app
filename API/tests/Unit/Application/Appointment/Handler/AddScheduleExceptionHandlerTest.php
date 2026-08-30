@@ -36,7 +36,7 @@ final class AddScheduleExceptionHandlerTest extends TestCase
 
         $this->therapist = DomainTestHelper::createTherapist();
         $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $userRepository->method('findById')->willReturn($this->therapist);
+        $userRepository->method('getByIdOrFail')->willReturn($this->therapist);
 
         $this->handler = new AddScheduleExceptionHandler(
             $this->exceptionRepository,

@@ -20,7 +20,7 @@ That bought real things, and they are worth stating because they are what we gav
 
 The cost was that the schema was not discoverable from the code, and it was permanent rather than
 one-off. `doctrine:migrations:diff` could not see the hand-written constraints and proposed dropping
-them on every run, so every migration was hand-written and hand-reviewed;
+them on every run, so every migration was hand-written and hand-reviewed, and
 `Version20260810120000` carries a docblock apologising for exactly this. `doctrine:schema:validate`
 could never pass, so mapping drift was found by a failing test rather than by a command.
 
@@ -43,10 +43,15 @@ thing to check before believing this ADR still holds.
 The generated diff did not touch the foreign keys at all - Doctrine matches those by table and
 column rather than by name, so the hand-written constraints already satisfied the new mappings. What
 it did propose was dropping six indexes and eight column defaults that existed in the database but
-were never declared on an entity. That drift was always there; the FK noise had been hiding it.
+were never declared on an entity. That drift was always there, and the FK noise had been hiding it.
 
-Accepting the generated migration would have been a performance regression. The indexes and defaults
-were moved onto the entities instead, and the migration that shipped renames five index names and
+Four of the six were load-bearing: `idx_invitation_email`, `idx_invitation_valid`,
+`idx_password_reset_valid` and `idx_slot_lock_time_expires`. The other two, `idx_invitation_token`
+and `idx_password_reset_token`, sit on columns that already carry a unique constraint, so Postgres
+indexes them anyway and dropping those two would have cost nothing.
+
+Accepting the generated migration would still have dropped four real indexes. All six moved onto the
+entities, along with the defaults, and the migration that shipped renames five index names and
 nothing else. **The rule this establishes: if `diff` proposes dropping an index, the entity is
 missing an `#[ORM\Index]`.**
 

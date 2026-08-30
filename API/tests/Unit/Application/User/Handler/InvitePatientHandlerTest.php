@@ -7,7 +7,6 @@ namespace App\Tests\Unit\Application\User\Handler;
 use App\Application\User\DTO\Input\InvitePatientInputDTO;
 use App\Application\User\Handler\InvitePatientHandler;
 use App\Domain\User\Exception\UserAlreadyExistsException;
-use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
@@ -38,7 +37,7 @@ final class InvitePatientHandlerTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->userRepository->method('findById')->willReturn(DomainTestHelper::createTherapist());
+        $this->userRepository->method('getByIdOrFail')->willReturn(DomainTestHelper::createTherapist());
 
         $this->handler = new InvitePatientHandler(
             $this->userRepository,
@@ -71,32 +70,6 @@ final class InvitePatientHandlerTest extends TestCase
         $this->assertSame('newpatient@example.com', $result->email);
         $this->assertSame('New Patient', $result->patientName);
         $this->assertSame('pending', $result->status);
-    }
-
-    public function testUnknownTherapistThrowsUserNotFound(): void
-    {
-        $userRepository = $this->createMock(UserRepositoryInterface::class);
-        $userRepository->method('existsByEmail')->willReturn(false);
-        $userRepository->method('findById')->willReturn(null);
-        $this->invitationRepository->method('findValidByEmail')->willReturn(null);
-
-        $handler = new InvitePatientHandler(
-            $userRepository,
-            $this->invitationRepository,
-            $this->tokenGenerator,
-            $this->emailSender,
-            'http://localhost:3000',
-            86400,
-            $this->clock,
-            $this->logger,
-        );
-
-        $this->expectException(UserNotFoundException::class);
-        $handler->__invoke(new InvitePatientInputDTO(
-            email: 'newpatient@example.com',
-            patientName: 'New Patient',
-            therapistId: UserId::generate()->getValue(),
-        ));
     }
 
     public function testHandleUserAlreadyExistsThrowsException(): void

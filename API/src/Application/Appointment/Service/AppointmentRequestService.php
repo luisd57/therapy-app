@@ -19,7 +19,6 @@ use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
@@ -87,15 +86,9 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         // same slot are allowed by design; the therapist resolves those by hand.
         $this->verifySlotAvailable($startTime, $appointmentModality);
 
-        $patient = null;
-
-        if ($patientId !== null) {
-            $patient = $this->userRepository->findById(UserId::fromString($patientId));
-
-            if ($patient === null) {
-                throw new UserNotFoundException($patientId);
-            }
-        }
+        $patient = $patientId !== null
+            ? $this->userRepository->getByIdOrFail(UserId::fromString($patientId))
+            : null;
 
         $requesterTimezoneVO = $requesterTimezone !== null
             ? Timezone::fromString($requesterTimezone)

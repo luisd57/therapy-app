@@ -324,7 +324,7 @@ final class AppointmentRequestServiceTest extends TestCase
 
         $patientId = '019525f3-5be1-7190-a6e1-aaa000000099';
         $this->userRepository
-            ->method('findById')
+            ->method('getByIdOrFail')
             ->willReturn(DomainTestHelper::createActivePatient(id: UserId::fromString($patientId)));
 
         $result = $this->service->requestAppointment(

@@ -133,12 +133,12 @@ class InvitationToken
         return $this->patientName;
     }
 
-    public function getInvitedByUser(): User
+    public function getInvitedBy(): User
     {
         return $this->invitedBy;
     }
 
-    public function getInvitedBy(): UserId
+    public function getInvitedById(): UserId
     {
         return $this->invitedBy->getId();
     }

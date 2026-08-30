@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\User\Repository;
 
 use App\Domain\User\Entity\User;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
@@ -15,6 +16,9 @@ interface UserRepositoryInterface
     public function save(User $user): void;
 
     public function findById(UserId $id): ?User;
+
+    /** @throws UserNotFoundException */
+    public function getByIdOrFail(UserId $id): User;
 
     public function findByEmail(Email $email): ?User;
 
