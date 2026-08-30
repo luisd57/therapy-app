@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
-use App\Domain\User\Id\UserId;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
@@ -15,21 +15,20 @@ use App\Tests\Helper\IntegrationTestCase;
 final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 {
     private InvitationTokenRepositoryInterface $repository;
-    private UserId $therapistId;
+    private User $therapist;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->repository = self::getContainer()->get(InvitationTokenRepositoryInterface::class);
 
-        $therapist = DomainTestHelper::createTherapist(email: 'inviter-' . bin2hex(random_bytes(4)) . '@example.com');
-        $this->therapistId = $therapist->getId();
-        self::getContainer()->get(UserRepositoryInterface::class)->save($therapist);
+        $this->therapist = DomainTestHelper::createTherapist(email: 'inviter-' . bin2hex(random_bytes(4)) . '@example.com');
+        self::getContainer()->get(UserRepositoryInterface::class)->save($this->therapist);
     }
 
     public function testSaveAndFindById(): void
     {
-        $invitation = DomainTestHelper::createValidInvitation(token: 'save-test-token', invitedBy: $this->therapistId);
+        $invitation = DomainTestHelper::createValidInvitation(token: 'save-test-token', invitedBy: $this->therapist);
         $this->repository->save($invitation);
 
         $this->entityManager->clear();
@@ -42,7 +41,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindByTokenExistingReturnsDomainEntity(): void
     {
-        $invitation = DomainTestHelper::createValidInvitation(token: 'find-by-token', invitedBy: $this->therapistId);
+        $invitation = DomainTestHelper::createValidInvitation(token: 'find-by-token', invitedBy: $this->therapist);
         $this->repository->save($invitation);
 
         $found = $this->repository->findByToken('find-by-token');
@@ -61,7 +60,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $invitation = DomainTestHelper::createValidInvitation(
             token: 'valid-email-token',
             email: 'valid@example.com',
-            invitedBy: $this->therapistId,
+            invitedBy: $this->therapist,
         );
         $this->repository->save($invitation);
 
@@ -76,7 +75,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $expired = DomainTestHelper::createExpiredInvitation(
             token: 'expired-only-token',
             email: 'expired-only@example.com',
-            invitedBy: $this->therapistId,
+            invitedBy: $this->therapist,
         );
         $this->repository->save($expired);
 
@@ -89,7 +88,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $used = DomainTestHelper::createUsedInvitation(
             token: 'used-only-token',
             email: 'used-only@example.com',
-            invitedBy: $this->therapistId,
+            invitedBy: $this->therapist,
         );
         $this->repository->save($used);
 
@@ -99,9 +98,9 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindPendingInvitationsReturnsOnlyValidTokens(): void
     {
-        $valid = DomainTestHelper::createValidInvitation(token: 'pending-valid', email: 'pv@example.com', invitedBy: $this->therapistId);
-        $expired = DomainTestHelper::createExpiredInvitation(token: 'pending-expired', email: 'pe@example.com', invitedBy: $this->therapistId);
-        $used = DomainTestHelper::createUsedInvitation(token: 'pending-used', email: 'pu@example.com', invitedBy: $this->therapistId);
+        $valid = DomainTestHelper::createValidInvitation(token: 'pending-valid', email: 'pv@example.com', invitedBy: $this->therapist);
+        $expired = DomainTestHelper::createExpiredInvitation(token: 'pending-expired', email: 'pe@example.com', invitedBy: $this->therapist);
+        $used = DomainTestHelper::createUsedInvitation(token: 'pending-used', email: 'pu@example.com', invitedBy: $this->therapist);
 
         $this->repository->save($valid);
         $this->repository->save($expired);
@@ -117,8 +116,8 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testDeleteExpiredRemovesExpiredAndReturnsCount(): void
     {
-        $valid = DomainTestHelper::createValidInvitation(token: 'de-valid', email: 'de-v@example.com', invitedBy: $this->therapistId);
-        $expired = DomainTestHelper::createExpiredInvitation(token: 'de-expired', email: 'de-e@example.com', invitedBy: $this->therapistId);
+        $valid = DomainTestHelper::createValidInvitation(token: 'de-valid', email: 'de-v@example.com', invitedBy: $this->therapist);
+        $expired = DomainTestHelper::createExpiredInvitation(token: 'de-expired', email: 'de-e@example.com', invitedBy: $this->therapist);
 
         $this->repository->save($valid);
         $this->repository->save($expired);
@@ -132,7 +131,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testDeleteRemovesToken(): void
     {
-        $invitation = DomainTestHelper::createValidInvitation(token: 'delete-me', email: 'del@example.com', invitedBy: $this->therapistId);
+        $invitation = DomainTestHelper::createValidInvitation(token: 'delete-me', email: 'del@example.com', invitedBy: $this->therapist);
         $this->repository->save($invitation);
 
         $this->repository->delete($invitation);
@@ -145,7 +144,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $generator = self::getContainer()->get(TokenGeneratorInterface::class);
         $raw = $generator->generate();
 
-        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapistId);
+        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapist);
         $this->repository->save($invitation);
 
         $this->entityManager->clear();
@@ -162,7 +161,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
         $generator = self::getContainer()->get(TokenGeneratorInterface::class);
         $raw = $generator->generate();
 
-        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapistId);
+        $invitation = DomainTestHelper::createValidInvitation(token: $raw, invitedBy: $this->therapist);
         $this->repository->save($invitation);
 
         $this->entityManager->clear();

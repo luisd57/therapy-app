@@ -69,7 +69,7 @@ final class ResetPasswordControllerTest extends ApiTestCase
         $raw = self::getContainer()->get(TokenGeneratorInterface::class)->generate();
 
         self::getContainer()->get(PasswordResetTokenRepositoryInterface::class)->save(
-            DomainTestHelper::createValidPasswordResetToken(token: $raw, userId: $user->getId()),
+            DomainTestHelper::createValidPasswordResetToken(token: $raw, user: $user),
         );
 
         return $raw;

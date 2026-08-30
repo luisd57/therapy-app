@@ -49,7 +49,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('t')
             ->from(PasswordResetToken::class, 't')
-            ->where('t.userId = :userId')
+            ->where('t.user = :userId')
             ->andWhere('t.isUsed = false')
             ->andWhere('t.expiresAt > :now')
             ->setParameter('userId', $userId->getValue())
@@ -85,7 +85,7 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
         $qb->update(PasswordResetToken::class, 't')
             ->set('t.isUsed', 'true')
             ->set('t.usedAt', ':now')
-            ->where('t.userId = :userId')
+            ->where('t.user = :userId')
             ->andWhere('t.isUsed = false')
             ->setParameter('userId', $userId->getValue())
             ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME);

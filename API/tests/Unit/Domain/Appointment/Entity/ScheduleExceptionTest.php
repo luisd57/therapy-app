@@ -7,13 +7,30 @@ namespace App\Tests\Unit\Domain\Appointment\Entity;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 
 final class ScheduleExceptionTest extends TestCase
 {
+    public function testExceptionHoldsTheTherapistItBelongsTo(): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+
+        $exception = ScheduleException::create(
+            id: ExceptionId::generate(),
+            therapist: $therapist,
+            startDateTime: new DateTimeImmutable('2026-06-01T09:00:00+00:00'),
+            endDateTime: new DateTimeImmutable('2026-06-01T17:00:00+00:00'),
+            now: new DateTimeImmutable(),
+            practiceTimeZone: new DateTimeZone('UTC'),
+        );
+
+        $this->assertSame($therapist, $exception->getTherapist());
+        $this->assertTrue($therapist->getId()->equals($exception->getTherapistId()));
+    }
+
     private const PRACTICE_TIMEZONE = 'America/Caracas';
 
     private static function practiceTimeZone(): DateTimeZone
@@ -34,13 +51,13 @@ final class ScheduleExceptionTest extends TestCase
     public function testCreateSetsAllProperties(): void
     {
         $id = ExceptionId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
         $start = new DateTimeImmutable('2026-04-01 09:00');
         $end = new DateTimeImmutable('2026-04-01 12:00');
 
         $exception = ScheduleException::create(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: $start,
             endDateTime: $end,
             now: new DateTimeImmutable(),
@@ -50,7 +67,7 @@ final class ScheduleExceptionTest extends TestCase
         );
 
         $this->assertTrue($id->equals($exception->getId()));
-        $this->assertTrue($therapistId->equals($exception->getTherapistId()));
+        $this->assertTrue($therapist->getId()->equals($exception->getTherapistId()));
         $this->assertSame($start, $exception->getStartDateTime());
         $this->assertSame($end, $exception->getEndDateTime());
         $this->assertSame('Personal day', $exception->getReason());
@@ -62,7 +79,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 09:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
             now: new DateTimeImmutable(),
@@ -76,7 +93,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01T00:00:00-04:00'),
             endDateTime: new DateTimeImmutable('2026-04-02T00:00:00-04:00'),
             now: new DateTimeImmutable(),
@@ -95,7 +112,7 @@ final class ScheduleExceptionTest extends TestCase
 
         ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 12:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 09:00'),
             now: new DateTimeImmutable(),
@@ -110,7 +127,7 @@ final class ScheduleExceptionTest extends TestCase
         $time = new DateTimeImmutable('2026-04-01 12:00');
         ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: $time,
             endDateTime: $time,
             now: new DateTimeImmutable(),
@@ -126,7 +143,7 @@ final class ScheduleExceptionTest extends TestCase
         // range is 1 June 10:00 to 18:00, so the practice-local day is 1 June.
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-02T04:00:00+14:00'),
             endDateTime: new DateTimeImmutable('2026-06-02T12:00:00+14:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -144,7 +161,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-02T04:00:00+14:00'),
             endDateTime: new DateTimeImmutable('2026-06-02T12:00:00+14:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -171,7 +188,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-01T10:00:00-04:00'),
             endDateTime: new DateTimeImmutable('2026-06-01T12:00:00-04:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -187,7 +204,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-01T10:00:00-04:00'),
             endDateTime: new DateTimeImmutable('2026-06-03T17:00:00-04:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -205,7 +222,7 @@ final class ScheduleExceptionTest extends TestCase
         // is 1 June 18:00 to 2 June 18:00, so it touches two practice days.
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-02T00:00:00+02:00'),
             endDateTime: new DateTimeImmutable('2026-06-03T00:00:00+02:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -221,7 +238,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-06-01T00:00:00-04:00'),
             endDateTime: new DateTimeImmutable('2026-06-02T00:00:00-04:00'),
             now: new DateTimeImmutable('2026-05-01T00:00:00+00:00'),
@@ -239,7 +256,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
             now: new DateTimeImmutable(),
@@ -258,7 +275,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
@@ -277,7 +294,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
@@ -296,7 +313,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
             endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
@@ -316,14 +333,14 @@ final class ScheduleExceptionTest extends TestCase
     public function testReconstituteRestoresAllProperties(): void
     {
         $id = ExceptionId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
         $start = new DateTimeImmutable('2026-04-01 09:00');
         $end = new DateTimeImmutable('2026-04-01 17:00');
         $createdAt = new DateTimeImmutable('-1 day');
 
         $exception = ScheduleException::reconstitute(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: $start,
             endDateTime: $end,
             reason: 'Vacation',
@@ -332,7 +349,7 @@ final class ScheduleExceptionTest extends TestCase
         );
 
         $this->assertTrue($id->equals($exception->getId()));
-        $this->assertTrue($therapistId->equals($exception->getTherapistId()));
+        $this->assertTrue($therapist->getId()->equals($exception->getTherapistId()));
         $this->assertSame($start, $exception->getStartDateTime());
         $this->assertSame($end, $exception->getEndDateTime());
         $this->assertSame('Vacation', $exception->getReason());

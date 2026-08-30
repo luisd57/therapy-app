@@ -6,6 +6,7 @@ namespace App\Infrastructure\Http\Controller\Appointment\TherapistAppointment;
 
 use App\Application\Appointment\DTO\Input\BookAppointmentInputDTO;
 use App\Application\Appointment\Handler\BookAppointmentHandler;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,6 +53,10 @@ final class BookAppointmentController extends AbstractController
                 'appointment' => $appointment->toArray(),
                 'message' => 'Appointment booked successfully.',
             ]);
+        } catch (UserNotFoundException $exception) {
+            // patient_id comes from the request body here, unlike the actions that read it
+            // off the authenticated principal, so this one really can fire.
+            return $this->notFound($exception->getMessage());
         } catch (\InvalidArgumentException $exception) {
             return $this->validationError(['general' => $exception->getMessage()]);
         }

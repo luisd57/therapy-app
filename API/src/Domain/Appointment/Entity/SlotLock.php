@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'slot_locks')]
+#[ORM\Index(columns: ['start_time', 'end_time', 'expires_at'], name: 'idx_slot_lock_time_expires')]
 class SlotLock
 {
     public function __construct(

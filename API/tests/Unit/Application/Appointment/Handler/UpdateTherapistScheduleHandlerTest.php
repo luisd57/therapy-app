@@ -12,7 +12,7 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
-use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -37,13 +37,14 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
 
     public function testHandleSuccessUpdatesScheduleAndReturnsDTO(): void
     {
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
         $scheduleId = ScheduleId::generate();
         $now = new \DateTimeImmutable();
 
         $schedule = TherapistSchedule::reconstitute(
             id: $scheduleId,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -89,7 +90,8 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
     public function testHandleNotFoundThrowsScheduleConflictException(): void
     {
         $scheduleId = ScheduleId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
 
         $this->scheduleRepository
             ->method('findById')
@@ -109,14 +111,15 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
 
     public function testHandleOverlapExcludingSelfThrowsScheduleConflictException(): void
     {
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
         $scheduleId = ScheduleId::generate();
         $otherScheduleId = ScheduleId::generate();
         $now = new \DateTimeImmutable();
 
         $schedule = TherapistSchedule::reconstitute(
             id: $scheduleId,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -129,7 +132,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
 
         $otherSchedule = TherapistSchedule::reconstitute(
             id: $otherScheduleId,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '14:00',
             endTime: '17:00',

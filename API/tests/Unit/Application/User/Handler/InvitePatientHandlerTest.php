@@ -37,6 +37,7 @@ final class InvitePatientHandlerTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->userRepository->method('getByIdOrFail')->willReturn(DomainTestHelper::createTherapist());
 
         $this->handler = new InvitePatientHandler(
             $this->userRepository,

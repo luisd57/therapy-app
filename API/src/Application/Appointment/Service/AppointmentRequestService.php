@@ -86,7 +86,9 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
         // same slot are allowed by design; the therapist resolves those by hand.
         $this->verifySlotAvailable($startTime, $appointmentModality);
 
-        $patientUserId = $patientId !== null ? UserId::fromString($patientId) : null;
+        $patient = $patientId !== null
+            ? $this->userRepository->getByIdOrFail(UserId::fromString($patientId))
+            : null;
 
         $requesterTimezoneVO = $requesterTimezone !== null
             ? Timezone::fromString($requesterTimezone)
@@ -102,7 +104,7 @@ final readonly class AppointmentRequestService implements AppointmentRequestServ
             city: $city,
             country: $country,
             now: $now,
-            patientId: $patientUserId,
+            patient: $patient,
             requesterTimezone: $requesterTimezoneVO,
         );
 

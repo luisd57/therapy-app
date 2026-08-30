@@ -44,7 +44,7 @@ final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepo
     public function findActiveByTherapist(UserId $therapistId): ArrayCollection
     {
         return new ArrayCollection($this->repository->findBy([
-            'therapistId' => $therapistId->getValue(),
+            'therapist' => $therapistId->getValue(),
             'isActive' => true,
         ]));
     }
@@ -55,7 +55,7 @@ final class DoctrineTherapistScheduleRepository implements TherapistScheduleRepo
     public function findActiveByTherapistAndDay(UserId $therapistId, WeekDay $day): ArrayCollection
     {
         return new ArrayCollection($this->repository->findBy([
-            'therapistId' => $therapistId->getValue(),
+            'therapist' => $therapistId->getValue(),
             'dayOfWeek' => $day->value,
             'isActive' => true,
         ]));

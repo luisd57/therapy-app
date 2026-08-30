@@ -82,7 +82,7 @@ final class SeedScheduleCommand extends Command
         foreach ($blocks as [$day, $start, $end, $online, $inPerson]) {
             $schedule = TherapistSchedule::create(
                 id: ScheduleId::generate(),
-                therapistId: $therapistId,
+                therapist: $therapist,
                 dayOfWeek: $day,
                 startTime: $start,
                 endTime: $end,

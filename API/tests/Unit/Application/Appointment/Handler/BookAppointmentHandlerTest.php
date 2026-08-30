@@ -7,12 +7,17 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 use App\Application\Appointment\DTO\Input\BookAppointmentInputDTO;
 use App\Application\Appointment\Handler\BookAppointmentHandler;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
+use App\Domain\User\Id\UserId;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Tests\Helper\DomainTestHelper;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class BookAppointmentHandlerTest extends TestCase
 {
+    private const string PATIENT_ID = '019525f3-5be1-7190-a6e1-aaa000000001';
+
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private ClockInterface&MockObject $clock;
     private BookAppointmentHandler $handler;
@@ -22,7 +27,18 @@ final class BookAppointmentHandlerTest extends TestCase
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
-        $this->handler = new BookAppointmentHandler($this->appointmentRepository, $this->clock, 50);
+
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository->method('getByIdOrFail')->willReturn(
+            DomainTestHelper::createActivePatient(id: UserId::fromString(self::PATIENT_ID)),
+        );
+
+        $this->handler = new BookAppointmentHandler(
+            $this->appointmentRepository,
+            $userRepository,
+            $this->clock,
+            50,
+        );
     }
 
     public function testBookCreatesConfirmedAppointment(): void
@@ -61,10 +77,10 @@ final class BookAppointmentHandlerTest extends TestCase
             email: 'jane@example.com',
             city: 'Los Angeles',
             country: 'USA',
-            patientId: '019525f3-5be1-7190-a6e1-aaa000000001',
+            patientId: self::PATIENT_ID,
         ));
 
         $this->assertSame('CONFIRMED', $result->status);
-        $this->assertSame('019525f3-5be1-7190-a6e1-aaa000000001', $result->patientId);
+        $this->assertSame(self::PATIENT_ID, $result->patientId);
     }
 }

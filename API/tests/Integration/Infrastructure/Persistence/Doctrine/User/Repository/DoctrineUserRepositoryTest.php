@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Persistence\Doctrine\User\Repository;
 
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
@@ -110,6 +111,20 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
         $this->assertContains('act-ap@example.com', $emails);
         $this->assertNotContains('act-t@example.com', $emails);
         $this->assertNotContains('act-ip@example.com', $emails);
+    }
+
+    public function testGetByIdOrFailReturnsTheUser(): void
+    {
+        $user = DomainTestHelper::createTherapist(email: 'orfail-' . bin2hex(random_bytes(4)) . '@example.com');
+        $this->repository->save($user);
+
+        $this->assertTrue($user->getId()->equals($this->repository->getByIdOrFail($user->getId())->getId()));
+    }
+
+    public function testGetByIdOrFailThrowsForAnUnknownId(): void
+    {
+        $this->expectException(UserNotFoundException::class);
+        $this->repository->getByIdOrFail(UserId::generate());
     }
 
     public function testDeleteRemovesUser(): void

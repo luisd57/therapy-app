@@ -36,6 +36,23 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertSame('Appointment booked successfully.', $data['data']['message']);
     }
 
+    public function testBookingForAnUnknownPatientReturns404(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+            'patient_id' => '019525f3-5be1-7190-a6e1-aaa0000000ff',
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(404);
+        $this->assertFalse($this->getResponseData()['success']);
+    }
+
     public function testBookAppointmentWithMissingFields(): void
     {
         $this->jsonRequest('POST', '/api/therapist/appointments', [

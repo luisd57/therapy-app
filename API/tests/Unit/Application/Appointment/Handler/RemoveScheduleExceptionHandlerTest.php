@@ -11,6 +11,7 @@ use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -31,11 +32,12 @@ final class RemoveScheduleExceptionHandlerTest extends TestCase
     public function testHandleSuccessFindsAndDeletes(): void
     {
         $exceptionId = ExceptionId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
 
         $exception = ScheduleException::reconstitute(
             id: $exceptionId,
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: new \DateTimeImmutable('2025-06-01 09:00:00'),
             endDateTime: new \DateTimeImmutable('2025-06-01 17:00:00'),
             reason: 'Day off',

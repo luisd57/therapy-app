@@ -12,6 +12,7 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +37,7 @@ final class DeleteTherapistScheduleHandlerTest extends TestCase
 
         $schedule = TherapistSchedule::reconstitute(
             id: $scheduleId,
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',

@@ -13,9 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'invitation_tokens')]
+#[ORM\Index(columns: ['token'], name: 'idx_invitation_token')]
+#[ORM\Index(columns: ['email'], name: 'idx_invitation_email')]
+#[ORM\Index(columns: ['is_used', 'expires_at'], name: 'idx_invitation_valid')]
 class InvitationToken
 {
-    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isUsed = false;
 
     #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
@@ -37,8 +40,9 @@ class InvitationToken
         private readonly Email $email,
         #[ORM\Column(type: Types::STRING, length: 255)]
         private readonly string $patientName,
-        #[ORM\Column(type: 'user_id')]
-        private readonly UserId $invitedBy,
+        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'sentInvitations')]
+        #[ORM\JoinColumn(name: 'invited_by', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+        private readonly User $invitedBy,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
         #[ORM\Column(type: 'utc_datetime_immutable')]
@@ -51,7 +55,7 @@ class InvitationToken
         string $token,
         Email $email,
         string $patientName,
-        UserId $invitedBy,
+        User $invitedBy,
         int $ttlSeconds,
         DateTimeImmutable $now,
     ): self {
@@ -129,9 +133,14 @@ class InvitationToken
         return $this->patientName;
     }
 
-    public function getInvitedBy(): UserId
+    public function getInvitedBy(): User
     {
         return $this->invitedBy;
+    }
+
+    public function getInvitedById(): UserId
+    {
+        return $this->invitedBy->getId();
     }
 
     public function getCreatedAt(): DateTimeImmutable
@@ -169,7 +178,7 @@ class InvitationToken
         string $token,
         Email $email,
         string $patientName,
-        UserId $invitedBy,
+        User $invitedBy,
         bool $isUsed,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $expiresAt,

@@ -6,7 +6,6 @@ namespace App\Application\User\Handler;
 
 use App\Application\User\DTO\Input\ResetPasswordInputDTO;
 use App\Domain\User\Exception\InvalidTokenException;
-use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\JwtBlocklistInterface;
@@ -42,11 +41,7 @@ final readonly class ResetPasswordHandler
             throw InvalidTokenException::expired();
         }
 
-        $user = $this->userRepository->findById($resetToken->getUserId());
-
-        if ($user === null) {
-            throw new UserNotFoundException($resetToken->getUserId()->getValue());
-        }
+        $user = $resetToken->getUser();
 
         // Update password
         $hashedPassword = $this->passwordHasher->hash($dto->newPassword);

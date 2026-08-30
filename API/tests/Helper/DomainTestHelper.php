@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Helper;
 
 use App\Domain\Appointment\Entity\Appointment;
+use App\Domain\Appointment\Entity\ScheduleException;
+use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Id\AppointmentId;
+use App\Domain\Appointment\Id\ExceptionId;
+use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Enum\AppointmentStatus;
+use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Entity\PasswordResetToken;
@@ -154,7 +159,7 @@ final class DomainTestHelper
         string $phone = '+1234567890',
         string $city = 'New York',
         string $country = 'USA',
-        ?UserId $patientId = null,
+        ?User $patient = null,
         ?Timezone $requesterTimezone = null,
     ): Appointment {
         return Appointment::request(
@@ -167,7 +172,7 @@ final class DomainTestHelper
             city: $city,
             country: $country,
             now: new DateTimeImmutable(),
-            patientId: $patientId,
+            patient: $patient,
             requesterTimezone: $requesterTimezone,
         );
     }
@@ -181,7 +186,7 @@ final class DomainTestHelper
         string $phone = '+1234567890',
         string $city = 'New York',
         string $country = 'USA',
-        ?UserId $patientId = null,
+        ?User $patient = null,
         ?Timezone $requesterTimezone = null,
     ): Appointment {
         return Appointment::reconstitute(
@@ -194,10 +199,45 @@ final class DomainTestHelper
             phone: Phone::fromString($phone),
             city: $city,
             country: $country,
-            patientId: $patientId,
+            patient: $patient,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
             requesterTimezone: $requesterTimezone,
+        );
+    }
+
+    public static function createScheduleBlock(
+        User $therapist,
+        WeekDay $dayOfWeek = WeekDay::MONDAY,
+        string $startTime = '09:00',
+        string $endTime = '17:00',
+    ): TherapistSchedule {
+        return TherapistSchedule::create(
+            id: ScheduleId::generate(),
+            therapist: $therapist,
+            dayOfWeek: $dayOfWeek,
+            startTime: $startTime,
+            endTime: $endTime,
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public static function createScheduleException(
+        User $therapist,
+        ?DateTimeImmutable $startDateTime = null,
+        ?DateTimeImmutable $endDateTime = null,
+        string $reason = 'Away',
+    ): ScheduleException {
+        $start = $startDateTime ?? new DateTimeImmutable('+2 days 09:00', new DateTimeZone('UTC'));
+
+        return ScheduleException::create(
+            id: ExceptionId::generate(),
+            therapist: $therapist,
+            startDateTime: $start,
+            endDateTime: $endDateTime ?? $start->modify('+4 hours'),
+            now: new DateTimeImmutable(),
+            practiceTimeZone: new DateTimeZone('UTC'),
+            reason: $reason,
         );
     }
 
@@ -206,7 +246,7 @@ final class DomainTestHelper
         string $token = 'valid-token-string',
         string $email = 'patient@example.com',
         string $patientName = 'Test Patient',
-        ?UserId $invitedBy = null,
+        ?User $invitedBy = null,
         int $ttlSeconds = 86400,
     ): InvitationToken {
         return InvitationToken::create(
@@ -214,7 +254,7 @@ final class DomainTestHelper
             token: $token,
             email: Email::fromString($email),
             patientName: $patientName,
-            invitedBy: $invitedBy ?? UserId::generate(),
+            invitedBy: $invitedBy ?? self::createTherapist(),
             ttlSeconds: $ttlSeconds,
             now: new DateTimeImmutable(),
         );
@@ -223,14 +263,14 @@ final class DomainTestHelper
     public static function createExpiredInvitation(
         string $token = 'expired-token',
         string $email = 'expired@example.com',
-        ?UserId $invitedBy = null,
+        ?User $invitedBy = null,
     ): InvitationToken {
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
             email: Email::fromString($email),
             patientName: 'Expired Patient',
-            invitedBy: $invitedBy ?? UserId::generate(),
+            invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-2 hours'),
             expiresAt: new DateTimeImmutable('-1 hour'),
@@ -241,14 +281,14 @@ final class DomainTestHelper
     public static function createUsedInvitation(
         string $token = 'used-token',
         string $email = 'used@example.com',
-        ?UserId $invitedBy = null,
+        ?User $invitedBy = null,
     ): InvitationToken {
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
             email: Email::fromString($email),
             patientName: 'Used Patient',
-            invitedBy: $invitedBy ?? UserId::generate(),
+            invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: true,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: new DateTimeImmutable('+23 hours'),
@@ -259,7 +299,7 @@ final class DomainTestHelper
     public static function createBoundaryInvitation(
         string $token = 'boundary-token',
         string $email = 'boundary@example.com',
-        ?UserId $invitedBy = null,
+        ?User $invitedBy = null,
     ): InvitationToken {
         $now = new DateTimeImmutable();
 
@@ -268,7 +308,7 @@ final class DomainTestHelper
             token: $token,
             email: Email::fromString($email),
             patientName: 'Boundary Patient',
-            invitedBy: $invitedBy ?? UserId::generate(),
+            invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: $now,
@@ -280,14 +320,14 @@ final class DomainTestHelper
         ?TokenId $id = null,
         string $token = 'revoked-token',
         string $email = 'revoked@example.com',
-        ?UserId $invitedBy = null,
+        ?User $invitedBy = null,
     ): InvitationToken {
         return InvitationToken::reconstitute(
             id: $id ?? TokenId::generate(),
             token: $token,
             email: Email::fromString($email),
             patientName: 'Revoked Patient',
-            invitedBy: $invitedBy ?? UserId::generate(),
+            invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: new DateTimeImmutable('+23 hours'),
@@ -300,13 +340,13 @@ final class DomainTestHelper
     public static function createValidPasswordResetToken(
         ?TokenId $id = null,
         string $token = 'valid-reset-token',
-        ?UserId $userId = null,
+        ?User $user = null,
         int $ttlSeconds = 3600,
     ): PasswordResetToken {
         return PasswordResetToken::create(
             id: $id ?? TokenId::generate(),
             token: $token,
-            userId: $userId ?? UserId::generate(),
+            user: $user ?? self::createActivePatient(),
             ttlSeconds: $ttlSeconds,
             now: new DateTimeImmutable(),
         );
@@ -314,12 +354,12 @@ final class DomainTestHelper
 
     public static function createExpiredPasswordResetToken(
         string $token = 'expired-reset-token',
-        ?UserId $userId = null,
+        ?User $user = null,
     ): PasswordResetToken {
         return PasswordResetToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
-            userId: $userId ?? UserId::generate(),
+            user: $user ?? self::createActivePatient(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-2 hours'),
             expiresAt: new DateTimeImmutable('-1 hour'),
@@ -329,12 +369,12 @@ final class DomainTestHelper
 
     public static function createUsedPasswordResetToken(
         string $token = 'used-reset-token',
-        ?UserId $userId = null,
+        ?User $user = null,
     ): PasswordResetToken {
         return PasswordResetToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
-            userId: $userId ?? UserId::generate(),
+            user: $user ?? self::createActivePatient(),
             isUsed: true,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: new DateTimeImmutable('+30 minutes'),

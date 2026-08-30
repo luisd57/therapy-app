@@ -47,15 +47,15 @@ final readonly class InvitePatientHandler
             return InvitationOutputDTO::fromEntity($existingInvitation, $this->clock->now());
         }
 
+        $therapist = $this->userRepository->getByIdOrFail(UserId::fromString($dto->therapistId));
         $token = $this->tokenGenerator->generate();
-        $therapistId = UserId::fromString($dto->therapistId);
 
         $invitation = InvitationToken::create(
             id: TokenId::generate(),
             token: $token,
             email: $email,
             patientName: $dto->patientName,
-            invitedBy: $therapistId,
+            invitedBy: $therapist,
             ttlSeconds: $this->invitationTtl,
             now: $this->clock->now(),
         );

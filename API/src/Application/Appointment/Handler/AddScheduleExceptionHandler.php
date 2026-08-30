@@ -11,6 +11,7 @@ use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Id\UserId;
+use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 
@@ -18,6 +19,7 @@ final readonly class AddScheduleExceptionHandler
 {
     public function __construct(
         private ScheduleExceptionRepositoryInterface $exceptionRepository,
+        private UserRepositoryInterface $userRepository,
         private ClockInterface $clock,
         private PracticeTimezoneProviderInterface $practiceTimezoneProvider,
     ) {
@@ -25,13 +27,13 @@ final readonly class AddScheduleExceptionHandler
 
     public function __invoke(AddScheduleExceptionInputDTO $dto): ScheduleExceptionOutputDTO
     {
-        $therapistId = UserId::fromString($dto->therapistId);
+        $therapist = $this->userRepository->getByIdOrFail(UserId::fromString($dto->therapistId));
         $startDateTime = new DateTimeImmutable($dto->startDateTime);
         $endDateTime = new DateTimeImmutable($dto->endDateTime);
 
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
             now: $this->clock->now(),

@@ -50,7 +50,7 @@ final class DoctrineScheduleExceptionRepository implements ScheduleExceptionRepo
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('e')
             ->from(ScheduleException::class, 'e')
-            ->where('e.therapistId = :therapistId')
+            ->where('e.therapist = :therapistId')
             ->andWhere('e.startDateTime < :to')
             ->andWhere('e.endDateTime > :from')
             ->setParameter('therapistId', $therapistId->getValue())

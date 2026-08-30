@@ -6,6 +6,7 @@ namespace App\Domain\Appointment\Entity;
 
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -21,15 +22,16 @@ class ScheduleException
         #[ORM\Id]
         #[ORM\Column(type: 'exception_id')]
         private readonly ExceptionId $id,
-        #[ORM\Column(type: 'user_id')]
-        private readonly UserId $therapistId,
+        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'scheduleExceptions')]
+        #[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+        private readonly User $therapist,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $startDateTime,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $endDateTime,
-        #[ORM\Column(type: Types::STRING, length: 500)]
+        #[ORM\Column(type: Types::STRING, length: 500, options: ['default' => ''])]
         private readonly string $reason,
-        #[ORM\Column(type: Types::BOOLEAN)]
+        #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
         private readonly bool $isAllDay,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
@@ -38,7 +40,7 @@ class ScheduleException
 
     public static function create(
         ExceptionId $id,
-        UserId $therapistId,
+        User $therapist,
         DateTimeImmutable $startDateTime,
         DateTimeImmutable $endDateTime,
         DateTimeImmutable $now,
@@ -57,7 +59,7 @@ class ScheduleException
 
         return new self(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
             reason: trim($reason),
@@ -104,9 +106,14 @@ class ScheduleException
         return $this->id;
     }
 
+    public function getTherapist(): User
+    {
+        return $this->therapist;
+    }
+
     public function getTherapistId(): UserId
     {
-        return $this->therapistId;
+        return $this->therapist->getId();
     }
 
     public function getStartDateTime(): DateTimeImmutable
@@ -136,7 +143,7 @@ class ScheduleException
 
     public static function reconstitute(
         ExceptionId $id,
-        UserId $therapistId,
+        User $therapist,
         DateTimeImmutable $startDateTime,
         DateTimeImmutable $endDateTime,
         string $reason,
@@ -145,7 +152,7 @@ class ScheduleException
     ): self {
         return new self(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: $startDateTime,
             endDateTime: $endDateTime,
             reason: $reason,
