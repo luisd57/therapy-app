@@ -22,7 +22,7 @@ the wrong grid survives the change that was supposed to correct it.
 
 **Status:** resolved
 
-**Resolved by:** PR #72
+**Resolved by:** [PR #72](https://github.com/luisd57/therapy-app/pull/72)
 
 - [x] No test that stands in for the configured grid constructs the slot generation rules with duration and Start Increment set to the same value. Reworded 2026-08-29: as first written this could not be ticked. `AvailabilityComputerTest` builds equal values at 16 sites, 11 of them explicit and 5 through the increment's default, and every one of them pins the back-to-back grid contract on purpose. That grid is a supported configuration, not the defect this ticket names
 - [x] The two values are named at the point of use, so a reader can tell which is which without checking the constructor signature
