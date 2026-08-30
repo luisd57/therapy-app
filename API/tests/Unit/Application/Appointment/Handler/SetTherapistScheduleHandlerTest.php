@@ -11,7 +11,9 @@ use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
-use App\Domain\User\Id\UserId;
+use App\Domain\User\Entity\User;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,24 +22,31 @@ use PHPUnit\Framework\TestCase;
 final class SetTherapistScheduleHandlerTest extends TestCase
 {
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
+    private UserRepositoryInterface&MockObject $userRepository;
     private ClockInterface&MockObject $clock;
+    private User $therapist;
     private SetTherapistScheduleHandler $handler;
 
     protected function setUp(): void
     {
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable());
 
+        $this->therapist = DomainTestHelper::createTherapist();
+        $this->userRepository->method('findById')->willReturn($this->therapist);
+
         $this->handler = new SetTherapistScheduleHandler(
             $this->scheduleRepository,
+            $this->userRepository,
             $this->clock,
         );
     }
 
     public function testHandleSuccessCreatesScheduleAndReturnsDTO(): void
     {
-        $therapistId = UserId::generate()->getValue();
+        $therapistId = $this->therapist->getId()->getValue();
 
         $this->scheduleRepository
             ->method('findActiveByTherapistAndDay')
@@ -69,12 +78,12 @@ final class SetTherapistScheduleHandlerTest extends TestCase
 
     public function testHandleOverlapThrowsScheduleConflictException(): void
     {
-        $therapistId = UserId::generate();
+        $therapistId = $this->therapist->getId();
         $now = new \DateTimeImmutable();
 
         $existingSchedule = TherapistSchedule::reconstitute(
             id: ScheduleId::generate(),
-            therapistId: $therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',

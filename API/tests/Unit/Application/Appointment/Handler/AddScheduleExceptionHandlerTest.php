@@ -10,7 +10,10 @@ use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use Symfony\Component\Clock\ClockInterface;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
+use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeZone;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +22,7 @@ final class AddScheduleExceptionHandlerTest extends TestCase
 {
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private ClockInterface&MockObject $clock;
+    private User $therapist;
     private AddScheduleExceptionHandler $handler;
 
     protected function setUp(): void
@@ -30,8 +34,13 @@ final class AddScheduleExceptionHandlerTest extends TestCase
         $practiceTimezoneProvider = $this->createMock(PracticeTimezoneProviderInterface::class);
         $practiceTimezoneProvider->method('getTimeZone')->willReturn(new DateTimeZone('America/Caracas'));
 
+        $this->therapist = DomainTestHelper::createTherapist();
+        $userRepository = $this->createMock(UserRepositoryInterface::class);
+        $userRepository->method('findById')->willReturn($this->therapist);
+
         $this->handler = new AddScheduleExceptionHandler(
             $this->exceptionRepository,
+            $userRepository,
             $this->clock,
             $practiceTimezoneProvider,
         );
@@ -39,7 +48,7 @@ final class AddScheduleExceptionHandlerTest extends TestCase
 
     public function testHandleSuccessCreatesExceptionAndSaves(): void
     {
-        $therapistId = UserId::generate()->getValue();
+        $therapistId = $this->therapist->getId()->getValue();
 
         $this->exceptionRepository
             ->expects($this->once())

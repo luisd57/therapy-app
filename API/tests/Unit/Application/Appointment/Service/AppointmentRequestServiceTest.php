@@ -25,6 +25,7 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
+use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -322,6 +323,9 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('sendNewRequestAlertToTherapist');
 
         $patientId = '019525f3-5be1-7190-a6e1-aaa000000099';
+        $this->userRepository
+            ->method('findById')
+            ->willReturn(DomainTestHelper::createActivePatient(id: UserId::fromString($patientId)));
 
         $result = $this->service->requestAppointment(
             slotStartTime: '2025-06-02 09:00:00',

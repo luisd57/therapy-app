@@ -7,8 +7,8 @@ namespace App\Tests\Unit\Application\User\DTO\Output;
 use App\Application\User\DTO\Output\InvitationOutputDTO;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Id\TokenId;
-use App\Domain\User\Id\UserId;
 use App\Domain\User\ValueObject\Email;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +21,7 @@ final class InvitationOutputDTOTest extends TestCase
             token: 'a-token',
             email: Email::fromString('patient@example.com'),
             patientName: 'Test Patient',
-            invitedBy: UserId::generate(),
+            invitedBy: DomainTestHelper::createTherapist(),
             isUsed: false,
             createdAt: new DateTimeImmutable('2026-06-01T09:00:00-04:00'),
             expiresAt: new DateTimeImmutable('2026-06-02T09:00:00-04:00'),

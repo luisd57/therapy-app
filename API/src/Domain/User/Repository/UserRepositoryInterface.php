@@ -37,6 +37,11 @@ interface UserRepositoryInterface
 
     public function countActivePatients(): int;
 
+    /**
+     * The ON DELETE rules in the migrations do the cascading, not Doctrine.
+     * Flush anything else you are holding first: an unflushed entity pointing at this user
+     * makes the flush throw rather than delete.
+     */
     public function delete(User $user): void;
 
     /**

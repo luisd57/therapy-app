@@ -29,6 +29,15 @@ final class InvitationTokenTest extends TestCase
         $this->assertNull($invitation->getUsedAt());
     }
 
+    public function testInvitationHoldsTheTherapistWhoSentIt(): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+        $invitation = DomainTestHelper::createValidInvitation(invitedBy: $therapist);
+
+        $this->assertSame($therapist, $invitation->getInvitedByUser());
+        $this->assertTrue($therapist->getId()->equals($invitation->getInvitedBy()));
+    }
+
     public function testCreateExpiresAtIsInFuture(): void
     {
         $beforeCreate = new DateTimeImmutable();
@@ -124,7 +133,7 @@ final class InvitationTokenTest extends TestCase
     {
         $id = TokenId::generate();
         $email = Email::fromString('recon@example.com');
-        $invitedBy = UserId::generate();
+        $invitedBy = DomainTestHelper::createTherapist();
         $createdAt = new DateTimeImmutable('-1 day');
         $expiresAt = new DateTimeImmutable('+1 day');
         $usedAt = new DateTimeImmutable('-1 hour');
@@ -145,7 +154,7 @@ final class InvitationTokenTest extends TestCase
         $this->assertSame('recon-token', $invitation->getToken());
         $this->assertTrue($email->equals($invitation->getEmail()));
         $this->assertSame('Recon Patient', $invitation->getPatientName());
-        $this->assertTrue($invitedBy->equals($invitation->getInvitedBy()));
+        $this->assertTrue($invitedBy->getId()->equals($invitation->getInvitedBy()));
         $this->assertTrue($invitation->isUsed());
         $this->assertSame($createdAt, $invitation->getCreatedAt());
         $this->assertSame($expiresAt, $invitation->getExpiresAt());

@@ -9,6 +9,7 @@ use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
@@ -19,6 +20,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
     private TherapistScheduleRepositoryInterface $repository;
     private UserRepositoryInterface $userRepository;
     private UserId $therapistId;
+    private User $therapist;
 
     protected function setUp(): void
     {
@@ -26,16 +28,16 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
         $this->repository = self::getContainer()->get(TherapistScheduleRepositoryInterface::class);
         $this->userRepository = self::getContainer()->get(UserRepositoryInterface::class);
 
-        $therapist = DomainTestHelper::createTherapist();
-        $this->therapistId = $therapist->getId();
-        $this->userRepository->save($therapist);
+        $this->therapist = DomainTestHelper::createTherapist();
+        $this->therapistId = $this->therapist->getId();
+        $this->userRepository->save($this->therapist);
     }
 
     public function testSaveAndFindById(): void
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -68,7 +70,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
     {
         $activeSchedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -78,7 +80,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
 
         $inactiveSchedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '14:00',
             endTime: '17:00',
@@ -98,7 +100,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
     {
         $mondaySchedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -108,7 +110,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
 
         $tuesdaySchedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '10:00',
             endTime: '13:00',
@@ -127,7 +129,7 @@ final class DoctrineTherapistScheduleRepositoryTest extends IntegrationTestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $this->therapistId,
+            therapist: $this->therapist,
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '08:00',
             endTime: '11:00',

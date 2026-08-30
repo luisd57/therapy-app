@@ -15,16 +15,32 @@ final class PasswordResetTokenTest extends TestCase
 {
     public function testCreateSetsAllProperties(): void
     {
-        $userId = UserId::generate();
+        $user = DomainTestHelper::createActivePatient();
         $token = DomainTestHelper::createValidPasswordResetToken(
             token: 'reset-test',
-            userId: $userId,
+            user: $user,
         );
 
         $this->assertSame('reset-test', $token->getToken());
-        $this->assertTrue($userId->equals($token->getUserId()));
+        $this->assertTrue($user->getId()->equals($token->getUserId()));
         $this->assertFalse($token->isUsed());
         $this->assertNull($token->getUsedAt());
+    }
+
+    public function testTokenHoldsTheUserItResets(): void
+    {
+        $user = DomainTestHelper::createActivePatient();
+        $token = DomainTestHelper::createValidPasswordResetToken(user: $user);
+
+        $this->assertSame($user, $token->getUser());
+    }
+
+    public function testUserIdDelegatesToTheAssociatedUser(): void
+    {
+        $user = DomainTestHelper::createActivePatient();
+        $token = DomainTestHelper::createValidPasswordResetToken(user: $user);
+
+        $this->assertTrue($user->getId()->equals($token->getUserId()));
     }
 
     public function testCreateExpiresAtIsInFuture(): void
@@ -85,7 +101,7 @@ final class PasswordResetTokenTest extends TestCase
         $token = PasswordResetToken::reconstitute(
             id: TokenId::generate(),
             token: 'boundary-reset',
-            userId: UserId::generate(),
+            user: DomainTestHelper::createActivePatient(),
             isUsed: false,
             createdAt: new DateTimeImmutable('-1 hour'),
             expiresAt: $now,
@@ -124,7 +140,7 @@ final class PasswordResetTokenTest extends TestCase
     public function testReconstituteRestoresAllProperties(): void
     {
         $id = TokenId::generate();
-        $userId = UserId::generate();
+        $user = DomainTestHelper::createActivePatient();
         $createdAt = new DateTimeImmutable('-1 day');
         $expiresAt = new DateTimeImmutable('+1 day');
         $usedAt = new DateTimeImmutable('-1 hour');
@@ -132,7 +148,7 @@ final class PasswordResetTokenTest extends TestCase
         $token = PasswordResetToken::reconstitute(
             id: $id,
             token: 'recon-reset',
-            userId: $userId,
+            user: $user,
             isUsed: true,
             createdAt: $createdAt,
             expiresAt: $expiresAt,
@@ -141,7 +157,7 @@ final class PasswordResetTokenTest extends TestCase
 
         $this->assertTrue($id->equals($token->getId()));
         $this->assertSame('recon-reset', $token->getToken());
-        $this->assertTrue($userId->equals($token->getUserId()));
+        $this->assertTrue($user->getId()->equals($token->getUserId()));
         $this->assertTrue($token->isUsed());
         $this->assertSame($createdAt, $token->getCreatedAt());
         $this->assertSame($expiresAt, $token->getExpiresAt());

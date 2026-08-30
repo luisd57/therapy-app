@@ -52,15 +52,13 @@ final class ResetPasswordHandlerTest extends TestCase
 
     public function testHandleSuccessUpdatesPasswordAndMarksTokenUsed(): void
     {
-        $userId = \App\Domain\User\Id\UserId::generate();
+        $user = DomainTestHelper::createReconstitutedActivePatient();
         $resetToken = DomainTestHelper::createValidPasswordResetToken(
             token: 'valid-reset',
-            userId: $userId,
+            user: $user,
         );
-        $user = DomainTestHelper::createReconstitutedActivePatient(id: $userId);
 
         $this->resetTokenRepository->method('findByToken')->willReturn($resetToken);
-        $this->userRepository->method('findById')->willReturn($user);
         $this->passwordHasher->method('hash')->willReturn('new_hashed_pw');
         $this->userRepository->expects($this->once())->method('save');
         $this->resetTokenRepository->expects($this->once())->method('save');
@@ -96,16 +94,6 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->handler->__invoke(new ResetPasswordInputDTO(token: 'expired', newPassword: 'pass'));
     }
 
-    public function testHandleUserNotFoundThrowsUserNotFoundException(): void
-    {
-        $resetToken = DomainTestHelper::createValidPasswordResetToken();
-        $this->resetTokenRepository->method('findByToken')->willReturn($resetToken);
-        $this->userRepository->method('findById')->willReturn(null);
-
-        $this->expectException(UserNotFoundException::class);
-        $this->handler->__invoke(new ResetPasswordInputDTO(token: 'valid', newPassword: 'pass'));
-    }
-
     public function testResetRevokesEverySessionIssuedUpToTheResetInstant(): void
     {
         // 2026-08-21T10:00:00Z as a literal, so the assertion does not recompute
@@ -117,12 +105,10 @@ final class ResetPasswordHandlerTest extends TestCase
         $jwtBlocklist = $this->createMock(JwtBlocklistInterface::class);
         $handler = $this->makeHandler($jwtBlocklist, $clock);
 
-        $userId = \App\Domain\User\Id\UserId::generate();
-        $resetToken = DomainTestHelper::createValidPasswordResetToken(token: 'valid-reset', userId: $userId);
-        $user = DomainTestHelper::createReconstitutedActivePatient(id: $userId);
+        $user = DomainTestHelper::createReconstitutedActivePatient();
+        $resetToken = DomainTestHelper::createValidPasswordResetToken(token: 'valid-reset', user: $user);
 
         $this->resetTokenRepository->method('findByToken')->willReturn($resetToken);
-        $this->userRepository->method('findById')->willReturn($user);
         $this->passwordHasher->method('hash')->willReturn('new_hashed_pw');
 
         $jwtBlocklist->expects($this->once())

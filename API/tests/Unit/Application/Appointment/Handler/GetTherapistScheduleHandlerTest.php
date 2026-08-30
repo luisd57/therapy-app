@@ -9,7 +9,7 @@ use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
-use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -30,12 +30,13 @@ final class GetTherapistScheduleHandlerTest extends TestCase
 
     public function testHandleReturnsCollectionOfDTOs(): void
     {
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
         $now = new \DateTimeImmutable();
 
         $schedule1 = TherapistSchedule::reconstitute(
             id: ScheduleId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -48,7 +49,7 @@ final class GetTherapistScheduleHandlerTest extends TestCase
 
         $schedule2 = TherapistSchedule::reconstitute(
             id: ScheduleId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::WEDNESDAY,
             startTime: '14:00',
             endTime: '18:00',

@@ -13,7 +13,9 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Id\UserId;
+use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use DateTimeImmutable;
 
@@ -21,6 +23,7 @@ final readonly class BookAppointmentHandler
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepository,
+        private UserRepositoryInterface $userRepository,
         private ClockInterface $clock,
         private int $appointmentDurationMinutes,
     ) {
@@ -33,7 +36,15 @@ final readonly class BookAppointmentHandler
         $modality = AppointmentModality::from($dto->modality);
         $email = Email::fromString($dto->email);
         $phone = Phone::fromString($dto->phone);
-        $patientId = $dto->patientId !== null ? UserId::fromString($dto->patientId) : null;
+        $patient = null;
+
+        if ($dto->patientId !== null) {
+            $patient = $this->userRepository->findById(UserId::fromString($dto->patientId));
+
+            if ($patient === null) {
+                throw new UserNotFoundException($dto->patientId);
+            }
+        }
 
         $appointment = Appointment::book(
             id: AppointmentId::generate(),
@@ -45,7 +56,7 @@ final readonly class BookAppointmentHandler
             city: $dto->city,
             country: $dto->country,
             now: $this->clock->now(),
-            patientId: $patientId,
+            patient: $patient,
         );
 
         $this->appointmentRepository->save($appointment);

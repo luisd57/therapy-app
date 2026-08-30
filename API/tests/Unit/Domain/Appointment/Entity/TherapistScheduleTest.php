@@ -8,22 +8,39 @@ use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
-use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class TherapistScheduleTest extends TestCase
 {
+    public function testScheduleBlockHoldsTheTherapistItBelongsTo(): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+
+        $schedule = TherapistSchedule::create(
+            id: ScheduleId::generate(),
+            therapist: $therapist,
+            dayOfWeek: WeekDay::MONDAY,
+            startTime: '09:00',
+            endTime: '17:00',
+            now: new DateTimeImmutable(),
+        );
+
+        $this->assertSame($therapist, $schedule->getTherapist());
+        $this->assertTrue($therapist->getId()->equals($schedule->getTherapistId()));
+    }
+
     // --- create() ---
 
     public function testCreateSetsAllPropertiesCorrectly(): void
     {
         $id = ScheduleId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
 
         $schedule = TherapistSchedule::create(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
@@ -33,7 +50,7 @@ final class TherapistScheduleTest extends TestCase
         );
 
         $this->assertTrue($id->equals($schedule->getId()));
-        $this->assertTrue($therapistId->equals($schedule->getTherapistId()));
+        $this->assertTrue($therapist->getId()->equals($schedule->getTherapistId()));
         $this->assertSame(WeekDay::MONDAY, $schedule->getDayOfWeek());
         $this->assertSame('09:00', $schedule->getStartTime());
         $this->assertSame('17:00', $schedule->getEndTime());
@@ -48,7 +65,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::TUESDAY,
             startTime: '10:00',
             endTime: '14:00',
@@ -66,7 +83,7 @@ final class TherapistScheduleTest extends TestCase
 
         TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '9:00',
             endTime: '17:00',
@@ -80,7 +97,7 @@ final class TherapistScheduleTest extends TestCase
 
         TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '25:00',
             endTime: '17:00',
@@ -95,7 +112,7 @@ final class TherapistScheduleTest extends TestCase
 
         TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '17:00',
             endTime: '09:00',
@@ -110,7 +127,7 @@ final class TherapistScheduleTest extends TestCase
 
         TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '09:00',
@@ -124,7 +141,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
@@ -151,7 +168,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
@@ -176,7 +193,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
@@ -194,7 +211,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
@@ -215,7 +232,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -231,7 +248,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -247,7 +264,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -263,7 +280,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::FRIDAY,
             startTime: '09:00',
             endTime: '12:00',
@@ -280,13 +297,13 @@ final class TherapistScheduleTest extends TestCase
     public function testReconstituteRestoresAllProperties(): void
     {
         $id = ScheduleId::generate();
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
         $createdAt = new DateTimeImmutable('-1 day');
         $updatedAt = new DateTimeImmutable();
 
         $schedule = TherapistSchedule::reconstitute(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: WeekDay::THURSDAY,
             startTime: '08:00',
             endTime: '16:00',
@@ -298,7 +315,7 @@ final class TherapistScheduleTest extends TestCase
         );
 
         $this->assertTrue($id->equals($schedule->getId()));
-        $this->assertTrue($therapistId->equals($schedule->getTherapistId()));
+        $this->assertTrue($therapist->getId()->equals($schedule->getTherapistId()));
         $this->assertSame(WeekDay::THURSDAY, $schedule->getDayOfWeek());
         $this->assertSame('08:00', $schedule->getStartTime());
         $this->assertSame('16:00', $schedule->getEndTime());

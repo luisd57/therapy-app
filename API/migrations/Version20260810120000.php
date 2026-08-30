@@ -10,9 +10,10 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Hand-written on purpose - do NOT regenerate with doctrine:migrations:diff.
  *
- * Entities declare no ORM relations (see .claude/rules/api-architecture.md), so
- * Doctrine cannot see the hand-written FOREIGN KEY constraints or the hand-named
- * indexes and would propose dropping them alongside these type changes.
+ * True when this was written: entities declared no ORM relations, so Doctrine could not
+ * see the hand-written FOREIGN KEY constraints or the hand-named indexes and would have
+ * proposed dropping them alongside these type changes. ADR-0007 reversed that, and from
+ * Version20260830114939 onward migrations are generated. This one stays as it is.
  */
 final class Version20260810120000 extends AbstractMigration
 {

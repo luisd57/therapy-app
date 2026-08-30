@@ -12,6 +12,7 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\ValueObject\Timezone;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -51,8 +52,9 @@ class Appointment
         private readonly string $city,
         #[ORM\Column(type: Types::STRING, length: 100)]
         private readonly string $country,
-        #[ORM\Column(type: 'user_id', nullable: true)]
-        private readonly ?UserId $patientId,
+        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'appointments')]
+        #[ORM\JoinColumn(name: 'patient_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+        private readonly ?User $patient,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
         /**
@@ -81,7 +83,7 @@ class Appointment
         string $city,
         string $country,
         DateTimeImmutable $now,
-        ?UserId $patientId = null,
+        ?User $patient = null,
         ?Timezone $requesterTimezone = null,
     ): self {
         if (trim($fullName) === '') {
@@ -105,7 +107,7 @@ class Appointment
             phone: $phone,
             city: trim($city),
             country: trim($country),
-            patientId: $patientId,
+            patient: $patient,
             createdAt: $now,
             requesterTimezone: $requesterTimezone,
         );
@@ -121,7 +123,7 @@ class Appointment
         string $city,
         string $country,
         DateTimeImmutable $now,
-        ?UserId $patientId = null,
+        ?User $patient = null,
         ?Timezone $requesterTimezone = null,
     ): self {
         if (trim($fullName) === '') {
@@ -145,7 +147,7 @@ class Appointment
             phone: $phone,
             city: trim($city),
             country: trim($country),
-            patientId: $patientId,
+            patient: $patient,
             createdAt: $now,
             requesterTimezone: $requesterTimezone,
         );
@@ -247,9 +249,14 @@ class Appointment
         return $this->country;
     }
 
+    public function getPatient(): ?User
+    {
+        return $this->patient;
+    }
+
     public function getPatientId(): ?UserId
     {
-        return $this->patientId;
+        return $this->patient?->getId();
     }
 
     public function getCreatedAt(): DateTimeImmutable
@@ -272,7 +279,7 @@ class Appointment
         Phone $phone,
         string $city,
         string $country,
-        ?UserId $patientId,
+        ?User $patient,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
         bool $paymentVerified = false,
@@ -287,7 +294,7 @@ class Appointment
             phone: $phone,
             city: $city,
             country: $country,
-            patientId: $patientId,
+            patient: $patient,
             createdAt: $createdAt,
             requesterTimezone: $requesterTimezone,
         );

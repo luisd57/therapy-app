@@ -13,9 +13,35 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 ## ORM Pragmatism (deliberate, do not "fix")
 
 - ORM attributes (`#[ORM\...]`) live directly on Domain entities. No separate mapping layer: the abstraction only pays off if you swap ORMs, and at this scale that isn't happening.
-- NO Doctrine relation attributes (`OneToMany`, `ManyToOne`, `mappedBy`, `inversedBy`). Entities reference other aggregates by ID value objects; repositories resolve them. Never introduce bidirectional mappings - they buy coupling between aggregates and lazy-loading surprises, and explicit repository lookups are cheaper to reason about.
-- This is an ORM-mapping rule, NOT a schema rule. Migrations still declare `FOREIGN KEY` constraints with explicit cascade semantics: referential integrity belongs in the database.
+- Entities declare their relations: `ManyToOne` on the owning side, `OneToMany` inverse on `User`. See ADR-0007 for what this replaced and what it cost.
 - Repositories flush; handlers NEVER call flush or manage transactions. No transaction middleware - an accepted trade-off.
+
+## ORM Relations
+
+Every relation points at `User`; `SlotLock` has none. Pin each join column with an explicit
+`#[ORM\JoinColumn(name:, referencedColumnName: 'id', onDelete:)]` so the mapping states the
+delete rule instead of leaving it in a migration only.
+
+- **The entities own the schema.** `doctrine:schema:validate` passes and
+  `doctrine:migrations:diff` comes back empty. Keep it that way: a new index or column default
+  goes on the entity, and the migration is then generated, not hand-written. If `diff` proposes
+  dropping an index, the entity is missing an `#[ORM\Index]` - do not accept the drop.
+- **No `cascade`, no `orphanRemoval`, ever.** The `ON DELETE` rules in the migrations own
+  deletion. A PHP-side `cascade: ['remove']` on `$appointments` would delete rows the database
+  only means to null out. The cost: `UserRepositoryInterface::delete()` throws if an unflushed
+  entity pointing at that user is still managed.
+- **Never `fetch: 'EAGER'`.** It is global and fires on `find()` too. When a caller genuinely
+  reads through an association, put `->join(...)->addSelect(...)` in that one repository method.
+- **Do not iterate the inverse collections in application code.** The practice has one therapist,
+  so `getSentInvitations()` and `getScheduleExceptions()` are whole tables with no `LIMIT`; both
+  are `EXTRA_LAZY` so `count`/`contains`/`slice` stay in SQL. The paginated repository methods are
+  the read path for user-scoped lists.
+- **Repository ports still take `UserId`, not `User`** - a read should not force callers to load a
+  user. Doctrine accepts the identifier value for an association field.
+- `User::$id` is the one identifier that is not `readonly`. Doctrine's `ReadonlyAccessor` compares
+  with `!==` when re-setting it during proxy initialization, and two `UserId` value objects holding
+  the same UUID fail that. `User` is the only entity anything maps a `ManyToOne` onto, so it is the
+  only one that needs this.
 
 ## Domain Layer
 Entities (User, Appointment, TherapistSchedule, ScheduleException, SlotLock, InvitationToken, PasswordResetToken), Value Objects (immutable, self-validating, private constructors - the `Id/` types plus Email, Phone, Timezone, Address, TimeSlot), Enums (backed: UserRole, AppointmentStatus, AppointmentModality, WeekDay - these are NOT Value Objects, so the private-constructor and static-factory rules cannot apply to them), Repository Interfaces (driven ports), Service Interfaces (driven ports: EmailSenderInterface, JwtTokenGeneratorInterface, PasswordHasherInterface), Domain Services (AvailabilityComputer), Parameter Objects (AvailabilityContext - public constructor by design, it carries arguments rather than modelling a value), Exceptions.
@@ -77,7 +103,7 @@ also gives each action a test file of its own, which one shared controller test 
 3. Custom DBAL Type in `src/Infrastructure/Persistence/Doctrine/Type/`
 4. Register type in `config/packages/doctrine.yaml`
 5. Repository impl in `src/Infrastructure/Persistence/Doctrine/Repository/`
-6. Migration: review `doctrine:migrations:diff` output before keeping it - entities declare no relations, so Doctrine does not know about the hand-written FK constraints and indexes in `migrations/` and will propose dropping them
+6. Migration: generate it with `doctrine:migrations:diff` and keep it. Declare indexes and column defaults on the entity, never only in the migration, or the next diff proposes dropping them
 
 ### New API Endpoint
 1. `{Action}Controller` placed per `## Controllers` - never a second method on an existing controller

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Entity;
 
+use App\Domain\Appointment\Entity\Appointment;
+use App\Domain\Appointment\Entity\ScheduleException;
+use App\Domain\Appointment\Entity\TherapistSchedule;
 use App\Domain\User\ValueObject\Address;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
@@ -11,6 +14,8 @@ use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -32,7 +37,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Embedded(class: Address::class)]
     private ?Address $address = null;
 
-    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isActive = false;
 
     #[ORM\Column(type: 'utc_datetime_immutable', nullable: true)]
@@ -48,10 +53,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'timezone', length: 64, nullable: true)]
     private ?Timezone $timezone = null;
 
+    /**
+     * Bounded: only a patient is ever linked to an Appointment, never the therapist.
+     *
+     * @var Collection<int, Appointment>
+     */
+    #[ORM\OneToMany(targetEntity: Appointment::class, mappedBy: 'patient')]
+    private Collection $appointments;
+
+    /** @var Collection<int, PasswordResetToken> */
+    #[ORM\OneToMany(targetEntity: PasswordResetToken::class, mappedBy: 'user')]
+    private Collection $passwordResetTokens;
+
+    /**
+     * Unbounded: the practice has one therapist, so this is every invitation ever sent.
+     * EXTRA_LAZY keeps count/contains/slice in SQL. Iterating it still reads the table.
+     *
+     * @var Collection<int, InvitationToken>
+     */
+    #[ORM\OneToMany(targetEntity: InvitationToken::class, mappedBy: 'invitedBy', fetch: 'EXTRA_LAZY')]
+    private Collection $sentInvitations;
+
+    /** @var Collection<int, TherapistSchedule> */
+    #[ORM\OneToMany(targetEntity: TherapistSchedule::class, mappedBy: 'therapist')]
+    private Collection $scheduleBlocks;
+
+    /**
+     * Unbounded, same reasoning as sentInvitations.
+     *
+     * @var Collection<int, ScheduleException>
+     */
+    #[ORM\OneToMany(targetEntity: ScheduleException::class, mappedBy: 'therapist', fetch: 'EXTRA_LAZY')]
+    private Collection $scheduleExceptions;
+
     public function __construct(
+        // Not readonly, unlike every other identifier here: User is the only entity another
+        // maps a ManyToOne onto, so it is the only one Doctrine builds proxies for. Initializing
+        // a proxy re-sets the id, and Doctrine's ReadonlyAccessor compares with !== - two UserId
+        // value objects holding the same UUID fail that and it throws. No setter exists, so the
+        // field is still immutable in practice.
         #[ORM\Id]
         #[ORM\Column(type: 'user_id')]
-        private readonly UserId $id,
+        private UserId $id,
         #[ORM\Column(type: 'email', length: 255, unique: true)]
         private readonly Email $email,
         #[ORM\Column(type: Types::STRING, length: 255)]
@@ -62,6 +105,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         private readonly DateTimeImmutable $createdAt,
     ) {
         $this->updatedAt = $createdAt;
+        $this->appointments = new ArrayCollection();
+        $this->passwordResetTokens = new ArrayCollection();
+        $this->sentInvitations = new ArrayCollection();
+        $this->scheduleBlocks = new ArrayCollection();
+        $this->scheduleExceptions = new ArrayCollection();
     }
 
     // Symfony Security Interface Methods
@@ -241,6 +289,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUpdatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    /** @return Collection<int, Appointment> */
+    public function getAppointments(): Collection
+    {
+        return $this->appointments;
+    }
+
+    /**
+     * Read path for user-scoped lists is the repository, not this collection.
+     * See "ORM Relations" in .claude/rules/api-architecture.md.
+     *
+     * @return Collection<int, PasswordResetToken>
+     */
+    public function getPasswordResetTokens(): Collection
+    {
+        return $this->passwordResetTokens;
+    }
+
+    /** @return Collection<int, InvitationToken> */
+    public function getSentInvitations(): Collection
+    {
+        return $this->sentInvitations;
+    }
+
+    /** @return Collection<int, TherapistSchedule> */
+    public function getScheduleBlocks(): Collection
+    {
+        return $this->scheduleBlocks;
+    }
+
+    /** @return Collection<int, ScheduleException> */
+    public function getScheduleExceptions(): Collection
+    {
+        return $this->scheduleExceptions;
     }
 
     public function isTherapist(): bool

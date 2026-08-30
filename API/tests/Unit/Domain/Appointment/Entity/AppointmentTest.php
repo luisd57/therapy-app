@@ -12,13 +12,31 @@ use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
-use App\Domain\User\Id\UserId;
+use App\Domain\User\Entity\User;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class AppointmentTest extends TestCase
 {
-    private function createRequestedAppointment(?UserId $patientId = null): Appointment
+    public function testAppointmentHoldsThePatientWhenOneIsLinked(): void
+    {
+        $patient = DomainTestHelper::createActivePatient();
+        $appointment = $this->createRequestedAppointment($patient);
+
+        $this->assertSame($patient, $appointment->getPatient());
+        $this->assertTrue($patient->getId()->equals($appointment->getPatientId()));
+    }
+
+    public function testAnonymousRequestHasNoPatient(): void
+    {
+        $appointment = $this->createRequestedAppointment();
+
+        $this->assertNull($appointment->getPatient());
+        $this->assertNull($appointment->getPatientId());
+    }
+
+    private function createRequestedAppointment(?User $patient = null): Appointment
     {
         return Appointment::request(
             id: AppointmentId::generate(),
@@ -30,7 +48,7 @@ final class AppointmentTest extends TestCase
             city: 'New York',
             country: 'USA',
             now: new DateTimeImmutable(),
-            patientId: $patientId,
+            patient: $patient,
         );
     }
 
@@ -40,7 +58,7 @@ final class AppointmentTest extends TestCase
     {
         $id = AppointmentId::generate();
         $timeSlot = TimeSlot::create(new DateTimeImmutable('+1 day'), 50);
-        $patientId = UserId::generate();
+        $patient = DomainTestHelper::createActivePatient();
 
         $appointment = Appointment::request(
             id: $id,
@@ -52,7 +70,7 @@ final class AppointmentTest extends TestCase
             city: 'New York',
             country: 'USA',
             now: new DateTimeImmutable(),
-            patientId: $patientId,
+            patient: $patient,
         );
 
         $this->assertTrue($id->equals($appointment->getId()));
@@ -64,7 +82,7 @@ final class AppointmentTest extends TestCase
         $this->assertSame('+1234567890', $appointment->getPhone()->getValue());
         $this->assertSame('New York', $appointment->getCity());
         $this->assertSame('USA', $appointment->getCountry());
-        $this->assertTrue($patientId->equals($appointment->getPatientId()));
+        $this->assertTrue($patient->getId()->equals($appointment->getPatientId()));
         $this->assertNotNull($appointment->getCreatedAt());
         $this->assertNotNull($appointment->getUpdatedAt());
     }
@@ -211,7 +229,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
-            patientId: null,
+            patient: null,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
         );
@@ -232,7 +250,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
-            patientId: null,
+            patient: null,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
         );
@@ -253,7 +271,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
-            patientId: null,
+            patient: null,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
         );
@@ -317,7 +335,7 @@ final class AppointmentTest extends TestCase
 
     public function testBookWithPatientId(): void
     {
-        $patientId = UserId::generate();
+        $patient = DomainTestHelper::createActivePatient();
 
         $appointment = Appointment::book(
             id: AppointmentId::generate(),
@@ -329,10 +347,10 @@ final class AppointmentTest extends TestCase
             city: 'Los Angeles',
             country: 'USA',
             now: new DateTimeImmutable(),
-            patientId: $patientId,
+            patient: $patient,
         );
 
-        $this->assertTrue($patientId->equals($appointment->getPatientId()));
+        $this->assertTrue($patient->getId()->equals($appointment->getPatientId()));
         $this->assertSame(AppointmentStatus::CONFIRMED, $appointment->getStatus());
     }
 
@@ -394,7 +412,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'USA',
-            patientId: null,
+            patient: null,
             createdAt: new DateTimeImmutable(),
             updatedAt: new DateTimeImmutable(),
             paymentVerified: true,
@@ -411,7 +429,7 @@ final class AppointmentTest extends TestCase
         $timeSlot = TimeSlot::create(new DateTimeImmutable('2026-04-01 10:00'), 50);
         $email = Email::fromString('jane@example.com');
         $phone = Phone::fromString('+9876543210');
-        $patientId = UserId::generate();
+        $patient = DomainTestHelper::createActivePatient();
         $createdAt = new DateTimeImmutable('-1 day');
         $updatedAt = new DateTimeImmutable();
 
@@ -425,7 +443,7 @@ final class AppointmentTest extends TestCase
             phone: $phone,
             city: 'Los Angeles',
             country: 'USA',
-            patientId: $patientId,
+            patient: $patient,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
         );
@@ -439,7 +457,7 @@ final class AppointmentTest extends TestCase
         $this->assertTrue($phone->equals($appointment->getPhone()));
         $this->assertSame('Los Angeles', $appointment->getCity());
         $this->assertSame('USA', $appointment->getCountry());
-        $this->assertTrue($patientId->equals($appointment->getPatientId()));
+        $this->assertTrue($patient->getId()->equals($appointment->getPatientId()));
         $this->assertSame($createdAt, $appointment->getCreatedAt());
         $this->assertSame($updatedAt, $appointment->getUpdatedAt());
     }

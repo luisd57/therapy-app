@@ -9,7 +9,7 @@ paths:
 All of it lives in `API/tests/Helper/`. Read the list before writing a fixture by hand.
 
 Base classes:
-- **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly.
+- **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly. Entity factories take the related `User` object, not a `UserId` - see ADR-0007.
 - **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
 - Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. A test that only reads container parameters extends `KernelTestCase` directly for the same reason: `Application/Appointment/Service/SlotGenerationRulesFactoryTest` is the case. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.

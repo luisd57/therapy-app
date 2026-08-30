@@ -22,6 +22,7 @@ use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -88,7 +89,7 @@ final class AvailabilityComputerTest extends TestCase
     ): TherapistSchedule {
         return TherapistSchedule::reconstitute(
             id: ScheduleId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: $dayOfWeek,
             startTime: $startTime,
             endTime: $endTime,
@@ -115,7 +116,7 @@ final class AvailabilityComputerTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: 'TestCity',
             country: 'TestCountry',
-            patientId: null,
+            patient: null,
             createdAt: self::utc('2026-01-01 00:00:00'),
             updatedAt: self::utc('2026-01-01 00:00:00'),
         );
@@ -127,7 +128,7 @@ final class AvailabilityComputerTest extends TestCase
     ): ScheduleException {
         return ScheduleException::reconstitute(
             id: ExceptionId::generate(),
-            therapistId: UserId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
             startDateTime: $start,
             endDateTime: $end,
             reason: 'Blocked',

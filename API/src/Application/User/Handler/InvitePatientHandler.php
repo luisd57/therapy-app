@@ -8,6 +8,7 @@ use App\Application\User\DTO\Input\InvitePatientInputDTO;
 use App\Application\User\DTO\Output\InvitationOutputDTO;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\Exception\UserAlreadyExistsException;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
@@ -47,15 +48,20 @@ final readonly class InvitePatientHandler
             return InvitationOutputDTO::fromEntity($existingInvitation, $this->clock->now());
         }
 
+        $therapist = $this->userRepository->findById(UserId::fromString($dto->therapistId));
+
+        if ($therapist === null) {
+            throw new UserNotFoundException($dto->therapistId);
+        }
+
         $token = $this->tokenGenerator->generate();
-        $therapistId = UserId::fromString($dto->therapistId);
 
         $invitation = InvitationToken::create(
             id: TokenId::generate(),
             token: $token,
             email: $email,
             patientName: $dto->patientName,
-            invitedBy: $therapistId,
+            invitedBy: $therapist,
             ttlSeconds: $this->invitationTtl,
             now: $this->clock->now(),
         );

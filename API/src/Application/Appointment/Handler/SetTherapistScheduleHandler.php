@@ -11,13 +11,16 @@ use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Id\UserId;
+use App\Domain\User\Repository\UserRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 final readonly class SetTherapistScheduleHandler
 {
     public function __construct(
         private TherapistScheduleRepositoryInterface $scheduleRepository,
+        private UserRepositoryInterface $userRepository,
         private ClockInterface $clock,
     ) {
     }
@@ -25,6 +28,12 @@ final readonly class SetTherapistScheduleHandler
     public function __invoke(SetTherapistScheduleInputDTO $dto): TherapistScheduleOutputDTO
     {
         $therapistId = UserId::fromString($dto->therapistId);
+        $therapist = $this->userRepository->findById($therapistId);
+
+        if ($therapist === null) {
+            throw new UserNotFoundException($dto->therapistId);
+        }
+
         $dayOfWeek = WeekDay::from($dto->dayOfWeek);
 
         // Overlap check is time-based only, regardless of modality.
@@ -47,7 +56,7 @@ final readonly class SetTherapistScheduleHandler
 
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: $dayOfWeek,
             startTime: $dto->startTime,
             endTime: $dto->endTime,

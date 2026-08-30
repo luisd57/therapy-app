@@ -9,7 +9,7 @@ use App\Application\Appointment\Handler\ListScheduleExceptionsHandler;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Id\ExceptionId;
-use App\Domain\User\Id\UserId;
+use App\Tests\Helper\DomainTestHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -30,11 +30,12 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
 
     public function testHandleReturnsCollectionOfDTOs(): void
     {
-        $therapistId = UserId::generate();
+        $therapist = DomainTestHelper::createTherapist();
+        $therapistId = $therapist->getId();
 
         $exception1 = ScheduleException::reconstitute(
             id: ExceptionId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: new \DateTimeImmutable('2025-06-01 09:00:00'),
             endDateTime: new \DateTimeImmutable('2025-06-01 17:00:00'),
             reason: 'Day off',
@@ -44,7 +45,7 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
 
         $exception2 = ScheduleException::reconstitute(
             id: ExceptionId::generate(),
-            therapistId: $therapistId,
+            therapist: $therapist,
             startDateTime: new \DateTimeImmutable('2025-06-15 10:00:00'),
             endDateTime: new \DateTimeImmutable('2025-06-15 12:00:00'),
             reason: 'Doctor appointment',

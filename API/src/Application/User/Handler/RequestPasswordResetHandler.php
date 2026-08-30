@@ -50,7 +50,7 @@ final readonly class RequestPasswordResetHandler
         $resetToken = PasswordResetToken::create(
             id: TokenId::generate(),
             token: $token,
-            userId: $user->getId(),
+            user: $user,
             ttlSeconds: $this->passwordResetTtl,
             now: $this->clock->now(),
         );

@@ -7,6 +7,7 @@ namespace App\Domain\Appointment\Entity;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
+use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -17,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(columns: ['therapist_id', 'day_of_week'], name: 'idx_schedule_therapist_day')]
 class TherapistSchedule
 {
-    #[ORM\Column(type: Types::BOOLEAN)]
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
     private bool $isActive = true;
 
     #[ORM\Column(type: 'utc_datetime_immutable')]
@@ -27,17 +28,18 @@ class TherapistSchedule
         #[ORM\Id]
         #[ORM\Column(type: 'schedule_id')]
         private readonly ScheduleId $id,
-        #[ORM\Column(type: 'user_id')]
-        private readonly UserId $therapistId,
+        #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'scheduleBlocks')]
+        #[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+        private readonly User $therapist,
         #[ORM\Column(type: Types::INTEGER, enumType: WeekDay::class)]
         private WeekDay $dayOfWeek,
         #[ORM\Column(type: Types::STRING, length: 5)]
         private string $startTime,
         #[ORM\Column(type: Types::STRING, length: 5)]
         private string $endTime,
-        #[ORM\Column(type: Types::BOOLEAN)]
+        #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
         private bool $supportsOnline,
-        #[ORM\Column(type: Types::BOOLEAN)]
+        #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
         private bool $supportsInPerson,
         #[ORM\Column(type: 'utc_datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
@@ -47,7 +49,7 @@ class TherapistSchedule
 
     public static function create(
         ScheduleId $id,
-        UserId $therapistId,
+        User $therapist,
         WeekDay $dayOfWeek,
         string $startTime,
         string $endTime,
@@ -64,7 +66,7 @@ class TherapistSchedule
 
         return new self(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: $dayOfWeek,
             startTime: $startTime,
             endTime: $endTime,
@@ -122,9 +124,14 @@ class TherapistSchedule
         return $this->id;
     }
 
+    public function getTherapist(): User
+    {
+        return $this->therapist;
+    }
+
     public function getTherapistId(): UserId
     {
-        return $this->therapistId;
+        return $this->therapist->getId();
     }
 
     public function getDayOfWeek(): WeekDay
@@ -169,7 +176,7 @@ class TherapistSchedule
 
     public static function reconstitute(
         ScheduleId $id,
-        UserId $therapistId,
+        User $therapist,
         WeekDay $dayOfWeek,
         string $startTime,
         string $endTime,
@@ -181,7 +188,7 @@ class TherapistSchedule
     ): self {
         $schedule = new self(
             id: $id,
-            therapistId: $therapistId,
+            therapist: $therapist,
             dayOfWeek: $dayOfWeek,
             startTime: $startTime,
             endTime: $endTime,

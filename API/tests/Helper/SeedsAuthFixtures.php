@@ -60,7 +60,7 @@ trait SeedsAuthFixtures
             token: 'test-invitation-token-' . bin2hex(random_bytes(8)),
             email: 'newpatient@test.com',
             patientName: 'New Patient',
-            invitedBy: $inviter->getId(),
+            invitedBy: $inviter,
         );
         self::getContainer()->get(InvitationTokenRepositoryInterface::class)->save($invitation);
 

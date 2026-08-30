@@ -28,7 +28,7 @@ trait SeedsTherapistSchedule
         // Create a Monday schedule (day_of_week = 1), 08:00-18:00
         $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
-            therapistId: $therapist->getId(),
+            therapist: $therapist,
             dayOfWeek: WeekDay::MONDAY,
             startTime: '08:00',
             endTime: '18:00',
