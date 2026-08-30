@@ -27,7 +27,7 @@ spread. `AddScheduleExceptionHandlerTest` is the only other file that does it
 throughout. `ResetPasswordHandlerTest` does both, pinning in one test and taking
 the real clock in another, which is the mixed state to expect across the suite.
 
-**Six of forty-eight integration files freeze the clock.** The helper for it
+**Six of fifty integration files freeze the clock.** The helper for it
 exists and is used correctly where it is used. Beware of judging this by whether a
 file mentions the helper: several call it inside one test method while other
 methods in the same file remain wall-clock coupled. Check the method, not the file.
@@ -70,3 +70,11 @@ scale: twenty stubs plus a judgement call across the integration suite is its ow
 ticket rather than a bullet on another one. Entities taking `now` as a constructor
 argument are ticket 02's business, not this one's, since there is no clock to
 inject there.
+
+**2026-08-30** - Re-measured after PR #74. The integration denominator moved from
+48 to 50 across PRs #72 and #74. The six freezing files are the same six.
+`EntityRelationsTest`, added by #74, asserts on identity and nullity rather than on
+dates, so it is one of the files that correctly needs no freeze. The unit-side
+counts are unchanged at 20 of 23 stubs across 22 files, pinned in
+`AddScheduleExceptionHandlerTest`, `GetNextAvailableWeekHandlerTest` and one of the
+two in `ResetPasswordHandlerTest`.

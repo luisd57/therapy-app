@@ -278,8 +278,8 @@ knowing: a guard test earns its place only where inspection cannot do the job.
 
 Integration tests run inside a rolled-back transaction and pin "now" through the
 frozen-clock helper before issuing any request, because handlers resolve the
-clock lazily at dispatch. As measured on 2026-08-25, only 6 of 48 integration
-files freeze the clock, and 20 of 23 unit stubs of `ClockInterface` hand back the
+clock lazily at dispatch. Re-measured 2026-08-30, only 6 of 50 integration files
+freeze the clock, and 20 of 23 unit stubs of `ClockInterface` hand back the
 real current instant. Many genuinely do not need to. Ticket 13 is the judgement
 call over which do, and it warns that a file-level search overstates the freezing,
 because a file can freeze in one method and not in the next.
