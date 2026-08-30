@@ -73,14 +73,19 @@ four findings above still hold. Three notes on what moved around them.
 The rotted fixture gained an instance. #74 added
 `testBookingForAnUnknownPatientReturns404` to `BookAppointmentControllerTest`, the
 file named above, carrying another unfrozen `2026-06-01T10:00:00-04:00`. That file
-now holds three occurrences, and ten integration files carry a June-2026 date.
+now holds three occurrences, and eleven integration files carry a June-2026 date.
 
 Every `DomainTestHelper` entity factory now takes a `User` rather than a `UserId`
 (ADR-0007). This changes no part of the fix, since the three entities still take
 `now` as an ordinary constructor argument, but the call sites in the two token
 entity tests were rewritten, so read them fresh rather than from this ticket.
 
-Two new factories, `createScheduleBlock` and `createScheduleException`, pass
-`now: new DateTimeImmutable()` and default to `'+2 days 09:00'`. Neither is in
-scope here: the date is relative rather than hardcoded, so it cannot rot, and both
-pass an explicit `DateTimeZone`. Recorded so the next reader does not re-derive it.
+Two new factories, `createScheduleBlock` and `createScheduleException`, both hand
+their entity a `now: new DateTimeImmutable()`. Neither is in scope here.
+`createScheduleException` defaults its start to `'+2 days 09:00'` with an explicit
+`DateTimeZone`, so it is relative rather than hardcoded and cannot rot, and
+`createScheduleBlock` takes only times of day, which is what a Schedule Block is.
+Worth knowing that neither of ticket 15's proposed rules would flag the bare
+`new DateTimeImmutable()` in either one: the first sees only `ClockInterface`
+doubles, and the second only a single-argument `DateTimeImmutable` built from a
+string literal.

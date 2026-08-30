@@ -27,10 +27,11 @@ spread. `AddScheduleExceptionHandlerTest` is the only other file that does it
 throughout. `ResetPasswordHandlerTest` does both, pinning in one test and taking
 the real clock in another, which is the mixed state to expect across the suite.
 
-**Six of fifty integration files freeze the clock.** The helper for it
-exists and is used correctly where it is used. Beware of judging this by whether a
-file mentions the helper: several call it inside one test method while other
-methods in the same file remain wall-clock coupled. Check the method, not the file.
+**Six of fifty integration files freeze the clock, measured 2026-08-30.** The
+helper for it exists and is used correctly where it is used. Beware of judging this
+by whether a file mentions the helper: several call it inside one test method while
+other methods in the same file remain wall-clock coupled. Check the method, not the
+file.
 
 **This is not a blanket sweep, and the ticket should not become one.** Plenty of
 the remaining files test things time does not reach: a role guard, a validation
