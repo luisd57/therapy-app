@@ -22,6 +22,7 @@ use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -38,16 +39,13 @@ use PHPUnit\Framework\TestCase;
  */
 final class AvailabilityComputerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private AvailabilityComputer $computer;
 
     protected function setUp(): void
     {
         $this->computer = new AvailabilityComputer();
-    }
-
-    private static function utc(string $dateTime): DateTimeImmutable
-    {
-        return new DateTimeImmutable($dateTime, new DateTimeZone('UTC'));
     }
 
     private static function practiceTimeZone(): DateTimeZone

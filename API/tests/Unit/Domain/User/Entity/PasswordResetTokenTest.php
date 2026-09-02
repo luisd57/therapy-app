@@ -7,11 +7,18 @@ namespace App\Tests\Unit\Domain\User\Entity;
 use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Id\TokenId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * PasswordResetToken takes now as an ordinary argument, so time here is a literal
+ * rather than a frozen clock the entity never consults. See ADR-0003.
+ */
 final class PasswordResetTokenTest extends TestCase
 {
+    use UsesUtcInstants;
+
     public function testCreateSetsAllProperties(): void
     {
         $user = DomainTestHelper::createActivePatient();
@@ -34,14 +41,26 @@ final class PasswordResetTokenTest extends TestCase
         $this->assertSame($user, $token->getUser());
     }
 
-    public function testCreateExpiresAtIsInFuture(): void
+    public function testCreateSetsExpiresAtToNowPlusTheTtl(): void
     {
-        $beforeCreate = new DateTimeImmutable();
-        $token = DomainTestHelper::createValidPasswordResetToken(ttlSeconds: 3600);
-        $afterCreate = new DateTimeImmutable();
+        $token = DomainTestHelper::createValidPasswordResetToken(
+            ttlSeconds: 3600,
+            now: new DateTimeImmutable('2026-05-01T12:00:00+00:00'),
+        );
 
-        $this->assertGreaterThanOrEqual($beforeCreate->modify('+3600 seconds'), $token->getExpiresAt());
-        $this->assertLessThanOrEqual($afterCreate->modify('+3600 seconds'), $token->getExpiresAt());
+        self::assertInstantIs('2026-05-01T12:00:00+00:00', $token->getCreatedAt());
+        self::assertInstantIs('2026-05-01T13:00:00+00:00', $token->getExpiresAt());
+    }
+
+    /** The TTL runs from the instant given, so an offset in it must carry through. */
+    public function testCreateCountsTheTtlFromTheInstantItIsGiven(): void
+    {
+        $token = DomainTestHelper::createValidPasswordResetToken(
+            ttlSeconds: 3600,
+            now: new DateTimeImmutable('2026-05-01T08:00:00-04:00'),
+        );
+
+        self::assertInstantIs('2026-05-01T13:00:00+00:00', $token->getExpiresAt());
     }
 
     public function testUseValidTokenMarksAsUsed(): void
@@ -86,25 +105,29 @@ final class PasswordResetTokenTest extends TestCase
         $this->assertTrue($token->isExpired(new DateTimeImmutable()));
     }
 
-    public function testIsExpiredBoundaryTokenExpiringAtNow(): void
+    /**
+     * isExpired compares with `<`, so the expiry instant is still valid and the second
+     * after it is not. A wall-clock expiry makes that depend on how long the test ran.
+     */
+    public function testATokenIsValidAtItsExpiryInstantAndExpiredAfterIt(): void
     {
-        $now = new DateTimeImmutable();
+        $expiresAt = new DateTimeImmutable('2026-05-01T12:00:00+00:00');
         $token = PasswordResetToken::reconstitute(
             id: TokenId::generate(),
             token: 'boundary-reset',
             user: DomainTestHelper::createActivePatient(),
             isUsed: false,
-            createdAt: new DateTimeImmutable('-1 hour'),
-            expiresAt: $now,
+            createdAt: new DateTimeImmutable('2026-05-01T11:00:00+00:00'),
+            expiresAt: $expiresAt,
             usedAt: null,
         );
 
-        $isExpired = $token->isExpired(new DateTimeImmutable());
-        $this->assertIsBool($isExpired);
+        $this->assertFalse($token->isExpired($expiresAt));
+        $this->assertTrue($token->isValid($expiresAt));
 
-        if ($isExpired) {
-            $this->assertFalse($token->isValid(new DateTimeImmutable()));
-        }
+        $aSecondLater = new DateTimeImmutable('2026-05-01T12:00:01+00:00');
+        $this->assertTrue($token->isExpired($aSecondLater));
+        $this->assertFalse($token->isValid($aSecondLater));
     }
 
     public function testIsValidValidTokenReturnsTrue(): void

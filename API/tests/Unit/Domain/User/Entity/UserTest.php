@@ -11,11 +11,14 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
 {
+    use UsesUtcInstants;
+
     public function testCreateTherapistSetsCorrectProperties(): void
     {
         $user = DomainTestHelper::createTherapist();
@@ -61,15 +64,18 @@ final class UserTest extends TestCase
         $user->activate('another_password', new DateTimeImmutable());
     }
 
+    /**
+     * The user is built on the wall clock, so a literal far from now tells a written
+     * updatedAt from an untouched one. A >= against the old value cannot. See ADR-0003.
+     */
     public function testUpdatePassword(): void
     {
         $user = DomainTestHelper::createTherapist();
-        $oldUpdatedAt = $user->getUpdatedAt();
 
-        $user->updatePassword('new_hashed_password', new DateTimeImmutable());
+        $user->updatePassword('new_hashed_password', new DateTimeImmutable('2026-07-01T12:00:00+00:00'));
 
         $this->assertSame('new_hashed_password', $user->getPassword());
-        $this->assertGreaterThanOrEqual($oldUpdatedAt, $user->getUpdatedAt());
+        self::assertInstantIs('2026-07-01T12:00:00+00:00', $user->getUpdatedAt());
     }
 
     public function testUpdateProfileWithPhoneOnly(): void

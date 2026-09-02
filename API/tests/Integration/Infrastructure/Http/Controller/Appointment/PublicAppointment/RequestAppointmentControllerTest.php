@@ -13,9 +13,15 @@ final class RequestAppointmentControllerTest extends ApiTestCase
 {
     use SeedsTherapistSchedule;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Fixtures below are dated June 2026. Pin now so they cannot rot into the past.
+        $this->freezeClock('2026-05-30 09:00:00');
+    }
+
     public function testRequestAppointmentReturns201(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 09:30 Caracas (13:30 UTC) is an offered start: 08:00 plus a multiple of the
@@ -72,7 +78,6 @@ final class RequestAppointmentControllerTest extends ApiTestCase
 
     public function testRequestAppointmentRecordsTheRequestersTimezone(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         $this->jsonRequest('POST', '/api/appointments/request', [
@@ -96,7 +101,6 @@ final class RequestAppointmentControllerTest extends ApiTestCase
 
     public function testRequestAppointmentRejectsAFixedOffsetAsTimezone(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         $this->jsonRequest('POST', '/api/appointments/request', [

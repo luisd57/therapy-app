@@ -13,6 +13,13 @@ final class PatientAppointmentControllerTest extends ApiTestCase
 {
     use SeedsTherapistSchedule;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Fixtures below are dated June 2026. Pin now so they cannot rot into the past.
+        $this->freezeClock('2026-05-30 09:00:00');
+    }
+
     private function createPatientWithProfileAndGetToken(): string
     {
         $token = $this->createPatientAndGetToken();
@@ -35,7 +42,6 @@ final class PatientAppointmentControllerTest extends ApiTestCase
 
     public function testRequestAppointmentReturns201(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
         $patientToken = $this->createPatientWithProfileAndGetToken();
 

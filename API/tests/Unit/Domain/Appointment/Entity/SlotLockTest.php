@@ -8,70 +8,93 @@ use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * SlotLock takes now as an ordinary argument, so time here is a literal rather than
+ * a frozen clock the entity never consults. See ADR-0003.
+ */
 final class SlotLockTest extends TestCase
 {
+    use UsesUtcInstants;
+
+    private const NOW = '2026-05-01T12:00:00+00:00';
+
+    private static function aTimeSlot(): TimeSlot
+    {
+        return TimeSlot::create(self::utc('2026-05-02 09:00'), 50);
+    }
+
     // --- create() ---
 
-    public function testCreateSetsExpiresAtCorrectly(): void
+    public function testCreateSetsExpiresAtToNowPlusTheTtl(): void
     {
-        $beforeCreate = new DateTimeImmutable();
-
         $lock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            timeSlot: self::aTimeSlot(),
             modality: AppointmentModality::ONLINE,
             lockToken: 'test-token-123',
             ttlSeconds: 300,
-            now: $beforeCreate,
+            now: new DateTimeImmutable(self::NOW),
         );
 
-        $afterCreate = new DateTimeImmutable();
-
-        // expiresAt should be approximately now + 300 seconds
-        $expectedMin = $beforeCreate->modify('+300 seconds');
-        $expectedMax = $afterCreate->modify('+300 seconds');
-
-        $this->assertGreaterThanOrEqual($expectedMin, $lock->getExpiresAt());
-        $this->assertLessThanOrEqual($expectedMax, $lock->getExpiresAt());
+        self::assertInstantIs('2026-05-01T12:00:00+00:00', $lock->getCreatedAt());
+        self::assertInstantIs('2026-05-01T12:05:00+00:00', $lock->getExpiresAt());
         $this->assertSame('test-token-123', $lock->getLockToken());
         $this->assertSame(AppointmentModality::ONLINE, $lock->getModality());
     }
 
-    // --- isActive / isExpired ---
-
-    public function testIsActiveForActiveLock(): void
+    /** The TTL runs from the instant given, so an offset in it must carry through. */
+    public function testCreateCountsTheTtlFromTheInstantItIsGiven(): void
     {
-        $now = new DateTimeImmutable();
-
         $lock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            timeSlot: self::aTimeSlot(),
+            modality: AppointmentModality::ONLINE,
+            lockToken: 'offset-token',
+            ttlSeconds: 600,
+            now: new DateTimeImmutable('2026-05-01T08:00:00-04:00'),
+        );
+
+        self::assertInstantIs('2026-05-01T12:10:00+00:00', $lock->getExpiresAt());
+    }
+
+    // --- isActive / isExpired ---
+
+    public function testALockIsActiveUpToItsExpiryAndExpiredAfterIt(): void
+    {
+        $lock = SlotLock::create(
+            id: SlotLockId::generate(),
+            timeSlot: self::aTimeSlot(),
             modality: AppointmentModality::ONLINE,
             lockToken: 'active-token',
             ttlSeconds: 3600,
-            now: $now,
+            now: new DateTimeImmutable(self::NOW),
         );
 
-        $this->assertTrue($lock->isActive($now));
-        $this->assertFalse($lock->isExpired($now));
+        // Expiry is 13:00. isExpired compares with <, so the expiry instant itself is
+        // still active and the second after it is not.
+        $this->assertTrue($lock->isActive(new DateTimeImmutable('2026-05-01T12:59:59+00:00')));
+        $this->assertTrue($lock->isActive(new DateTimeImmutable('2026-05-01T13:00:00+00:00')));
+        $this->assertFalse($lock->isActive(new DateTimeImmutable('2026-05-01T13:00:01+00:00')));
+        $this->assertTrue($lock->isExpired(new DateTimeImmutable('2026-05-01T13:00:01+00:00')));
     }
 
-    public function testIsActiveForExpiredLock(): void
+    public function testALockReconstitutedPastItsExpiryIsExpired(): void
     {
-        // Use reconstitute to create a lock that already expired
+        // reconstitute is the only way to build a lock that already expired
         $lock = SlotLock::reconstitute(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            timeSlot: self::aTimeSlot(),
             modality: AppointmentModality::ONLINE,
             lockToken: 'expired-token',
-            createdAt: new DateTimeImmutable('-1 hour'),
-            expiresAt: new DateTimeImmutable('-30 minutes'),
+            createdAt: new DateTimeImmutable('2026-05-01T11:00:00+00:00'),
+            expiresAt: new DateTimeImmutable('2026-05-01T11:30:00+00:00'),
         );
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable(self::NOW);
         $this->assertFalse($lock->isActive($now));
         $this->assertTrue($lock->isExpired($now));
     }
@@ -81,9 +104,9 @@ final class SlotLockTest extends TestCase
     public function testReconstituteRestoresAllProperties(): void
     {
         $id = SlotLockId::generate();
-        $timeSlot = TimeSlot::create(new DateTimeImmutable('2026-05-01 10:00'), 50);
-        $createdAt = new DateTimeImmutable('-1 hour');
-        $expiresAt = new DateTimeImmutable('+1 hour');
+        $timeSlot = TimeSlot::create(self::utc('2026-05-01 10:00'), 50);
+        $createdAt = new DateTimeImmutable('2026-05-01T11:00:00+00:00');
+        $expiresAt = new DateTimeImmutable('2026-05-01T13:00:00+00:00');
 
         $lock = SlotLock::reconstitute(
             id: $id,

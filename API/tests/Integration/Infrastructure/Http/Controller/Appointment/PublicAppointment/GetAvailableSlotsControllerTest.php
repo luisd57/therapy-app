@@ -11,9 +11,15 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
 {
     use SeedsTherapistSchedule;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Fixtures below are dated June 2026. Pin now so they cannot rot into the past.
+        $this->freezeClock('2026-05-30 09:00:00');
+    }
+
     public function testAvailableSlotsReturns200WithValidParams(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 2026-06-01 is a Monday. The window is the client's own instants.
@@ -57,7 +63,6 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
 
     public function testAvailableSlotsWithModalityFilter(): void
     {
-        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         // 2026-06-01 is a Monday

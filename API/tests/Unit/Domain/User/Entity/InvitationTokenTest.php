@@ -8,11 +8,18 @@ use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * InvitationToken takes now as an ordinary argument, so time here is a literal rather
+ * than a frozen clock the entity never consults. See ADR-0003.
+ */
 final class InvitationTokenTest extends TestCase
 {
+    use UsesUtcInstants;
+
     public function testCreateSetsAllProperties(): void
     {
         $invitation = DomainTestHelper::createValidInvitation(
@@ -37,14 +44,26 @@ final class InvitationTokenTest extends TestCase
         $this->assertTrue($therapist->getId()->equals($invitation->getInvitedById()));
     }
 
-    public function testCreateExpiresAtIsInFuture(): void
+    public function testCreateSetsExpiresAtToNowPlusTheTtl(): void
     {
-        $beforeCreate = new DateTimeImmutable();
-        $invitation = DomainTestHelper::createValidInvitation(ttlSeconds: 86400);
-        $afterCreate = new DateTimeImmutable();
+        $invitation = DomainTestHelper::createValidInvitation(
+            ttlSeconds: 86400,
+            now: new DateTimeImmutable('2026-05-01T12:00:00+00:00'),
+        );
 
-        $this->assertGreaterThanOrEqual($beforeCreate->modify('+86400 seconds'), $invitation->getExpiresAt());
-        $this->assertLessThanOrEqual($afterCreate->modify('+86400 seconds'), $invitation->getExpiresAt());
+        self::assertInstantIs('2026-05-01T12:00:00+00:00', $invitation->getCreatedAt());
+        self::assertInstantIs('2026-05-02T12:00:00+00:00', $invitation->getExpiresAt());
+    }
+
+    /** The TTL runs from the instant given, so an offset in it must carry through. */
+    public function testCreateCountsTheTtlFromTheInstantItIsGiven(): void
+    {
+        $invitation = DomainTestHelper::createValidInvitation(
+            ttlSeconds: 3600,
+            now: new DateTimeImmutable('2026-05-01T08:00:00-04:00'),
+        );
+
+        self::assertInstantIs('2026-05-01T13:00:00+00:00', $invitation->getExpiresAt());
     }
 
     public function testUseValidTokenMarksAsUsed(): void
@@ -89,22 +108,21 @@ final class InvitationTokenTest extends TestCase
         $this->assertTrue($invitation->isExpired(new DateTimeImmutable()));
     }
 
-    public function testIsExpiredBoundaryTokenExpiringAtNow(): void
+    /**
+     * isExpired compares with `<`, so the expiry instant is still valid and the second
+     * after it is not. A wall-clock expiry makes that depend on how long the test ran.
+     */
+    public function testATokenIsValidAtItsExpiryInstantAndExpiredAfterIt(): void
     {
-        // Token with expiresAt = now. Since isExpired checks `<`, exactly now should NOT be expired
-        // but due to time passing between creation and check, this is a boundary test
-        $invitation = DomainTestHelper::createBoundaryInvitation();
+        $expiresAt = new DateTimeImmutable('2026-05-01T12:00:00+00:00');
+        $invitation = DomainTestHelper::createBoundaryInvitation(expiresAt: $expiresAt);
 
-        // The boundary token has expiresAt set to 'now' at creation time.
-        // By the time we check, a tiny amount of time has passed, so it may be expired.
-        // This tests that the behavior is consistent: expiresAt < now means expired.
-        $isExpired = $invitation->isExpired(new DateTimeImmutable());
-        $this->assertIsBool($isExpired);
+        $this->assertFalse($invitation->isExpired($expiresAt));
+        $this->assertTrue($invitation->isValid($expiresAt));
 
-        // If expired, it should NOT be valid
-        if ($isExpired) {
-            $this->assertFalse($invitation->isValid(new DateTimeImmutable()));
-        }
+        $aSecondLater = new DateTimeImmutable('2026-05-01T12:00:01+00:00');
+        $this->assertTrue($invitation->isExpired($aSecondLater));
+        $this->assertFalse($invitation->isValid($aSecondLater));
     }
 
     public function testIsValidValidTokenReturnsTrue(): void
