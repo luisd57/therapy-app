@@ -34,8 +34,8 @@ final class RateLimitSubscriberTest extends ApiTestCase
     }
 
     /**
-     * One case per arm of RateLimitSubscriber::resolveLimiter(). Dropping any route from
-     * that match has to fail, not just the two this ticket started from.
+     * One case per route RateLimitSubscriber::resolveLimiter() matches. Dropping any of
+     * them has to fail, not just the two this ticket started from.
      *
      * @return iterable<string, array{string, string, int}>
      */
