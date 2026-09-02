@@ -12,7 +12,7 @@ Base classes:
 - **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly. Entity factories take the related `User` object, not a `UserId` - see ADR-0007.
 - **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
-- Exception: a controller or subscriber test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/`, `ProtectedRouteRolesTest` and `EventSubscriber/SecurityHeadersSubscriberTest` are the cases. A test that only reads container parameters extends `KernelTestCase` directly for the same reason: `Application/Appointment/Service/SlotGenerationRulesFactoryTest` is the case. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
+- Exception: a test needing neither the database nor auth skips these base classes, since transaction wrapping would buy it nothing. Use `WebTestCase` when it still drives HTTP (`Controller/Health/`, `EventSubscriber/SecurityHeadersSubscriberTest`) and `KernelTestCase` when it works off the container rather than a request (`Application/Appointment/Service/SlotGenerationRulesFactoryTest`, `Http/ProtectedRouteRolesTest`, `Http/RateLimitedRouteSetTest`). Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
 Traits:
 - **UsesUtcInstants**: `utc($dateTime)` builds a fixture instant read as UTC, and `assertInstantIs($expectedUtc, $actual)` compares one against a hand-written literal. Never build the expectation by formatting the object under test - it then shifts with the process zone on both sides and agrees with any implementation. See ADR-0003.
@@ -22,6 +22,9 @@ Traits:
 - **SeedsAppointment**: seeds one Appointment. Takes REQUESTED or CONFIRMED only, and throws on a terminal status rather than silently seeding REQUESTED.
 - **KeepsBlocklistAcrossRequests**: puts the JWT blocklist on storage that outlives a request. See the `ArrayAdapter` entry in `dev-gotchas.md` for why it is needed.
 - **KeepsRateLimitsAcrossRequests**: the same swap for both rate limiters, so a sliding window still holds the earlier requests' hits. Call it before the test's first request - the container refuses to replace a service it has already built.
+
+Data:
+- **RateLimitedRoutes**: the rate-limited routes and their ceilings, as `DataProviderExternal` providers plus `urlFor()`, `ceilingFor()`, `names()` and `highestCeiling()`. Not a trait - both rate limit test files read it, and neither should own the list.
 
 Adding or changing a file in `Helper/` updates this list in the same pull request. An undocumented
 helper gets reimplemented: `createTherapistWithSchedule` was copy-pasted into two controller tests

@@ -73,3 +73,16 @@ empty under `APP_ENV=test`, and Symfony's `ErrorListener::removeCspHeader`
 stripping `Content-Security-Policy` off the debug HTML error page, which makes a
 routing 404 useless for asserting that header. The other five headers survive it,
 so only CSP looks missing.
+
+**2026-09-02, later** - the `default => null` gap above is closed by
+`Http/RateLimitedRouteSetTest`, which walks the router and drives
+`onKernelRequest` per route. Reviewing it turned up four more holes in the
+coverage this ticket shipped, all now pinned: the limiter key was not tied to the
+client IP, the public routes were not shown to share one ceiling, `Retry-After`
+was asserted only to fall somewhere inside the window, and the `kernel.request`
+priority was unpinned even though dropping below the firewall's would let a
+brute-force attempt authenticate before being counted.
+
+Left alone deliberately: the subscriber has no `isMainRequest()` guard, so a
+forwarded sub-request consumes a second token. That is a production bug rather
+than a coverage gap, and this effort does not touch `src/`.
