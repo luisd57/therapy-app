@@ -52,8 +52,15 @@ more. Incident history and dates belong in project memory, not here.
   (`doctrine:database:drop --force --if-exists --env=test`), then `make test-db-setup`, and do the
   same for the dev database without `--env=test`. Editing in place is allowed while the series is
   unreleased, so this comes up.
-- Under `APP_ENV=test`, `cache.app` is an `ArrayAdapter` that Symfony resets between requests, so
-  anything cached in one request is gone by the next and `disableReboot()` does not help. Put a
-  `FilesystemAdapter`-backed pool behind the service first, as the
-  `KeepsBlocklistAcrossRequests` trait does. Dev and prod use Redis, so the code is fine - only
-  the test cannot see it.
+- Under `APP_ENV=test`, `cache.app` and `cache.rate_limiter` are both `ArrayAdapter`s that Symfony
+  resets between requests, so anything cached in one request is gone by the next and
+  `disableReboot()` does not help. Put a `FilesystemAdapter`-backed pool behind the service first,
+  as `KeepsBlocklistAcrossRequests` and `KeepsRateLimitsAcrossRequests` do. Dev and prod use Redis,
+  so the code is fine - only the test cannot see it.
+- A rate limiter is that same trap wearing a different hat: the sliding window restarts empty every
+  request, so no ceiling is ever reached and a test that hammers an endpoint reads as "rate
+  limiting is broken".
+- A routing 404 under `test` renders the debug HTML error page, and Symfony's own
+  `ErrorListener::removeCspHeader` strips `Content-Security-Policy` off it. The other five security
+  headers survive, so only CSP looks missing. Assert response headers against a JSON error the app
+  itself returns, not against a 404. Production never renders that page.
