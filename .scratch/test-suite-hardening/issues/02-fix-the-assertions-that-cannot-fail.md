@@ -47,15 +47,17 @@ against a deliberately wrong zone and watching them go red.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Every expectation in the Slot value-object suite is a hand-written absolute value, not one formatted from the object under test
-- [ ] The password-update test asserts the Instant actually moved, so deleting the assignment fails it
-- [ ] Each expiry is asserted as an exact Instant derived from a literal `now`, not as a range built from the wall clock
-- [ ] Deleting or halving any TTL constant fails a test that names it
-- [ ] No controller fixture depends on a hardcoded date still being in the future
-- [ ] The rewritten assertions are shown to fail under a wrong zone, not merely to pass under the current one
-- [ ] Full API suite green
+**Resolved by:** [PR #76](https://github.com/luisd57/therapy-app/pull/76)
+
+- [x] Every expectation in the Slot value-object suite is a hand-written absolute value, not one formatted from the object under test. The `__toString` case needed a second pass: a UTC fixture renders the same digits under any process zone, so it now carries a `-04:00` offset and fails when the renderer normalises to UTC
+- [x] The password-update test asserts the Instant actually moved, so deleting the assignment fails it. Verified by deleting it: the new test goes red where the old one stayed green
+- [x] Each expiry is asserted as an exact Instant derived from a literal `now`, not as a range built from the wall clock
+- [x] Deleting or halving any TTL constant fails a test that names it. Verified both ways across all three entities, six tests red each time
+- [x] No controller fixture depends on a hardcoded date still being in the future. Verified by probe rather than by reading: all 127 controller tests pass under a temporary past-Instant guard. Fifteen tests outside the controllers do not, and are ticket 18
+- [x] The rewritten assertions are shown to fail under a wrong zone, not merely to pass under the current one. Ticked 2026-09-02 against the reading that the *code* uses a wrong zone: making `TimeSlot::create` resolve the start against the process zone reddens 7 of 25, where the old file stayed 20 of 20 green. The other reading, changing `date.timezone` and expecting red, is unachievable by construction and is recorded in the comment below
+- [x] Full API suite green. 626 tests, 1437 assertions
 
 ## Comments
 
