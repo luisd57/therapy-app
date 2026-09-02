@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Domain\Appointment\Entity;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
+use App\Tests\Helper\AssertsInstants;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -14,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 final class ScheduleExceptionTest extends TestCase
 {
+    use AssertsInstants;
+
     public function testExceptionHoldsTheTherapistItBelongsTo(): void
     {
         $therapist = DomainTestHelper::createTherapist();
@@ -36,14 +39,6 @@ final class ScheduleExceptionTest extends TestCase
     private static function practiceTimeZone(): DateTimeZone
     {
         return new DateTimeZone(self::PRACTICE_TIMEZONE);
-    }
-
-    private static function assertInstantIs(string $expectedUtc, DateTimeImmutable $actual): void
-    {
-        self::assertSame(
-            $expectedUtc,
-            $actual->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sP'),
-        );
     }
 
     // --- create() ---

@@ -248,6 +248,7 @@ final class DomainTestHelper
         string $patientName = 'Test Patient',
         ?User $invitedBy = null,
         int $ttlSeconds = 86400,
+        ?DateTimeImmutable $now = null,
     ): InvitationToken {
         return InvitationToken::create(
             id: $id ?? TokenId::generate(),
@@ -256,7 +257,7 @@ final class DomainTestHelper
             patientName: $patientName,
             invitedBy: $invitedBy ?? self::createTherapist(),
             ttlSeconds: $ttlSeconds,
-            now: new DateTimeImmutable(),
+            now: $now ?? new DateTimeImmutable(),
         );
     }
 
@@ -296,12 +297,16 @@ final class DomainTestHelper
         );
     }
 
+    /**
+     * Expires exactly at $expiresAt, for pinning the boundary isExpired compares on.
+     */
     public static function createBoundaryInvitation(
         string $token = 'boundary-token',
         string $email = 'boundary@example.com',
         ?User $invitedBy = null,
+        ?DateTimeImmutable $expiresAt = null,
     ): InvitationToken {
-        $now = new DateTimeImmutable();
+        $expiry = $expiresAt ?? new DateTimeImmutable();
 
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
@@ -310,8 +315,8 @@ final class DomainTestHelper
             patientName: 'Boundary Patient',
             invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: false,
-            createdAt: new DateTimeImmutable('-1 hour'),
-            expiresAt: $now,
+            createdAt: $expiry->modify('-1 hour'),
+            expiresAt: $expiry,
             usedAt: null,
         );
     }
@@ -342,13 +347,14 @@ final class DomainTestHelper
         string $token = 'valid-reset-token',
         ?User $user = null,
         int $ttlSeconds = 3600,
+        ?DateTimeImmutable $now = null,
     ): PasswordResetToken {
         return PasswordResetToken::create(
             id: $id ?? TokenId::generate(),
             token: $token,
             user: $user ?? self::createActivePatient(),
             ttlSeconds: $ttlSeconds,
-            now: new DateTimeImmutable(),
+            now: $now ?? new DateTimeImmutable(),
         );
     }
 

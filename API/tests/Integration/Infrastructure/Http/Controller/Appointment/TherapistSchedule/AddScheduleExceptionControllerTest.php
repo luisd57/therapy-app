@@ -8,6 +8,14 @@ use App\Tests\Helper\ApiTestCase;
 
 final class AddScheduleExceptionControllerTest extends ApiTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Fixtures below are dated June 2026; pin now so they cannot rot into the past.
+        // testAddNonAllDayException... asserts created_at against this exact instant.
+        $this->freezeClock('2026-05-01T00:00:00+00:00');
+    }
+
     public function testAddExceptionReturns201(): void
     {
         $token = $this->createTherapistAndGetToken();
@@ -28,7 +36,6 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
 
     public function testAddAllDayExceptionSnapsToThePracticeLocalDay(): void
     {
-        $this->freezeClock('2026-05-01T00:00:00+00:00');
         $token = $this->createTherapistAndGetToken();
 
         // A caller on UTC+14 marking their own day off. Read in Caracas the
@@ -50,7 +57,6 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
 
     public function testAddNonAllDayExceptionKeepsTheSubmittedRangeAndEmitsItInUtc(): void
     {
-        $this->freezeClock('2026-05-01T00:00:00+00:00');
         $token = $this->createTherapistAndGetToken();
 
         $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [

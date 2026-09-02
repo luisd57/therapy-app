@@ -15,7 +15,8 @@ Base classes:
 - Exception: a controller test that touches neither the database nor auth extends `WebTestCase` directly, since transaction wrapping would buy it nothing. `Controller/Health/` and `ProtectedRouteRolesTest` are the cases. A test that only reads container parameters extends `KernelTestCase` directly for the same reason: `Application/Appointment/Service/SlotGenerationRulesFactoryTest` is the case. Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
 Traits:
-- **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset.
+- **AssertsInstants**: `assertInstantIs($expectedUtc, $actual)` compares an Instant, restated in UTC, against a hand-written literal. Use it instead of formatting the object under test to build the expectation - that expectation shifts with the process zone on both sides and agrees with any implementation. See ADR-0003.
+- **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset. For an entity that takes `now` as an ordinary constructor argument, pass a literal instead - it never reads the container's clock.
 - **SeedsAuthFixtures**: seeds a therapist, an activated patient or an invitation. Credentials match the `ApiTestCase` defaults, so a seeded user logs in with them.
 - **SeedsTherapistSchedule**: seeds a therapist plus a Schedule Block wide enough that Slot queries return something.
 - **SeedsAppointment**: seeds one Appointment. Takes REQUESTED or CONFIRMED only, and throws on a terminal status rather than silently seeding REQUESTED.

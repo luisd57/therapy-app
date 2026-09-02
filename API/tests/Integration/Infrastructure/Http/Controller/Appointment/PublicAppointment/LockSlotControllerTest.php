@@ -11,6 +11,13 @@ final class LockSlotControllerTest extends ApiTestCase
 {
     use SeedsTherapistSchedule;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Fixtures below are dated June 2026; pin now so they cannot rot into the past.
+        $this->freezeClock('2026-05-30T09:00:00+00:00');
+    }
+
     public function testLockSlotReturns201WhenSlotAvailable(): void
     {
         $this->createTherapistWithSchedule();
@@ -30,7 +37,6 @@ final class LockSlotControllerTest extends ApiTestCase
 
     public function testLockSlotResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
     {
-        $this->freezeClock('2026-05-30T09:00:00+00:00');
         $this->createTherapistWithSchedule();
 
         $this->jsonRequest('POST', '/api/appointments/lock-slot', [
