@@ -79,3 +79,9 @@ dates, so it is one of the files that correctly needs no freeze. The unit-side
 counts are unchanged at 20 of 23 stubs across 22 files, pinned in
 `AddScheduleExceptionHandlerTest`, `GetNextAvailableWeekHandlerTest` and one of the
 two in `ResetPasswordHandlerTest`.
+
+**2026-09-02** - The entities this ticket disclaims above now have a home. Ticket
+18 covers the fifteen integration tests that pass a wall-clock `now` to an entity
+constructor against a fixture Slot dated June 2026. They are out of scope here for
+the reason already stated, there being no clock to inject, and were out of scope
+for ticket 02 because its criterion names controller fixtures only.

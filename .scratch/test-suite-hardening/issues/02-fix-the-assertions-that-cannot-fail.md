@@ -89,3 +89,22 @@ Worth knowing that neither of ticket 15's proposed rules would flag the bare
 `new DateTimeImmutable()` in either one: the first sees only `ClockInterface`
 doubles, and the second only a single-argument `DateTimeImmutable` built from a
 string literal.
+
+**2026-09-02** - Criterion 5 was verified with a probe rather than by reading the
+fixtures: a temporary guard refusing an Appointment, a Slot Lock or a Schedule
+Exception that starts before `now`, run against the Integration suite and then
+removed. All 127 controller tests passed under it, including
+`RemoveScheduleExceptionControllerTest`, which the June-2026 grep had missed
+because its fixture is dated July.
+
+The same probe broke fifteen tests outside the controllers, in the three Doctrine
+repository test files and the daily agenda command test. They carry this ticket's
+defect but not its wording, since the criterion says "controller fixture". Split
+out as ticket 18 rather than widened into this one.
+
+Criterion 6 cannot be met as literally worded. A correctly pinned assertion cannot
+go red when only the process timezone changes, because pinning is what stops the
+zone mattering: the Unit suite at UTC and at `America/Caracas` fails only
+`TimezoneGuardTest`, both times. Read as "the code uses a wrong zone" it is met.
+Making `TimeSlot::create` resolve the start against the process zone reddens 7 of
+the 25 rewritten tests while the old file stayed 20 of 20 green.
