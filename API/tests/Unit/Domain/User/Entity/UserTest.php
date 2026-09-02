@@ -10,14 +10,14 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
-use App\Tests\Helper\AssertsInstants;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
 {
-    use AssertsInstants;
+    use UsesUtcInstants;
 
     public function testCreateTherapistSetsCorrectProperties(): void
     {
@@ -65,9 +65,8 @@ final class UserTest extends TestCase
     }
 
     /**
-     * The user is built on the wall clock, so a literal far from now is the only way
-     * to tell a written updatedAt from an untouched one. A >= comparison against the
-     * old value holds even when the assignment is deleted.
+     * The user is built on the wall clock, so a literal far from now tells a written
+     * updatedAt from an untouched one. A >= against the old value cannot. See ADR-0003.
      */
     public function testUpdatePassword(): void
     {

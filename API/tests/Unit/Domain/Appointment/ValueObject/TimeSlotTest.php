@@ -5,24 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Appointment\ValueObject;
 
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Tests\Helper\AssertsInstants;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
-use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Fixtures name their zone and expectations are hand-written UTC instants. A naive
- * fixture formatted back out of the slot shifts with the process zone on both sides,
- * so it agrees with any implementation. See ADR-0003.
+ * Fixtures name their zone and expectations are hand-written UTC instants, per ADR-0003.
  */
 final class TimeSlotTest extends TestCase
 {
-    use AssertsInstants;
-
-    private static function utc(string $dateTime): DateTimeImmutable
-    {
-        return new DateTimeImmutable($dateTime, new DateTimeZone('UTC'));
-    }
+    use UsesUtcInstants;
 
     // --- create() ---
 
@@ -35,9 +27,8 @@ final class TimeSlotTest extends TestCase
     }
 
     /**
-     * The caller's offset is the only thing saying which instant they meant. Rebuilding
-     * the start from its wall-clock digits would resolve it against the process zone,
-     * which at UTC+14 lands fourteen hours away.
+     * The caller's offset is the only thing saying which instant they meant.
+     * Rebuilding the start from its digits would resolve it against the process zone.
      */
     public function testCreateKeepsTheInstantTheCallersOffsetNames(): void
     {
@@ -160,10 +151,7 @@ final class TimeSlotTest extends TestCase
         $this->assertTrue($inner->overlaps($outer));
     }
 
-    /**
-     * The same two instants, one of them written in another offset. Overlap is a
-     * question about instants, so the answer cannot change with the wording.
-     */
+    /** Overlap is a question about instants, so the wording must not change the answer. */
     public function testOverlapIsDecidedOnInstantsNotWallClocks(): void
     {
         $slot = TimeSlot::create(self::utc('2026-03-10 09:00'), 60);
@@ -247,13 +235,14 @@ final class TimeSlotTest extends TestCase
     // --- __toString() ---
 
     /**
-     * Rendered in the slot's own zone, so the fixture names UTC and the expected
-     * string is written out rather than formatted back off the slot.
+     * Rendered in the slot's own zone. A UTC fixture would render the same digits
+     * under any process zone, so this one carries an offset that matches neither.
      */
-    public function testToStringReturnsFormattedRange(): void
+    public function testToStringRendersTheRangeInTheSlotsOwnZone(): void
     {
-        $slot = TimeSlot::create(self::utc('2026-03-10 09:00'), 60);
+        $slot = TimeSlot::create(new DateTimeImmutable('2026-03-10T09:00:00-04:00'), 60);
 
+        // The same instant is 13:00 UTC, and 03:00 the next day at the suite's UTC+14.
         $this->assertSame('2026-03-10 09:00 - 10:00', (string) $slot);
     }
 }

@@ -8,27 +8,19 @@ use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Tests\Helper\AssertsInstants;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
-use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 
 /**
  * SlotLock takes now as an ordinary argument, so time here is a literal rather than
- * a frozen clock the entity never consults. Reading the wall clock either side of
- * create() and asserting the expiry falls between them cannot disagree with the
- * entity: both sums come from the same source. See ADR-0003.
+ * a frozen clock the entity never consults. See ADR-0003.
  */
 final class SlotLockTest extends TestCase
 {
-    use AssertsInstants;
+    use UsesUtcInstants;
 
     private const NOW = '2026-05-01T12:00:00+00:00';
-
-    private static function utc(string $dateTime): DateTimeImmutable
-    {
-        return new DateTimeImmutable($dateTime, new DateTimeZone('UTC'));
-    }
 
     private static function aTimeSlot(): TimeSlot
     {
@@ -54,10 +46,7 @@ final class SlotLockTest extends TestCase
         $this->assertSame(AppointmentModality::ONLINE, $lock->getModality());
     }
 
-    /**
-     * The TTL is counted in seconds from the instant given, not from the caller's
-     * wall clock, so an offset in the argument must carry through.
-     */
+    /** The TTL runs from the instant given, so an offset in it must carry through. */
     public function testCreateCountsTheTtlFromTheInstantItIsGiven(): void
     {
         $lock = SlotLock::create(
@@ -93,7 +82,7 @@ final class SlotLockTest extends TestCase
         $this->assertTrue($lock->isExpired(new DateTimeImmutable('2026-05-01T13:00:01+00:00')));
     }
 
-    public function testIsActiveForExpiredLock(): void
+    public function testALockReconstitutedPastItsExpiryIsExpired(): void
     {
         // reconstitute is the only way to build a lock that already expired
         $lock = SlotLock::reconstitute(

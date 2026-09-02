@@ -7,8 +7,8 @@ namespace App\Tests\Unit\Domain\User\Entity;
 use App\Domain\User\Entity\InvitationToken;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\TokenId;
-use App\Tests\Helper\AssertsInstants;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class InvitationTokenTest extends TestCase
 {
-    use AssertsInstants;
+    use UsesUtcInstants;
 
     public function testCreateSetsAllProperties(): void
     {
@@ -55,10 +55,7 @@ final class InvitationTokenTest extends TestCase
         self::assertInstantIs('2026-05-02T12:00:00+00:00', $invitation->getExpiresAt());
     }
 
-    /**
-     * The TTL is counted from the instant given, not from the caller's wall clock,
-     * so an offset in the argument must carry through.
-     */
+    /** The TTL runs from the instant given, so an offset in it must carry through. */
     public function testCreateCountsTheTtlFromTheInstantItIsGiven(): void
     {
         $invitation = DomainTestHelper::createValidInvitation(
@@ -112,9 +109,8 @@ final class InvitationTokenTest extends TestCase
     }
 
     /**
-     * isExpired compares with `<`, so the expiry instant itself is still valid and the
-     * second after it is not. With a wall-clock expiry the answer depends on how long
-     * the test took to run, which is why this pins both sides of the boundary.
+     * isExpired compares with `<`, so the expiry instant is still valid and the second
+     * after it is not. A wall-clock expiry makes that depend on how long the test ran.
      */
     public function testATokenIsValidAtItsExpiryInstantAndExpiredAfterIt(): void
     {

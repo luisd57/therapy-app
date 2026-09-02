@@ -13,7 +13,7 @@ final class BookAppointmentControllerTest extends ApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Fixtures below are dated June 2026; pin now so they cannot rot into the past.
+        // Fixtures below are dated June 2026. Pin now so they cannot rot into the past.
         $this->freezeClock('2026-05-30 09:00:00');
         $this->therapistToken = $this->createTherapistAndGetToken();
     }

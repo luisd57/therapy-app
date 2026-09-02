@@ -7,15 +7,15 @@ namespace App\Tests\Unit\Domain\Appointment\Entity;
 use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
-use App\Tests\Helper\AssertsInstants;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\TestCase;
 
 final class ScheduleExceptionTest extends TestCase
 {
-    use AssertsInstants;
+    use UsesUtcInstants;
 
     public function testExceptionHoldsTheTherapistItBelongsTo(): void
     {

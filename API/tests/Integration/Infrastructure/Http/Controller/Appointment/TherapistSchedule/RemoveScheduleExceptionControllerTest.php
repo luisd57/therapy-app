@@ -12,7 +12,7 @@ final class RemoveScheduleExceptionControllerTest extends ApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // The fixture below is dated July 2026; pin now so it cannot rot into the past.
+        // The fixture below is dated July 2026. Pin now so it cannot rot into the past.
         $this->freezeClock('2026-05-01T00:00:00+00:00');
     }
 

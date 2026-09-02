@@ -11,7 +11,7 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Fixtures below are dated June 2026; pin now so they cannot rot into the past.
+        // Fixtures below are dated June 2026. Pin now so they cannot rot into the past.
         // testAddNonAllDayException... asserts created_at against this exact instant.
         $this->freezeClock('2026-05-01T00:00:00+00:00');
     }
