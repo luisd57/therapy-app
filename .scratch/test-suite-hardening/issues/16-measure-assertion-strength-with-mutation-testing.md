@@ -66,3 +66,66 @@ Gating:
 - [ ] The threshold is taken from a baseline measured after tickets 02, 04 and 13, and the baseline figure is recorded with its date
 - [ ] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds
 - [ ] Full pipeline green, including whatever image change the driver required
+
+## Comments
+
+**2026-09-03** - The tooling this ticket flags as coming "from memory rather than from
+anything in this repository" is now checked against Infection 0.32.
+
+**A coverage driver is required**: Xdebug, phpdbg or pcov. The ticket was right to treat it
+as a prerequisite rather than a detail. `API/docker/php/Dockerfile` is `php:8.4-fpm` and
+already runs `pecl install redis`, so the change is two lines beside that one. pcov 1.0.12
+declares PHP 7.1 as its minimum with no upper bound stated, which is not the same as a
+statement that 8.4 works. Confirm at install rather than on this note.
+
+**`--only-covered` no longer exists.** It was removed in 0.31.0. Covered-only is the default
+now and `--with-uncovered` is the opt-out, so there is nothing to pass for the behaviour this
+ticket wants.
+
+**`--git-diff-lines` compares against `master` unless told otherwise**, and this repository's
+default branch is `main`. `--git-diff-base=origin/main` is mandatory rather than optional.
+`infection git:default-base` reports what Infection would use on its own.
+
+**Three flags the ticket does not name**, all aimed at the "well over an hour" estimate.
+`--only-covering-test-cases` runs only the test cases covering the mutated line instead of
+the whole covering file, which is worth most against the integration suite.
+`--map-source-class-to-test` cuts the initial test run by mapping source classes to tests on
+a `*Test` postfix, and `API/tests` mirrors the `src` namespaces, so it should mostly land.
+`--threads` takes `max`.
+
+**A soft dependency on ticket 11, which is new.** Infection 0.32 takes
+`--static-analysis-tool=phpstan`, running the analyser against each mutant that escaped the
+tests and marking it "Killed by SA" where the analyser rejects it. So 11 does not only
+unblock 15, it makes this ticket cheaper to read and stronger. `Blocked by: None` stays
+true, but 16 after 11 is a materially different run from 16 alone.
+
+**Add 18 to the tickets worth landing first.** The ticket names 02, 04 and 13 as making
+discovery worth more. 13 and 18 are stronger than that: they are prerequisites for a
+baseline anyone can trust. Twenty of twenty-three clock stubs hand back the real instant,
+and fifteen integration tests build against a June 2026 fixture that has stopped being in
+the future, so kill and survive results already move between runs for reasons that have
+nothing to do with assertion strength. A threshold taken before those land is a threshold
+taken on noise.
+
+**Scope: exclude the glue by directory, rather than cutting at a layer boundary.** `API/src`
+is 54 Domain, 81 Application and 83 Infrastructure. Cutting to Domain plus Application would
+drop the Doctrine UTC instant type, which is where ADR-0001 is actually enforced and which
+ticket 05 exists for, and both HTTP subscribers, which ticket 03 just covered. Those are the
+highest-value files in the tree. Exclude instead, in `source.excludes`, as paths relative to
+the source directory:
+
+- `Infrastructure/Http/Controller`
+- `Infrastructure/Config`
+- `Application/Appointment/DTO`, `Application/User/DTO`, `Application/Shared/DTO`
+
+The reason is the spec's own decision rather than run time. It puts "testing all forty-three
+DTO classes individually" out of scope and pins the wire contract at the integration seam
+instead, which is ticket 07. Mutating that same code produces survivors no ticket covers and
+none will, and the third discovery criterion above then cannot be satisfied for those files.
+Infection's docs discourage glob excludes for cross-platform consistency, so list the paths.
+
+**The committed survivor list is evidence, not a backlog.** Handing an agent a survivor list
+and asking for it to be emptied produces assertions pinned to internal state: they kill the
+mutant and then break on the next legitimate refactor, which raises review load rather than
+lowering it. The list exists so the next reader starts from it instead of rerunning the hour,
+and so tickets 02, 04, 13 and 18 can be aimed. Gating, when it arrives, is on new work.
