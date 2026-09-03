@@ -83,6 +83,18 @@ was asserted only to fall somewhere inside the window, and the `kernel.request`
 priority was unpinned even though dropping below the firewall's would let a
 brute-force attempt authenticate before being counted.
 
-Left alone deliberately: the subscriber has no `isMainRequest()` guard, so a
-forwarded sub-request consumes a second token. That is a production bug rather
-than a coverage gap, and this effort does not touch `src/`.
+Checked and left alone: the subscriber has no `isMainRequest()` guard, which
+would let a sub-request consume a second token. Nothing under `src/` dispatches
+one, and the only sub-request the current configuration produces is Symfony's
+`ErrorListener`, whose `duplicateRequest()` replaces the attribute bag with
+`_controller`, `exception` and `logger`. That leaves no `_route`, and
+`testARequestWithNoRouteIsNotLimited` pins that such a request is not limited.
+
+That is a fact about the configuration, not about the code. The installed bundles
+hold other sub-request sources, inert only because nothing enables them, and
+those forward through `HttpUtils::createRequest`, which sets no `_controller` -
+so the router does give them a `_route` and the double consume would be real.
+Add the guard if `form_login`, `access_denied_url` or `failure_forward` appears
+in `security.yaml`, or if fragments or ESI are turned on. It is cheap to pin
+when that day comes: `RateLimitedRouteSetTest::requestEventFor()` already passes
+`MAIN_REQUEST` explicitly, so a sub-request case is one argument away.
