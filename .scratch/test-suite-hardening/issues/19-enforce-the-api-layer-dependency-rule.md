@@ -3,8 +3,8 @@
 **What to build:** the hexagonal dependency rule fails the build when it is broken, instead
 of being a sentence in a rules file that nothing consults at merge time.
 
-`api-architecture.md` states it in five words: Infrastructure to Application to Domain,
-never the reverse. Nothing checks it. ADR-0007 says so outright and names the tool, that
+`api-architecture.md` states it in one line: Infrastructure to Application to Domain, never
+the reverse. Nothing checks it. ADR-0007 says so outright and names the tool, that
 core PHPStan has no dependency-direction rules so this needs deptrac or a custom rule.
 Deptrac is the choice: it ships its own binary, so it does not wait on ticket 11, and a
 layer rule in a depfile is declarative rather than a graph traversal somebody has to write
@@ -18,17 +18,18 @@ nothing whatsoever about whether the gate is connected. Forcing a violation is t
 criterion that carries the weight.
 
 **The layer rule is the whole scope, and there is deliberately no cycle rule.**
-`Domain/User` and `Domain/Appointment` import each other. `User` holds the three inverse
-collections ADR-0007 added, and seven files under `Domain/Appointment` reach for `User` or
-`UserId`. That is a real cycle and it is a decision taken and implemented on 2026-08-30,
+`Domain/User` and `Domain/Appointment` import each other. Measured 2026-09-03: `User` holds
+the three inverse collections ADR-0007 added, five files under `Domain/Appointment` import
+`User` or `UserId`, and a sixth reaches for `Email` and `Timezone`. That is a real cycle in
+either reading, and it is a decision taken and implemented on 2026-08-30,
 not drift. A no-cycles rule would fire on the day it landed, and could only be satisfied by
 reopening the ADR or by carrying an exception from the first commit, which is the baseline
 problem ticket 11 warns about in miniature. Leave it out, and record in the depfile that it
 was left out on purpose.
 
 **The framework imports inside Domain are sanctioned too.** Thirty-seven across twenty-five
-files: Doctrine ORM and DBAL attributes, Doctrine Collections, Symfony Uid, and Symfony
-Security on the `User` entity. `api-architecture.md` opens by saying the Domain layer has no
+files, measured 2026-09-03: Doctrine ORM and DBAL attributes, Doctrine Collections, Symfony
+Uid, and Symfony Security on the `User` entity. `api-architecture.md` opens by saying the Domain layer has no
 framework dependencies and then blesses most of this under ORM Pragmatism. Do not write a
 rule that contradicts the ADR to satisfy the opening sentence. If that tension is worth
 resolving, it is resolved in the rules file, not here.

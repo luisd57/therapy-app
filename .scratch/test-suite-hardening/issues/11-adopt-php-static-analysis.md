@@ -43,10 +43,9 @@ layers. Those are the places where analysis pays for itself.
 ## Comments
 
 **2026-09-03** - This ticket now unblocks two things rather than one. It already blocks 15.
-It also changes ticket 16: Infection 0.32 takes `--static-analysis-tool=phpstan` and runs
-the analyser against every mutant that escaped the test suite, marking it "Killed by SA"
-where the analyser rejects it. Mutants that cannot typecheck stop counting as survivors, so
-that run gets cheaper to read and stronger at the same time.
+It also changes ticket 16, which takes `--static-analysis-tool=phpstan` and explains what it
+does there. Short version: mutants that cannot typecheck stop counting as survivors, so that
+run gets cheaper to read and stronger at the same time.
 
 That bears on the level decision this ticket asks for without settling it. A higher level
 kills more mutants for free, which is an argument for starting high that the framing above

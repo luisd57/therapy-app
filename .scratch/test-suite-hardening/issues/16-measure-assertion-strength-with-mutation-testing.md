@@ -101,14 +101,17 @@ true, but 16 after 11 is a materially different run from 16 alone.
 
 **Add 18 to the tickets worth landing first.** The ticket names 02, 04 and 13 as making
 discovery worth more. 13 and 18 are stronger than that: they are prerequisites for a
-baseline anyone can trust. Twenty of twenty-three clock stubs hand back the real instant,
-and fifteen integration tests build against a June 2026 fixture that has stopped being in
-the future, so kill and survive results already move between runs for reasons that have
-nothing to do with assertion strength. A threshold taken before those land is a threshold
-taken on noise.
+baseline anyone can trust. Ticket 13 counted twenty of twenty-three clock stubs handing back
+the real instant on 2026-08-30, and ticket 18 counted fifteen integration tests building
+against a June 2026 fixture that has stopped being in the future on 2026-09-02. Neither
+figure was re-measured here, so take them from those tickets rather than from this date.
+While they hold, kill and survive results already move between runs for reasons that have
+nothing to do with assertion strength, and a threshold taken before the two land is a
+threshold taken on noise.
 
 **Scope: exclude the glue by directory, rather than cutting at a layer boundary.** `API/src`
-is 54 Domain, 81 Application and 83 Infrastructure. Cutting to Domain plus Application would
+is 54 Domain, 81 Application and 83 Infrastructure, counted 2026-09-03. Cutting to Domain
+plus Application would
 drop the Doctrine UTC instant type, which is where ADR-0001 is actually enforced and which
 ticket 05 exists for, and both HTTP subscribers, which ticket 03 just covered. Those are the
 highest-value files in the tree. Exclude instead, in `source.excludes`, as paths relative to
