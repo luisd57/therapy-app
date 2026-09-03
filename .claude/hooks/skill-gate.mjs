@@ -63,7 +63,7 @@ const DOC_GATES = [
 // Edit this to match the project's top-level deployable directories. It is the one
 // line in this file that is not portable, and it fails open: a directory missing from
 // the list means the TDD gate never fires there and nothing reports it.
-const SOURCE_DIRS = ['API', 'app', 'dashboard', 'landing', 'web'];
+const SOURCE_DIRS = ['API', 'dashboard', 'landing'];
 
 const SOURCE = new RegExp(`(^|\\/)(${SOURCE_DIRS.join('|')})\\/src\\/`);
 const TEST_FILE = /(\.spec\.|\.test\.|(^|\/)tests?\/)/;

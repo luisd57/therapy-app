@@ -156,10 +156,12 @@ const cases = [
     tool_name: 'Edit', transcript_path: empty,
     tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
   }, 'DENY'],
-  // Pins SOURCE_DIRS covering the kit's own default layout, which uses app/ not dashboard/.
-  ['src edit under app/ is gated too', {
+  // Pins that a second deployable is gated, not only the first. Keep this case pointed at a
+  // directory SOURCE_DIRS actually lists: trimming that list is what a project is meant to do,
+  // and it silently turns this expectation into ALLOW.
+  ['src edit under dashboard/ is gated too', {
     tool_name: 'Edit', transcript_path: empty,
-    tool_input: { file_path: `${REPO}/app/src/feature/x.ts` },
+    tool_input: { file_path: `${REPO}/dashboard/src/app/x.ts` },
   }, 'DENY'],
   ['test file edit + nothing (never gated)', {
     tool_name: 'Edit', transcript_path: empty,
