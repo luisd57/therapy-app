@@ -120,9 +120,15 @@ for the dashboard. See Out of Scope.
 
 **No coverage instrumentation.** The maintainer considers reaching for coverage
 the wrong approach. There is no `<coverage>` block, no threshold, and none is
-being added. Worth recording as a fact rather than a preference: the PHP image
-carries no coverage driver either, so this was never a config toggle. No ticket
-below uses a coverage percentage as an acceptance criterion.
+being added. No ticket below uses a coverage percentage as an acceptance
+criterion. Worth recording as a fact rather than a preference: at the time of the
+audit the PHP image carried no coverage driver either, so this was never a config
+toggle.
+
+Amended 2026-09-03. Ticket 16 does add a driver, because Infection requires one.
+That was checked against release 0.32 rather than assumed. A driver installed as
+an input to mutation testing is not a coverage gate, and the three sentences above
+are unaffected.
 
 **No dashboard unit-test seam.** The maintainer values e2e over unit for
 frontend. The dashboard has zero `*.spec.ts` files, its Angular test target
@@ -193,6 +199,11 @@ Tickets 01 to 13 fix what the audit found. Nothing in them stops it coming back,
 and prose has already failed at that: the tickets themselves acquired three wrong
 claims and one unsatisfiable criterion during this effort, each caught by review
 rather than by any gate. Tickets 14, 15 and 16 are the enforcement layer.
+
+Amended 2026-09-03: 19 and 20 join them. Both make a documented dependency rule
+executable, the hexagonal layer direction on the API and the folder dependency flow
+on the dashboard, and both land green, so they are lock-in in the same sense ticket
+14 is. ADR-0007 had already asked for the first by name.
 
 They divide by what each can see. **14** is off-the-shelf lint over both frontends,
 catching the shapes. **15** is custom PHPStan rules over `API/tests/`, chosen over a
@@ -286,8 +297,12 @@ because a file can freeze in one method and not in the next.
 
 ## Out of Scope
 
-- **Coverage measurement and thresholds.** Rejected by the maintainer. No driver
-  is installed and none is being added.
+- **Coverage measurement and thresholds.** Rejected by the maintainer. No
+  `<coverage>` block, no threshold, and no ticket uses a coverage percentage as an
+  acceptance criterion. Amended 2026-09-03: this bullet used to add that no driver
+  was installed and none was being added. Ticket 16 installs one, because Infection
+  requires it. See the Implementation Decisions entry for why that leaves the
+  rejection above intact.
 - **A dashboard unit or component test seam.** Rejected. Frontend confidence is
   e2e. This extends the decision `timezone-management/15` records for landing.
 - **Fixing or deleting the Makefile.** No `make` on the maintainer's machine and

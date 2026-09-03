@@ -39,3 +39,15 @@ layers. Those are the places where analysis pays for itself.
 - [ ] The tests directory is in scope or is deliberately excluded with a stated reason
 - [ ] Introducing a deliberate violation fails the pipeline, proving the gate is connected
 - [ ] Full pipeline green
+
+## Comments
+
+**2026-09-03** - This ticket now unblocks two things rather than one. It already blocks 15.
+It also changes ticket 16, which takes `--static-analysis-tool=phpstan` and explains what it
+does there. Short version: mutants that cannot typecheck stop counting as survivors, so that
+run gets cheaper to read and stronger at the same time.
+
+That bears on the level decision this ticket asks for without settling it. A higher level
+kills more mutants for free, which is an argument for starting high that the framing above
+does not have. It says nothing about the baseline question, since a baseline grandfathers
+findings in committed code and this effect runs over generated mutants instead.
