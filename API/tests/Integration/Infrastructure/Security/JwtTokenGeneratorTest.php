@@ -9,9 +9,8 @@ use App\Tests\Helper\DomainTestHelper;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-// Not IntegrationTestCase: minting a token touches no database, so transaction wrapping would buy
-// nothing. Not a unit test either - a mocked JWTTokenManagerInterface would assert only that the
-// wrapper calls the wrapper, and the claims come from lexik's config plus JwtCreatedListener.
+// Not IntegrationTestCase: minting a token touches no database. Not a unit test either, since a
+// mocked JWTTokenManagerInterface would assert only that the wrapper calls the wrapper.
 final class JwtTokenGeneratorTest extends KernelTestCase
 {
     /** @var array<string, mixed> */
@@ -38,9 +37,8 @@ final class JwtTokenGeneratorTest extends KernelTestCase
     }
 
     /**
-     * lexik's user_id_claim fills this by reading User::getEmail(), which returns a value object.
-     * JwtCreatedListener replaces it with the identifier string, and JwtDecodedListener then feeds
-     * it to the blocklist cutoff, which needs a string.
+     * lexik fills this by reading User::getEmail(), a value object. JwtCreatedListener puts the
+     * string back, which is what JwtDecodedListener's blocklist cutoff needs.
      */
     public function testTheTokenCarriesTheEmailAsAPlainString(): void
     {
@@ -64,12 +62,10 @@ final class JwtTokenGeneratorTest extends KernelTestCase
         $this->assertGreaterThan(time(), $this->payload['exp']);
     }
 
-    public function testTheTokenLivesForTheConfiguredTtl(): void
+    public function testTheTokenLivesForEightHours(): void
     {
-        // Read from the same env var lexik_jwt_authentication.yaml binds, never a literal.
-        $this->assertSame(
-            (int) $_ENV['JWT_TOKEN_TTL'],
-            $this->payload['exp'] - $this->payload['iat'],
-        );
+        // Absolute, not read back from JWT_TOKEN_TTL: an expectation taken from the same env var
+        // the code reads agrees with any value. Change this literal when .env.test changes.
+        $this->assertSame(28800, $this->payload['exp'] - $this->payload['iat']);
     }
 }

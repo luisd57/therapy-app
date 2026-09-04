@@ -67,7 +67,8 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
     }
 
     /**
-     * 72 bytes is bcrypt's input limit, so the upper bound is a real rule and not decoration.
+     * 72 bytes is bcrypt's input limit. The constraint reports it through minLengthMessage, which
+     * despite the name covers both bounds.
      */
     public function testRejectsAPasswordOneCharacterOverTheMaximum(): void
     {

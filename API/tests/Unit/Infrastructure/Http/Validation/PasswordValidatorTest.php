@@ -8,9 +8,8 @@ use App\Infrastructure\Http\Validation\PasswordValidator;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The CLI path (app:create-therapist) uses this rather than the PasswordStrength constraint, so the
- * two implementations are pinned separately. They carry the same rules and the same message
- * strings by hand - see PasswordStrengthValidatorTest.
+ * app:create-therapist uses this rather than the PasswordStrength constraint, so the two
+ * hand-maintained copies of the same rules are pinned separately. Ticket 21 collapses them.
  */
 final class PasswordValidatorTest extends TestCase
 {

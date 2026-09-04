@@ -14,28 +14,28 @@ final class BcryptPasswordHasherTest extends TestCase
 
     public function testVerifiesTheHashItProduced(): void
     {
-        $hasher = new BcryptPasswordHasher(self::TEST_COST);
+        $hasher = $this->hasher();
 
         $this->assertTrue($hasher->verify('Secure1!pass', $hasher->hash('Secure1!pass')));
     }
 
     public function testRejectsAWrongPassword(): void
     {
-        $hasher = new BcryptPasswordHasher(self::TEST_COST);
+        $hasher = $this->hasher();
 
         $this->assertFalse($hasher->verify('Wrong1!pass', $hasher->hash('Secure1!pass')));
     }
 
     public function testRejectsAPasswordDifferingOnlyInCase(): void
     {
-        $hasher = new BcryptPasswordHasher(self::TEST_COST);
+        $hasher = $this->hasher();
 
         $this->assertFalse($hasher->verify('secure1!PASS', $hasher->hash('Secure1!pass')));
     }
 
     public function testNeverStoresThePasswordItself(): void
     {
-        $hash = (new BcryptPasswordHasher(self::TEST_COST))->hash('Secure1!pass');
+        $hash = $this->hasher()->hash('Secure1!pass');
 
         $this->assertNotSame('Secure1!pass', $hash);
         $this->assertStringNotContainsString('Secure1!pass', $hash);
@@ -46,7 +46,7 @@ final class BcryptPasswordHasherTest extends TestCase
      */
     public function testSaltsEachHash(): void
     {
-        $hasher = new BcryptPasswordHasher(self::TEST_COST);
+        $hasher = $this->hasher();
 
         $first = $hasher->hash('Secure1!pass');
         $second = $hasher->hash('Secure1!pass');
@@ -58,14 +58,17 @@ final class BcryptPasswordHasherTest extends TestCase
 
     public function testProducesABcryptHash(): void
     {
-        $hash = (new BcryptPasswordHasher(self::TEST_COST))->hash('Secure1!pass');
+        $hash = $this->hasher()->hash('Secure1!pass');
 
         $this->assertSame(PASSWORD_BCRYPT, password_get_info($hash)['algo']);
     }
 
+    /**
+     * A cost that is neither the default nor TEST_COST, so the argument is proven to be read.
+     */
     public function testAppliesTheConfiguredCost(): void
     {
-        $hash = (new BcryptPasswordHasher(5))->hash('Secure1!pass');
+        $hash = $this->hasher(5)->hash('Secure1!pass');
 
         $this->assertSame(5, password_get_info($hash)['options']['cost']);
     }
@@ -78,5 +81,10 @@ final class BcryptPasswordHasherTest extends TestCase
         $hash = (new BcryptPasswordHasher())->hash('Secure1!pass');
 
         $this->assertSame(12, password_get_info($hash)['options']['cost']);
+    }
+
+    private function hasher(int $cost = self::TEST_COST): BcryptPasswordHasher
+    {
+        return new BcryptPasswordHasher($cost);
     }
 }

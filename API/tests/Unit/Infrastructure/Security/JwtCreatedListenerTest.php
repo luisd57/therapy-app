@@ -39,10 +39,8 @@ final class JwtCreatedListenerTest extends TestCase
     }
 
     /**
-     * This is the line that looks redundant and is not. lexik's user_id_claim is "email", and
-     * JWTManager fills it by reading User::getEmail(), which returns an Email value object. The
-     * listener replaces it with the identifier string, which is what JwtDecodedListener hands to
-     * the blocklist cutoff.
+     * Looks redundant, is not: lexik fills the email claim by reading User::getEmail(), which
+     * returns a value object. JwtDecodedListener's blocklist cutoff needs the string this puts back.
      */
     public function testReplacesTheEmailClaimWithThePlainIdentifier(): void
     {
