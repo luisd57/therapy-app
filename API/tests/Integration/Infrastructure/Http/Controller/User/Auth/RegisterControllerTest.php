@@ -45,4 +45,30 @@ final class RegisterControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(422);
     }
+
+    /**
+     * Everything else about this request is valid, so the response can only be about the password
+     * rule it breaks. The status code alone would still pass with PasswordStrength unwired.
+     */
+    public function testRegisterReportsWhichPasswordRuleFailed(): void
+    {
+        $invitation = $this->seedInvitation();
+
+        $this->jsonRequest('POST', '/api/auth/register', [
+            'token' => $invitation->getToken(),
+            'password' => 'Secure1pass',
+            'password_confirmation' => 'Secure1pass',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertFalse($data['success']);
+        $this->assertSame('VALIDATION_ERROR', $data['error']['code']);
+        $this->assertSame(
+            'Password must contain at least one special character',
+            $data['error']['details']['password'],
+        );
+        $this->assertArrayNotHasKey('token', $data['error']['details']);
+        $this->assertArrayNotHasKey('password_confirmation', $data['error']['details']);
+    }
 }

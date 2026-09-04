@@ -20,13 +20,35 @@ configured to be. Those attributes are the part an accident would silently drop.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each password strength rule is asserted on its own, with an input that violates only that rule
-- [ ] The maximum length bound is asserted at the boundary, not just well inside it
-- [ ] A failing password reports which rule failed, so the error detail contract is pinned and not just the status code
-- [ ] The session cookie's http-only, same-site, path and secure attributes are each asserted
-- [ ] The password hasher verifies its own output and rejects a wrong password
-- [ ] The secure token generator produces distinct values across calls
-- [ ] The JWT generator produces a token carrying the claims the application relies on, and the created listener's additions to the payload are asserted
-- [ ] Full API suite green
+**Resolved by:** [PR #83](https://github.com/luisd57/therapy-app/pull/83)
+
+- [x] Each password strength rule is asserted on its own, with an input that violates only that rule
+- [x] The maximum length bound is asserted at the boundary, not just well inside it
+- [x] A failing password reports which rule failed, so the error detail contract is pinned and not just the status code
+- [x] The session cookie's http-only, same-site, path and secure attributes are each asserted
+- [x] The password hasher verifies its own output and rejects a wrong password
+- [x] The secure token generator produces distinct values across calls
+- [x] The JWT generator produces a token carrying the claims the application relies on, and the created listener's additions to the payload are asserted
+- [x] Full API suite green
+
+## Comments
+
+**2026-09-04** - Each criterion was checked by mutating the production line it names and confirming
+the test went red, rather than by the suite being green. 27 of 27 mutants killed: every rule in
+both password implementations, both length bounds, all four cookie flags, the cookie TTL, both
+claims the created listener adds, the token generator's entropy floor, the bcrypt default cost,
+and `new PasswordStrength()` in the register controller. 643 tests before, 700 after.
+
+Two things came out of the work.
+
+`JwtCreatedListener` setting `email` looks redundant next to lexik's `user_id_claim: email` and is
+not. `JWTManager::addUserIdentityToPayload` finds `User::getEmail()` readable and writes the `Email`
+value object into the payload, so that line is what turns the claim back into the string
+`JwtDecodedListener` hands to the blocklist cutoff. Both the unit and the integration test assert it
+is a string, so deleting it now fails.
+
+The two password rule implementations were tested separately rather than merged, since collapsing
+them is a production change. Ticket 21 covers that, including the fact that the two copies already
+disagree on empty input.

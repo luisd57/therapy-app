@@ -37,6 +37,24 @@ final class JwtCookieTransportTest extends ApiTestCase
         $this->assertArrayHasKey('user', $data['data']);
     }
 
+    /**
+     * JwtCookieManagerTest pins what the manager builds. This pins that the login response is what
+     * the manager built, so a hand-rolled Set-Cookie somewhere in the auth path is caught.
+     */
+    public function testTheLoginCookieIsEmittedWithItsSecurityAttributes(): void
+    {
+        $this->seedTherapist();
+
+        $this->loginAsTherapist();
+
+        $setCookie = $this->client->getResponse()->headers->get('Set-Cookie');
+        $this->assertNotNull($setCookie);
+        $this->assertStringStartsWith(JwtCookieManager::COOKIE_NAME . '=', $setCookie);
+        $this->assertStringContainsString('path=/api', $setCookie);
+        $this->assertStringContainsString('httponly', $setCookie);
+        $this->assertStringContainsString('samesite=lax', $setCookie);
+    }
+
     public function testCookieAuthenticatesOnProtectedEndpoint(): void
     {
         $this->seedTherapist();
