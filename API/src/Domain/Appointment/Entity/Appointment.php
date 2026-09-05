@@ -22,6 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'appointments')]
 #[ORM\Index(columns: ['status'], name: 'idx_appointment_status')]
 #[ORM\Index(columns: ['start_time', 'end_time'], name: 'idx_appointment_time_range')]
+// Serves findConfirmedByDateRange, the query behind every Slot listing and every request.
 #[ORM\Index(columns: ['status', 'start_time', 'end_time'], name: 'idx_appointment_blocking')]
 class Appointment
 {
@@ -42,6 +43,8 @@ class Appointment
         private readonly TimeSlot $timeSlot,
         #[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]
         private readonly AppointmentModality $modality,
+        // Contact details are denormalized rather than read through $patient: a Requester
+        // may have no users row, and these capture who asked at the time they asked.
         #[ORM\Column(type: Types::STRING, length: 255)]
         private readonly string $fullName,
         #[ORM\Column(type: 'email', length: 255)]

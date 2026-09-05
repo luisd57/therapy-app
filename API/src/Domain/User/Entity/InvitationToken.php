@@ -15,6 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'invitation_tokens')]
 #[ORM\Index(columns: ['token'], name: 'idx_invitation_token')]
 #[ORM\Index(columns: ['email'], name: 'idx_invitation_email')]
+// Predates the revoke flow, so it covers two of the three parts of isValid().
+// A revoked token is still filtered outside the index.
 #[ORM\Index(columns: ['is_used', 'expires_at'], name: 'idx_invitation_valid')]
 class InvitationToken
 {

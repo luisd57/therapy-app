@@ -48,6 +48,7 @@ final readonly class ResendInvitationHandler
 
         $now = $this->clock->now();
 
+        // Revoked and replaced rather than extended, so both rows stay as an audit trail.
         $original->revoke($now);
         $this->invitationRepository->save($original);
 
