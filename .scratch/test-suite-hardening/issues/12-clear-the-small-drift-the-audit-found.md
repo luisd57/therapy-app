@@ -43,7 +43,17 @@ them once.
 - [ ] The orphaned compose override is gone and no stray container is created by a normal compose run
 - [ ] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
 - [ ] The Practice Timezone is declared once and the e2e helpers read it rather than repeating it
-- [ ] No document instructs the reader to run a `make` target
+- [x] No document instructs the reader to run a `make` target
 - [ ] Full API suite green, which is what observes the teardown extraction: break the rollback and integration tests start leaking into each other
 - [ ] Landing e2e suite green, which is the level that can observe the Viewer Zone pin and the shared Practice Timezone
 - [ ] The compose and documentation items are verified by a normal compose up and by following the changed docs end to end, since no suite can observe either
+
+## Comments
+
+**2026-09-05** - The `make` documentation item landed on its own, ahead of the rest of the
+ticket. It came up while pinning `API/bin/console` to LF: the CRLF hunt reached the Makefile,
+which turned out to be CRLF too, and chasing that surfaced this ticket instead. `CLAUDE.md`, the
+dev gotchas rule and the API README now name the direct `docker-compose` commands. Removing the
+`make` half collapsed the Windows and Mac/Linux split in the README, since the remaining command
+is the same on both. The Makefile itself is untouched, per the spec entry that says so. The other
+four items are still open and the ticket stays `ready-for-agent`.

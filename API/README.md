@@ -291,17 +291,9 @@ The project has a comprehensive test suite covering unit and integration tests:
 
 Create and migrate the test database (only needed once, or after `docker-compose down -v`):
 
-**Windows** (direct docker-compose commands):
-
 ```powershell
 docker-compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
 docker-compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
-```
-
-**Mac/Linux** (using Makefile):
-
-```bash
-make test-db-setup
 ```
 
 > The test database persists between container restarts. Only re-run if you delete Docker volumes or add new migrations.
@@ -310,16 +302,8 @@ make test-db-setup
 
 #### Run All Tests
 
-**Windows**:
-
 ```powershell
 docker-compose exec php vendor/bin/phpunit
-```
-
-**Mac/Linux**:
-
-```bash
-make test
 ```
 
 #### Run by Suite
@@ -327,21 +311,13 @@ make test
 **Unit tests only (fast, no DB needed)**:
 
 ```powershell
-# Windows
 docker-compose exec php vendor/bin/phpunit --testsuite=Unit
-
-# Mac/Linux
-make test-unit
 ```
 
 **Integration tests only (requires test DB)**:
 
 ```powershell
-# Windows
 docker-compose exec php vendor/bin/phpunit --testsuite=Integration
-
-# Mac/Linux
-make test-integration
 ```
 
 #### Run Specific Test File

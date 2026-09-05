@@ -45,11 +45,15 @@ more. Incident history and dates belong in project memory, not here.
   silently sweeps a fraction of the tree.
   The same trap applies to any per-method fact: mocked clocks, skipped assertions, seeded fixtures.
   A file-level count always overstates coverage.
-- The test database is separate and persistent. Run `make test-db-setup` once after a fresh clone,
-  and again after `down -v` or any new migration - otherwise integration tests fail confusingly.
-- An *edited* migration needs more than that. The version is already recorded as applied, so
-  `test-db-setup` re-runs nothing and the old schema survives. Drop first
-  (`doctrine:database:drop --force --if-exists --env=test`), then `make test-db-setup`, and do the
+- The test database is separate and persistent. Set it up once after a fresh clone, and again
+  after `down -v` or any new migration - otherwise integration tests fail confusingly:
+  ```bash
+  docker-compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+  docker-compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
+  ```
+- An *edited* migration needs more than that. The version is already recorded as applied, so those
+  two re-run nothing and the old schema survives. Drop first
+  (`doctrine:database:drop --force --if-exists --env=test`), then run them again, and do the
   same for the dev database without `--env=test`. Editing in place is allowed while the series is
   unreleased, so this comes up.
 - Under `APP_ENV=test`, `cache.app` and `cache.rate_limiter` are both `ArrayAdapter`s that Symfony
