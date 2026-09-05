@@ -51,12 +51,13 @@ make test                                     # Full suite
 ## Appointment Status Lifecycle
 
 ```
-REQUESTED ──> CONFIRMED ──> COMPLETED
-    |              |
-    v              v
-CANCELLED      CANCELLED
+request() ──> REQUESTED ──> CONFIRMED ──> COMPLETED
+                  |          ^      |
+                  v          |      v
+              CANCELLED   book()  CANCELLED
 ```
 
+- Two entry points, not one. `request()` starts at REQUESTED; `book()` starts at CONFIRMED and never passes through REQUESTED - it is the therapist entering an appointment for a patient who phoned. Do not assume a CONFIRMED appointment has a REQUESTED history.
 - Only CONFIRMED appointments block a slot. REQUESTED appointments do NOT block - multiple visitors can request the same slot.
 - COMPLETED and CANCELLED are terminal states.
 
@@ -81,7 +82,6 @@ Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: IS
 ## On-Demand Documentation
 
 These files are NOT loaded automatically. Reference them with @ when needed:
-- `@API/docs/database-schema.md` - entity relationships, column details
 - `@API/Product-Requirements.md` - the original client-discussion synthesis, frozen 2026-05-26. Historical only, requirements have moved since. For current status use `docs/STATUS.md`
 - `@API/postman/Therapy_App_API.postman_collection.json` - API contract with example requests/responses
 
