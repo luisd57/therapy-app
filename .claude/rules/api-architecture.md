@@ -18,7 +18,8 @@ src/Domain/ (core business logic, no framework deps), src/Application/ (use case
 
 ## ORM Relations
 
-Every relation points at `User`, and `SlotLock` has none. Pin each join column with an explicit
+Every relation points at `User`, and `SlotLock` has none: a lock is taken by an unauthenticated
+Requester, so there is no user to reference. Pin each join column with an explicit
 `#[ORM\JoinColumn(name:, referencedColumnName: 'id', onDelete:)]` so the mapping states the
 delete rule instead of leaving it in a migration only.
 

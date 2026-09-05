@@ -57,7 +57,7 @@ request() ──> REQUESTED ──> CONFIRMED ──> COMPLETED
               CANCELLED   book()  CANCELLED
 ```
 
-- Two entry points, not one. `request()` starts at REQUESTED; `book()` starts at CONFIRMED and never passes through REQUESTED - it is the therapist entering an appointment for a patient who phoned. Do not assume a CONFIRMED appointment has a REQUESTED history.
+- Two entry points, not one. `request()` starts at REQUESTED. `book()` starts at CONFIRMED and never passes through REQUESTED - it is the therapist entering an appointment for a patient who phoned. Do not assume a CONFIRMED appointment has a REQUESTED history.
 - Only CONFIRMED appointments block a slot. REQUESTED appointments do NOT block - multiple visitors can request the same slot.
 - COMPLETED and CANCELLED are terminal states.
 
