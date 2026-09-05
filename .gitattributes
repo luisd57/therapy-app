@@ -3,3 +3,7 @@
 # so the jobs silently never run - and core.autocrlf=true is the Windows default.
 API/docker/cron/crontab text eol=lf
 *.sh text eol=lf
+
+# A shebang script fails loudly instead of silently: the kernel reads the interpreter as
+# "php\r" and the container answers "env: 'php\r': No such file or directory".
+API/bin/console text eol=lf
