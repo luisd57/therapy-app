@@ -45,4 +45,16 @@ final class HashedStringTypeTest extends TestCase
     {
         $this->assertNull($this->type->convertToDatabaseValue(null, $this->platform));
     }
+
+    public function testReadsTheStoredDigestUnchanged(): void
+    {
+        $digest = '0b5b3bc8e6ba2ff02e2ba1a8f6e8b2e1d5c2a0b3f4e6d7c8b9a0f1e2d3c4b5a6';
+
+        $this->assertSame($digest, $this->type->convertToPHPValue($digest, $this->platform));
+    }
+
+    public function testReadsNullAsNull(): void
+    {
+        $this->assertNull($this->type->convertToPHPValue(null, $this->platform));
+    }
 }

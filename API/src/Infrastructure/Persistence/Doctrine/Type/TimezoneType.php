@@ -6,7 +6,9 @@ namespace App\Infrastructure\Persistence\Doctrine\Type;
 
 use App\Domain\User\ValueObject\Timezone;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\StringType;
+use InvalidArgumentException;
 
 final class TimezoneType extends StringType
 {
@@ -18,7 +20,11 @@ final class TimezoneType extends StringType
             return null;
         }
 
-        return Timezone::fromString((string) $value);
+        try {
+            return Timezone::fromString((string) $value);
+        } catch (InvalidArgumentException $exception) {
+            throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
+        }
     }
 
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): ?string
