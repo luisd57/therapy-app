@@ -12,6 +12,7 @@ use DateTimeZone;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Types\Exception\InvalidFormat;
 use Doctrine\DBAL\Types\Exception\InvalidType;
+use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -99,8 +100,17 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
 
     public function testRejectsAMalformedStoredValue(): void
     {
-        $this->expectException(InvalidFormat::class);
+        try {
+            $this->type->convertToPHPValue('not a date', $this->platform);
+            $this->fail('Expected a conversion error.');
+        } catch (InvalidFormat $exception) {
+            $this->assertInstanceOf(Exception::class, $exception->getPrevious());
+        }
+    }
 
-        $this->type->convertToPHPValue('not a date', $this->platform);
+    /** Migrations build the test schema, so nothing else notices a column that lost its zone. */
+    public function testDeclaresAZoneAwareColumn(): void
+    {
+        $this->assertSame('TIMESTAMP(0) WITH TIME ZONE', $this->type->getSQLDeclaration([], $this->platform));
     }
 }
