@@ -23,11 +23,35 @@ went in.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each custom type has a test covering conversion to the database value and back
-- [ ] The stored representation is asserted directly, not only the round trip
-- [ ] The UTC Instant type is asserted to store UTC regardless of the zone of the value handed to it
-- [ ] Null handling is covered for every type that permits it
-- [ ] A malformed stored value raises the conversion error rather than producing a broken object
-- [ ] Full API suite green
+**Resolved by:** [PR #87](https://github.com/luisd57/therapy-app/pull/87)
+
+- [x] Each custom type has a test covering conversion to the database value and back
+- [x] The stored representation is asserted directly, not only the round trip
+- [x] The UTC Instant type is asserted to store UTC regardless of the zone of the value handed to it
+- [x] Null handling is covered for every type that permits it
+- [x] A malformed stored value raises the conversion error rather than producing a broken object
+- [x] Full API suite green
+
+## Comments
+
+**2026-09-15** - The UTC Instant type was checked by mutation, not by a green suite: dropping the
+UTC conversion on write or read, declaring a naive column, and dropping the parse error's cause each
+turn a test red. The column declaration had no test at all before review found it. 700 tests
+before, 777 after.
+
+The malformed-value criterion was a production change. The nine types backed by a value object
+threw the value object's bare `InvalidArgumentException`. They now throw Doctrine's
+`ValueNotConvertible` with that exception as the cause. `HashedStringType` is one-way and has no
+malformed case.
+
+Two things came out of the work, both left alone.
+
+The value object types store a plain string as-is. That looks like a hole and is not: every
+repository `find()` passes `$id->getValue()`, and `findByEmail` passes the email string, so the
+tests pin it. Only a raw string straight from a request would skip normalisation.
+
+A stored Instant with no offset is read in the PHP process zone, with no error. Postgres always
+sends an offset for `TIMESTAMP WITH TIME ZONE`, so it cannot happen while the column-declaration
+test holds.
