@@ -6,7 +6,9 @@ namespace App\Infrastructure\Persistence\Doctrine\Type;
 
 use App\Domain\Appointment\Id\AppointmentId;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\GuidType;
+use InvalidArgumentException;
 
 final class AppointmentIdType extends GuidType
 {
@@ -18,7 +20,11 @@ final class AppointmentIdType extends GuidType
             return null;
         }
 
-        return AppointmentId::fromString((string) $value);
+        try {
+            return AppointmentId::fromString((string) $value);
+        } catch (InvalidArgumentException $exception) {
+            throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
+        }
     }
 
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): ?string
