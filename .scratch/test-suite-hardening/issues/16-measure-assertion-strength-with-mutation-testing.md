@@ -14,27 +14,23 @@ a line ran, which is why it reads as the wrong instrument: a line can run under 
 test that asserts nothing about it. Mutation asks whether breaking the line is
 noticed.
 
-**Confirm the tooling before committing to it.** Infection is understood to need a
-coverage driver, Xdebug or pcov, to know which tests reach which lines, and to have
-a diff-based mode that keeps continuous integration affordable. Both claims come
-from memory rather than from anything in this repository. Check them against the
-current release first, because the whole shape of this ticket rests on them.
-
-What is certain from the repository: `API/docker/php/Dockerfile` installs pdo,
-pdo_pgsql, zip, intl, opcache and redis. No Xdebug, no pcov, nothing equivalent
-anywhere else. If a driver is required, adding one is a prerequisite and is the
+**Infection needs a coverage driver** (Xdebug, phpdbg or pcov) to know which tests
+reach which lines, and has a diff-based mode that keeps continuous integration
+affordable. Both checked against Infection 0.32 on 2026-09-03, with the flag details
+in the comment below. `API/docker/php/Dockerfile` installs pdo, pdo_pgsql, zip,
+intl, opcache and redis, and no driver. Adding one is a prerequisite, and it is the
 same machinery declined earlier for a different purpose, so decide it knowingly.
 
 **Two phases, in this order.** The criteria below are grouped accordingly, and the
 second group should not start until the first has been read.
 
-*Discovery.* Run it, read the surviving mutants, let them inform tickets 02, 04 and
-13. The suite has known-weak assertions right now, so a first score is low and
+*Discovery.* Run it, read the surviving mutants, let them inform tickets 13 and
+18. The suite has known-weak assertions right now, so a first score is low and
 useless as a threshold, while the list of survivors is immediately useful.
 
 *Gating.* Only afterwards, from the improved baseline.
 
-**Cost.** 219 source files, and the API suite ran in 44 seconds on 2026-08-25.
+**Cost.** 219 source files (2026-09-22), and the API suite ran in 44 seconds on 2026-08-25.
 Both figures date fast and the second needs re-measuring before anyone plans
 around it. A full run is expected to take well over an hour, which is why the
 diff-based mode matters. The landing side is the cheap half: the date and modality
@@ -43,13 +39,14 @@ be quick. The dashboard has no unit tests, so nothing to mutate.
 
 **What this cannot catch.** It measures assertion strength, so it is silent on a
 fixture that is non-deterministic rather than unasserted: the clock stubs returning
-the real instant kill no mutant and produce no report. It is also silent on the
-Slot value-object timezone tautology, because no mutation operator resolves a
-datetime against a different zone. And it says nothing about redundancy, which is
+the real instant kill no mutant and produce no report. It is also silent on a
+timezone tautology like the one ticket 02 fixed, because no mutation operator
+resolves a datetime against a different zone. And it says nothing about redundancy, which is
 a different property and one this suite does not currently have.
 
-**Blocked by:** None - can start immediately, though discovery is worth more once
-tickets 02, 04 and 13 have landed.
+Discovery is worth more once tickets 13 and 18 have landed. See the comment below.
+
+**Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 
@@ -63,7 +60,7 @@ Discovery:
 Gating:
 
 - [ ] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
-- [ ] The threshold is taken from a baseline measured after tickets 02, 04 and 13, and the baseline figure is recorded with its date
+- [ ] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date
 - [ ] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds
 - [ ] Full pipeline green, including whatever image change the driver required
 

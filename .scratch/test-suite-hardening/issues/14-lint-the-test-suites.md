@@ -33,9 +33,11 @@ nothing meaningful. Counting assertions is not weighing them, and a locator
 matching the wrong element passes just as quietly. This removes a class of
 mistake, not the need to think.
 
-**Blocked by:** 10. That ticket is what brings `e2e/**` into lint scope, and the
-landing app has no ESLint configuration at all today, so there is nothing to hang
-these rules on until it lands.
+Ticket 10 comes first: it is what brings `e2e/**` into lint scope, and the landing
+app has no ESLint configuration at all today, so there is nothing to hang these
+rules on until it lands.
+
+**Blocked by:** 10
 
 **Status:** ready-for-agent
 

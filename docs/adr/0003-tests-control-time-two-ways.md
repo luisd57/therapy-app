@@ -39,7 +39,7 @@ practice zone would pass.
 **`Clock::set()` / a global static clock.** Rejected: the project injects
 dependencies, and a global would leak between tests sharing a kernel.
 
-## Consequences, including an honest limitation
+## Consequences, including a limitation
 
 Switching the suite to `Pacific/Kiritimati` produced **zero new failures** at the
 time it was introduced - all 525 tests still passed. That was not the guard

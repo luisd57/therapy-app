@@ -1,5 +1,7 @@
 # 02 - Make the assertions that cannot fail actually fail
 
+> Frozen record, resolved 2026-09-02.
+
 **What to build:** the assertions that hold no matter what the code does are
 rewritten to pin absolute values, so a timezone regression or a wrong constant
 fails the suite.

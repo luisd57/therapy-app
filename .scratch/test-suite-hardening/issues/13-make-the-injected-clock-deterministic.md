@@ -9,8 +9,9 @@ process timezone so a missing zone shows up. Ticket 02 covers the expectations
 that cannot fail. This ticket covers the injection, which is currently wired and
 then defeated.
 
-**Twenty of twenty-three clock stubs hand back the real instant.** Across 22 unit
-files, a `ClockInterface` double is created and told to return
+**Twenty of twenty-three clock stubs hand back the real instant** (re-measured
+2026-09-22, unchanged since 2026-08-30). Across 22 unit files, a `ClockInterface`
+double is created and told to return
 `new DateTimeImmutable()`, which is whatever instant the suite happens to run at,
 expressed in the +14:00 process zone. Only three supply a value the test controls.
 
@@ -27,8 +28,9 @@ spread. `AddScheduleExceptionHandlerTest` is the only other file that does it
 throughout. `ResetPasswordHandlerTest` does both, pinning in one test and taking
 the real clock in another, which is the mixed state to expect across the suite.
 
-**Six of fifty integration files freeze the clock, measured 2026-08-30.** The
-helper for it exists and is used correctly where it is used. Beware of judging this
+**Eight of fifty-four integration files call the freeze helper, measured
+2026-09-22** (six of fifty on 2026-08-30). The helper exists and is used correctly
+where it is used. Beware of judging this
 by whether a file mentions the helper: several call it inside one test method while
 other methods in the same file remain wall-clock coupled. Check the method, not the
 file.

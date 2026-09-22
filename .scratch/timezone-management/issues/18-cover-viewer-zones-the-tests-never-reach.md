@@ -5,10 +5,10 @@ neither the Practice Timezone nor Western Europe, so the grid, the zone banner
 and the recorded Requester Timezone are known to hold at a non-whole-hour offset
 near the date line.
 
-**Every zone-aware test uses the same two zones.** All thirty cases in the
-landing date-helper unit suite are written against `America/Caracas` and
-`Europe/Madrid`, and both Playwright describes that set a `timezoneId` use those
-same two. Nothing exercises a half-hour or forty-five-minute offset, and nothing
+**Every zone-aware test uses the same two zones** (counted 2026-09-22). All 22
+cases in the landing date-helper unit suite are written against `America/Caracas`
+and `Europe/Madrid`, and so is every one of the six Playwright `test.use` calls that
+set a `timezoneId`. Nothing exercises a half-hour or forty-five-minute offset, and nothing
 crosses the date line.
 
 Daylight saving itself is already pinned, so this is not that gap: day-key
@@ -25,9 +25,8 @@ claim. A Requester far enough east is the case that claim exists for.
 
 **Deliberately one ticket, not a zone matrix.** The diaspora is concentrated in
 Western Europe and North America, so a Requester at UTC+13 is the tail rather
-than the common case. Against ten million-plus Venezuelans abroad the tail is
-not empty, and the cost of getting it wrong is someone missing a session, so it
-is worth buying once, cheaply. It is not worth an ongoing combinatorial suite.
+than the common case. The tail is not empty, and the cost of getting it wrong is
+someone missing a session, so it is worth buying once, cheaply. It is not worth an ongoing combinatorial suite.
 
 **The trap this must avoid.** Adding a zone and watching the suite stay green
 proves nothing by itself. That is exactly what happened when the API suite moved

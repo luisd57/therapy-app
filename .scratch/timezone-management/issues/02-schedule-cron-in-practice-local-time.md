@@ -1,5 +1,7 @@
 # 02 - Schedule cron in practice local time
 
+> Frozen record, resolved 2026-08-15.
+
 **What to build:** The Therapist's scheduled jobs run at the hour she expects in
 her own clock.
 

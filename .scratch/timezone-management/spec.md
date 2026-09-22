@@ -1,8 +1,7 @@
 # Timezone Management
 
-Status: ready-for-agent
+Status: in progress. Per-ticket state is in `issues/`, the summary in `docs/STATUS.md`.
 
-Branch: `feat/timezone-management` · progress in `docs/STATUS.md`, follow-up work in `issues/`
 Related decisions: ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005
 
 ## Problem Statement
@@ -144,9 +143,10 @@ the Therapist currently performs by hand.
   unspecified fields reset including microseconds, because requested Slots are
   matched to computed Slots by equality.
 - Slot **length** and Slot **Start Increment** are separate rules. A 90-minute
-  session offered every 30 minutes produces overlapping candidates; booking or
-  locking one suppresses every candidate it overlaps. The existing half-open
-  overlap predicate already handles this and needs no change.
+  session offered every 30 minutes produces overlapping candidates, and a
+  CONFIRMED Appointment suppresses every candidate it overlaps. Slot Locks do not
+  (see `CONTEXT.md`). The existing half-open overlap predicate already handles
+  this and needs no change.
 - A Slot is offered only if it fits entirely inside its Schedule Block.
 - Results are clipped to the requested half-open Instant window.
 
@@ -185,23 +185,23 @@ the Therapist currently performs by hand.
 
 ### Scheduled jobs and email - ADR-0004, ADR-0005
 
-Both are currently **defects in committed code**, not merely unfinished work:
+Both were defects in committed code, fixed by tickets 01 and 02:
 
-- The daily agenda is scheduled at 07:00 container time, which is UTC, so it
-  fires at 03:00 for the Therapist. Fix by declaring the schedule in the Practice
-  Timezone rather than by shifting the hour, so the crontab reads as intent.
-- The agenda's date comes from the process clock rather than the injected clock
-  converted to the Practice Timezone.
-- Email templates format Instants without converting them. Since storage moved to
-  UTC, **every appointment email now states a time four hours off**, to both
-  parties. Fix by converting per recipient and naming the zone in the body.
+- The daily agenda fired at 07:00 container time, which is UTC, so 03:00 for the
+  Therapist. The schedule is now declared in the Practice Timezone rather than by
+  shifting the hour, so the crontab reads as intent.
+- The agenda's date now comes from the injected clock converted to the Practice
+  Timezone, not the process clock.
+- Email templates formatted Instants without converting them, so after storage
+  moved to UTC every appointment email stated a time four hours off. Times are now
+  converted per recipient, with the zone named in the body.
 
 ## Testing Decisions
 
 A good test here asserts **externally observable behaviour** through a public
 seam, and its expected values come from an independent source - a hand-written
 absolute Instant, a worked example - never from re-formatting the object under
-test. That distinction is not academic on this branch: the suite was moved to a
+test. That distinction matters here: the suite was moved to a
 hostile timezone and produced zero new failures, because the existing date tests
 built fixtures naively and derived expectations by formatting those same
 fixtures, so both sides shifted together and could never disagree. See ADR-0003.
@@ -228,9 +228,8 @@ Seven of the eight seams already exist; only the dashboard formatting seam is ne
    query-parameter type, which otherwise fails silently.
 6. **Landing date utilities** (unit, Vitest) - bucketing, calendar arithmetic
    across a daylight-saving transition, zone labelling, offset difference.
-7. **Email rendering** (unit) - a seam that exists but currently asserts nothing
-   about times, which is exactly why the UTC regression reached committed code.
-   Must be extended to assert rendered times and zone labels.
+7. **Email rendering** (unit) - asserts rendered times and zone labels. It asserted
+   neither before ticket 01, which is how the UTC regression reached committed code.
 8. **Both Playwright suites** (e2e) - the reservation flow end to end.
 
 **New seam, confirmed with the developer:** a single shared date-formatting
@@ -269,38 +268,19 @@ handlers resolve the clock lazily at dispatch.
 
 ## Further Notes
 
-### Verification status - read before trusting any test result
+### Verification status
 
-Green on the API PHPUnit suite, the landing Vitest suite, dashboard lint and
-build. **The landing Playwright suite is neither reliably green nor reliably
-red**, and both halves of that need explaining, because this section has now been
-wrong twice in opposite directions.
+Every suite passes except for the intermittent dashboard e2e locator clash (ticket
+16). The landing Playwright suite has been reliably green since tickets 05 and 12
+fixed its day-dependent failures. Three caveats keep a green run from saying the
+zones are right:
 
-**When it passes, it proves less than it looks.** The specs are coupled to the
-*flow*, not to times: they assert a Slot button exists - matched on the text
-"min", which matches any duration - and that a reservation completes. They never
-referenced the grouped-by-date response shape that was removed. So a green run
-confirms nothing regressed structurally and confirms **nothing about zones**.
-There is still no assertion anywhere that the zone banner names both zones, or
-that the selected Slot and confirmation show the Practice time alongside the
-Requester's. That is the substance of ticket 09, and a green suite does not make
-it redundant.
-
-**When it fails, it is currently finding a real bug.** Two of them, and they mask
-each other, so each was mistaken for the whole story in turn. They fire on
-different days: ticket 05 when the first offered Slot is In-Person only, ticket
-12 from Friday afternoon through Sunday. See those tickets for the mechanisms.
-
-So: do not read a green run as verification, and do not read a red run as
-flakiness. Until both 05 and 12 land, the suite's colour is mostly a function of
-which weekday CI happened to run on, and fixing either alone leaves it red on
-the other's days.
-
-Two further caveats remain live: the seeded schedule is still the old generic
-Monday-to-Friday pattern rather than the Therapist's real hours (ticket 08), and
-session length is still 50 minutes rather than 90 (ticket 04). Both suites
-therefore currently exercise a Slot grid that is not the one the practice will
-run on.
+- No spec asserts that the zone banner names both zones, or that the selected Slot
+  and the confirmation show both times. Specs match a Slot button on the text
+  "min" and check that the flow completes. Ticket 09.
+- The seed is still the generic Monday-to-Friday pattern, not the Therapist's real
+  hours. Ticket 08.
+- Sessions are still 50 minutes, not 90. Ticket 04.
 
 ### The Therapist's real schedule
 
@@ -310,23 +290,11 @@ consistent at 90 minutes:
 
 | Day | Blocks | Last start | Modality |
 |---|---|---|---|
-| Monday | 08:00–12:00, 13:30–19:30 | 18:00 | In-Person |
-| Tuesday | 06:30–10:30 | 09:00 | Both |
-| Wednesday–Sunday | 07:00–12:00, 13:30–20:30 | 19:00 | Both |
+| Monday | 08:00-12:00, 13:30-19:30 | 18:00 | In-Person |
+| Tuesday | 06:30-10:30 | 09:00 | Both |
+| Wednesday-Sunday | 07:00-12:00, 13:30-20:30 | 19:00 | Both |
 
 Lunch is the gap between blocks and applies every working day. She expects to be
 booked at weekends. Her "only two consultations fit" on Tuesday describes
 **capacity**, not offered starts - with 30-minute increments Tuesday offers six
 candidate starts and still caps at two non-overlapping sessions.
-
-### Known defects in committed code
-
-Two items in this spec are regressions rather than gaps, and should be
-prioritised accordingly: email times are four hours wrong for both parties, and
-the daily agenda fires at 03:00 for the Therapist. Both are described in ADR-0005
-and ADR-0004.
-
-A third, smaller: the all-day flag on a Schedule Exception is a passthrough
-boolean that nothing reads, so "all day" means only what the caller's own range
-happened to mean. Availability itself stays correct; the defect is confined to
-what a caller can express.

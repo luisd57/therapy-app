@@ -29,9 +29,7 @@ classes individually would be busywork, since most are constructor-to-array with
 nothing to get wrong. What is worth pinning is the serialised shape of what
 crosses the wire and the error body the traits build.
 
-**Blocked by:** None - can start immediately. The `controller-per-action` split
-that gated this landed in PRs #55 to #62, so the controller test files this work
-touches are now in their final shape.
+**Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 

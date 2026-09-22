@@ -1,5 +1,7 @@
 # 01 - Split HealthController into one class per action
 
+> Frozen record, resolved 2026-08-22. Superseded since: PR #62 removed the `PENDING_CONVERSION` list, and PR #63 cut `RouteConventionsTest` back to `ProtectedRouteRolesTest`.
+
 **What to build:** The health check and the API root each answer from their own
 controller class, with their URLs and route names unchanged.
 

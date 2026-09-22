@@ -1,14 +1,12 @@
 # Test suite hardening
 
-Status: ready-for-agent
+Status: in progress. Per-ticket state is in `issues/`, the summary in `docs/STATUS.md`.
 
-Branch: `test-suite-hardening`, tickets in `issues/`
 Related decisions: ADR-0001, ADR-0003
 
 Source: a full audit of all three deployables run on 2026-08-22, with every suite
-executed rather than read. Eleven findings were reviewed one by one and eight were
-granted. This spec records what was granted, what was rejected and why, and the
-seams the tickets land on.
+executed rather than read. Each finding was reviewed with the maintainer. This spec
+records what was granted, what was rejected and why, and the seams the tickets land on.
 
 ## Problem Statement
 
@@ -49,12 +47,12 @@ so many words. The audit is what measured how far it had drifted.
 
 ## Solution
 
-Thirteen tickets closing the eight granted findings, all landing on seams that
-already exist. The counts differ because the largest finding, the untested edges
-of the API, splits across four tickets, because two tickets come from decisions
-taken during the review rather than from a finding (static analysis and the bundle
-of small drift), and because ticket 13 was added afterwards, when re-checking the
-suite against `main` showed the clock work was too large to sit inside ticket 02.
+Twenty-one tickets, all landing on seams that already exist, in three groups.
+Tickets 01 to 13 close the granted findings. The largest finding, the untested
+edges of the API, spans several of them. Tickets 11 and 12 come from decisions taken
+during the review rather than from a finding, and 13 split out of 02 when the clock
+work proved too large. Tickets 14 to 16, 19 and 20 are the enforcement layer (see
+below). Tickets 17, 18 and 21 are follow-ups filed while working the others.
 
 The work divides into four kinds. **Make lying tests honest**: rewrite the
 fixtures whose expectations are derived from the object under test, and fix the
@@ -116,7 +114,7 @@ for the dashboard. See Out of Scope.
 
 ## Implementation Decisions
 
-### The two rejected findings shape the rest
+### Two rejected findings shape the rest
 
 **No coverage instrumentation.** The maintainer considers reaching for coverage
 the wrong approach. There is no `<coverage>` block, no threshold, and none is
@@ -125,10 +123,9 @@ criterion. Worth recording as a fact rather than a preference: at the time of th
 audit the PHP image carried no coverage driver either, so this was never a config
 toggle.
 
-Amended 2026-09-03. Ticket 16 does add a driver, because Infection requires one.
-That was checked against release 0.32 rather than assumed. A driver installed as
-an input to mutation testing is not a coverage gate, and the three sentences above
-are unaffected.
+Ticket 16 does add a driver, because Infection requires one (checked against
+release 0.32). A driver installed as an input to mutation testing is not a coverage
+gate, so the rejection stands.
 
 **No dashboard unit-test seam.** The maintainer values e2e over unit for
 frontend. The dashboard has zero `*.spec.ts` files, its Angular test target
@@ -166,23 +163,19 @@ endpoint, instead of a field at a time, is what keeps that diagnosable.
 
 ### Duration and Start Increment are separate rules, in tests too
 
-Three availability tests construct the slot rules with both set to the same
-value. Production is a 50-minute session offered every 30 minutes. The factory
-takes the two as adjacent integers of the same type, which is why the mistake
-reads as correct. Nothing catches it today because those handlers stub the
-availability computer, so the rules are built and never consulted.
-
-This lands before `timezone-management/04`. That ticket moves sessions to 90
-minutes and keeps starts at 30. If the fixtures still say "increment equals
-duration" when it arrives, they become 90 and 90 and the wrong grid outlives the
-change meant to correct it.
+Three availability tests built the slot rules with both set to the same value,
+while production is a 50-minute session offered every 30 minutes. The factory
+takes the two as adjacent integers of the same type, which is why the mistake read
+as correct, and those handlers stub the availability computer, so nothing caught
+it. Ticket 01 fixed it ahead of `timezone-management/04`, so the move to 90-minute
+sessions cannot turn the fixtures into 90 and 90.
 
 ### Expected values come from an independent source
 
 ADR-0003's rule is restated here because it is the one most often broken: an
 expected value must be a hand-written absolute Instant or a worked example, never
-a re-formatting of the object under test. Two violations remain and both are in
-scope.
+a re-formatting of the object under test. Ticket 02 fixed the places the audit
+found breaking it.
 
 ### PHP static analysis is a decision, not a gap fix
 
@@ -198,24 +191,21 @@ reason gets helpfully undone by the next person to hit a red build.
 Tickets 01 to 13 fix what the audit found. Nothing in them stops it coming back,
 and prose has already failed at that: the tickets themselves acquired three wrong
 claims and one unsatisfiable criterion during this effort, each caught by review
-rather than by any gate. Tickets 14, 15 and 16 are the enforcement layer.
-
-Amended 2026-09-03: 19 and 20 join them. Both make a documented dependency rule
-executable, the hexagonal layer direction on the API and the folder dependency flow
-on the dashboard, and both land green, so they are lock-in in the same sense ticket
-14 is. ADR-0007 had already asked for the first by name.
+rather than by any gate. Tickets 14, 15, 16, 19 and 20 are the enforcement layer.
+19 and 20 make a documented dependency rule executable, the hexagonal layer
+direction on the API and the folder dependency flow on the dashboard.
 
 They divide by what each can see. **14** is off-the-shelf lint over both frontends,
 catching the shapes. **15** is custom PHPStan rules over `API/tests/`, chosen over a
 guard test because a syntax tree cannot be fooled by formatting the way a regex can.
 **16** is mutation testing, the only one that measures rather than pattern-matches,
 and the only one that costs anything real: it wants a coverage driver the image
-lacks. Each ticket carries its own reasoning.
+lacks. **19** and **20** check import direction. Each ticket carries its own reasoning.
 
-None of the three reaches the Slot value-object tautology. No mutation operator
-resolves a datetime against a different zone, and "both sides of the comparison
-move together" is not a shape a rule can see. That one stays with ADR-0003 and a
-reader who is paying attention.
+None of them reaches a tautology like the Slot value-object one ticket 02 fixed. No
+mutation operator resolves a datetime against a different zone, and "both sides of
+the comparison move together" is not a shape a rule can see. That class stays with
+ADR-0003 and review.
 
 ### The Makefile is left alone
 
@@ -228,7 +218,7 @@ as it is. What changes is the documentation that sends readers to it.
 
 A good test here asserts externally observable behaviour through a public seam,
 and its expected value comes from an independent source. Two failure modes are
-called out specifically because both are present in committed code today.
+called out specifically because both were present in committed code at the audit.
 
 **A test whose expectation is derived from its own fixture cannot fail.** Both
 sides shift together. This is not hypothetical here: the whole suite was moved to
@@ -247,14 +237,16 @@ broken versions already produce.
 
 ### Seams
 
-**All five already exist. No new test seam is proposed**, which is the intended
-outcome under `testing-policy.md`: prefer an existing seam, and adding one is a
-decision worth stating rather than a reflex.
+**No new test seam is proposed**, which is the intended outcome under
+`testing-policy.md`: prefer an existing seam, and adding one is a decision worth
+stating rather than a reflex. Seam 5 widens the pipeline, and ticket 11 adds a tool
+the repo has never had, but neither creates a new place where behaviour is asserted.
 
 1. **API PHPUnit Unit** - the slot rules wiring, the Slot value-object fixtures,
    the auth and token primitives, the password-rule validators, and the Doctrine
    types. The Doctrine types are the highest-value addition: the UTC Instant type
-   is where ADR-0001 is actually enforced and it has no test of its own.
+   is where ADR-0001 is actually enforced, and it had no test of its own before
+   ticket 05.
 2. **API PHPUnit Integration** - the two HTTP subscribers, the console commands
    through the console tester, the 422 contract and the Output DTO shapes, and
    the one controller fixture in ticket 02.
@@ -263,11 +255,6 @@ decision worth stating rather than a reflex.
 5. **The pipeline itself** - widened, not new. Both e2e directories come under
    lint and typecheck, the landing typecheck gets called, and static analysis is
    added.
-
-**No new test seam** is the claim, and seam 5 is the caveat. Ticket 11 does add a
-tool the repo has never had, and ticket 10 widens gates that already exist. What
-neither does is create a new place where behaviour is asserted, which is the thing
-`testing-policy.md` asks to be deliberate about.
 
 The only new test machinery is the surviving cache pool in ticket 03, and that
 follows an existing helper rather than introducing a mechanism.
@@ -289,8 +276,8 @@ knowing: a guard test earns its place only where inspection cannot do the job.
 
 Integration tests run inside a rolled-back transaction and pin "now" through the
 frozen-clock helper before issuing any request, because handlers resolve the
-clock lazily at dispatch. Re-measured 2026-08-30, only 6 of 50 integration files
-freeze the clock, and 20 of 23 unit stubs of `ClockInterface` hand back the
+clock lazily at dispatch. Re-measured 2026-09-22, only 8 of 54 integration files
+call the freeze helper, and 20 of 23 unit stubs of `ClockInterface` hand back the
 real current instant. Many genuinely do not need to. Ticket 13 is the judgement
 call over which do, and it warns that a file-level search overstates the freezing,
 because a file can freeze in one method and not in the next.
@@ -299,10 +286,7 @@ because a file can freeze in one method and not in the next.
 
 - **Coverage measurement and thresholds.** Rejected by the maintainer. No
   `<coverage>` block, no threshold, and no ticket uses a coverage percentage as an
-  acceptance criterion. Amended 2026-09-03: this bullet used to add that no driver
-  was installed and none was being added. Ticket 16 installs one, because Infection
-  requires it. See the Implementation Decisions entry for why that leaves the
-  rejection above intact.
+  acceptance criterion. Ticket 16's coverage driver serves mutation testing only.
 - **A dashboard unit or component test seam.** Rejected. Frontend confidence is
   e2e. This extends the decision `timezone-management/15` records for landing.
 - **Fixing or deleting the Makefile.** No `make` on the maintainer's machine and
@@ -339,9 +323,9 @@ because a file can freeze in one method and not in the next.
 
 ## Further Notes
 
-### Verification status - read before trusting any test result
+### Verification status
 
-Every suite was executed during the audit, not inferred. All four green:
+Every suite was executed during the 2026-08-22 audit, not inferred. All four green:
 
 | Suite | Result |
 |---|---|
@@ -356,27 +340,12 @@ the development database held 43 Patients. Continuous integration runs `down -v`
 every time, so continuous integration is always the failing case and a local run
 is always the passing one.
 
-**The landing run happened on a Friday evening practice-local, and that does not
-count toward `timezone-management/13`.** That ticket asks for a Friday
-*afternoon*, a Saturday and a Sunday. 22:45 is not an afternoon, and by then the
-day's Schedule Blocks are behind the clock, so the run exercises less than an
-afternoon run would. Read this as one green run on a Friday, nothing more. Of the
-two defects 13 cites as the reason for those days, `timezone-management/05` is
-already resolved by PR #39 and only `12` is still open on its weekend criterion.
-
-The run passed and the Schedule Blocks were confirmed restored to 8 active
-afterwards.
-
-**Assertion density is 2.3 per test**, and there are no data providers anywhere
-in the API suite. Neither is a defect on its own. Both are worth knowing when
-reading 602 as a number.
+Assertion density was 2.3 per test, with no data providers anywhere in the API
+suite. Neither is a defect on its own.
 
 **Every figure in this spec carries the date it was measured, and none is
-maintained.** The table above is the 2026-08-22 audit run. PRs #55 to #66 landed
-afterwards and took the API suite to 603 tests across 106 files, 403 unit and 200
-integration, measured 2026-08-25. The file count jumped because the controller
-split produced one test file per route action. Re-measure before quoting any of
-it, including the 2026-08-25 numbers, which will rot the same way.
+maintained.** The API suite was 777 tests on 2026-09-15 (ticket 05). Re-measure
+before quoting any of it.
 
 ### What the audit found that is genuinely healthy
 
@@ -385,33 +354,20 @@ Worth recording so it does not get "improved". No skipped or incomplete tests. N
 `sleep`, no real network calls, no global state mutation. Ninety-three mocks and
 not one of a concrete class. Handlers are covered 34 out of 34. Several tests
 deliberately use real collaborators and say why in a comment, which is the right
-instinct. `HealthControllerTest` bypassing the base class is deliberate and
+instinct. The two Health controller tests bypass the base class on purpose, as
 documented in `controller-per-action/01`, not drift.
 
 ### Relationship to the other effort directories
 
-`controller-per-action` is resolved as of PRs #55 to #63, and
-`schema-mapping-drift/01` as of #65. That settled every edge this effort had with
-them, and it did some of the work: ticket 02 lost half its scope because the split
-removed the bare relative-plus-wall-clock fixture, and the helper that was
-copy-pasted into two controller tests became `SeedsTherapistSchedule`. Ticket 07
-is unblocked as a result.
+`controller-per-action` (PRs #55 to #63) and `schema-mapping-drift/01` (#65) are
+resolved. The split did some of this effort's work: it removed the bare
+relative-plus-wall-clock fixture ticket 02 first targeted, and turned a helper
+copy-pasted into two controller tests into `SeedsTherapistSchedule`.
 
-Two blockers remain, both internal and both real: ticket 14 waits on 10, which is
-what brings the e2e directories into lint scope at all, and ticket 15 waits on 11,
-which is what installs the analyser its rules run inside.
+Two internal blockers remain: 14 waits on 10, which brings the e2e directories into
+lint scope, and 15 waits on 11, which installs the analyser its rules run inside.
 
-What remains otherwise is one soft ordering constraint against
-`timezone-management`. Ticket
-01 should precede `timezone-management/04`, which moves sessions to 90 minutes: if
-the fixtures still equate duration with Start Increment when it lands, they become
-90 and 90 and the wrong grid outlives the change meant to fix it. It is a
-cross-reference, not a blocker, since either order works if someone notices.
+Two soft orderings against `timezone-management`, neither a blocker. Ticket 17
+should land before `timezone-management/04`, which moves sessions to 90 minutes.
 Ticket 09 is cheaper after `timezone-management/07`: its specs bind to English UI
 text, as every existing dashboard spec does, and the Spanish sweep rewrites it.
-Also not a blocker, just a rewrite you can choose to avoid.
-
-**The lesson worth keeping.** Tickets written against a snapshot rot when a large
-effort lands beside them. This one needed a refresh three days after publication,
-and the parts that rotted were the file paths and the counts, not the reasoning.
-Re-measure before picking one up.

@@ -6,7 +6,7 @@ downstream.
 
 Four of the five have no test. Only the daily agenda command has one.
 
-Two of the untested four are load-bearing for continuous integration: the e2e job
+Continuous integration depends directly on two of the untested four: the e2e job
 creates the Therapist and seeds the Schedule Blocks by invoking them before
 either Playwright suite runs. If either changes shape, both e2e suites fail on
 missing availability or a failed login, and nothing in the output points at the

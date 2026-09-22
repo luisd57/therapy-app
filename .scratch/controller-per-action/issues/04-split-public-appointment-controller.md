@@ -1,5 +1,7 @@
 # 04 - Split PublicAppointmentController into one class per action
 
+> Frozen record, resolved 2026-08-23. Superseded since: PR #62 removed the `PENDING_CONVERSION` list, and PR #63 cut `RouteConventionsTest` back to `ProtectedRouteRolesTest`.
+
 **What to build:** Slot browsing, next-available-week, Slot locking and public
 Appointment requests each answer from their own controller class, still
 unauthenticated and on the same URLs.

@@ -7,8 +7,7 @@ ADR originally proposed, which does not work on the image we run.
 
 `API/docker/cron/crontab` declared its hours with no zone, and the cron container
 had `TZ=UTC`, so the daily agenda intended for 07:00 fired at 07:00 UTC, which is
-03:00 in Caracas. Token cleanup at 02:00 UTC landed at 22:00 local, inside the
-therapist's Wednesday-to-Sunday working window.
+03:00 in Caracas. Token cleanup meant for the small hours ran at 22:00 local.
 
 `SendDailyAgendaCommand` compounded it by computing `date('Y-m-d')`, which
 resolves in the process zone. That was the Caracas date before ADR-0001 and the

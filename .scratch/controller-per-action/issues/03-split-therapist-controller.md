@@ -1,5 +1,7 @@
 # 03 - Split TherapistController into one class per action
 
+> Frozen record, resolved 2026-08-22. Superseded since: PR #62 removed the `PENDING_CONVERSION` list, and PR #63 cut `RouteConventionsTest` back to `ProtectedRouteRolesTest`.
+
 **What to build:** The Therapist's profile, the Patient list, and the four
 invitation actions each answer from their own controller class, every one
 enforcing `ROLE_THERAPIST` for itself.

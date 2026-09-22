@@ -1,5 +1,7 @@
 # 03 - Cover the two HTTP subscribers
 
+> Frozen record, resolved 2026-09-02.
+
 **What to build:** the two security controls that run on every request are
 verified, so removing either one fails the suite.
 

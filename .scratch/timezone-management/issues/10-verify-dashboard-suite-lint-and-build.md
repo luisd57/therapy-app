@@ -17,8 +17,7 @@ Note the suite's known constraint - all specs share one authenticated session,
 and a test that logs out invalidates it for everything after. Any new spec should
 follow the existing pattern rather than inventing its own session handling.
 
-**Blocked by:** 06 - Dashboard date-formatting seam and dual-time display;
-07 - Spanish dashboard sweep.
+**Blocked by:** 06, 07
 
 **Status:** ready-for-agent
 

@@ -2,7 +2,7 @@
 
 **What to build:** the API testing conventions that are currently prose become
 rules that fail the build, so a new test cannot reintroduce a defect this effort
-just spent thirteen tickets removing.
+removed.
 
 Custom PHPStan rules over `API/tests/`, deliberately chosen over a guard test that
 greps its own source. Regex reads text. PHPStan reads the syntax tree, so it sees
@@ -24,10 +24,13 @@ as written:
 - `markTestSkipped` and `markTestIncomplete`, so the suite cannot shrink quietly.
 - `sleep` and `usleep`.
 
-**Sequence the first two after tickets 13 and 02.** Twenty clock stubs and a good
-number of naive literals exist right now, so landing these rules first means
-landing them red. Add each rule as the final act of the ticket that clears its
-violations, and no allowlist is needed. That also avoids the trap the
+**The first two rules would land red today.** Measured 2026-09-22: twenty clock
+stubs return the real instant, and roughly 96 `DateTimeImmutable` string literals
+in `API/tests/` carry no offset, led by `ScheduleExceptionTest` and the three Doctrine
+repository tests. Ticket 13 clears the stubs. Ticket 02 cleared only the Slot
+value-object suite, and no ticket yet owns the remaining literals, so the second
+rule needs one before it can land. Add each rule as the final act of the ticket
+that clears its violations, and no allowlist is needed. That also avoids the trap the
 `PENDING_CONVERSION` list hit, where emptying a loop-and-assert ratchet leaves a
 zero-assertion test that `failOnRisky` then fails.
 
@@ -36,13 +39,13 @@ the tests directory to be either in analysis scope or deliberately excluded. If 
 excludes `API/tests/`, these rules have nowhere to run and that call has to be
 revisited before this ticket can start.
 
-**What this cannot catch.** Shapes, not meaning. The Slot value-object tautology
-would pass every rule above, because its defect is that both sides of a comparison
+**What this cannot catch.** Shapes, not meaning. A tautology like the Slot
+value-object one ticket 02 fixed would pass every rule above, because its defect is that both sides of a comparison
 move together, which is a fact about what the test means rather than how it is
 written. One test file per production class is also out of reach here, being file
 layout rather than syntax. Prose and review still carry those.
 
-**Blocked by:** 11.
+**Blocked by:** 11
 
 **Status:** ready-for-agent
 

@@ -1,5 +1,7 @@
 # 05 - Modality-first browsing on the public site
 
+> Frozen record, resolved 2026-08-19.
+
 **What to build:** A Requester chooses Online or In-Person before seeing Slots,
 and the Modality they browsed is the Modality they book.
 

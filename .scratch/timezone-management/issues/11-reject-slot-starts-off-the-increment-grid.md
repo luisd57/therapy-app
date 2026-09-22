@@ -6,14 +6,16 @@ the system actually offers.
 Taking a Slot Lock does not currently check that the requested Instant is a legal
 Slot start. A client can lock an arbitrary time - 09:07, say - and hold it. The
 Appointment request path does verify the Instant against computed Slots, so this
-does not produce a bookable Appointment, but it does let a caller occupy
-availability that was never offered, and every overlapping genuine Slot with it.
+does not produce a bookable Appointment, but it does let a caller hold a window
+that was never offered. Locks never hide Slots from the grid, but they conflict
+with each other, so while it is active every attempt to lock an overlapping
+genuine Slot is refused.
 
 Pre-existing rather than introduced here, and previously judged orthogonal. It is
 listed now because Start Increments made it materially more exposed: the grid is
-denser, so an off-grid lock suppresses more real Slots than it used to.
+denser, so an off-grid lock overlaps more real Slot starts than it used to.
 
-Lowest priority of the eleven. Nothing depends on it, and it blocks nothing.
+Lowest priority in this effort. Nothing depends on it, and it blocks nothing.
 
 **Blocked by:** None - can start immediately.
 

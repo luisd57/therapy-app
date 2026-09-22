@@ -17,7 +17,7 @@ already covers this screen.
 
 Both screens share the validator but are separate components, so pick one for the
 per-rule sweep and cover the other at the level of "the same rules apply here",
-rather than duplicating seven cases twice.
+rather than running all seven cases (one per rule plus a valid password) on both.
 
 **One generic message covers all six rules today**, so a spec cannot read which
 rule fired off the screen. It does not need to. Each case feeds a password that

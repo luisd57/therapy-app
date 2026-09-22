@@ -1,4 +1,4 @@
-# Emails should render times in the recipient's zone
+# Emails render times in the recipient's zone
 
 Status: accepted, implemented on 2026-08-15.
 
@@ -8,7 +8,7 @@ Status: accepted, implemented on 2026-08-15.
 appointment times with bare calls - `format('l, F j, Y')`, `format('g:i A')` -
 at ten or more call sites, with **no `setTimezone` anywhere**.
 
-Before this branch, instants were hydrated in PHP's default zone, which was
+Until ADR-0001, instants were hydrated in PHP's default zone, which was
 `America/Caracas`, so emails happened to render practice-local times. ADR-0001
 moved storage to UTC and `UtcDateTimeImmutableType` now hydrates every instant in
 UTC. The formatting calls were not updated.
@@ -47,12 +47,13 @@ Spanish sweep does not reach the mail templates.
 system did by accident before. Rejected: it pushes the conversion back onto the
 patient, which is the manual step this work exists to remove.
 
-**Rendering everything in UTC and letting the reader convert.** Rejected outright
-- that is the current broken behaviour, and no patient thinks in UTC.
+**Rendering everything in UTC and letting the reader convert.** Rejected outright:
+that is the broken behaviour this replaced, and no patient thinks in UTC.
 
 **Using the patient profile's timezone rather than the appointment's.** Rejected:
 the appointment records the zone the person was actually in when they booked, and
-people travel. Profile zone is the fallback, not the source.
+people travel. When the appointment has no zone, the fallback is the Practice Timezone,
+not the profile.
 
 ## Consequences
 

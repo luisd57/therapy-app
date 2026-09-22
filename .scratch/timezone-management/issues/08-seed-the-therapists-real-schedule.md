@@ -26,7 +26,7 @@ Blocked by ticket 04 because the block boundaries are designed around 90-minute
 sessions - seeding these hours at the old length produces a grid matching neither
 her capacity nor the expectations the end-to-end suites will be written against.
 
-**Blocked by:** 04 - Switch sessions to 90 minutes.
+**Blocked by:** 04
 
 **Status:** ready-for-agent
 

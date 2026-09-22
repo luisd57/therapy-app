@@ -40,7 +40,7 @@ whoever's memory added it.
 
 **Worth doing now rather than later.** The dashboard is the least finished deployable, with
 several domains still unbuilt. `docs/STATUS.md` carries the current list. Boundaries are
-cheap to hold at five domains and expensive to recover at nine.
+cheap to hold now and expensive to recover once those domains exist.
 
 **Scope is `src/` only.** The `e2e/` directory has no domain structure and these rules mean
 nothing there. Ticket 10 is what brings `e2e/` under lint at all, and the two do not

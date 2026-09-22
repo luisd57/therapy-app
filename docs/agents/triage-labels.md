@@ -12,6 +12,6 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
-Issues are local markdown, so a label is a `Status:` line near the top of the issue file rather than a tracker-side label.
+Issues are local markdown, so a label is the value of the `**Status:**` line in the issue file rather than a tracker-side label.
 
-Edit the right-hand column to match whatever vocabulary you actually use.
+Two more values appear outside triage: `resolved` for a finished ticket (see `issue-tracker.md`), and `claimed` for a wayfinder ticket being worked.

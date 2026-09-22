@@ -1,5 +1,7 @@
 # 01 - Render email times in the recipient's zone
 
+> Frozen record, resolved 2026-08-15.
+
 **What to build:** Every email the practice sends states the correct time for the
 person reading it, and names the zone it is in.
 
