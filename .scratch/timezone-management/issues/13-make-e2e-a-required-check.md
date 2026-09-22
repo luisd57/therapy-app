@@ -22,9 +22,21 @@ which days have availability at all.
 
 The suite's day-to-day behaviour is a function of the seed. The current
 `app:seed-schedule` has no weekend blocks and marks Friday in-person only, which
-is precisely what makes 05 and 12 fire on some days and not others. Seeding the
+is what made 05 and 12 fire on some days and not others. Seeding the
 therapist's real hours changes which days are quiet, so the gate should only go
 on once the suite is running against the schedule it will live with.
+
+Against the current seed, the third criterion below already has evidence: landing
+e2e passed on 60 Friday-afternoon, Saturday and Sunday runs between 2026-08-21 and
+2026-09-05 (see ticket 12's closing comment). Ticket 08 changes the seed, so re-check
+it after 08 lands rather than ticking it now.
+
+## Why 16 and 17 are blockers
+
+The dashboard step is still intermittently red on an ambiguous locator (16), and
+a red dashboard step skips the landing step entirely (17). Every red `main` run
+since 12 was fixed is that combination. Required as-is, the gate would block merges
+on a flake and hide the landing result behind it.
 
 ## The change
 
@@ -39,8 +51,7 @@ gh api --method PATCH repos/luisd57/therapy-app/branches/main/protection/require
 Verify with `gh api repos/luisd57/therapy-app/branches/main/protection --jq
 '.required_status_checks.contexts'`.
 
-**Blocked by:** 12, 05, 08. All three must land first, or turning the gate on
-locks the repository.
+**Blocked by:** 05, 08, 12, 16, 17
 
 **Status:** ready-for-agent
 

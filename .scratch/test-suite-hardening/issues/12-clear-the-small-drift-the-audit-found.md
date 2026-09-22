@@ -1,6 +1,6 @@
 # 12 - Clear the small drift the audit found
 
-**What to build:** four unrelated small things the audit turned up, none of them
+**What to build:** five unrelated small things the audit turned up, none of them
 worth a ticket alone, all of them cheap and currently costing something.
 
 **An orphaned compose override.** The API directory holds a compose override left

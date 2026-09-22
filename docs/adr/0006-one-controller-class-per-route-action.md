@@ -71,7 +71,7 @@ every file holds one `__invoke()`, and a second public action is visible in revi
 `## Controllers` in `.claude/rules/api-architecture.md`. The role attribute is the opposite case, and
 keeps its test, because a missing one looks like nothing at all.
 
-Route names and URLs are load-bearing beyond the tests. `RateLimitSubscriber` keys off route names
+Route names and URLs matter beyond the tests. `RateLimitSubscriber` keys off route names
 and `security.yaml` matches on URLs, with `^/api/auth/me$` anchored. A conversion that changes either
 silently drops rate limiting or an access rule, so the route table is diffed before and after.
 

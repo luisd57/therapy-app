@@ -7,10 +7,11 @@ thirty, rather than the 50 minutes the system was configured with.
 it neither blocks nor is blocked by the timezone fixes. The Start Increment half
 of this pair - offering starts every 30 minutes - already shipped and is live.
 
-The value appears in several environment configurations and they must move
-together, including the ones continuous integration reads. A mismatch between
-environments produces a Slot grid that differs between local and CI with no
-obvious cause.
+The value is set in four places that must move together, listed 2026-09-22:
+`API/.env`, `API/.env.example`, the `test` job env in `.github/workflows/ci.yml`,
+and `docker-compose.ci.yml`. The last two are what continuous integration reads. A
+mismatch produces a Slot grid that differs between local and CI with no obvious
+cause.
 
 Session length is not a free parameter: it interacts with every Schedule Block
 boundary. At 90 minutes her Tuesday window of 06:30 to 10:30 offers six candidate

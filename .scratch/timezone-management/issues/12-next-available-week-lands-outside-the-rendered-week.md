@@ -1,5 +1,7 @@
 # 12 - The grid renders an empty week when the next available Slot is in the following calendar week
 
+> Frozen record, resolved 2026-09-22. The fix shipped 2026-08-18 in PR #37.
+
 **What to fix:** `SlotBrowser` picks which week to render from the API's rolling
 availability window, but renders a Monday-to-Sunday calendar week. When the two
 disagree, it shows a week it already knows has no Slots.
@@ -61,10 +63,12 @@ weekends; fixing this alone will leave it red on Fridays.
 **Blocked by:** None - can start immediately. Worth doing before 05, since the
 grid has to render Slots at all before the modality of a selected Slot matters.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #37](https://github.com/luisd57/therapy-app/pull/37)
 
 - [x] The rendered week always contains the Slots the component is holding
-- [ ] Landing e2e passes on a Saturday, a Sunday, and a Friday afternoon practice-local
+- [x] Landing e2e passes on a Saturday, a Sunday, and a Friday afternoon practice-local
 - [x] A unit test pins the case where the next available Slot falls in the following calendar week
 - [x] An empty rendered week shows an empty state rather than a silent blank grid
 - [x] Landing unit suite green
@@ -83,3 +87,11 @@ new spec (`landing/e2e/next-available-week.spec.ts`) stubs the API with
 `page.route` and pins the scenario on any day, but that is a proxy, not the
 real-clock run the criterion asks for. Status stays open until a Friday-afternoon,
 Saturday or Sunday CI run goes green on its own.
+
+**2026-09-22** - Weekend criterion verified against CI history, 2026-08-13 to 2026-09-15.
+Before the fix, landing e2e failed on all 40 runs between Thu 08-13 18:29 and Sat 08-15 15:50
+practice-local where it ran. After PR #37 it never failed. That includes 60 runs on Friday
+afternoons, Saturdays and Sundays between 08-21 and 09-05, each reporting `20 passed` with no
+flaky or failed test, so no retry hid a failure. Representative `main` runs: Fri 09-04 15:00
+(33908866772), Sat 09-05 08:47 (33967044026), Sun 08-23 12:55 (32653170748). The red runs after
+the fix all failed at the dashboard step and skipped landing, which is ticket 16 plus ticket 17.

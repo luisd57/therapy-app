@@ -24,7 +24,7 @@ Single-context. The repo holds three deployables - `API/`, `landing/`, `dashboar
 └── dashboard/
 ```
 
-`docs/*` is gitignored by default; `docs/adr/` and `docs/agents/` are explicitly un-ignored so these are versioned artefacts, not scratch.
+`docs/*` is gitignored by default. `docs/STATUS.md`, `docs/adr/` and `docs/agents/` are explicitly un-ignored, so they are versioned artefacts, not scratch.
 
 ## Use the glossary's vocabulary
 

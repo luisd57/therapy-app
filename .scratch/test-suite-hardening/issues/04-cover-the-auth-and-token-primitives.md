@@ -1,5 +1,7 @@
 # 04 - Cover the auth and token primitives
 
+> Frozen record, resolved 2026-09-04.
+
 **What to build:** the primitives that hash passwords, mint tokens and set the
 session cookie are verified directly, rather than only through whichever endpoint
 happens to call them.
@@ -8,8 +10,8 @@ Five classes in the security namespace have no test: the password hasher, the
 secure token generator, the JWT generator, the cookie manager and the JWT created
 listener. Both password rule validators are untested too.
 
-The password strength rules are the sharpest gap. Six independent conditions plus
-a length bound, and the only test standing in for them sends a request that is
+The password strength rules are the sharpest gap. Four character classes plus a
+length bound of 8 to 72, and the only test standing in for them sends a request that is
 invalid for two separate reasons at once and asserts nothing but the status code.
 It would pass unchanged if the strength rule were deleted.
 

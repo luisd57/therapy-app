@@ -53,14 +53,12 @@ this appointment next March".
 - `TIMESTAMP(0)` truncates sub-second precision. Fine for appointments; slightly
   sloppy for token expiry, accepted.
 
-## Verified state of the codebase
+## Hardcoded zones
 
-Grepped at time of writing: **no fixed offset appears in any production logic.**
-Every `-04:00` occurrence under `API/src` is either an example inside a validation
-error message or a comment explaining why offsets are rejected.
+No fixed offset appears in production logic. Every `-04:00` under `API/src` is an
+example in a validation message or a comment explaining why offsets are rejected.
 
-Three hardcoded IANA ids do exist, all in `landing/`, all as fallback defaults
-overwritten by the API's `practice_timezone` field on first response:
-`src/utils/dates.ts:18`, `src/components/svelte/AppointmentFlow.svelte:13`,
-`src/components/svelte/SlotBrowser.svelte:36`. These are not offsets and carry no
-DST bug, but they would be wrong if the practice ever moved.
+The landing app hardcodes the practice zone once, as a fallback the API's
+`practice_timezone` field overwrites on first response: `landing/src/config.ts`. Its
+e2e helpers repeat it, tracked by `test-suite-hardening/12`. Both would be wrong if the
+practice ever moved.

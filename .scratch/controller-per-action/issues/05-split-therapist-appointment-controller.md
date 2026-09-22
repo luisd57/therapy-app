@@ -1,5 +1,7 @@
 # 05 - Split TherapistAppointmentController into one class per action
 
+> Frozen record, resolved 2026-08-23. Superseded since: `RouteConventionsTest` and its `PENDING_CONVERSION` list are gone, replaced by `ProtectedRouteRolesTest` (PR #63).
+
 **What to build:** Each step the Therapist takes on an Appointment - listing,
 viewing, confirming, completing, cancelling, booking, and toggling payment -
 answers from its own controller class, each enforcing `ROLE_THERAPIST`.

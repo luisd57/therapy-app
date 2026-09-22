@@ -1,5 +1,7 @@
 # 07 - Make the one-action rule unconditional
 
+> Frozen record, resolved 2026-08-23. Superseded since: PR #63 deleted the assertion this ticket hardened. See "Superseded" below.
+
 **What to build:** The one-action-per-controller rule applies to every controller
 in the codebase with no exception list, so a grouped controller cannot be
 reintroduced quietly.

@@ -1,5 +1,7 @@
 # 01 - Enforce a non-null exception reason in the database
 
+> Frozen record, resolved 2026-08-23. Superseded since: entities declare their relations (ADR-0007), and `API/docs/database-schema.md` was retired (PR #84).
+
 **What to build:** A Schedule Exception's reason is always a string in the
 database, never absent, matching the invariant the application already enforces.
 

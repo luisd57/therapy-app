@@ -1,5 +1,7 @@
 # 01 - Wire the real Start Increment into the availability unit tests
 
+> Frozen record, resolved 2026-08-29.
+
 **What to build:** the unit tests that compute availability exercise the Slot grid
 the practice actually runs on, so a change to the grid can fail them.
 

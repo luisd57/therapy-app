@@ -12,7 +12,9 @@ describe means they travel with the branch that implements them.
 - The spec is `.scratch/<feature-slug>/spec.md`
 - Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` - never a single combined tickets file
 - Triage state is recorded as a `**Status:**` line near the top of each issue file (see `triage-labels.md` for the role strings). Bolded, matching the `to-tickets` template that writes it - a plain `Status:` will not be found by anything scanning for the frontier
+- `**Blocked by:**` holds `None - can start immediately.` or ticket numbers only (`04, 08`). Soft ordering and "not blocked by" notes go in the body, where a frontier scan cannot mistake a number in them for a blocker
 - A finished ticket ends at `**Status:** resolved` with a `**Resolved by:**` line naming the PR, its verified acceptance criteria ticked, and the file kept. The `/done` skill does this alongside the `docs/STATUS.md` update
+- A resolved ticket is a frozen record, and says so in one line under its title: `> Frozen record, resolved <date>.` When a later change makes a fact in it false, extend that line with `Superseded since: <what changed>` rather than rewriting the body
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 - A count or file path quoted in a spec or ticket carries the date it was taken. These files are frozen markdown and nothing recomputes them, so a neighbouring effort landing silently invalidates them while they still read as current. Re-measure before acting on one
 
@@ -29,8 +31,8 @@ Read the file at the referenced path. The user will normally pass the path or th
 Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
 
 - **Map**: `.scratch/<effort>/map.md` - the Notes / Decisions-so-far / Fog body.
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `**Type:**` line records the ticket type (`research`/`prototype`/`grilling`/`task`), and a `**Status:**` line records `claimed` or `resolved`.
+- **Blocking**: a `**Blocked by:** NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
+- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed. First by number wins.
+- **Claim**: set `**Status:** claimed` and save before any work.
+- **Resolve**: append the answer under an `## Answer` heading, set `**Status:** resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.

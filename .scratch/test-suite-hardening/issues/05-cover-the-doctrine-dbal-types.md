@@ -1,5 +1,7 @@
 # 05 - Cover the Doctrine DBAL types
 
+> Frozen record, resolved 2026-09-15.
+
 **What to build:** every custom type that converts a Value Object to a column and
 back is verified in both directions, so a conversion bug fails a unit test rather
 than surfacing as a corrupted row.

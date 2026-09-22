@@ -1,5 +1,7 @@
 # 06 - Split TherapistScheduleController into one class per action
 
+> Frozen record, resolved 2026-08-23. Superseded since: `RouteConventionsTest` and its `PENDING_CONVERSION` list are gone, replaced by `ProtectedRouteRolesTest` (PR #63).
+
 **What to build:** Managing Schedule Blocks and Schedule Exceptions happens
 through one controller class per action, each enforcing `ROLE_THERAPIST`.
 

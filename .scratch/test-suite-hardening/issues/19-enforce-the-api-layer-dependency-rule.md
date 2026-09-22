@@ -39,8 +39,9 @@ a handler doing infrastructure work inline, a Domain service reaching through a 
 should not, or a class sitting in the right layer under a name that means something else.
 Those stay with review.
 
-**Blocked by:** None - can start immediately. Specifically not blocked by 11: deptrac runs
-as its own binary rather than inside PHPStan, so the analyser decision does not gate it.
+Ticket 11 does not gate this: deptrac runs as its own binary rather than inside PHPStan.
+
+**Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
 

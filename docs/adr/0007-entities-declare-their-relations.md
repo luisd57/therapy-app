@@ -38,14 +38,14 @@ identifier is the same `UUID` column it already was.
 `doctrine:migrations:diff` reports no changes. That is the whole point of the change, and it is the
 thing to check before believing this ADR still holds.
 
-## What the first honest diff revealed
+## What the first generated diff revealed
 
 The generated diff did not touch the foreign keys at all - Doctrine matches those by table and
 column rather than by name, so the hand-written constraints already satisfied the new mappings. What
 it did propose was dropping six indexes and eight column defaults that existed in the database but
 were never declared on an entity. That drift was always there, and the FK noise had been hiding it.
 
-Four of the six were load-bearing: `idx_invitation_email`, `idx_invitation_valid`,
+Four of the six were in real use: `idx_invitation_email`, `idx_invitation_valid`,
 `idx_password_reset_valid` and `idx_slot_lock_time_expires`. The other two, `idx_invitation_token`
 and `idx_password_reset_token`, sit on columns that already carry a unique constraint, so Postgres
 indexes them anyway and dropping those two would have cost nothing.
@@ -77,15 +77,16 @@ patient's row, and the only consumer that reads through an association
 asserting the patient proxies are still uninitialized after the whole page has been mapped to DTOs,
 so adding a `getPatient()->getFullName()` to `AppointmentOutputDTO` fails the build.
 
-**Three collections are unbounded and must not be iterated.** The practice has one therapist, so
+**Two collections are unbounded and must not be iterated.** The practice has one therapist, so
 `$therapist->getSentInvitations()` and `getScheduleExceptions()` are whole tables with no `LIMIT`
 that read like plain getters. Both are `EXTRA_LAZY`, which keeps `count`/`contains`/`slice` in SQL
 but does not stop a `foreach`. The paginated repository methods remain the read path.
 
 **The two domain modules now reference each other.** `User` imports three
 `App\Domain\Appointment\Entity\*` classes where the dependency used to run one way. No runtime cost,
-but the invariant a reader could previously assume is now only a convention. PHPStan (ticket 11) will
-not catch it - core PHPStan has no dependency-direction rules, so this needs deptrac or a custom rule.
+but the invariant a reader could previously assume is now only a convention. Core PHPStan has no
+dependency-direction rules. `test-suite-hardening/19` adds deptrac for the layer rule and deliberately
+leaves this intra-Domain cycle unchecked.
 
 **`User::$id` is no longer `readonly`.** It is the only entity anything maps a `ManyToOne` onto, so
 the only one Doctrine builds proxies for. Initializing a proxy re-sets the identifier, and

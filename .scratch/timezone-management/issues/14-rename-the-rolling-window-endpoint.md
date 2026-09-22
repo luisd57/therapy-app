@@ -23,10 +23,12 @@ e2e global setup and README are updated. The term is recorded in `CONTEXT.md`
 alongside the existing availability vocabulary.
 
 One ticket rather than an expand-contract sequence: there are 16 in-repo consumers
-and no external clients, so the API and the landing app change together in one
-commit and CI never sees a half-renamed state.
+(files, measured 2026-09-22) and no external clients, so the API and the landing
+app change together in one commit and CI never sees a half-renamed state.
 
-**Blocked by:** 12 - both touch the slot browser's mount path.
+Ticket 12 comes first because both touch the slot browser's mount path.
+
+**Blocked by:** 12
 
 **Status:** ready-for-agent
 

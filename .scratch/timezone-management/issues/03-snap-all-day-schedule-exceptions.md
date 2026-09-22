@@ -1,5 +1,7 @@
 # 03 - Snap all-day Schedule Exceptions to a practice day
 
+> Frozen record, resolved 2026-08-15. Superseded since: `HealthController` is now `HealthCheckController` (PR #55).
+
 **What to build:** When the Therapist marks a Schedule Exception as all-day, it
 blocks her whole calendar day.
 
