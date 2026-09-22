@@ -60,8 +60,10 @@ Slots still fell inside the rendered week, which is why that day showed ticket
 The two defects mask each other. Fixing 05 alone will leave the suite red on
 weekends; fixing this alone will leave it red on Fridays.
 
-**Blocked by:** None - can start immediately. Worth doing before 05, since the
-grid has to render Slots at all before the modality of a selected Slot matters.
+Worth doing before 05, since the grid has to render Slots at all before the
+modality of a selected Slot matters.
+
+**Blocked by:** None - can start immediately.
 
 **Status:** resolved
 
@@ -89,7 +91,7 @@ real-clock run the criterion asks for. Status stays open until a Friday-afternoo
 Saturday or Sunday CI run goes green on its own.
 
 **2026-09-22** - Weekend criterion verified against CI history, 2026-08-13 to 2026-09-15.
-Before the fix, landing e2e failed on all 40 runs between Thu 08-13 18:29 and Sat 08-15 15:50
+Before the fix, landing e2e failed on all 41 runs between Thu 08-13 18:29 and Sat 08-15 15:50
 practice-local where it ran. After PR #37 it never failed. That includes 60 runs on Friday
 afternoons, Saturdays and Sundays between 08-21 and 09-05, each reporting `20 passed` with no
 flaky or failed test, so no retry hid a failure. Representative `main` runs: Fri 09-04 15:00

@@ -14,7 +14,7 @@ describe means they travel with the branch that implements them.
 - Triage state is recorded as a `**Status:**` line near the top of each issue file (see `triage-labels.md` for the role strings). Bolded, matching the `to-tickets` template that writes it - a plain `Status:` will not be found by anything scanning for the frontier
 - `**Blocked by:**` holds `None - can start immediately.` or ticket numbers only (`04, 08`). Soft ordering and "not blocked by" notes go in the body, where a frontier scan cannot mistake a number in them for a blocker
 - A finished ticket ends at `**Status:** resolved` with a `**Resolved by:**` line naming the PR, its verified acceptance criteria ticked, and the file kept. The `/done` skill does this alongside the `docs/STATUS.md` update
-- A resolved ticket is a frozen record, and says so in one line under its title: `> Frozen record, resolved <date>.` When a later change makes a fact in it false, extend that line with `Superseded since: <what changed>` rather than rewriting the body
+- A resolved ticket is a frozen record, and says so in one line under its title: `> Frozen record, resolved <date>.` When a later change makes a fact in it false, extend that line with `Superseded since: <what changed>` rather than rewriting the body. A fact that was wrong when written is corrected in place
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 - A count or file path quoted in a spec or ticket carries the date it was taken. These files are frozen markdown and nothing recomputes them, so a neighbouring effort landing silently invalidates them while they still read as current. Re-measure before acting on one
 

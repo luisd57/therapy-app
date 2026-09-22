@@ -18,8 +18,8 @@ is no clock to inject. Neither ticket owns them, which is why they are still her
 **Freezing the clock is the wrong fix for the fourteen repository tests.** They do
 not read `ClockInterface` at all, so the freeze helper never reaches the fixture.
 Each one needs a literal Instant passed as `now`, the way ticket 02 fixed the
-entity tests. Reuse `UsesUtcInstants::utc()` from `API/tests/Helper/`, which ticket 02
-added, rather than writing it again.
+entity tests. Reuse `UsesUtcInstants::utc()` from `API/tests/Helper/` (there as of
+2026-09-22, added by ticket 02) rather than writing it again.
 
 **The console test fails for a different reason and needs a different fix.** The
 daily agenda command test that pins the Therapist's Day key does freeze the clock,

@@ -47,8 +47,8 @@ Spanish sweep does not reach the mail templates.
 system did by accident before. Rejected: it pushes the conversion back onto the
 patient, which is the manual step this work exists to remove.
 
-**Rendering everything in UTC and letting the reader convert.** Rejected outright
-- that is the broken behaviour this replaced, and no patient thinks in UTC.
+**Rendering everything in UTC and letting the reader convert.** Rejected outright:
+that is the broken behaviour this replaced, and no patient thinks in UTC.
 
 **Using the patient profile's timezone rather than the appointment's.** Rejected:
 the appointment records the zone the person was actually in when they booked, and

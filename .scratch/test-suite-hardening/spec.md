@@ -174,8 +174,8 @@ sessions cannot turn the fixtures into 90 and 90.
 
 ADR-0003's rule is restated here because it is the one most often broken: an
 expected value must be a hand-written absolute Instant or a worked example, never
-a re-formatting of the object under test. Ticket 02 fixed the two violations the
-audit found.
+a re-formatting of the object under test. Ticket 02 fixed the places the audit
+found breaking it.
 
 ### PHP static analysis is a decision, not a gap fix
 

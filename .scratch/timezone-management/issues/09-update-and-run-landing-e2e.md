@@ -6,8 +6,8 @@ timezone-aware browser - and confirmed green rather than assumed.
 **A green suite says nothing about zones.** It was expected to break when the Slot
 grid gained 30-minute Start Increments and the response stopped grouping Slots by
 date. It did not, because it is coupled to the flow rather than to times: it
-asserts that a Slot button exists - matched on the text "min", which matches any
-duration - and that a reservation completes. The day-dependent failures it used to
+asserts that a Slot button exists (matched on the text "min", which matches any
+duration) and that a reservation completes. The day-dependent failures it used to
 show were tickets 05 and 12, both fixed.
 
 There is **no assertion anywhere** that the zone banner names both

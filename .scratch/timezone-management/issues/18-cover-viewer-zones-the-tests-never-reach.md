@@ -5,10 +5,10 @@ neither the Practice Timezone nor Western Europe, so the grid, the zone banner
 and the recorded Requester Timezone are known to hold at a non-whole-hour offset
 near the date line.
 
-**Every zone-aware test uses the same two zones.** All 22 cases in the landing
-date-helper unit suite are written against `America/Caracas` and `Europe/Madrid`,
-and so is every Playwright describe that sets a `timezoneId` (six, counted
-2026-09-22). Nothing exercises a half-hour or forty-five-minute offset, and nothing
+**Every zone-aware test uses the same two zones** (counted 2026-09-22). All 22
+cases in the landing date-helper unit suite are written against `America/Caracas`
+and `Europe/Madrid`, and so is every one of the six Playwright `test.use` calls that
+set a `timezoneId`. Nothing exercises a half-hour or forty-five-minute offset, and nothing
 crosses the date line.
 
 Daylight saving itself is already pinned, so this is not that gap: day-key

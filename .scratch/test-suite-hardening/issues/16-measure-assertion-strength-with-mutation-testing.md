@@ -60,7 +60,7 @@ Discovery:
 Gating:
 
 - [ ] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
-- [ ] The threshold is taken from a baseline measured after tickets 02, 04 and 13, and the baseline figure is recorded with its date
+- [ ] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date
 - [ ] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds
 - [ ] Full pipeline green, including whatever image change the driver required
 

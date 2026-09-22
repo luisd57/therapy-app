@@ -1,6 +1,6 @@
 # 02 - Split PatientController into one class per action
 
-> Frozen record, resolved 2026-08-22. Superseded since: `RouteConventionsTest` and its `PENDING_CONVERSION` list are gone, replaced by `ProtectedRouteRolesTest` (PR #63).
+> Frozen record, resolved 2026-08-22. Superseded since: PR #62 removed the `PENDING_CONVERSION` list, and PR #63 cut `RouteConventionsTest` back to `ProtectedRouteRolesTest`.
 
 **What to build:** A Patient reads and updates their own profile through two
 separate controller classes, each enforcing `ROLE_PATIENT` on its own action.

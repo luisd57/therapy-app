@@ -24,9 +24,9 @@ as written:
 - `markTestSkipped` and `markTestIncomplete`, so the suite cannot shrink quietly.
 - `sleep` and `usleep`.
 
-**The first two rules would land red today.** Twenty clock stubs return the real
-instant, and roughly 96 `DateTimeImmutable` string literals in `API/tests/` carry no
-offset (grep, 2026-09-22), led by `ScheduleExceptionTest` and the three Doctrine
+**The first two rules would land red today.** Measured 2026-09-22: twenty clock
+stubs return the real instant, and roughly 96 `DateTimeImmutable` string literals
+in `API/tests/` carry no offset, led by `ScheduleExceptionTest` and the three Doctrine
 repository tests. Ticket 13 clears the stubs. Ticket 02 cleared only the Slot
 value-object suite, and no ticket yet owns the remaining literals, so the second
 rule needs one before it can land. Add each rule as the final act of the ticket
