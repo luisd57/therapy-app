@@ -130,9 +130,8 @@ function skillIndex(body, skill, userOnly = false) {
   return Math.max(typed, called);
 }
 
-// The transcript already holds the call being judged, so "the last PR" has to mean
-// the last one before this call rather than this call itself. Cut at the start of its
-// line: the same line also holds a rewritten copy (leading `cd` stripped) that must go too.
+// The transcript already holds the call being judged, so history ends before its line.
+// That line also holds a rewritten copy (leading `cd` stripped) that must not count as a PR.
 function historyBefore(body, currentCommand) {
   if (typeof currentCommand !== 'string' || !currentCommand) return body;
   const escaped = JSON.stringify(currentCommand).slice(1, -1);

@@ -227,6 +227,27 @@ const cases = [
     ]),
     tool_input: { command: CD_PR },
   }, 'DENY'],
+  ['identical rewritten copy after a review', {
+    tool_name: 'Bash',
+    transcript_path: fixture('rewritten-same.jsonl', [
+      ranSkill('mattpocock-skills:code-review'),
+      ranBashRewritten(PR, PR),
+    ]),
+    tool_input: { command: PR },
+  }, 'ALLOW'],
+  ['multiline PR body after a review', {
+    tool_name: 'Bash',
+    transcript_path: fixture('rewritten-multiline.jsonl', [
+      ranSkill('mattpocock-skills:code-review'),
+      ranBashRewritten(`cd ${REPO} && gh pr create --body "one\ntwo"`, 'gh pr create --body "one\ntwo"'),
+    ]),
+    tool_input: { command: `cd ${REPO} && gh pr create --body "one\ntwo"` },
+  }, 'ALLOW'],
+  ['PR on the first line, no review before it', {
+    tool_name: 'Bash',
+    transcript_path: fixture('rewritten-first-line.jsonl', [ranBashRewritten(CD_PR, PR)]),
+    tool_input: { command: CD_PR },
+  }, 'DENY'],
   ['prose and commit-message mentions are not a PR', {
     tool_name: 'Bash', transcript_path: prosePr, tool_input: { command: PR },
   }, 'ALLOW'],
