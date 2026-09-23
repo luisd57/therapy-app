@@ -29,10 +29,10 @@ attempt still recovers the real seed.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A retry after a failed restore recovers the originally seeded Schedule Blocks, not whatever the previous attempt left behind
-- [ ] The restore baseline cannot be captured from an already-swapped state
-- [ ] The group's isolation is declared rather than inherited from the worker count, so changing parallelism does not silently break it
-- [ ] The failure path is exercised deliberately, not assumed from a green run
-- [ ] Landing e2e suite green
+- [x] A retry after a failed restore recovers the originally seeded Schedule Blocks, not whatever the previous attempt left behind
+- [x] The restore baseline cannot be captured from an already-swapped state
+- [x] The group's isolation is declared rather than inherited from the worker count, so changing parallelism does not silently break it
+- [x] The failure path is exercised deliberately, not assumed from a green run
+- [x] Landing e2e suite green

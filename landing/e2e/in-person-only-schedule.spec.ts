@@ -8,7 +8,13 @@ import {
   slotButtons,
   validRequestForm,
 } from './fixtures/helpers';
-import { replaceScheduleWith, therapistContext } from './fixtures/schedule';
+import {
+  IN_PERSON_ONLY_BLOCK,
+  replaceScheduleWith,
+  requireSoleWorker,
+  restoreBaseline,
+  therapistContext,
+} from './fixtures/schedule';
 
 /**
  * The case that made CI red: the only availability on offer sits in a schedule
@@ -17,29 +23,23 @@ import { replaceScheduleWith, therapistContext } from './fixtures/schedule';
  * puts the schedule back afterwards.
  */
 test.describe('A schedule whose only block is in person', (): void => {
+  test.describe.configure({ mode: 'serial' });
   test.use({ timezoneId: PRACTICE_ZONE, locale: 'es-ES' });
 
-  const IN_PERSON_ONLY = {
-    day_of_week: 1, // Monday
-    start_time: '09:00',
-    end_time: '12:00',
-    supports_online: false,
-    supports_in_person: true,
-  };
-
   let context: APIRequestContext | undefined;
-  let restore: (() => Promise<void>) | undefined;
 
   test.beforeAll(async (): Promise<void> => {
+    requireSoleWorker(test.info().config);
     context = await therapistContext();
-    restore = await replaceScheduleWith(context, IN_PERSON_ONLY);
+    await replaceScheduleWith(context, IN_PERSON_ONLY_BLOCK);
   });
 
   test.afterAll(async (): Promise<void> => {
-    // Every later spec reads the seeded schedule, so this has to run even when
-    // the assertions below fail.
-    if (restore) await restore();
-    if (context) await context.dispose();
+    // Every later spec reads the seeded schedule, so this has to run even when the
+    // assertions below fail, or the swap above died halfway.
+    if (!context) return;
+    await restoreBaseline(context);
+    await context.dispose();
   });
 
   test('online browsing offers nothing, whatever day it runs on', async ({

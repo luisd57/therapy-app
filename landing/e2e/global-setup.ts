@@ -1,5 +1,6 @@
 import { request, type APIRequestContext } from '@playwright/test';
 import { API_BASE_URL } from './fixtures/helpers';
+import { recordBaseline, therapistContext } from './fixtures/schedule';
 
 const READY_TIMEOUT_MS: number = 120_000;
 const POLL_INTERVAL_MS: number = 2_000;
@@ -33,6 +34,13 @@ export default async function globalSetup(): Promise<void> {
     }
   } finally {
     await context.dispose();
+  }
+
+  const therapist: APIRequestContext = await therapistContext();
+  try {
+    await recordBaseline(therapist);
+  } finally {
+    await therapist.dispose();
   }
 }
 

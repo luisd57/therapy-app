@@ -1,4 +1,4 @@
-import { request, type APIRequestContext } from '@playwright/test';
+import { request, type APIRequestContext, type FullConfig } from '@playwright/test';
 import { API_BASE_URL } from './helpers';
 
 const THERAPIST_EMAIL: string = process.env['THERAPIST_EMAIL'] ?? 'therapist@example.com';
@@ -12,6 +12,15 @@ export interface ScheduleBlock {
   supports_online: boolean;
   supports_in_person: boolean;
 }
+
+/** The block the swap installs: availability the recurring seed never produces on its own. */
+export const IN_PERSON_ONLY_BLOCK: ScheduleBlock = {
+  day_of_week: 1, // Monday
+  start_time: '09:00',
+  end_time: '12:00',
+  supports_online: false,
+  supports_in_person: true,
+};
 
 interface ListedBlock extends ScheduleBlock {
   id: string;
@@ -86,24 +95,94 @@ export async function createBlock(
   }
 }
 
+/** The blocks without their ids, in a stable order, so two schedules compare by content. */
+export function normalized(blocks: ScheduleBlock[]): ScheduleBlock[] {
+  return blocks
+    .map(
+      (block: ScheduleBlock): ScheduleBlock => ({
+        day_of_week: block.day_of_week,
+        start_time: block.start_time,
+        end_time: block.end_time,
+        supports_online: block.supports_online,
+        supports_in_person: block.supports_in_person,
+      }),
+    )
+    .sort(
+      (left: ScheduleBlock, right: ScheduleBlock): number =>
+        left.day_of_week - right.day_of_week || left.start_time.localeCompare(right.start_time),
+    );
+}
+
+/** Make `blocks` the whole active schedule. */
+export async function setSchedule(
+  context: APIRequestContext,
+  blocks: ScheduleBlock[],
+): Promise<void> {
+  await deleteBlocks(context, await activeBlocks(context));
+  for (const block of blocks) {
+    await createBlock(context, block);
+  }
+}
+
+const BASELINE_ENV: string = 'LANDING_SCHEDULE_BASELINE';
+
 /**
- * Swap the whole schedule for one block and hand back an undo. Availability is
- * computed from these blocks, so this is the only way to put the API in a state
- * the recurring seed never produces.
+ * Record the schedule `restoreBaseline` puts back. Global setup calls this once per run,
+ * before any spec and in the runner process, so a retry cannot re-record a swapped state.
+ */
+export async function recordBaseline(context: APIRequestContext): Promise<void> {
+  const baseline: ScheduleBlock[] = normalized(await activeBlocks(context));
+
+  if (JSON.stringify(baseline) === JSON.stringify(normalized([IN_PERSON_ONLY_BLOCK]))) {
+    throw new Error(
+      'The schedule is still the single block a killed run swapped in. Reseed it first: ' +
+        '`docker-compose exec php php bin/console app:seed-schedule --force`',
+    );
+  }
+
+  process.env[BASELINE_ENV] = JSON.stringify(baseline);
+}
+
+/** The schedule global setup recorded. Workers inherit it through the environment. */
+export function seededBaseline(): ScheduleBlock[] {
+  const recorded: string | undefined = process.env[BASELINE_ENV];
+  if (recorded === undefined) {
+    throw new Error(`${BASELINE_ENV} is not set. Global setup records it, so run through the config.`);
+  }
+
+  return JSON.parse(recorded) as ScheduleBlock[];
+}
+
+/** Put the recorded baseline back, skipping the rewrite when it is already there. */
+export async function restoreBaseline(context: APIRequestContext): Promise<void> {
+  const baseline: ScheduleBlock[] = seededBaseline();
+  const current: ScheduleBlock[] = normalized(await activeBlocks(context));
+
+  if (JSON.stringify(current) !== JSON.stringify(baseline)) {
+    await setSchedule(context, baseline);
+  }
+}
+
+/** A swap is seen by every spec running beside it, so a swapping spec refuses to share the run. */
+export function requireSoleWorker(config: FullConfig): void {
+  if (config.workers !== 1) {
+    throw new Error(
+      `This spec swaps the schedule every other spec reads, so it needs workers: 1 ` +
+        `(got ${config.workers}).`,
+    );
+  }
+}
+
+/**
+ * Swap the whole schedule for one block. Availability is computed from these blocks,
+ * so this is the only way to reach a state the seed never produces. Undo with `restoreBaseline`.
  */
 export async function replaceScheduleWith(
   context: APIRequestContext,
   block: ScheduleBlock,
-): Promise<() => Promise<void>> {
-  const saved: ListedBlock[] = await activeBlocks(context);
+): Promise<void> {
+  // Read first, so a missing baseline fails with the schedule untouched.
+  seededBaseline();
 
-  await deleteBlocks(context, saved);
-  await createBlock(context, block);
-
-  return async (): Promise<void> => {
-    await deleteBlocks(context, await activeBlocks(context));
-    for (const original of saved) {
-      await createBlock(context, original);
-    }
-  };
+  await setSchedule(context, [block]);
 }
