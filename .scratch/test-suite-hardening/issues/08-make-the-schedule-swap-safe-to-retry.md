@@ -1,5 +1,7 @@
 # 08 - Make the landing Schedule Block swap safe to retry
 
+> Frozen record, resolved 2026-09-23.
+
 **What to build:** the landing spec that needs a Schedule Block the seed never
 produces can fail, retry, or be killed without destroying the seeded schedule for
 every run after it.
