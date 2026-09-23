@@ -50,6 +50,8 @@ const ranBashRewritten = (raw, rewritten) => JSON.stringify({
   wireToolInputs: { toolu_1: { command: raw } },
 });
 const CD_PR = `cd ${REPO} && ${PR}`;
+const MULTILINE_PR = 'gh pr create --body "one\ntwo"';
+const CD_MULTILINE_PR = `cd ${REPO} && ${MULTILINE_PR}`;
 
 // PreToolUse fires with the call already appended, so every Bash fixture ends with
 // the call under judgement. Verified against a live transcript: a marker unique to
@@ -127,9 +129,11 @@ function run(payload) {
     let out = '';
     child.stdout.on('data', (c) => { out += c; });
     child.on('close', () => {
-      if (!out.trim()) return resolve('ALLOW');
-      try { resolve(JSON.parse(out).hookSpecificOutput.permissionDecision.toUpperCase()); }
-      catch { resolve('ALLOW'); }
+      if (!out.trim()) return resolve({ decision: 'ALLOW', reason: '' });
+      try {
+        const { permissionDecision, permissionDecisionReason } = JSON.parse(out).hookSpecificOutput;
+        resolve({ decision: permissionDecision.toUpperCase(), reason: permissionDecisionReason ?? '' });
+      } catch { resolve({ decision: 'ALLOW', reason: '' }); }
     });
     child.stdin.end(JSON.stringify(payload));
   });
@@ -208,6 +212,10 @@ const cases = [
   ['retry of the identical command after reviewing', {
     tool_name: 'Bash', transcript_path: deniedThenReviewed, tool_input: { command: PR },
   }, 'ALLOW'],
+  ['prose and commit-message mentions are not a PR', {
+    tool_name: 'Bash', transcript_path: prosePr, tool_input: { command: PR },
+  }, 'ALLOW'],
+
   // The stripped copy of the call under judgement is not a previous PR.
   ['cd-prefixed PR after a review', {
     tool_name: 'Bash',
@@ -227,7 +235,7 @@ const cases = [
     ]),
     tool_input: { command: CD_PR },
   }, 'DENY'],
-  ['identical rewritten copy after a review', {
+  ['PR without cd after a review, both copies identical', {
     tool_name: 'Bash',
     transcript_path: fixture('rewritten-same.jsonl', [
       ranSkill('mattpocock-skills:code-review'),
@@ -239,18 +247,16 @@ const cases = [
     tool_name: 'Bash',
     transcript_path: fixture('rewritten-multiline.jsonl', [
       ranSkill('mattpocock-skills:code-review'),
-      ranBashRewritten(`cd ${REPO} && gh pr create --body "one\ntwo"`, 'gh pr create --body "one\ntwo"'),
+      ranBashRewritten(CD_MULTILINE_PR, MULTILINE_PR),
     ]),
-    tool_input: { command: `cd ${REPO} && gh pr create --body "one\ntwo"` },
+    tool_input: { command: CD_MULTILINE_PR },
   }, 'ALLOW'],
+  // Every version denies here, so the reason is what pins it: no review ran, not "a previous PR".
   ['PR on the first line, no review before it', {
     tool_name: 'Bash',
     transcript_path: fixture('rewritten-first-line.jsonl', [ranBashRewritten(CD_PR, PR)]),
     tool_input: { command: CD_PR },
-  }, 'DENY'],
-  ['prose and commit-message mentions are not a PR', {
-    tool_name: 'Bash', transcript_path: prosePr, tool_input: { command: PR },
-  }, 'ALLOW'],
+  }, 'DENY', 'has not run in this session'],
 
   ['src edit, tdd only before the last PR', {
     tool_name: 'Edit', transcript_path: tddBeforePr,
@@ -277,11 +283,12 @@ const cases = [
 ];
 
 let bad = 0;
-for (const [name, payload, want] of cases) {
+for (const [name, payload, want, reasonHas] of cases) {
   const got = await run(payload);
-  const ok = got === want;
+  const ok = got.decision === want && (!reasonHas || got.reason.includes(reasonHas));
   if (!ok) bad++;
-  console.log(`${ok ? 'ok  ' : 'FAIL'}  ${want.padEnd(5)} ${name}${ok ? '' : `  -> got ${got}`}`);
+  const shown = reasonHas ? `${got.decision} (${got.reason})` : got.decision;
+  console.log(`${ok ? 'ok  ' : 'FAIL'}  ${want.padEnd(5)} ${name}${ok ? '' : `  -> got ${shown}`}`);
 }
 console.log(bad === 0 ? '\nall pass' : `\n${bad} FAILED`);
 process.exit(bad === 0 ? 0 : 1);
