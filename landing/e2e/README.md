@@ -55,10 +55,11 @@ docker-compose --profile e2e run --rm playwright-landing \
 | `next-available-week.spec.ts`         | Stubbed API: rolling window past the calendar week, empty week |
 | `modality-first.spec.ts`              | Modality gate, preselection by zone, browsed modality is submitted |
 | `in-person-only-schedule.spec.ts`     | Swaps the schedule for one in-person-only block, then restores it |
+| `schedule-swap-recovery.spec.ts`      | A swap whose restore never ran is still undone by the next one |
 | `reservation-navigation.spec.ts`      | "Cambiar horario" back nav + "Reservar otra cita" restart |
 | `fixtures/helpers.ts`                 | Modality/slot/form helpers + env constants              |
-| `fixtures/schedule.ts`                | Therapist-API schedule swap and undo                    |
-| `global-setup.ts`                     | Waits for API, asserts availability is seeded           |
+| `fixtures/schedule.ts`                | Therapist-API schedule swap, baseline, and restore      |
+| `global-setup.ts`                     | Waits for API, asserts availability, records the schedule baseline |
 
 ## Env overrides
 
@@ -86,8 +87,19 @@ as the therapist, deletes the active blocks, creates one in-person-only block,
 and restores the originals in `afterAll`. Inactive blocks are left alone, since
 the create endpoint cannot recreate them and they generate no slots.
 
-If a run is killed between those two points the schedule is left as the single
-block. Put it back with:
+- **The restore target is recorded once, in `global-setup.ts`**, before any spec
+  runs. Never snapshot the live schedule as a restore target: a retry after a
+  failed restore would snapshot the swap and write it back, and the run still
+  reports green.
+- **Restore with `restoreBaseline(context)` in `afterAll`, not a `finally`.** A
+  timed-out test is not cancelled and keeps sending requests beside its hooks.
+  Disposing its context first makes the next one throw.
+- **Swapping specs require `workers: 1`** and throw otherwise, because every other
+  spec reads the schedule.
+
+If a run is killed mid-swap, the next run's global setup refuses the single
+leftover block. A restore killed halfway leaves a partial schedule it cannot
+detect. Either way, put the seed back with:
 
 ```bash
 docker-compose exec php php bin/console app:seed-schedule --force
