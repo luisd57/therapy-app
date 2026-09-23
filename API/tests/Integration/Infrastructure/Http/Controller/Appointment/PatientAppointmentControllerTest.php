@@ -75,8 +75,18 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $this->jsonRequest('POST', '/api/patient/appointments', [], $patientToken);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        // A missing modality fails NotBlank and Choice both, and the contract is the first message only.
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'slot_start_time' => 'Slot start time is required',
+                    'modality' => 'Modality is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testRequestAppointmentReturns422WithInvalidModality(): void

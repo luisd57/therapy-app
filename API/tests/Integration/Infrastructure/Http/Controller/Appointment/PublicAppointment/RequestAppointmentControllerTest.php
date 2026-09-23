@@ -56,8 +56,22 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        // A missing modality fails NotBlank and Choice both, and the contract is the first message only.
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'modality' => 'Modality is required',
+                    'full_name' => 'Full name is required',
+                    'phone' => 'Phone number is required',
+                    'email' => 'Email is required',
+                    'city' => 'City is required',
+                    'country' => 'Country is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testRequestAppointmentReturns409WhenSlotNotAvailable(): void

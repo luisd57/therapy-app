@@ -49,8 +49,7 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
         $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
         $this->assertGreaterThan(0, $data['data']['total_slots']);
 
-        // Flat list, and every instant is emitted in UTC regardless of the
-        // offset the caller used.
+        // Every instant is emitted in UTC regardless of the offset the caller used.
         $this->assertSame('2026-06-01T12:00:00+00:00', $data['data']['slots'][0]['start_time']);
     }
 

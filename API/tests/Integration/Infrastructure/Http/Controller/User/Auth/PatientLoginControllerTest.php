@@ -17,6 +17,14 @@ final class PatientLoginControllerTest extends ApiTestCase
 
         $this->assertNotEmpty($token);
         $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        // The token travels in the httpOnly cookie only, so no key here may carry it.
+        $this->assertEqualsCanonicalizing(['user'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing([
+            'id', 'email', 'full_name', 'role', 'is_active', 'phone',
+            'address', 'created_at', 'activated_at', 'timezone',
+        ], array_keys($data['data']['user']), 'data.user keys');
     }
 
     public function testPatientLoginWrongRoleReturns401(): void

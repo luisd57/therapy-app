@@ -45,5 +45,10 @@ final class GetAppointmentControllerTest extends ApiTestCase
         $this->jsonRequest('GET', '/api/therapist/appointments/' . AppointmentId::generate()->getValue(), [], $this->therapistToken);
 
         $this->assertResponseStatusCodeSame(404);
+        $data = $this->getResponseData();
+        $this->assertEqualsCanonicalizing(['success', 'error'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['code', 'message'], array_keys($data['error']), 'error keys');
+        $this->assertFalse($data['success']);
+        $this->assertSame('NOT_FOUND', $data['error']['code']);
     }
 }
