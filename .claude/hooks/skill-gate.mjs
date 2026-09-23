@@ -130,13 +130,13 @@ function skillIndex(body, skill, userOnly = false) {
   return Math.max(typed, called);
 }
 
-// The transcript already holds the call being judged, so "the last PR" has to mean
-// the last one before this call rather than this call itself.
+// The transcript already holds the call being judged, so history ends before its line.
+// That line also holds a rewritten copy (leading `cd` stripped) that must not count as a PR.
 function historyBefore(body, currentCommand) {
   if (typeof currentCommand !== 'string' || !currentCommand) return body;
   const escaped = JSON.stringify(currentCommand).slice(1, -1);
   const at = body.lastIndexOf(escaped);
-  return at === -1 ? body : body.slice(0, at);
+  return at === -1 ? body : body.slice(0, body.lastIndexOf('\n', at) + 1);
 }
 
 // Only a real Bash command counts. "gh pr create" written in prose, in a commit
