@@ -50,6 +50,18 @@ final class UpdatePatientProfileControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['user', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing([
+            'id', 'email', 'full_name', 'role', 'is_active', 'phone',
+            'address', 'created_at', 'activated_at', 'timezone',
+        ], array_keys($data['data']['user']), 'data.user keys');
+        $this->assertEqualsCanonicalizing(
+            ['street', 'city', 'country', 'postal_code', 'state'],
+            array_keys($data['data']['user']['address']),
+            'data.user.address keys',
+        );
     }
 
     public function testUpdateProfileInvalidPhoneReturns422(): void

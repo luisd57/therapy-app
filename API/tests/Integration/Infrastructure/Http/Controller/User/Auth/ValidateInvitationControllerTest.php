@@ -20,6 +20,13 @@ final class ValidateInvitationControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        // No email: anyone holding the link could otherwise read who it was sent to.
+        $this->assertEqualsCanonicalizing(
+            ['id', 'patient_name', 'status', 'created_at', 'expires_at'],
+            array_keys($data['data']),
+            'data keys',
+        );
     }
 
     public function testValidateInvitationInvalidTokenReturns400(): void

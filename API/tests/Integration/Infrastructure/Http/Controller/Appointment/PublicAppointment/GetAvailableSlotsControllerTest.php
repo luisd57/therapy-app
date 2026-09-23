@@ -33,13 +33,23 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(
+            ['from', 'to', 'modality', 'practice_timezone', 'slots', 'total_slots'],
+            array_keys($data['data']),
+            'data keys',
+        );
+        $this->assertTrue(array_is_list($data['data']['slots']), 'data.slots is a list');
+        $this->assertEqualsCanonicalizing(
+            ['start_time', 'end_time', 'duration_minutes'],
+            array_keys($data['data']['slots'][0]),
+            'data.slots[0] keys',
+        );
         $this->assertSame('2026-06-01T04:00:00+00:00', $data['data']['from']);
         $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
         $this->assertGreaterThan(0, $data['data']['total_slots']);
 
-        // Flat list, and every instant is emitted in UTC regardless of the
-        // offset the caller used.
-        $this->assertArrayHasKey('slots', $data['data']);
+        // Every instant is emitted in UTC regardless of the offset the caller used.
         $this->assertSame('2026-06-01T12:00:00+00:00', $data['data']['slots'][0]['start_time']);
     }
 

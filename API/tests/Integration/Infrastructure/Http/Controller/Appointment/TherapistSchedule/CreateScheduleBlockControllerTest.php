@@ -23,8 +23,12 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('schedule', $data['data']);
-        $this->assertArrayHasKey('message', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['schedule', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing([
+            'id', 'day_of_week', 'day_name', 'start_time', 'end_time',
+            'supports_online', 'supports_in_person', 'is_active',
+        ], array_keys($data['data']['schedule']), 'data.schedule keys');
     }
 
     public function testCreateScheduleReturns422WithMissingFields(): void
@@ -36,8 +40,17 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'start_time' => 'Start time is required',
+                    'end_time' => 'End time is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testCreateScheduleReturns409WhenOverlapping(): void

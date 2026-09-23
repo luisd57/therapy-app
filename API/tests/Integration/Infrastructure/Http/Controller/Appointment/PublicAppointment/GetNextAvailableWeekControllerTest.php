@@ -22,11 +22,22 @@ final class GetNextAvailableWeekControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(
+            ['found', 'week_start', 'week_end', 'modality', 'practice_timezone', 'slots', 'total_slots'],
+            array_keys($data['data']),
+            'data keys',
+        );
+        $this->assertTrue(array_is_list($data['data']['slots']), 'data.slots is a list');
+        $this->assertEqualsCanonicalizing(
+            ['start_time', 'end_time', 'duration_minutes'],
+            array_keys($data['data']['slots'][0]),
+            'data.slots[0] keys',
+        );
         $this->assertTrue($data['data']['found']);
         $this->assertNotNull($data['data']['week_start']);
         $this->assertNotNull($data['data']['week_end']);
         $this->assertGreaterThan(0, $data['data']['total_slots']);
-        $this->assertArrayHasKey('slots', $data['data']);
         $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
     }
 

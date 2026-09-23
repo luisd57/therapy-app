@@ -17,12 +17,16 @@ final class ListPatientsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('patients', $data['data']);
-        $this->assertArrayHasKey('pagination', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['patients', 'pagination'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            ['page', 'limit', 'total', 'total_pages'],
+            array_keys($data['data']['pagination']),
+            'data.pagination keys',
+        );
+        $this->assertTrue(array_is_list($data['data']['patients']), 'data.patients is a list');
         $this->assertSame(1, $data['data']['pagination']['page']);
         $this->assertSame(20, $data['data']['pagination']['limit']);
-        $this->assertArrayHasKey('total', $data['data']['pagination']);
-        $this->assertArrayHasKey('total_pages', $data['data']['pagination']);
     }
 
     public function testListPatientsWithPaginationParams(): void

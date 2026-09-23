@@ -57,13 +57,26 @@ final class BookAppointmentControllerTest extends ApiTestCase
 
     public function testBookAppointmentWithMissingFields(): void
     {
-        $this->jsonRequest('POST', '/api/therapist/appointments', [
-            'modality' => 'ONLINE',
-        ], $this->therapistToken);
+        $this->jsonRequest('POST', '/api/therapist/appointments', [], $this->therapistToken);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        // A missing modality fails NotBlank and Choice both, and the contract is the first message only.
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'slot_start_time' => 'Slot start time is required',
+                    'modality' => 'Modality is required',
+                    'full_name' => 'Full name is required',
+                    'phone' => 'Phone is required',
+                    'email' => 'Email is required',
+                    'city' => 'City is required',
+                    'country' => 'Country is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testBookAppointmentWithInvalidModality(): void

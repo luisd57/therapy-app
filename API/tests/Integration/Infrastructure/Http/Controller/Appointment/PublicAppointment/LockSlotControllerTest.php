@@ -31,8 +31,12 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('lock_token', $data['data']);
-        $this->assertArrayHasKey('expires_at', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(
+            ['lock_token', 'slot_start_time', 'slot_end_time', 'expires_at'],
+            array_keys($data['data']),
+            'data keys',
+        );
     }
 
     public function testLockSlotResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
@@ -61,8 +65,18 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->jsonRequest('POST', '/api/appointments/lock-slot', []);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        // A missing modality fails NotBlank and Choice both, and the contract is the first message only.
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'slot_start_time' => 'Slot start time is required',
+                    'modality' => 'Modality is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testLockSlotReturns409WhenSlotAlreadyLocked(): void
