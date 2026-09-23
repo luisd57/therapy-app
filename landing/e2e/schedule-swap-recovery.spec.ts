@@ -1,9 +1,8 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import {
   activeBlocks,
-  IN_PERSON_ONLY_BLOCK,
+  installInPersonOnlySchedule,
   normalized,
-  replaceScheduleWith,
   requireSoleWorker,
   restoreBaseline,
   therapistContext,
@@ -11,42 +10,35 @@ import {
 } from './fixtures/schedule';
 
 /**
- * CI retries a failed spec once. If the first attempt's restore never runs, the
- * retry swaps again from the swapped state, and its undo must still bring back
- * the seeded schedule rather than the leftover single block.
+ * CI retries once. A retry after a lost restore swaps again from the swapped state,
+ * and its undo must still bring back the seed, not the leftover block.
  */
 test.describe('A schedule swap whose restore never ran', (): void => {
-  test.describe.configure({ mode: 'serial' });
+  let context: APIRequestContext | undefined;
+
+  test.beforeAll((): void => {
+    requireSoleWorker(test.info().config);
+  });
 
   test.afterAll(async (): Promise<void> => {
-    // A hook, not a finally: it still runs when the test times out mid-rewrite.
-    const context: APIRequestContext = await therapistContext();
-    try {
-      await restoreBaseline(context);
-    } finally {
-      await context.dispose();
-    }
+    // A hook, not a finally: it stops a timed-out body before restoring.
+    await restoreBaseline(context);
   });
 
   test('the next swap still restores the seeded blocks', async (): Promise<void> => {
-    requireSoleWorker(test.info().config);
     // Rewrites the whole schedule several times, one request per block.
     test.slow();
 
-    const context: APIRequestContext = await therapistContext();
-    try {
-      const seeded: ScheduleBlock[] = normalized(await activeBlocks(context));
+    context = await therapistContext();
+    const seeded: ScheduleBlock[] = normalized(await activeBlocks(context));
 
-      // First attempt: swap, then the restore is lost.
-      await replaceScheduleWith(context, IN_PERSON_ONLY_BLOCK);
+    // First attempt: swap, then the restore is lost.
+    await installInPersonOnlySchedule(context);
 
-      // Retry: swap again from the swapped state and restore normally.
-      await replaceScheduleWith(context, IN_PERSON_ONLY_BLOCK);
-      await restoreBaseline(context);
+    // Retry: swap again from the swapped state and restore normally.
+    await installInPersonOnlySchedule(context);
+    await restoreBaseline();
 
-      expect(normalized(await activeBlocks(context))).toEqual(seeded);
-    } finally {
-      await context.dispose();
-    }
+    expect(normalized(await activeBlocks(context))).toEqual(seeded);
   });
 });

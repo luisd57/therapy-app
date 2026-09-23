@@ -91,8 +91,9 @@ the create endpoint cannot recreate them and they generate no slots.
   runs. Never snapshot the live schedule as a restore target: a retry after a
   failed restore would snapshot the swap and write it back, and the run still
   reports green.
-- **Restore in `afterAll`, not a `finally`.** A test that times out is not
-  interrupted, so its `finally` may never run. The hook does.
+- **Restore with `restoreBaseline(context)` in `afterAll`, not a `finally`.** A
+  timed-out test is not cancelled and keeps sending requests beside its hooks.
+  Disposing its context first makes the next one throw.
 - **Swapping specs require `workers: 1`** and throw otherwise, because every other
   spec reads the schedule.
 

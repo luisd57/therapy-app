@@ -9,8 +9,7 @@ import {
   validRequestForm,
 } from './fixtures/helpers';
 import {
-  IN_PERSON_ONLY_BLOCK,
-  replaceScheduleWith,
+  installInPersonOnlySchedule,
   requireSoleWorker,
   restoreBaseline,
   therapistContext,
@@ -31,15 +30,13 @@ test.describe('A schedule whose only block is in person', (): void => {
   test.beforeAll(async (): Promise<void> => {
     requireSoleWorker(test.info().config);
     context = await therapistContext();
-    await replaceScheduleWith(context, IN_PERSON_ONLY_BLOCK);
+    await installInPersonOnlySchedule(context);
   });
 
   test.afterAll(async (): Promise<void> => {
     // Every later spec reads the seeded schedule, so this has to run even when the
     // assertions below fail, or the swap above died halfway.
-    if (!context) return;
-    await restoreBaseline(context);
-    await context.dispose();
+    if (context) await restoreBaseline(context);
   });
 
   test('online browsing offers nothing, whatever day it runs on', async ({

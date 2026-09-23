@@ -3,6 +3,7 @@ import { API_BASE_URL } from './helpers';
 
 const THERAPIST_EMAIL: string = process.env['THERAPIST_EMAIL'] ?? 'therapist@example.com';
 const THERAPIST_PASSWORD: string = process.env['THERAPIST_PASSWORD'] ?? 'VerifyPass1!';
+const BASELINE_ENV: string = 'LANDING_SCHEDULE_BASELINE';
 
 /** A recurring weekly availability window, in the shape the therapist API takes. */
 export interface ScheduleBlock {
@@ -13,7 +14,7 @@ export interface ScheduleBlock {
   supports_in_person: boolean;
 }
 
-/** The block the swap installs: availability the recurring seed never produces on its own. */
+/** The one block the swap leaves: its Slots are in person only, which the seed never gives alone. */
 export const IN_PERSON_ONLY_BLOCK: ScheduleBlock = {
   day_of_week: 1, // Monday
   start_time: '09:00',
@@ -113,6 +114,10 @@ export function normalized(blocks: ScheduleBlock[]): ScheduleBlock[] {
     );
 }
 
+function sameSchedule(left: ScheduleBlock[], right: ScheduleBlock[]): boolean {
+  return JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
+}
+
 /** Make `blocks` the whole active schedule. */
 export async function setSchedule(
   context: APIRequestContext,
@@ -124,8 +129,6 @@ export async function setSchedule(
   }
 }
 
-const BASELINE_ENV: string = 'LANDING_SCHEDULE_BASELINE';
-
 /**
  * Record the schedule `restoreBaseline` puts back. Global setup calls this once per run,
  * before any spec and in the runner process, so a retry cannot re-record a swapped state.
@@ -133,7 +136,7 @@ const BASELINE_ENV: string = 'LANDING_SCHEDULE_BASELINE';
 export async function recordBaseline(context: APIRequestContext): Promise<void> {
   const baseline: ScheduleBlock[] = normalized(await activeBlocks(context));
 
-  if (JSON.stringify(baseline) === JSON.stringify(normalized([IN_PERSON_ONLY_BLOCK]))) {
+  if (sameSchedule(baseline, [IN_PERSON_ONLY_BLOCK])) {
     throw new Error(
       'The schedule is still the single block a killed run swapped in. Reseed it first: ' +
         '`docker-compose exec php php bin/console app:seed-schedule --force`',
@@ -144,7 +147,7 @@ export async function recordBaseline(context: APIRequestContext): Promise<void> 
 }
 
 /** The schedule global setup recorded. Workers inherit it through the environment. */
-export function seededBaseline(): ScheduleBlock[] {
+export function recordedBaseline(): ScheduleBlock[] {
   const recorded: string | undefined = process.env[BASELINE_ENV];
   if (recorded === undefined) {
     throw new Error(`${BASELINE_ENV} is not set. Global setup records it, so run through the config.`);
@@ -153,13 +156,21 @@ export function seededBaseline(): ScheduleBlock[] {
   return JSON.parse(recorded) as ScheduleBlock[];
 }
 
-/** Put the recorded baseline back, skipping the rewrite when it is already there. */
-export async function restoreBaseline(context: APIRequestContext): Promise<void> {
-  const baseline: ScheduleBlock[] = seededBaseline();
-  const current: ScheduleBlock[] = normalized(await activeBlocks(context));
+/**
+ * Put the recorded baseline back on a fresh login. `swapping` is disposed first: a timed-out
+ * test keeps running beside its hooks, and a disposed context makes its next request throw.
+ */
+export async function restoreBaseline(swapping?: APIRequestContext): Promise<void> {
+  await swapping?.dispose();
 
-  if (JSON.stringify(current) !== JSON.stringify(baseline)) {
-    await setSchedule(context, baseline);
+  const baseline: ScheduleBlock[] = recordedBaseline();
+  const context: APIRequestContext = await therapistContext();
+  try {
+    if (!sameSchedule(await activeBlocks(context), baseline)) {
+      await setSchedule(context, baseline);
+    }
+  } finally {
+    await context.dispose();
   }
 }
 
@@ -174,15 +185,12 @@ export function requireSoleWorker(config: FullConfig): void {
 }
 
 /**
- * Swap the whole schedule for one block. Availability is computed from these blocks,
- * so this is the only way to reach a state the seed never produces. Undo with `restoreBaseline`.
+ * Swap the whole schedule for `IN_PERSON_ONLY_BLOCK`, the one state global setup knows to refuse
+ * as a baseline. Undo with `restoreBaseline`.
  */
-export async function replaceScheduleWith(
-  context: APIRequestContext,
-  block: ScheduleBlock,
-): Promise<void> {
-  // Read first, so a missing baseline fails with the schedule untouched.
-  seededBaseline();
+export async function installInPersonOnlySchedule(context: APIRequestContext): Promise<void> {
+  // Fails here, with the schedule untouched, when there is no baseline to restore.
+  recordedBaseline();
 
-  await setSchedule(context, [block]);
+  await setSchedule(context, [IN_PERSON_ONLY_BLOCK]);
 }
