@@ -31,6 +31,8 @@ attempt still recovers the real seed.
 
 **Status:** resolved
 
+**Resolved by:** [PR #93](https://github.com/luisd57/therapy-app/pull/93)
+
 - [x] A retry after a failed restore recovers the originally seeded Schedule Blocks, not whatever the previous attempt left behind
 - [x] The restore baseline cannot be captured from an already-swapped state
 - [x] The group's isolation is declared rather than inherited from the worker count, so changing parallelism does not silently break it
