@@ -43,6 +43,14 @@ const ranSkill = (skill) => JSON.stringify({ message: { content: [{ name: 'Skill
 const ranBash = (command) => JSON.stringify({ message: { content: [{ name: 'Bash', input: { command } }] } });
 const PR = 'gh pr create --fill';
 
+// Claude Code strips a leading `cd <cwd> &&` from input.command but keeps the raw text in
+// wireToolInputs, so one call leaves two copies on one line. Shape seen in a 2026-09-23 transcript.
+const ranBashRewritten = (raw, rewritten) => JSON.stringify({
+  message: { content: [{ name: 'Bash', input: { command: rewritten } }] },
+  wireToolInputs: { toolu_1: { command: raw } },
+});
+const CD_PR = `cd ${REPO} && ${PR}`;
+
 // PreToolUse fires with the call already appended, so every Bash fixture ends with
 // the call under judgement. Verified against a live transcript: a marker unique to
 // a running command is already in the file while that command runs.
@@ -200,6 +208,25 @@ const cases = [
   ['retry of the identical command after reviewing', {
     tool_name: 'Bash', transcript_path: deniedThenReviewed, tool_input: { command: PR },
   }, 'ALLOW'],
+  // The stripped copy of the call under judgement is not a previous PR.
+  ['cd-prefixed PR after a review', {
+    tool_name: 'Bash',
+    transcript_path: fixture('rewritten-call.jsonl', [
+      ranSkill('mattpocock-skills:code-review'),
+      ranBashRewritten(CD_PR, PR),
+    ]),
+    tool_input: { command: CD_PR },
+  }, 'ALLOW'],
+  ['cd-prefixed 2nd PR, review only before the 1st', {
+    tool_name: 'Bash',
+    transcript_path: fixture('rewritten-two-prs.jsonl', [
+      ranSkill('mattpocock-skills:code-review'),
+      ranBashRewritten(CD_PR, PR),
+      said('more work happened here'),
+      ranBashRewritten(CD_PR, PR),
+    ]),
+    tool_input: { command: CD_PR },
+  }, 'DENY'],
   ['prose and commit-message mentions are not a PR', {
     tool_name: 'Bash', transcript_path: prosePr, tool_input: { command: PR },
   }, 'ALLOW'],
