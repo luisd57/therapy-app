@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Console\Appointment;
 
 use App\Domain\Appointment\Entity\TherapistSchedule;
+use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
@@ -52,16 +53,16 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
         return $therapist;
     }
 
-    private function saveBlock(User $therapist): TherapistSchedule
+    private function saveBlock(User $therapist, WeekDay $weekDay = WeekDay::MONDAY): TherapistSchedule
     {
-        $block = DomainTestHelper::createScheduleBlock($therapist);
+        $block = DomainTestHelper::createScheduleBlock($therapist, $weekDay);
         $this->scheduleRepository->save($block);
 
         return $block;
     }
 
     /** @return list<string> */
-    private function activeBlocks(User $therapist): array
+    private function activeBlockSummaries(User $therapist): array
     {
         $blocks = $this->scheduleRepository->findActiveByTherapist($therapist->getId())->map(
             fn(TherapistSchedule $block) => trim(sprintf(
@@ -95,7 +96,7 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
         $tester->execute([]);
 
         $tester->assertCommandIsSuccessful();
-        $this->assertSame(self::SEEDED_BLOCKS, $this->activeBlocks($therapist));
+        $this->assertSame(self::SEEDED_BLOCKS, $this->activeBlockSummaries($therapist));
     }
 
     public function testRefusesToSeedOverExistingBlocks(): void
@@ -116,14 +117,17 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
     public function testForceDeactivatesExistingBlocksAndReseeds(): void
     {
         $therapist = $this->saveTherapist();
-        $existing = $this->saveBlock($therapist);
+        // Two, so deactivating only the first would leave one active beside the new week
+        $monday = $this->saveBlock($therapist, WeekDay::MONDAY);
+        $saturday = $this->saveBlock($therapist, WeekDay::SATURDAY);
 
         $tester = $this->commandTester();
         $tester->execute(['--force' => true]);
 
         $tester->assertCommandIsSuccessful();
         $this->entityManager->clear();
-        $this->assertFalse($this->scheduleRepository->findById($existing->getId())->isActive());
-        $this->assertSame(self::SEEDED_BLOCKS, $this->activeBlocks($therapist));
+        $this->assertFalse($this->scheduleRepository->findById($monday->getId())->isActive());
+        $this->assertFalse($this->scheduleRepository->findById($saturday->getId())->isActive());
+        $this->assertSame(self::SEEDED_BLOCKS, $this->activeBlockSummaries($therapist));
     }
 }

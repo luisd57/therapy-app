@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Console\User;
 
+use App\Domain\User\Entity\InvitationToken;
+use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
@@ -36,24 +38,30 @@ final class CleanupExpiredTokensCommandTest extends IntegrationTestCase
         self::getContainer()->get(UserRepositoryInterface::class)->save($this->therapist);
     }
 
-    private function saveInvitationExpiringAt(string $token, string $expiresAtUtc): void
+    private function saveInvitationExpiringAt(string $token, string $expiresAtUtc): InvitationToken
     {
-        $this->invitationRepository->save(DomainTestHelper::createBoundaryInvitation(
+        $invitation = DomainTestHelper::createBoundaryInvitation(
             token: $token,
             email: $token . '@test.com',
             invitedBy: $this->therapist,
             expiresAt: self::utc($expiresAtUtc),
-        ));
+        );
+        $this->invitationRepository->save($invitation);
+
+        return $invitation;
     }
 
-    private function savePasswordResetExpiringAt(string $token, string $expiresAtUtc): void
+    private function savePasswordResetExpiringAt(string $token, string $expiresAtUtc): PasswordResetToken
     {
-        $this->passwordResetRepository->save(DomainTestHelper::createValidPasswordResetToken(
+        $passwordResetToken = DomainTestHelper::createValidPasswordResetToken(
             token: $token,
             user: $this->therapist,
             ttlSeconds: 3600,
             now: self::utc($expiresAtUtc)->modify('-1 hour'),
-        ));
+        );
+        $this->passwordResetRepository->save($passwordResetToken);
+
+        return $passwordResetToken;
     }
 
     public function testRemovesOnlyTokensPastTheirExpiry(): void
@@ -66,6 +74,17 @@ final class CleanupExpiredTokensCommandTest extends IntegrationTestCase
         $this->savePasswordResetExpiringAt('expired-reset', '2026-06-15 11:59:59');
         $this->savePasswordResetExpiringAt('expiring-now-reset', '2026-06-15 12:00:00');
         $this->savePasswordResetExpiringAt('live-reset', '2026-06-15 13:00:00');
+
+        // Used or revoked but not expired, so only the expiry may select a row
+        $usedInvitation = $this->saveInvitationExpiringAt('used-invitation', '2026-06-15 12:30:00');
+        $usedInvitation->use(self::utc('2026-06-15 11:45:00'));
+        $this->invitationRepository->save($usedInvitation);
+        $revokedInvitation = $this->saveInvitationExpiringAt('revoked-invitation', '2026-06-15 12:30:00');
+        $revokedInvitation->revoke(self::utc('2026-06-15 11:45:00'));
+        $this->invitationRepository->save($revokedInvitation);
+        $usedReset = $this->savePasswordResetExpiringAt('used-reset', '2026-06-15 12:30:00');
+        $usedReset->use(self::utc('2026-06-15 11:45:00'));
+        $this->passwordResetRepository->save($usedReset);
 
         $tester = new CommandTester((new Application(self::$kernel))->find('app:cleanup-tokens'));
         $tester->execute([]);
@@ -83,5 +102,8 @@ final class CleanupExpiredTokensCommandTest extends IntegrationTestCase
         $this->assertNull($this->passwordResetRepository->findByToken('expired-reset'));
         $this->assertNotNull($this->passwordResetRepository->findByToken('expiring-now-reset'));
         $this->assertNotNull($this->passwordResetRepository->findByToken('live-reset'));
+        $this->assertNotNull($this->invitationRepository->findByToken('used-invitation'));
+        $this->assertNotNull($this->invitationRepository->findByToken('revoked-invitation'));
+        $this->assertNotNull($this->passwordResetRepository->findByToken('used-reset'));
     }
 }
