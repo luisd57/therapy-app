@@ -1,5 +1,7 @@
 # 07 - Pin the validation contract and the Output DTO shapes
 
+> Frozen record, resolved 2026-09-23.
+
 **What to build:** the response contract every client depends on is asserted
 whole, rather than being an emergent property of forty controller tests that each
 happen to check one field.
@@ -32,6 +34,8 @@ crosses the wire and the error body the traits build.
 **Blocked by:** None - can start immediately.
 
 **Status:** resolved
+
+**Resolved by:** [PR #92](https://github.com/luisd57/therapy-app/pull/92)
 
 - [x] The full 422 body is asserted as a whole at a representative endpoint, keys and structure, not one field at a time
 - [x] A field failing two rules reports the documented single first message rather than a list, since that is the contract clients read
