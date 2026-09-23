@@ -26,6 +26,12 @@ final class CurrentUserControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing([
+            'id', 'email', 'full_name', 'role', 'is_active', 'phone',
+            'address', 'created_at', 'activated_at', 'timezone',
+        ], array_keys($data['data']), 'data keys');
+        $this->assertNull($data['data']['address']);
         $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
         $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
     }

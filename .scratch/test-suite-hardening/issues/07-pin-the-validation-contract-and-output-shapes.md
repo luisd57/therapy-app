@@ -31,11 +31,11 @@ crosses the wire and the error body the traits build.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The full 422 body is asserted as a whole at a representative endpoint, keys and structure, not one field at a time
-- [ ] A field failing two rules reports the documented single first message rather than a list, since that is the contract clients read
-- [ ] Every Output DTO that crosses the wire has the complete key set of its serialised form asserted on a real response body
-- [ ] Dropping or renaming any asserted key fails the suite, and the assertion sits close enough to the shape that the cause is readable from the failure
-- [ ] Success envelopes and the paginated envelope are covered, not only the error envelope
-- [ ] Full API suite green
+- [x] The full 422 body is asserted as a whole at a representative endpoint, keys and structure, not one field at a time
+- [x] A field failing two rules reports the documented single first message rather than a list, since that is the contract clients read
+- [x] Every Output DTO that crosses the wire has the complete key set of its serialised form asserted on a real response body
+- [x] Dropping or renaming any asserted key fails the suite, and the assertion sits close enough to the shape that the cause is readable from the failure
+- [x] Success envelopes and the paginated envelope are covered, not only the error envelope
+- [x] Full API suite green

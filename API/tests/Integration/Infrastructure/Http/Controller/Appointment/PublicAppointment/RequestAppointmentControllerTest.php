@@ -39,8 +39,14 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('appointment', $data['data']);
-        $this->assertArrayHasKey('message', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys($data['data']), 'data keys');
+        // A public caller gets no contact details back, not even their own.
+        $this->assertEqualsCanonicalizing(
+            ['id', 'start_time', 'end_time', 'modality', 'status', 'created_at'],
+            array_keys($data['data']['appointment']),
+            'data.appointment keys',
+        );
     }
 
     public function testRequestAppointmentReturns422WithMissingFields(): void

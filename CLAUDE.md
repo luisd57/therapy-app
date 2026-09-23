@@ -66,7 +66,7 @@ request() ──> REQUESTED ──> CONFIRMED ──> COMPLETED
 ```json
 {"success": true, "data": {...}}
 {"success": false, "error": {"code": "...", "message": "..."}}
-{"success": true, "data": [...], "pagination": {"page": 1, "limit": 20, "total": 42, "total_pages": 3}}
+{"success": true, "data": {"patients": [...], "pagination": {"page": 1, "limit": 20, "total": 42, "total_pages": 3}}}
 ```
 
 Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: ISO-8601 throughout.

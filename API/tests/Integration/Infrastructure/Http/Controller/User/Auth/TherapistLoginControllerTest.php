@@ -26,8 +26,16 @@ final class TherapistLoginControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
-        $data = $this->getResponseData();
-        $this->assertFalse($data['success']);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'email' => 'Email is required',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     public function testTherapistLoginWrongPasswordReturns401(): void

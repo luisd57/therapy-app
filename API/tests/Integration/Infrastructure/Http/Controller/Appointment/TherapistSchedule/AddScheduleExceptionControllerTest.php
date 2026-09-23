@@ -30,8 +30,13 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('exception', $data['data']);
-        $this->assertArrayHasKey('message', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['exception', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            ['id', 'start_date_time', 'end_date_time', 'reason', 'is_all_day', 'created_at'],
+            array_keys($data['data']['exception']),
+            'data.exception keys',
+        );
     }
 
     public function testAddAllDayExceptionSnapsToThePracticeLocalDay(): void

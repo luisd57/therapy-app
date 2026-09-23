@@ -54,11 +54,15 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('appointment', $data['data']);
-        $this->assertArrayHasKey('message', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            ['id', 'start_time', 'end_time', 'modality', 'status', 'patient_id', 'created_at'],
+            array_keys($data['data']['appointment']),
+            'data.appointment keys',
+        );
         $this->assertSame('REQUESTED', $data['data']['appointment']['status']);
         $this->assertSame('ONLINE', $data['data']['appointment']['modality']);
-        $this->assertArrayHasKey('patient_id', $data['data']['appointment']);
         $this->assertNotNull($data['data']['appointment']['patient_id']);
     }
 

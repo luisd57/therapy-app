@@ -29,8 +29,19 @@ final class ListAppointmentsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('appointments', $data['data']);
-        $this->assertArrayHasKey('pagination', $data['data']);
+        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['appointments', 'pagination'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            ['page', 'limit', 'total', 'total_pages'],
+            array_keys($data['data']['pagination']),
+            'data.pagination keys',
+        );
+        $this->assertTrue(array_is_list($data['data']['appointments']), 'data.appointments is a list');
+        $this->assertEqualsCanonicalizing([
+            'id', 'start_time', 'end_time', 'modality', 'status',
+            'full_name', 'email', 'phone', 'city', 'country',
+            'patient_id', 'payment_verified', 'created_at', 'updated_at', 'requester_timezone',
+        ], array_keys($data['data']['appointments'][0]), 'data.appointments[0] keys');
         $this->assertGreaterThanOrEqual(1, $data['data']['pagination']['total']);
         $this->assertSame(1, $data['data']['pagination']['page']);
         $this->assertSame(20, $data['data']['pagination']['limit']);
