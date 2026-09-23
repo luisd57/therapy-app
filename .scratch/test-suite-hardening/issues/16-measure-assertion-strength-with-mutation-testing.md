@@ -129,3 +129,10 @@ and asking for it to be emptied produces assertions pinned to internal state: th
 mutant and then break on the next legitimate refactor, which raises review load rather than
 lowering it. The list exists so the next reader starts from it instead of rerunning the hour,
 and so tickets 02, 04, 13 and 18 can be aimed. Gating, when it arrives, is on new work.
+
+**2026-09-23** - Out of scope, recorded so nobody reads it as covered: landing test code.
+Ticket 08 added guards in `landing/e2e/fixtures/schedule.ts` (the one-worker check, the
+leftover-swap refusal in `recordBaseline`, the missing-baseline early exit, the skip in
+`restoreBaseline`). Removing any of them leaves the suite green, checked by hand only. The
+landing run above mutates `landing/src` utilities, and Vitest does not include `e2e/`, so
+these stay unmeasured unless someone decides the e2e fixtures are worth a seam of their own.
