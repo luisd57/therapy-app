@@ -1,5 +1,7 @@
 # 06 - Cover the console commands
 
+> Frozen record, resolved 2026-09-23.
+
 **What to build:** the commands that seed and clean up are verified, so a break
 in one is reported by the API suite instead of by a confusing failure somewhere
 downstream.
@@ -23,11 +25,31 @@ Cover both, since the difference is what protects a real schedule.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each command has a test driving it through the console tester rather than calling the handler directly
-- [ ] Creating the Therapist is covered, including the guard against creating a second one
-- [ ] Seeding is covered in both its normal and its force mode, and the normal mode is asserted to refuse rather than duplicate when blocks already exist
-- [ ] Each cleanup command is asserted to remove only rows past their expiry, with a row just inside the boundary left alone
-- [ ] Exit codes are asserted, since the e2e job in continuous integration depends on them
-- [ ] Full API suite green
+**Resolved by:** [PR #90](https://github.com/luisd57/therapy-app/pull/90)
+
+- [x] Each command has a test driving it through the console tester rather than calling the handler directly
+- [x] Creating the Therapist is covered, including the guard against creating a second one
+- [x] Seeding is covered in both its normal and its force mode, and the normal mode is asserted to refuse rather than duplicate when blocks already exist
+- [x] Each cleanup command is asserted to remove only rows past their expiry, with a row just inside the boundary left alone
+- [x] Exit codes are asserted, since the e2e job in continuous integration depends on them
+- [x] Full API suite green
+
+## Comments
+
+**2026-09-23** - Every criterion was checked by mutation, not by a green suite. Each of these
+turns a test red: `<` to `<=` in any `deleteExpired()`, binding its `now` without the UTC type,
+adding `OR isUsed` / `OR isRevoked` to a token cleanup, swapping the two cleanup counts, dropping
+the seed force guard, deactivating only the first existing block, changing one seeded block, and
+turning any create-therapist FAILURE into SUCCESS. 777 tests before, 788 after.
+
+The wall-time binding only fails because the cleanup tests freeze the clock with a `+14:00`
+offset. Frozen in UTC, the wall time already is UTC and the mutation survives.
+
+The second-therapist criterion was a production change. `CreateTherapistCommand` never caught
+`TherapistAlreadyExistsException`, so `CommandTester` threw. The real console already exited 1,
+so CI's exit code did not change, only the output.
+
+One mutation survives and is left alone: dropping the `save()` inside the force loop. A later save
+flushes the managed block anyway.
