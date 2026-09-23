@@ -68,7 +68,6 @@ more. Incident history and dates belong in project memory, not here.
   `ErrorListener::removeCspHeader` strips `Content-Security-Policy` off it. The other five security
   headers survive, so only CSP looks missing. Assert response headers against a JSON error the app
   itself returns, not against a 404. Production never renders that page.
-- `SymfonyStyle` wraps `success`/`error`/`warning` blocks at 80 columns under `CommandTester`, so
-  a `getDisplay()` substring check on a long message fails on the line break, not on the text.
-  Collapse whitespace first (`preg_replace('/\s+/', ' ', ...)`), as `CleanupExpiredTokensCommandTest`
-  does.
+- `SymfonyStyle` blocks (`success`, `error`, `note` and the rest) wrap at the terminal width, and
+  at 80 with no TTY. A `getDisplay()` check on a long message can pass in a wide local terminal and
+  fail in CI. Collapse whitespace before matching, as `CleanupExpiredTokensCommandTest` does.
