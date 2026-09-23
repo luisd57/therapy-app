@@ -6,6 +6,7 @@ namespace App\Infrastructure\Console\User;
 
 use App\Application\User\DTO\Input\CreateTherapistInputDTO;
 use App\Application\User\Handler\CreateTherapistHandler;
+use App\Domain\User\Exception\TherapistAlreadyExistsException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Infrastructure\Http\Validation\PasswordValidator;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -62,6 +63,9 @@ final class CreateTherapistCommand extends Command
             ));
 
             return Command::SUCCESS;
+        } catch (TherapistAlreadyExistsException $exception) {
+            $io->error($exception->getMessage());
+            return Command::FAILURE;
         } catch (UserAlreadyExistsException $exception) {
             $io->error($exception->getMessage());
             return Command::FAILURE;
