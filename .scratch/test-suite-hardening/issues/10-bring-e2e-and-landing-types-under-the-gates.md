@@ -1,5 +1,7 @@
 # 10 - Bring the e2e directories and the landing types under the existing gates
 
+> Frozen record, resolved 2026-09-26.
+
 **What to build:** the test code and the public site's types are checked by the
 same gates as everything else, so a broken locator or a type error is caught
 before it reaches `main`.

@@ -6,5 +6,5 @@
 - **Dashboard - next**: appointment queue, appointment list.
 - **Dashboard - todo**: schedule manager, exception manager, therapist profile, patient area, Spanish translation (the therapist speaks no English, so the dashboard is unusable by its primary user until it lands).
 - **Timezone**: 5 of 18 tickets resolved in `.scratch/timezone-management/`. Decisions in ADR-0001 to ADR-0005.
-- **Test hardening**: 10 of 24 tickets resolved in `.scratch/test-suite-hardening/`.
+- **Test hardening**: 10 of 25 tickets resolved in `.scratch/test-suite-hardening/`.
 - **CI**: DONE. `test` job (API PHPUnit, dashboard lint, e2e typecheck and build, landing lint, `astro check`, unit tests and build) is the only required check on `main`. `e2e` job (dashboard and landing Playwright) is advisory. The dashboard step is intermittently red on an ambiguous locator (timezone ticket 16), and a red dashboard step skips the landing step (timezone ticket 17).
