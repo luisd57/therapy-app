@@ -1,4 +1,11 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Page,
+  type PlaywrightTestArgs,
+  type PlaywrightWorkerArgs,
+} from '@playwright/test';
 import {
   PATIENT_PASSWORD,
   fetchLatestResetTokenFor,
@@ -16,7 +23,7 @@ test.describe('Auth - password reset', (): void => {
     page,
     browser,
     request,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs & PlaywrightWorkerArgs): Promise<void> => {
     // Create an active patient: therapist (storageState) invites, patient registers.
     const patientEmail: string = uniqueEmail('verify-reset');
     await inviteFromDialog(page, patientEmail, 'Reset Flow Patient');
@@ -48,7 +55,9 @@ test.describe('Auth - password reset', (): void => {
     await resetCtx.close();
   });
 
-  test('garbage reset token surfaces an error on submit', async ({ browser }): Promise<void> => {
+  test('garbage reset token surfaces an error on submit', async ({
+    browser,
+  }: PlaywrightWorkerArgs): Promise<void> => {
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const page: Page = await ctx.newPage();
 

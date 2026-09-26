@@ -36,3 +36,19 @@ the config.
 - [ ] Whatever those three turn up is fixed rather than excluded, and any remaining exclusion carries its reason
 - [ ] A deliberate type error in an e2e file fails the pipeline, proving the gate is connected
 - [ ] Full pipeline green
+
+## Comments
+
+**2026-09-26** - First run: 54 lint errors in dashboard e2e, 88 in landing e2e, and 4
+`astro check` errors in `src/`. All fixed, none excluded. Most were missing annotations. The
+real ones: `JSON.parse(...).modality` read an unchecked `any` in three assertions, a `let`
+assigned inside a route callback was narrowed to `null` so its `??` fallback was dead, and two
+`.astro` components used a `getEntry` result that can be `undefined`.
+
+Landing needed `@astrojs/check`, `typescript`, `eslint` and `typescript-eslint` to run the
+gates at all, plus `@types/node` in both apps. The e2e typecheck passed locally without it only
+because a stray `@types/node` sits in the home directory, above both apps.
+
+**Gap left open: `astro check` does not typecheck `.svelte` files.** A planted type error in
+`SlotCard.svelte` passed it. The components that hold most of the public site's logic are
+still unchecked. Closing that means `svelte-check`, a new tool, so it is out of scope here.

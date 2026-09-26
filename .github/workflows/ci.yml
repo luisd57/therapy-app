@@ -124,6 +124,10 @@ jobs:
         working-directory: dashboard
         run: npm run lint
 
+      - name: Typecheck dashboard e2e
+        working-directory: dashboard
+        run: npm run typecheck:e2e
+
       - name: Build dashboard
         working-directory: dashboard
         run: npm run build
@@ -131,6 +135,14 @@ jobs:
       - name: Install landing dependencies
         working-directory: landing
         run: npm ci
+
+      - name: Lint landing
+        working-directory: landing
+        run: npm run lint
+
+      - name: Typecheck landing
+        working-directory: landing
+        run: npm run check
 
       - name: Test landing
         working-directory: landing

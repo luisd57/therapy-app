@@ -1,4 +1,12 @@
-import { test, expect, type BrowserContext, type Locator, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Locator,
+  type Page,
+  type PlaywrightTestArgs,
+  type PlaywrightWorkerArgs,
+} from '@playwright/test';
 import { fetchLatestTokenFor, inviteFromDialog, uniqueEmail } from './fixtures/helpers';
 
 // One message covers all six rules. The UI text starts with a dashed range, so match its tail.
@@ -34,7 +42,7 @@ test.describe('Password rules - reset screen', (): void => {
   let resetCtx: BrowserContext;
   let resetPage: Page;
 
-  test.beforeEach(async ({ browser }): Promise<void> => {
+  test.beforeEach(async ({ browser }: PlaywrightWorkerArgs): Promise<void> => {
     resetCtx = await browser.newContext({ storageState: undefined });
     resetPage = await resetCtx.newPage();
     // The token is only checked on submit.
@@ -67,7 +75,7 @@ test.describe('Password rules - register screen', (): void => {
     page,
     browser,
     request,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs & PlaywrightWorkerArgs): Promise<void> => {
     const patientEmail: string = uniqueEmail('verify-pw-rules');
     await inviteFromDialog(page, patientEmail, 'Password Rules');
     const token: string = await fetchLatestTokenFor(request, patientEmail);

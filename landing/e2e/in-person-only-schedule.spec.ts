@@ -1,7 +1,14 @@
-import { test, expect, type APIRequestContext, type Route } from '@playwright/test';
+import {
+  test,
+  expect,
+  type APIRequestContext,
+  type PlaywrightTestArgs,
+  type Route,
+} from '@playwright/test';
 import {
   chooseModality,
   fillRequestForm,
+  modalityOf,
   openSlotBrowser,
   PRACTICE_ZONE,
   selectFirstAvailableSlot,
@@ -41,7 +48,7 @@ test.describe('A schedule whose only block is in person', (): void => {
 
   test('online browsing offers nothing, whatever day it runs on', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await openSlotBrowser(page);
     await chooseModality(page, 'ONLINE');
 
@@ -49,10 +56,13 @@ test.describe('A schedule whose only block is in person', (): void => {
     await expect(slotButtons(page)).toHaveCount(0);
   });
 
-  test('the same schedule books in person end to end', async ({ page }): Promise<void> => {
-    let submitted: string | null = null;
-    await page.route('**/appointments/request', async (route: Route) => {
-      submitted = route.request().postData();
+  test('the same schedule books in person end to end', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
+    // A holder, not a `let`: TS does not see the callback assign it and narrows it to null.
+    const submitted: { body: string | null } = { body: null };
+    await page.route('**/appointments/request', async (route: Route): Promise<void> => {
+      submitted.body = route.request().postData();
       await route.continue();
     });
 
@@ -65,6 +75,6 @@ test.describe('A schedule whose only block is in person', (): void => {
     await page.getByRole('button', { name: 'Solicitar cita' }).click();
 
     await expect(page.getByText('Solicitud recibida')).toBeVisible();
-    expect(JSON.parse(submitted ?? '{}').modality).toBe('IN_PERSON');
+    expect(modalityOf(submitted.body)).toBe('IN_PERSON');
   });
 });

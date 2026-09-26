@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type PlaywrightTestArgs } from '@playwright/test';
 import {
   fillRequestForm,
   gotoSlotBrowser,
@@ -8,7 +8,7 @@ import {
 
 test('happy path: browse → pick slot → submit request → confirmation', async ({
   page,
-}): Promise<void> => {
+}: PlaywrightTestArgs): Promise<void> => {
   await gotoSlotBrowser(page);
 
   // First week with availability auto-loads; pick the first open slot.

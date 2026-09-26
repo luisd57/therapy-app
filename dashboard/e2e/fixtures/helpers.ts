@@ -1,4 +1,10 @@
-import { expect, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  expect,
+  type APIRequestContext,
+  type APIResponse,
+  type Locator,
+  type Page,
+} from '@playwright/test';
 import * as path from 'node:path';
 
 // ── Configuration ────────────────────────────────────────────────────────
@@ -19,7 +25,7 @@ export const THERAPIST_STORAGE_STATE: string = path.join(
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 export function uniqueEmail(prefix: string): string {
-  return `${prefix}+${Date.now()}-${Math.random().toString(36).slice(2, 7)}@e2e.test`;
+  return `${prefix}+${String(Date.now())}-${Math.random().toString(36).slice(2, 7)}@e2e.test`;
 }
 
 export async function loginAsTherapist(page: Page): Promise<void> {
@@ -33,7 +39,7 @@ export async function loginAsTherapist(page: Page): Promise<void> {
 export async function inviteFromDialog(page: Page, email: string, name: string): Promise<void> {
   await page.goto('/patients');
   await page.getByRole('button', { name: 'Invite Patient' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Invite Patient' });
+  const dialog: Locator = page.getByRole('dialog', { name: 'Invite Patient' });
   await dialog.getByRole('textbox', { name: 'Email' }).fill(email);
   await dialog.getByRole('textbox', { name: 'Patient name' }).fill(name);
   await dialog.getByRole('button', { name: 'Send invitation' }).click();
@@ -95,11 +101,14 @@ export async function fetchAllMessagesFor(
   apiContext: APIRequestContext,
   email: string,
 ): Promise<MailhogMessage[]> {
-  const response = await apiContext.get(`${MAILHOG_URL}/api/v2/messages`);
-  if (!response.ok()) throw new Error(`MailHog GET failed: ${response.status()}`);
-  const body = (await response.json()) as { items: MailhogMessage[] };
+  const response: APIResponse = await apiContext.get(`${MAILHOG_URL}/api/v2/messages`);
+  if (!response.ok()) throw new Error(`MailHog GET failed: ${String(response.status())}`);
+  const body: { items: MailhogMessage[] } = (await response.json()) as { items: MailhogMessage[] };
   return body.items.filter((message: MailhogMessage): boolean =>
-    message.To.some((recipient): boolean => `${recipient.Mailbox}@${recipient.Domain}` === email),
+    message.To.some(
+      (recipient: MailhogMessage['To'][number]): boolean =>
+        `${recipient.Mailbox}@${recipient.Domain}` === email,
+    ),
   );
 }
 
@@ -113,20 +122,20 @@ async function fetchLatestTokenMatching(
   email: string,
   linkPatternRegex: RegExp,
 ): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const matches = (await fetchAllMessagesFor(apiContext, email)).sort(
+  for (let attempt: number = 0; attempt < 10; attempt++) {
+    const matches: MailhogMessage[] = (await fetchAllMessagesFor(apiContext, email)).sort(
       (a: MailhogMessage, b: MailhogMessage): number =>
         new Date(b.Created).getTime() - new Date(a.Created).getTime(),
     );
 
     for (const message of matches) {
-      const decoded = decodeQuotedPrintable(message.Content.Body);
-      const tokenMatch = decoded.match(linkPatternRegex);
-      if (tokenMatch) return tokenMatch[1]!;
+      const decoded: string = decodeQuotedPrintable(message.Content.Body);
+      const tokenMatch: RegExpMatchArray | null = decoded.match(linkPatternRegex);
+      if (tokenMatch) return tokenMatch[1];
     }
-    await new Promise<void>((resolve): NodeJS.Timeout => setTimeout(resolve, 500));
+    await new Promise<void>((resolve: () => void): NodeJS.Timeout => setTimeout(resolve, 500));
   }
-  throw new Error(`No email matching ${linkPatternRegex} found for ${email} after retries`);
+  throw new Error(`No email matching ${String(linkPatternRegex)} found for ${email} after retries`);
 }
 
 export async function fetchLatestTokenFor(

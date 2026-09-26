@@ -2,6 +2,7 @@
 import { getEntry } from 'astro:content';
 
 const entry = await getEntry('site', 'therapist');
+if (!entry) throw new Error('Missing content entry site/therapist.');
 const { Content } = await entry.render();
 const { name, credentials, photo } = entry.data;
 ---

@@ -1,8 +1,8 @@
-import { test, expect, type Locator } from '@playwright/test';
+import { test, expect, type Locator, type PlaywrightTestArgs } from '@playwright/test';
 import { gotoSlotBrowser, slotButtons } from './fixtures/helpers';
 
 test.describe('Slot browser', (): void => {
-  test('renders availability with weekend gaps', async ({ page }): Promise<void> => {
+  test('renders availability with weekend gaps', async ({ page }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     // At least one bookable slot loads...
     await expect(slotButtons(page).first()).toBeVisible();
@@ -12,7 +12,7 @@ test.describe('Slot browser', (): void => {
 
   test('week navigation moves the visible range forward and back', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await expect(slotButtons(page).first()).toBeVisible();
 
@@ -29,7 +29,7 @@ test.describe('Slot browser', (): void => {
     await expect(rangeLabel).toHaveText(initial);
   });
 
-  test('modality toggle reflects the active selection', async ({ page }): Promise<void> => {
+  test('modality toggle reflects the active selection', async ({ page }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page, 'ONLINE');
 
     const online: Locator = page.getByRole('button', { name: 'Online', exact: true });
