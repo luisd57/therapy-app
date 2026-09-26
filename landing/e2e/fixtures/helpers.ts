@@ -15,8 +15,8 @@ export interface RequestFormData {
 }
 
 /** The `modality` field of a captured JSON request body. */
-export function modalityOf(postData: string | null): string | undefined {
-  return (JSON.parse(postData ?? '{}') as { modality?: string }).modality;
+export function modalityOf(postData: string | null): Modality | undefined {
+  return (JSON.parse(postData ?? '{}') as { modality?: Modality }).modality;
 }
 
 export function uniqueEmail(prefix: string): string {

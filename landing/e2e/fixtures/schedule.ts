@@ -83,7 +83,9 @@ export async function deleteBlocks(
   blocks: ListedBlock[],
 ): Promise<void> {
   for (const block of blocks) {
-    const response: APIResponse = await context.delete(`${API_BASE_URL}/therapist/schedule/${block.id}`);
+    const response: APIResponse = await context.delete(
+      `${API_BASE_URL}/therapist/schedule/${block.id}`,
+    );
     if (!response.ok()) {
       throw new Error(`Deleting schedule block ${block.id} failed (${String(response.status())}).`);
     }

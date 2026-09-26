@@ -3,7 +3,7 @@ import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 // Same TypeScript standard as dashboard/eslint.config.js, minus the Angular parts.
-// src/ is out of scope: .astro and .svelte files need parser plugins this app does not have.
+// Scoped to e2e by ticket 10. src/ .ts files need no plugin and can join, .astro and .svelte cannot.
 export default defineConfig(
   {
     files: ['e2e/**/*.ts', 'playwright.config.ts'],

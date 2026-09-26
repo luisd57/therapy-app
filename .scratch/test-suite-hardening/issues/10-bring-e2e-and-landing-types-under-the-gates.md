@@ -52,3 +52,7 @@ because a stray `@types/node` sits in the home directory, above both apps.
 **Gap left open: `astro check` does not typecheck `.svelte` files.** A planted type error in
 `SlotCard.svelte` passed it. The components that hold most of the public site's logic are
 still unchecked. Closing that means `svelte-check`, a new tool, so it is out of scope here.
+
+**Latent: a `.js` or `.mjs` file in either e2e directory passes every gate.** Review planted
+one in each and all four stayed green. None exist today, so there is nothing to fix, but the
+gates cover TypeScript only.

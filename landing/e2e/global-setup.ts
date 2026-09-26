@@ -25,7 +25,9 @@ export default async function globalSetup(): Promise<void> {
       `${API_BASE_URL}/appointments/next-available-week`,
     );
     if (!response.ok()) {
-      throw new Error(`next-available-week returned ${String(response.status())} from ${API_BASE_URL}`);
+      throw new Error(
+        `next-available-week returned ${String(response.status())} from ${API_BASE_URL}`,
+      );
     }
     const body: NextAvailableWeek = (await response.json()) as NextAvailableWeek;
     if (!body.data?.found) {

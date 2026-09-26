@@ -8,7 +8,9 @@ import {
 } from './fixtures/helpers';
 
 test.describe('Reservation navigation', (): void => {
-  test('"Cambiar horario" returns to the slot browser', async ({ page }: PlaywrightTestArgs): Promise<void> => {
+  test('"Cambiar horario" returns to the slot browser', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);
 

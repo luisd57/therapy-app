@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "eslint \"src/**/*.{ts,html}\" \"e2e/**/*.ts\" playwright.config.ts",
-    "lint:fix": "eslint \"src/**/*.{ts,html}\" \"e2e/**/*.ts\" playwright.config.ts --fix",
+    "lint:fix": "npm run lint -- --fix",
     "typecheck:e2e": "tsc -p tsconfig.e2e.json --noEmit",
     "e2e": "playwright test"
   },
