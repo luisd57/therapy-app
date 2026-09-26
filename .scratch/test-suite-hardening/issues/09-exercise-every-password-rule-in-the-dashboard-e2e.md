@@ -1,5 +1,7 @@
 # 09 - Exercise every password rule in the dashboard e2e
 
+> Frozen record, resolved 2026-09-26.
+
 **What to build:** every password rule is covered by a spec, so deleting one
 fails the suite.
 
@@ -46,6 +48,8 @@ inventing new session handling.
 **Blocked by:** None - can start immediately.
 
 **Status:** resolved
+
+**Resolved by:** [PR #95](https://github.com/luisd57/therapy-app/pull/95)
 
 - [x] Each rule has a case whose input violates only that rule, so a passing case cannot be explained by a different rule firing
 - [x] The maximum length bound is exercised at the boundary
