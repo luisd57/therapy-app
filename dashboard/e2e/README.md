@@ -81,6 +81,7 @@ docker-compose --profile e2e run --rm playwright \
 | `auth-logout.spec.ts`                      | Logout clears session + re-protects routes              |
 | `auth-route-guards.spec.ts`                | Unauthenticated protected routes redirect to /login     |
 | `auth-password-reset.spec.ts`              | Forgot → emailed reset link → login with new password; bad token |
+| `password-rules.spec.ts`                   | Each password rule on the reset form, and register applies the same rules |
 | `fixtures/helpers.ts`                      | Shared helpers + env constants                          |
 | `global-setup.ts`                          | MailHog clear + therapist login pre-check               |
 

@@ -1,5 +1,7 @@
 # 09 - Exercise every password rule in the dashboard e2e
 
+> Frozen record, resolved 2026-09-26.
+
 **What to build:** every password rule is covered by a spec, so deleting one
 fails the suite.
 
@@ -45,13 +47,15 @@ inventing new session handling.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each rule has a case whose input violates only that rule, so a passing case cannot be explained by a different rule firing
-- [ ] The maximum length bound is exercised at the boundary
-- [ ] Each case asserts the strength message, not a disabled submit button
-- [ ] Each case blurs the field, since the error does not render until the control is touched
-- [ ] A valid password is accepted, so the specs cannot pass by rejecting everything
-- [ ] The second screen is covered enough to catch it drifting from the shared validator
-- [ ] No test dependency is added to the dashboard
-- [ ] Dashboard e2e suite green, and lint and build green
+**Resolved by:** [PR #95](https://github.com/luisd57/therapy-app/pull/95)
+
+- [x] Each rule has a case whose input violates only that rule, so a passing case cannot be explained by a different rule firing
+- [x] The maximum length bound is exercised at the boundary
+- [x] Each case asserts the strength message, not a disabled submit button
+- [x] Each case blurs the field, since the error does not render until the control is touched
+- [x] A valid password is accepted, so the specs cannot pass by rejecting everything
+- [x] The second screen is covered enough to catch it drifting from the shared validator
+- [x] No test dependency is added to the dashboard
+- [x] Dashboard e2e suite green, and lint and build green
