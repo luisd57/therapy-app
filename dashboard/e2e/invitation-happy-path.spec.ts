@@ -1,4 +1,11 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Page,
+  type PlaywrightTestArgs,
+  type PlaywrightWorkerArgs,
+} from '@playwright/test';
 import {
   PATIENT_PASSWORD,
   fetchLatestTokenFor,
@@ -12,7 +19,7 @@ test('happy path: therapist invites → patient registers → row flips to Used 
   page,
   browser,
   request,
-}): Promise<void> => {
+}: PlaywrightTestArgs & PlaywrightWorkerArgs): Promise<void> => {
   // `page` is pre-authenticated as the therapist via storageState (globalSetup).
   const patientEmail: string = uniqueEmail('verify-patient');
   const patientName: string = 'E2E Verify Patient';

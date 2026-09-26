@@ -1,6 +1,7 @@
-import { test, expect, type Locator } from '@playwright/test';
+import { test, expect, type Locator, type PlaywrightTestArgs } from '@playwright/test';
 import {
   fetchAllMessagesFor,
+  type MailhogMessage,
   inviteFromDialog,
   uniqueEmail,
 } from './fixtures/helpers';
@@ -8,7 +9,7 @@ import {
 test('resend + revoke transitions the invitation row through expected states', async ({
   page,
   request,
-}): Promise<void> => {
+}: PlaywrightTestArgs): Promise<void> => {
   // `page` is pre-authenticated as therapist via storageState.
   const patientEmail: string = uniqueEmail('verify-resend');
 
@@ -25,7 +26,7 @@ test('resend + revoke transitions the invitation row through expected states', a
   await expect(allRowsForEmail.filter({ hasText: 'Revoked' })).toHaveCount(1);
 
   // MailHog should hold both invitation emails (initial + resend).
-  const matchingEmails = await fetchAllMessagesFor(request, patientEmail);
+  const matchingEmails: MailhogMessage[] = await fetchAllMessagesFor(request, patientEmail);
   expect(matchingEmails.length).toBeGreaterThanOrEqual(2);
 
   // Revoke the still-Pending row.

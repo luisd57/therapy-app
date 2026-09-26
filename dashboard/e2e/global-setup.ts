@@ -1,4 +1,12 @@
-import { chromium, request, type APIRequestContext, type Browser } from '@playwright/test';
+import {
+  chromium,
+  request,
+  type APIRequestContext,
+  type APIResponse,
+  type Browser,
+  type BrowserContext,
+  type Page,
+} from '@playwright/test';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {
@@ -22,11 +30,11 @@ export default async function globalSetup(): Promise<void> {
   await waitForUrl(MAILHOG_URL, 'mailhog');
 
   // 3. Clear MailHog so tests start from an empty inbox.
-  const mailhog = await request.newContext();
+  const mailhog: APIRequestContext = await request.newContext();
   try {
-    const response = await mailhog.delete(`${MAILHOG_URL}/api/v1/messages`);
+    const response: APIResponse = await mailhog.delete(`${MAILHOG_URL}/api/v1/messages`);
     if (!response.ok()) {
-      throw new Error(`MailHog DELETE failed: ${response.status()}`);
+      throw new Error(`MailHog DELETE failed: ${String(response.status())}`);
     }
   } finally {
     await mailhog.dispose();
@@ -41,8 +49,8 @@ export default async function globalSetup(): Promise<void> {
   //        completes - without it, navigating to a protected route on a
   //        fresh page bounces to /login.
   const browser: Browser = await chromium.launch();
-  const ctx = await browser.newContext({ baseURL: DASHBOARD_URL });
-  const page = await ctx.newPage();
+  const ctx: BrowserContext = await browser.newContext({ baseURL: DASHBOARD_URL });
+  const page: Page = await ctx.newPage();
   try {
     await page.goto('/login');
     await page.getByRole('textbox', { name: 'Email' }).fill(THERAPIST_EMAIL);
@@ -75,16 +83,18 @@ async function waitForUrl(url: string, label: string): Promise<void> {
     let lastError: string = '';
     while (Date.now() < deadline) {
       try {
-        const response = await context.get(url, { timeout: 5_000 });
+        const response: APIResponse = await context.get(url, { timeout: 5_000 });
         // Any HTTP response (even 404) means the server is listening.
         if (response.status() > 0) return;
       } catch (error: unknown) {
         lastError = error instanceof Error ? error.message : String(error);
       }
-      await new Promise<void>((resolve): NodeJS.Timeout => setTimeout(resolve, POLL_INTERVAL_MS));
+      await new Promise<void>(
+        (resolve: () => void): NodeJS.Timeout => setTimeout(resolve, POLL_INTERVAL_MS),
+      );
     }
     throw new Error(
-      `Timed out after ${READY_TIMEOUT_MS}ms waiting for ${label} at ${url}. Last error: ${lastError}`,
+      `Timed out after ${String(READY_TIMEOUT_MS)}ms waiting for ${label} at ${url}. Last error: ${lastError}`,
     );
   } finally {
     await context.dispose();

@@ -4,7 +4,7 @@ export const API_BASE_URL: string = process.env['API_BASE_URL'] ?? 'http://local
 
 export type Modality = 'ONLINE' | 'IN_PERSON';
 
-export const PRACTICE_ZONE = 'America/Caracas';
+export const PRACTICE_ZONE: string = 'America/Caracas';
 
 export interface RequestFormData {
   fullName: string;
@@ -14,8 +14,13 @@ export interface RequestFormData {
   country: string;
 }
 
+/** The `modality` field of a captured JSON request body. */
+export function modalityOf(postData: string | null): Modality | undefined {
+  return (JSON.parse(postData ?? '{}') as { modality?: Modality }).modality;
+}
+
 export function uniqueEmail(prefix: string): string {
-  return `${prefix}+${Date.now()}-${Math.random().toString(36).slice(2, 7)}@e2e.test`;
+  return `${prefix}+${String(Date.now())}-${Math.random().toString(36).slice(2, 7)}@e2e.test`;
 }
 
 /** A slot button (SlotCard) renders the time plus "<duration> min". */

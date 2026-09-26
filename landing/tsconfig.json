@@ -1,5 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
+  // Build and Playwright output, not source. Replaces the base exclude, so dist is repeated.
+  "exclude": ["dist", "playwright-report", "test-results"],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

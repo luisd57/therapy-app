@@ -1,4 +1,4 @@
-import { test, expect, type Locator } from '@playwright/test';
+import { test, expect, type Locator, type PlaywrightTestArgs } from '@playwright/test';
 import {
   fillRequestForm,
   gotoSlotBrowser,
@@ -10,7 +10,9 @@ import {
 // submission of empty or malformed input before any API call. We assert that
 // real client behavior rather than server-side field errors.
 test.describe('Reservation form - validation', (): void => {
-  test('empty required fields block submission', async ({ page }): Promise<void> => {
+  test('empty required fields block submission', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);
 
@@ -25,7 +27,9 @@ test.describe('Reservation form - validation', (): void => {
     ).toBe(true);
   });
 
-  test('malformed email is rejected by the browser', async ({ page }): Promise<void> => {
+  test('malformed email is rejected by the browser', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);
 

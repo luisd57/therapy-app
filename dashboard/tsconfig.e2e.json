@@ -1,0 +1,9 @@
+/* Playwright specs and config. Nothing else typechecks them, Playwright only strips types. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/e2e",
+    "types": ["node"]
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}

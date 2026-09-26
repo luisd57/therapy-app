@@ -1,4 +1,12 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Locator,
+  type Page,
+  type PlaywrightTestArgs,
+  type PlaywrightWorkerArgs,
+} from '@playwright/test';
 import {
   PATIENT_PASSWORD,
   fetchLatestTokenFor,
@@ -8,7 +16,11 @@ import {
 } from './fixtures/helpers';
 
 test.describe('Patient invitation - error paths', (): void => {
-  test('used token shows "already used"', async ({ page, browser, request }): Promise<void> => {
+  test('used token shows "already used"', async ({
+    page,
+    browser,
+    request,
+  }: PlaywrightTestArgs & PlaywrightWorkerArgs): Promise<void> => {
     // Therapist (default page, storageState-authenticated) sends an invitation.
     const patientEmail: string = uniqueEmail('verify-used-token');
     await inviteFromDialog(page, patientEmail, 'Used Token Test');
@@ -30,7 +42,9 @@ test.describe('Patient invitation - error paths', (): void => {
     await reuseCtx.close();
   });
 
-  test('garbage token shows "Invalid token."', async ({ browser }): Promise<void> => {
+  test('garbage token shows "Invalid token."', async ({
+    browser,
+  }: PlaywrightWorkerArgs): Promise<void> => {
     // No therapist needed - public route.
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const anonPage: Page = await ctx.newPage();
@@ -40,11 +54,13 @@ test.describe('Patient invitation - error paths', (): void => {
     await ctx.close();
   });
 
-  test('invalid email keeps Send invitation disabled', async ({ page }): Promise<void> => {
+  test('invalid email keeps Send invitation disabled', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     // `page` is therapist-authenticated already.
     await page.goto('/patients');
     await page.getByRole('button', { name: 'Invite Patient' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Invite Patient' });
+    const dialog: Locator = page.getByRole('dialog', { name: 'Invite Patient' });
     await dialog.getByRole('textbox', { name: 'Email' }).fill('not-an-email');
     await dialog.getByRole('textbox', { name: 'Patient name' }).fill('Bad Email');
     await page.keyboard.press('Tab');
@@ -56,7 +72,7 @@ test.describe('Patient invitation - error paths', (): void => {
     page,
     browser,
     request,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs & PlaywrightWorkerArgs): Promise<void> => {
     const patientEmail: string = uniqueEmail('verify-pw-mismatch');
     await inviteFromDialog(page, patientEmail, 'Password Mismatch');
 

@@ -1,4 +1,10 @@
-import { test, expect, type BrowserContext, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type BrowserContext,
+  type Page,
+  type PlaywrightWorkerArgs,
+} from '@playwright/test';
 import { loginAsTherapist } from './fixtures/helpers';
 
 // Logout shares one implementation across roles (only the post-logout redirect
@@ -8,7 +14,9 @@ import { loginAsTherapist } from './fixtures/helpers';
 // storageState: logout revokes the token's jti server-side, so consuming the
 // global session would break every other test that relies on it.
 test.describe('Auth - logout', (): void => {
-  test('logout clears the session and re-protects routes', async ({ browser }): Promise<void> => {
+  test('logout clears the session and re-protects routes', async ({
+    browser,
+  }: PlaywrightWorkerArgs): Promise<void> => {
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const page: Page = await ctx.newPage();
     await loginAsTherapist(page);

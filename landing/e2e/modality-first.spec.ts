@@ -1,7 +1,15 @@
-import { test, expect, type Page, type Route } from '@playwright/test';
+import {
+  test,
+  expect,
+  type Page,
+  type PlaywrightTestArgs,
+  type Request,
+  type Route,
+} from '@playwright/test';
 import {
   chooseModality,
   fillRequestForm,
+  modalityOf,
   openSlotBrowser,
   PRACTICE_ZONE,
   selectFirstAvailableSlot,
@@ -13,7 +21,7 @@ import {
 test.describe('Modality gate', (): void => {
   test('no slot is reachable until a modality is confirmed', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await openSlotBrowser(page);
 
     // The chooser being visible proves the island hydrated, so the empty count
@@ -29,14 +37,14 @@ test.describe('Modality gate', (): void => {
 
   test('the browsed modality is the modality submitted', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     const sent: Record<string, string | null> = {};
 
-    await page.route('**/appointments/lock-slot', async (route: Route) => {
+    await page.route('**/appointments/lock-slot', async (route: Route): Promise<void> => {
       sent['lock'] = route.request().postData();
       await route.continue();
     });
-    await page.route('**/appointments/request', async (route: Route) => {
+    await page.route('**/appointments/request', async (route: Route): Promise<void> => {
       sent['request'] = route.request().postData();
       await route.continue();
     });
@@ -53,15 +61,15 @@ test.describe('Modality gate', (): void => {
     // confirmation appearing is itself half the assertion.
     await expect(page.getByText('Solicitud recibida')).toBeVisible();
 
-    expect(JSON.parse(sent['lock'] ?? '{}').modality).toBe('IN_PERSON');
-    expect(JSON.parse(sent['request'] ?? '{}').modality).toBe('IN_PERSON');
+    expect(modalityOf(sent['lock'])).toBe('IN_PERSON');
+    expect(modalityOf(sent['request'])).toBe('IN_PERSON');
   });
 
   test('every availability request carries a modality', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     const availability: string[] = [];
-    page.on('request', (request): void => {
+    page.on('request', (request: Request): void => {
       const url: string = request.url();
       if (/\/appointments\/(available-slots|next-available-week)/.test(url)) {
         availability.push(url);
@@ -75,11 +83,11 @@ test.describe('Modality gate', (): void => {
     // Switching modality and paging both refetch, so both are covered.
     const afterFirstLoad: number = availability.length;
     await page.getByRole('button', { name: 'Presencial', exact: true }).click();
-    await expect.poll(() => availability.length).toBeGreaterThan(afterFirstLoad);
+    await expect.poll((): number => availability.length).toBeGreaterThan(afterFirstLoad);
 
     const afterSwitch: number = availability.length;
     await page.getByRole('button', { name: /Siguiente/ }).click();
-    await expect.poll(() => availability.length).toBeGreaterThan(afterSwitch);
+    await expect.poll((): number => availability.length).toBeGreaterThan(afterSwitch);
 
     for (const url of availability) {
       expect(new URL(url).searchParams.get('modality'), url).not.toBeNull();
@@ -92,7 +100,7 @@ test.describe('Preselection abroad', (): void => {
 
   test('online is preselected when the viewer zone is not the practice zone', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await openSlotBrowser(page);
 
     await expect(page.getByTestId('modality-option-ONLINE')).toHaveAttribute(
@@ -112,7 +120,7 @@ test.describe('Preselection in the practice zone', (): void => {
 
   test('nothing is preselected when the zones match', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await openSlotBrowser(page);
 
     await expect(page.getByTestId('modality-option-ONLINE')).toHaveAttribute(
@@ -137,7 +145,7 @@ test.describe('Preselection in the practice zone', (): void => {
 test.describe('A week whose only availability is in person', (): void => {
   test.use({ timezoneId: PRACTICE_ZONE, locale: 'es-ES' });
 
-  const FRIDAY_IN_PERSON = '2026-08-21T12:00:00+00:00'; // Friday 08:00 practice-local
+  const FRIDAY_IN_PERSON: string = '2026-08-21T12:00:00+00:00'; // Friday 08:00 practice-local
 
   function slotsFor(modality: string | null): Record<string, unknown>[] {
     // A request with no modality is the regression, and it answers with the
@@ -154,17 +162,19 @@ test.describe('A week whose only availability is in person', (): void => {
   }
 
   async function stubInPersonOnly(page: Page): Promise<void> {
-    const json = (data: Record<string, unknown>): Parameters<Route['fulfill']>[0] => ({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ success: true, data }),
-    });
+    function json(data: Record<string, unknown>): Parameters<Route['fulfill']>[0] {
+      return {
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, data }),
+      };
+    }
 
-    await page.route('**/appointments/next-available-week*', (route: Route) => {
+    await page.route('**/appointments/next-available-week*', (route: Route): Promise<void> => {
       const modality: string | null = new URL(
         route.request().url(),
       ).searchParams.get('modality');
-      const slots = slotsFor(modality);
+      const slots: Record<string, unknown>[] = slotsFor(modality);
       return route.fulfill(
         json({
           found: slots.length > 0,
@@ -178,11 +188,11 @@ test.describe('A week whose only availability is in person', (): void => {
       );
     });
 
-    await page.route('**/appointments/available-slots*', (route: Route) => {
+    await page.route('**/appointments/available-slots*', (route: Route): Promise<void> => {
       const modality: string | null = new URL(
         route.request().url(),
       ).searchParams.get('modality');
-      const slots = slotsFor(modality);
+      const slots: Record<string, unknown>[] = slotsFor(modality);
       return route.fulfill(
         json({ slots, total_slots: slots.length, practice_timezone: PRACTICE_ZONE }),
       );
@@ -191,7 +201,7 @@ test.describe('A week whose only availability is in person', (): void => {
 
   test('browsing online offers nothing rather than an unbookable slot', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await stubInPersonOnly(page);
     await openSlotBrowser(page);
     await chooseModality(page, 'ONLINE');
@@ -200,7 +210,9 @@ test.describe('A week whose only availability is in person', (): void => {
     await expect(slotButtons(page)).toHaveCount(0);
   });
 
-  test('the same week offers that slot in person', async ({ page }): Promise<void> => {
+  test('the same week offers that slot in person', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     await stubInPersonOnly(page);
     await openSlotBrowser(page);
     await chooseModality(page, 'IN_PERSON');
@@ -214,10 +226,10 @@ test.describe('A week whose only availability is in person', (): void => {
 test.describe('A refetch that fails after switching modality', (): void => {
   test.use({ timezoneId: PRACTICE_ZONE, locale: 'es-ES' });
 
-  const ONLINE_SLOT = '2026-08-19T12:00:00+00:00'; // Wednesday 08:00 practice-local
+  const ONLINE_SLOT: string = '2026-08-19T12:00:00+00:00'; // Wednesday 08:00 practice-local
 
   async function stubFailingInPerson(page: Page): Promise<void> {
-    const slots = [
+    const slots: Record<string, unknown>[] = [
       {
         start_time: ONLINE_SLOT,
         end_time: new Date(new Date(ONLINE_SLOT).getTime() + 50 * 60_000).toISOString(),
@@ -225,7 +237,7 @@ test.describe('A refetch that fails after switching modality', (): void => {
       },
     ];
 
-    await page.route('**/appointments/next-available-week*', (route: Route) =>
+    await page.route('**/appointments/next-available-week*', (route: Route): Promise<void> =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -244,7 +256,7 @@ test.describe('A refetch that fails after switching modality', (): void => {
       }),
     );
 
-    await page.route('**/appointments/available-slots*', (route: Route) => {
+    await page.route('**/appointments/available-slots*', (route: Route): Promise<void> => {
       const modality: string | null = new URL(
         route.request().url(),
       ).searchParams.get('modality');
@@ -273,7 +285,7 @@ test.describe('A refetch that fails after switching modality', (): void => {
 
   test('drops the slots it could not refetch instead of leaving them clickable', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await stubFailingInPerson(page);
     await openSlotBrowser(page);
     await chooseModality(page, 'ONLINE');

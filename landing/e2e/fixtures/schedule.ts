@@ -1,4 +1,9 @@
-import { request, type APIRequestContext, type FullConfig } from '@playwright/test';
+import {
+  request,
+  type APIRequestContext,
+  type APIResponse,
+  type FullConfig,
+} from '@playwright/test';
 import { API_BASE_URL } from './helpers';
 
 const THERAPIST_EMAIL: string = process.env['THERAPIST_EMAIL'] ?? 'therapist@example.com';
@@ -28,11 +33,13 @@ interface ListedBlock extends ScheduleBlock {
   is_active: boolean;
 }
 
-async function readJson(response: Awaited<ReturnType<APIRequestContext['get']>>): Promise<{
+interface ScheduleResponse {
   success: boolean;
   data?: { schedules?: ListedBlock[] };
   error?: { message?: string };
-}> {
+}
+
+async function readJson(response: APIResponse): Promise<ScheduleResponse> {
   return (await response.json()) as never;
 }
 
@@ -42,14 +49,14 @@ async function readJson(response: Awaited<ReturnType<APIRequestContext['get']>>)
  */
 export async function therapistContext(): Promise<APIRequestContext> {
   const context: APIRequestContext = await request.newContext();
-  const response = await context.post(`${API_BASE_URL}/auth/therapist/login`, {
+  const response: APIResponse = await context.post(`${API_BASE_URL}/auth/therapist/login`, {
     data: { email: THERAPIST_EMAIL, password: THERAPIST_PASSWORD },
   });
 
   if (!response.ok()) {
     await context.dispose();
     throw new Error(
-      `Therapist login failed (${response.status()}). Set THERAPIST_EMAIL / ` +
+      `Therapist login failed (${String(response.status())}). Set THERAPIST_EMAIL / ` +
         `THERAPIST_PASSWORD to match the seeded therapist.`,
     );
   }
@@ -62,13 +69,13 @@ export async function therapistContext(): Promise<APIRequestContext> {
  * purpose: they cannot be recreated faithfully, and they generate no slots.
  */
 export async function activeBlocks(context: APIRequestContext): Promise<ListedBlock[]> {
-  const response = await context.get(`${API_BASE_URL}/therapist/schedule`);
+  const response: APIResponse = await context.get(`${API_BASE_URL}/therapist/schedule`);
   if (!response.ok()) {
-    throw new Error(`Listing schedule blocks failed (${response.status()}).`);
+    throw new Error(`Listing schedule blocks failed (${String(response.status())}).`);
   }
 
-  const body = await readJson(response);
-  return (body.data?.schedules ?? []).filter((block): boolean => block.is_active);
+  const body: ScheduleResponse = await readJson(response);
+  return (body.data?.schedules ?? []).filter((block: ListedBlock): boolean => block.is_active);
 }
 
 export async function deleteBlocks(
@@ -76,9 +83,11 @@ export async function deleteBlocks(
   blocks: ListedBlock[],
 ): Promise<void> {
   for (const block of blocks) {
-    const response = await context.delete(`${API_BASE_URL}/therapist/schedule/${block.id}`);
+    const response: APIResponse = await context.delete(
+      `${API_BASE_URL}/therapist/schedule/${block.id}`,
+    );
     if (!response.ok()) {
-      throw new Error(`Deleting schedule block ${block.id} failed (${response.status()}).`);
+      throw new Error(`Deleting schedule block ${block.id} failed (${String(response.status())}).`);
     }
   }
 }
@@ -87,11 +96,13 @@ export async function createBlock(
   context: APIRequestContext,
   block: ScheduleBlock,
 ): Promise<void> {
-  const response = await context.post(`${API_BASE_URL}/therapist/schedule`, { data: block });
+  const response: APIResponse = await context.post(`${API_BASE_URL}/therapist/schedule`, {
+    data: block,
+  });
   if (!response.ok()) {
-    const body = await readJson(response);
+    const body: ScheduleResponse = await readJson(response);
     throw new Error(
-      `Creating schedule block failed (${response.status()}): ${body.error?.message ?? ''}`,
+      `Creating schedule block failed (${String(response.status())}): ${body.error?.message ?? ''}`,
     );
   }
 }
@@ -179,7 +190,7 @@ export function requireSoleWorker(config: FullConfig): void {
   if (config.workers !== 1) {
     throw new Error(
       `This spec swaps the schedule every other spec reads, so it needs workers: 1 ` +
-        `(got ${config.workers}).`,
+        `(got ${String(config.workers)}).`,
     );
   }
 }

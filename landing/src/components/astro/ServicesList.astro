@@ -3,6 +3,7 @@ import { getEntry } from 'astro:content';
 import SectionHeading from './SectionHeading.astro';
 
 const entry = await getEntry('site', 'services');
+if (!entry) throw new Error('Missing content entry site/services.');
 const { Content } = await entry.render();
 const { title } = entry.data;
 ---

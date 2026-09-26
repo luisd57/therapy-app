@@ -1,4 +1,4 @@
-import { request, type APIRequestContext } from '@playwright/test';
+import { request, type APIRequestContext, type APIResponse } from '@playwright/test';
 import { API_BASE_URL } from './fixtures/helpers';
 import { recordBaseline, therapistContext } from './fixtures/schedule';
 
@@ -21,11 +21,15 @@ export default async function globalSetup(): Promise<void> {
 
   const context: APIRequestContext = await request.newContext();
   try {
-    const response = await context.get(`${API_BASE_URL}/appointments/next-available-week`);
+    const response: APIResponse = await context.get(
+      `${API_BASE_URL}/appointments/next-available-week`,
+    );
     if (!response.ok()) {
-      throw new Error(`next-available-week returned ${response.status()} from ${API_BASE_URL}`);
+      throw new Error(
+        `next-available-week returned ${String(response.status())} from ${API_BASE_URL}`,
+      );
     }
-    const body = (await response.json()) as NextAvailableWeek;
+    const body: NextAvailableWeek = (await response.json()) as NextAvailableWeek;
     if (!body.data?.found) {
       throw new Error(
         'No available slots found. Seed availability first: ' +
@@ -51,15 +55,17 @@ async function waitForUrl(url: string, label: string): Promise<void> {
     let lastError: string = '';
     while (Date.now() < deadline) {
       try {
-        const response = await context.get(url, { timeout: 5_000 });
+        const response: APIResponse = await context.get(url, { timeout: 5_000 });
         if (response.status() > 0) return;
       } catch (error: unknown) {
         lastError = error instanceof Error ? error.message : String(error);
       }
-      await new Promise<void>((resolve): NodeJS.Timeout => setTimeout(resolve, POLL_INTERVAL_MS));
+      await new Promise<void>((resolve: () => void): NodeJS.Timeout =>
+        setTimeout(resolve, POLL_INTERVAL_MS),
+      );
     }
     throw new Error(
-      `Timed out after ${READY_TIMEOUT_MS}ms waiting for ${label} at ${url}. Last error: ${lastError}`,
+      `Timed out after ${String(READY_TIMEOUT_MS)}ms waiting for ${label} at ${url}. Last error: ${lastError}`,
     );
   } finally {
     await context.dispose();

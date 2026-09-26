@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type PlaywrightTestArgs } from '@playwright/test';
 import {
   fillRequestForm,
   gotoSlotBrowser,
@@ -8,7 +8,9 @@ import {
 } from './fixtures/helpers';
 
 test.describe('Reservation navigation', (): void => {
-  test('"Cambiar horario" returns to the slot browser', async ({ page }): Promise<void> => {
+  test('"Cambiar horario" returns to the slot browser', async ({
+    page,
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);
 
@@ -21,7 +23,7 @@ test.describe('Reservation navigation', (): void => {
 
   test('"Reservar otra cita" restarts the flow after a successful request', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await gotoSlotBrowser(page);
     await selectFirstAvailableSlot(page);
     await fillRequestForm(page, validRequestForm());

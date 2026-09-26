@@ -1,4 +1,11 @@
-import { test, expect, type Locator, type Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  type Locator,
+  type Page,
+  type PlaywrightTestArgs,
+  type Route,
+} from '@playwright/test';
 import {
   chooseModality,
   openSlotBrowser,
@@ -14,9 +21,9 @@ import {
 // Pinned so the assertions are absolute rather than derived from the fixtures
 // (ADR-0003). Nothing here reads the clock: the rendered week comes from the
 // stubbed instants, so these stay correct whenever the suite runs.
-const WINDOW_START = '2026-08-14T20:00:00+00:00'; // Friday 16:00 practice-local
-const WINDOW_END = '2026-08-21T20:00:00+00:00';
-const SLOT_INSTANTS = [
+const WINDOW_START: string = '2026-08-14T20:00:00+00:00'; // Friday 16:00 practice-local
+const WINDOW_END: string = '2026-08-21T20:00:00+00:00';
+const SLOT_INSTANTS: string[] = [
   '2026-08-17T16:00:00+00:00', // Monday 12:00 practice-local
   '2026-08-18T16:00:00+00:00', // Tuesday 12:00
 ];
@@ -37,7 +44,7 @@ async function stubApi(
   nextWeek: Record<string, unknown>,
   slots: Record<string, unknown>[],
 ): Promise<void> {
-  await page.route('**/appointments/next-available-week*', (route) =>
+  await page.route('**/appointments/next-available-week*', (route: Route): Promise<void> =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -45,7 +52,7 @@ async function stubApi(
     }),
   );
 
-  await page.route('**/appointments/available-slots*', (route) =>
+  await page.route('**/appointments/available-slots*', (route: Route): Promise<void> =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -64,10 +71,10 @@ async function stubApi(
 test.describe('Next available week', (): void => {
   test('renders the week holding the slots, not the one the window opens in', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     // The window opens on Friday the 14th and runs seven days, but its slots
     // are Monday the 17th and Tuesday the 18th, the following calendar week.
-    const slots = SLOT_INSTANTS.map(slot);
+    const slots: Record<string, unknown>[] = SLOT_INSTANTS.map(slot);
 
     await stubApi(
       page,
@@ -98,7 +105,7 @@ test.describe('Next available week', (): void => {
 
   test('shows an empty state instead of a blank grid when nothing is available', async ({
     page,
-  }): Promise<void> => {
+  }: PlaywrightTestArgs): Promise<void> => {
     await stubApi(
       page,
       {
