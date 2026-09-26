@@ -4,11 +4,12 @@ import { fetchLatestTokenFor, inviteFromDialog, uniqueEmail } from './fixtures/h
 // One message covers all six rules. The UI text starts with a dashed range, so match its tail.
 const STRENGTH_MESSAGE: string = 'chars with uppercase, lowercase, number, and special character';
 
+const MIN_LENGTH: number = 8;
 const MAX_LENGTH: number = 72;
 
 // Each input breaks exactly one rule, so the message appearing proves that rule fired.
 const RULE_BREAKERS: { rule: string; password: string }[] = [
-  { rule: 'minimum length', password: 'Ab1!xyz' },
+  { rule: 'minimum length', password: 'Aa1!' + 'a'.repeat(MIN_LENGTH - 5) },
   { rule: 'maximum length', password: 'Aa1!' + 'a'.repeat(MAX_LENGTH - 3) },
   { rule: 'uppercase letter', password: 'abcdef1!' },
   { rule: 'lowercase letter', password: 'ABCDEF1!' },
@@ -18,6 +19,7 @@ const RULE_BREAKERS: { rule: string; password: string }[] = [
 
 const VALID_PASSWORDS: { label: string; password: string }[] = [
   { label: 'a typical password', password: 'ValidPass1!' },
+  { label: 'a password at the minimum length', password: 'Aa1!' + 'a'.repeat(MIN_LENGTH - 4) },
   { label: 'a password at the maximum length', password: 'Aa1!' + 'a'.repeat(MAX_LENGTH - 4) },
 ];
 
