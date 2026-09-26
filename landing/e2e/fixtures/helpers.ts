@@ -101,3 +101,5 @@ export function validRequestForm(): RequestFormData {
     country: 'Venezuela',
   };
 }
+
+export const plantedTypeError: number = 'not a number';

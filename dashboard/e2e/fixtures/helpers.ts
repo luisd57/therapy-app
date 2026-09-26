@@ -151,5 +151,3 @@ export async function fetchLatestResetTokenFor(
 ): Promise<string> {
   return fetchLatestTokenMatching(apiContext, email, /reset-password\?token=([A-Za-z0-9_-]+)/);
 }
-
-export const plantedTypeError: number = 'not a number';
