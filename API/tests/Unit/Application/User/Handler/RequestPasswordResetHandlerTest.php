@@ -11,6 +11,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Domain\User\Id\UserId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -93,7 +94,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->resetTokenRepository
             ->expects($this->once())
             ->method('invalidateAllForUser')
-            ->with($this->callback(fn($id) => $id->equals($user->getId())));
+            ->with($this->callback(fn (UserId $userId) => $userId->equals($user->getId())));
 
         $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistSchedule;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class ListScheduleBlocksControllerTest extends ApiTestCase
 {
@@ -17,8 +18,8 @@ final class ListScheduleBlocksControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('schedules', $data['data']);
-        $this->assertArrayHasKey('count', $data['data']);
+        $this->assertArrayHasKey('schedules', Json::arrayAt($data, 'data'));
+        $this->assertArrayHasKey('count', Json::arrayAt($data, 'data'));
     }
 
     public function testListSchedulesUnauthenticatedReturns401(): void

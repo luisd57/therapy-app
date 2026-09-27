@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class EmailType extends StringType
 {
+    use ReadsStringValueTrait;
+
     public const string NAME = 'email';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?Email
@@ -21,7 +23,7 @@ final class EmailType extends StringType
         }
 
         try {
-            return Email::fromString((string) $value);
+            return Email::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class EmailType extends StringType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\UpdateTherapistScheduleInputDTO;
 use App\Application\Appointment\Handler\UpdateTherapistScheduleHandler;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use App\Infrastructure\Http\Controller\ValidatesScheduleBlockRequestTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,9 +32,9 @@ final class UpdateScheduleBlockController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(string $id, Request $request, UpdateTherapistScheduleHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateScheduleBlockRequest($this->validator, $data);
+        $errors = $this->validateScheduleBlockRequest($this->validator, $jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -42,11 +43,11 @@ final class UpdateScheduleBlockController extends AbstractController
             $result = $handler->__invoke(new UpdateTherapistScheduleInputDTO(
                 scheduleId: $id,
                 therapistId: $this->currentUserId(),
-                dayOfWeek: (int) $data['day_of_week'],
-                startTime: $data['start_time'],
-                endTime: $data['end_time'],
-                supportsOnline: $data['supports_online'] ?? true,
-                supportsInPerson: $data['supports_in_person'] ?? true,
+                dayOfWeek: $jsonBody->int('day_of_week') ?? 0,
+                startTime: $jsonBody->string('start_time'),
+                endTime: $jsonBody->string('end_time'),
+                supportsOnline: $jsonBody->bool('supports_online') ?? true,
+                supportsInPerson: $jsonBody->bool('supports_in_person') ?? true,
             ));
 
             return $this->success([

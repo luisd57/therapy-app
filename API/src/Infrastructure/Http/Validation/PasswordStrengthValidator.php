@@ -7,6 +7,7 @@ namespace App\Infrastructure\Http\Validation;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 final class PasswordStrengthValidator extends ConstraintValidator
 {
@@ -20,7 +21,9 @@ final class PasswordStrengthValidator extends ConstraintValidator
             return;
         }
 
-        $value = (string) $value;
+        if (!is_string($value)) {
+            throw new UnexpectedValueException($value, 'string');
+        }
 
         if (strlen($value) < 8 || strlen($value) > 72) {
             $this->context->buildViolation($constraint->minLengthMessage)

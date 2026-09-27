@@ -33,7 +33,7 @@ final class GetNextAvailableWeekController extends AbstractController
             ]);
 
             if (count($modalityViolations) > 0) {
-                return $this->validationError(['modality' => $modalityViolations[0]->getMessage()]);
+                return $this->validationError(['modality' => (string) $modalityViolations->get(0)->getMessage()]);
             }
         }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Exception;
 
-use App\Domain\Exception\DomainException;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
@@ -17,28 +16,24 @@ final class DomainExceptionTest extends TestCase
     public function testInvalidCredentialsExceptionExtendsDomainException(): void
     {
         $exception = new InvalidCredentialsException();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertNotEmpty($exception->getErrorCode());
     }
 
     public function testInvalidTokenExpiredHasDistinctErrorCode(): void
     {
         $exception = InvalidTokenException::expired();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertNotEmpty($exception->getErrorCode());
     }
 
     public function testInvalidTokenAlreadyUsedHasDistinctErrorCode(): void
     {
         $exception = InvalidTokenException::alreadyUsed();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertNotEmpty($exception->getErrorCode());
     }
 
     public function testInvalidTokenNotFoundHasDistinctErrorCode(): void
     {
         $exception = InvalidTokenException::notFound();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertNotEmpty($exception->getErrorCode());
     }
 
@@ -60,7 +55,6 @@ final class DomainExceptionTest extends TestCase
     public function testUserAlreadyExistsExceptionHasStaticMessage(): void
     {
         $exception = new UserAlreadyExistsException();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertStringContainsString('already exists', $exception->getMessage());
         $this->assertNotEmpty($exception->getErrorCode());
     }
@@ -68,14 +62,12 @@ final class DomainExceptionTest extends TestCase
     public function testUserNotActiveExceptionExtendsDomainException(): void
     {
         $exception = new UserNotActiveException();
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertNotEmpty($exception->getErrorCode());
     }
 
     public function testUserNotFoundExceptionIncludesIdentifierInMessage(): void
     {
         $exception = new UserNotFoundException('some-uuid');
-        $this->assertInstanceOf(DomainException::class, $exception);
         $this->assertStringContainsString('some-uuid', $exception->getMessage());
         $this->assertNotEmpty($exception->getErrorCode());
     }

@@ -10,15 +10,19 @@ use PHPUnit\Framework\TestCase;
 
 final class WeekDayTest extends TestCase
 {
-    public function testAllSevenEnumValuesExist(): void
+    /** The backing values are stored, so they are a contract: ISO-8601, Monday first. */
+    public function testBackingValuesRunMondayToSunday(): void
     {
-        $this->assertSame(1, WeekDay::MONDAY->value);
-        $this->assertSame(2, WeekDay::TUESDAY->value);
-        $this->assertSame(3, WeekDay::WEDNESDAY->value);
-        $this->assertSame(4, WeekDay::THURSDAY->value);
-        $this->assertSame(5, WeekDay::FRIDAY->value);
-        $this->assertSame(6, WeekDay::SATURDAY->value);
-        $this->assertSame(7, WeekDay::SUNDAY->value);
+        $namesByValue = [];
+        foreach (WeekDay::cases() as $day) {
+            $namesByValue[$day->value] = $day->name;
+        }
+
+        // @phpstan-ignore method.alreadyNarrowedType (the analyser reads the enum, the assertion still pins the stored values)
+        $this->assertSame(
+            [1 => 'MONDAY', 2 => 'TUESDAY', 3 => 'WEDNESDAY', 4 => 'THURSDAY', 5 => 'FRIDAY', 6 => 'SATURDAY', 7 => 'SUNDAY'],
+            $namesByValue,
+        );
     }
 
     public function testFromDateTimeImmutableMonday(): void
@@ -79,10 +83,5 @@ final class WeekDayTest extends TestCase
         $this->assertSame('Friday', WeekDay::FRIDAY->getDisplayName());
         $this->assertSame('Saturday', WeekDay::SATURDAY->getDisplayName());
         $this->assertSame('Sunday', WeekDay::SUNDAY->getDisplayName());
-    }
-
-    public function testTotalCasesCountIsSeven(): void
-    {
-        $this->assertCount(7, WeekDay::cases());
     }
 }

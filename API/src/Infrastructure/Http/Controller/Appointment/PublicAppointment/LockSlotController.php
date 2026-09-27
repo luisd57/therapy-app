@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\LockSlotInputDTO;
 use App\Application\Appointment\Handler\LockSlotHandler;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,17 +29,17 @@ final class LockSlotController extends AbstractController
     #[Route('/api/appointments/lock-slot', name: 'api_lock_slot', methods: ['POST'])]
     public function __invoke(Request $request, LockSlotHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateLockSlotRequest($data);
+        $errors = $this->validateLockSlotRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $result = $handler->__invoke(new LockSlotInputDTO(
-                slotStartTime: $data['slot_start_time'],
-                modality: $data['modality'],
+                slotStartTime: $jsonBody->string('slot_start_time'),
+                modality: $jsonBody->string('modality'),
             ));
 
             return $this->created($result->toArray());
@@ -50,27 +51,27 @@ final class LockSlotController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateLockSlotRequest(array $data): array
+    private function validateLockSlotRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $slotViolations = $this->validator->validate($data['slot_start_time'] ?? '', [
+        $slotViolations = $this->validator->validate($jsonBody->string('slot_start_time'), [
             new Assert\NotBlank(message: 'Slot start time is required'),
         ]);
 
         if (count($slotViolations) > 0) {
-            $errors['slot_start_time'] = $slotViolations[0]->getMessage();
-        } elseif (!$this->isValidInstant($data['slot_start_time'])) {
+            $errors['slot_start_time'] = (string) $slotViolations->get(0)->getMessage();
+        } elseif (!$this->isValidInstant($jsonBody->string('slot_start_time'))) {
             $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
         }
 
-        $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
+        $modalityViolations = $this->validator->validate($jsonBody->string('modality'), [
             new Assert\NotBlank(message: 'Modality is required'),
             new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
         ]);
 
         if (count($modalityViolations) > 0) {
-            $errors['modality'] = $modalityViolations[0]->getMessage();
+            $errors['modality'] = (string) $modalityViolations->get(0)->getMessage();
         }
 
         return $errors;

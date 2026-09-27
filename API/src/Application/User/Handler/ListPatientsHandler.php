@@ -17,6 +17,9 @@ final readonly class ListPatientsHandler
     ) {
     }
 
+    /**
+     * @return PaginatedResultDTO<UserOutputDTO>
+     */
     public function __invoke(ListPatientsInputDTO $dto): PaginatedResultDTO
     {
         $pagination = $dto->pagination;

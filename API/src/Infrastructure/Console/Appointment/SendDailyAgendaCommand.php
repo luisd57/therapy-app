@@ -44,7 +44,8 @@ final class SendDailyAgendaCommand extends Command
 
         // "Today" is the therapist's day, not the container's. The process zone is
         // UTC, where anything after 20:00 in Caracas already counts as tomorrow.
-        $dateString = $input->getArgument('date') ?? $this->clock->now()
+        $date = $input->getArgument('date');
+        $dateString = is_string($date) ? $date : $this->clock->now()
             ->setTimezone($this->practiceTimezoneProvider->getTimeZone())
             ->format('Y-m-d');
 

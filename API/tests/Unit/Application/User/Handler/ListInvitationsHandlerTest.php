@@ -38,8 +38,8 @@ final class ListInvitationsHandlerTest extends TestCase
         $result = $this->handler->__invoke();
 
         $this->assertCount(2, $result);
-        $this->assertSame('p1@example.com', $result->get(0)->email);
-        $this->assertSame('p2@example.com', $result->get(1)->email);
+        $this->assertSame('p1@example.com', $result->get(0)?->email);
+        $this->assertSame('p2@example.com', $result->get(1)?->email);
         $this->assertSame('pending', $result->get(0)->status);
     }
 

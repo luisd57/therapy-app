@@ -13,7 +13,6 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 use App\Tests\Helper\UsesUtcInstants;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 final class CleanupExpiredTokensCommandTest extends IntegrationTestCase
@@ -86,14 +85,14 @@ final class CleanupExpiredTokensCommandTest extends IntegrationTestCase
         $usedReset->use(self::utc('2026-06-15 11:45:00'));
         $this->passwordResetRepository->save($usedReset);
 
-        $tester = new CommandTester((new Application(self::$kernel))->find('app:cleanup-tokens'));
+        $tester = new CommandTester(self::consoleApplication()->find('app:cleanup-tokens'));
         $tester->execute([]);
 
         $tester->assertCommandIsSuccessful();
         // SymfonyStyle wraps the line at the terminal width
         $this->assertStringContainsString(
             'Removed 2 expired invitation tokens and 1 expired password reset tokens',
-            preg_replace('/\s+/', ' ', $tester->getDisplay()),
+            (string) preg_replace('/\s+/', ' ', $tester->getDisplay()),
         );
         $this->assertNull($this->invitationRepository->findByToken('expired-invitation'));
         $this->assertNull($this->invitationRepository->findByToken('long-expired-invitation'));

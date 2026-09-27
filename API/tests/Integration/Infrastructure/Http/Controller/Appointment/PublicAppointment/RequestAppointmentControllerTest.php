@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Publi
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
 
 final class RequestAppointmentControllerTest extends ApiTestCase
@@ -40,11 +41,11 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         // A public caller gets no contact details back, not even their own.
         $this->assertEqualsCanonicalizing(
             ['id', 'start_time', 'end_time', 'modality', 'status', 'created_at'],
-            array_keys($data['data']['appointment']),
+            array_keys(Json::arrayAt($data, 'data', 'appointment')),
             'data.appointment keys',
         );
     }
@@ -72,6 +73,43 @@ final class RequestAppointmentControllerTest extends ApiTestCase
                 ],
             ],
         ], $this->getResponseData());
+    }
+
+    public function testRequestAppointmentRejectsANumberWhereAStringIsExpected(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => 1234567890,
+            'email' => 'john@test.com',
+            'city' => 'New York',
+            'country' => 'US',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(['phone' => 'Phone number is required'], Json::at($this->getResponseData(), 'error', 'details'));
+    }
+
+    public function testRequestAppointmentRejectsANumericLockTokenRatherThanDroppingIt(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => 'john@test.com',
+            'city' => 'New York',
+            'country' => 'US',
+            'lock_token' => 42,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(['lock_token' => 'Lock token must be a string'], Json::at($this->getResponseData(), 'error', 'details'));
     }
 
     public function testRequestAppointmentReturns409WhenSlotNotAvailable(): void
@@ -115,8 +153,8 @@ final class RequestAppointmentControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(201);
 
-        $appointment = $this->getResponseData()['data']['appointment'];
-        $this->assertSame('2026-06-01T13:30:00+00:00', $appointment['start_time']);
+        $appointment = Json::at($this->getResponseData(), 'data', 'appointment');
+        $this->assertSame('2026-06-01T13:30:00+00:00', Json::at($appointment, 'start_time'));
     }
 
     public function testRequestAppointmentRejectsAFixedOffsetAsTimezone(): void
@@ -136,7 +174,7 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertArrayHasKey('timezone', $this->getResponseData()['error']['details']);
+        $this->assertArrayHasKey('timezone', Json::arrayAt($this->getResponseData(), 'error', 'details'));
     }
 
     public function testRequestAppointmentRejectsADatetimeWithoutAnOffset(): void
@@ -155,6 +193,6 @@ final class RequestAppointmentControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
-        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+        $this->assertArrayHasKey('slot_start_time', Json::arrayAt($data, 'error', 'details'));
     }
 }

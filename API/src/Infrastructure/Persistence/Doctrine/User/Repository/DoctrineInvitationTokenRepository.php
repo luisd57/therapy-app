@@ -58,7 +58,9 @@ final class DoctrineInvitationTokenRepository implements InvitationTokenReposito
             ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        $token = $qb->getQuery()->getOneOrNullResult();
+
+        return $token instanceof InvitationToken ? $token : null;
     }
 
     /**

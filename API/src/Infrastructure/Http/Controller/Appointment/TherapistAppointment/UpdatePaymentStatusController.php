@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\UpdatePaymentStatusInputDTO;
 use App\Application\Appointment\Handler\UpdatePaymentStatusHandler;
 use App\Domain\Appointment\Exception\AppointmentNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,16 +23,16 @@ final class UpdatePaymentStatusController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(string $id, Request $request, UpdatePaymentStatusHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $paymentVerified = JsonBody::fromRequest($request)->bool('payment_verified');
 
-        if (!isset($data['payment_verified']) || !is_bool($data['payment_verified'])) {
+        if ($paymentVerified === null) {
             return $this->validationError(['payment_verified' => 'payment_verified is required and must be a boolean']);
         }
 
         try {
             $appointment = $handler->__invoke(new UpdatePaymentStatusInputDTO(
                 appointmentId: $id,
-                paymentVerified: $data['payment_verified'],
+                paymentVerified: $paymentVerified,
             ));
 
             return $this->success([

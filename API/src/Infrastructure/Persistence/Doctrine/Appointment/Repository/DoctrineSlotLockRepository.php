@@ -69,7 +69,9 @@ final class DoctrineSlotLockRepository implements SlotLockRepositoryInterface
             ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        $lock = $qb->getQuery()->getOneOrNullResult();
+
+        return $lock instanceof SlotLock ? $lock : null;
     }
 
     public function findByLockToken(string $lockToken): ?SlotLock

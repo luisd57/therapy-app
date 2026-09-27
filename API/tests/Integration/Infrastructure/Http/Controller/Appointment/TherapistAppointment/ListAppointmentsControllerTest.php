@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
 
 final class ListAppointmentsControllerTest extends ApiTestCase
@@ -30,21 +31,21 @@ final class ListAppointmentsControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['appointments', 'pagination'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['appointments', 'pagination'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
             ['page', 'limit', 'total', 'total_pages'],
-            array_keys($data['data']['pagination']),
+            array_keys(Json::arrayAt($data, 'data', 'pagination')),
             'data.pagination keys',
         );
-        $this->assertTrue(array_is_list($data['data']['appointments']), 'data.appointments is a list');
+        $this->assertTrue(array_is_list(Json::arrayAt($data, 'data', 'appointments')), 'data.appointments is a list');
         $this->assertEqualsCanonicalizing([
             'id', 'start_time', 'end_time', 'modality', 'status',
             'full_name', 'email', 'phone', 'city', 'country',
             'patient_id', 'payment_verified', 'created_at', 'updated_at', 'requester_timezone',
-        ], array_keys($data['data']['appointments'][0]), 'data.appointments[0] keys');
-        $this->assertGreaterThanOrEqual(1, $data['data']['pagination']['total']);
-        $this->assertSame(1, $data['data']['pagination']['page']);
-        $this->assertSame(20, $data['data']['pagination']['limit']);
+        ], array_keys(Json::arrayAt($data, 'data', 'appointments', 0)), 'data.appointments[0] keys');
+        $this->assertGreaterThanOrEqual(1, Json::at($data, 'data', 'pagination', 'total'));
+        $this->assertSame(1, Json::at($data, 'data', 'pagination', 'page'));
+        $this->assertSame(20, Json::at($data, 'data', 'pagination', 'limit'));
     }
 
     public function testListAppointmentsByStatus(): void
@@ -56,10 +57,10 @@ final class ListAppointmentsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertGreaterThanOrEqual(1, $data['data']['pagination']['total']);
+        $this->assertGreaterThanOrEqual(1, Json::at($data, 'data', 'pagination', 'total'));
 
-        foreach ($data['data']['appointments'] as $appointment) {
-            $this->assertSame('REQUESTED', $appointment['status']);
+        foreach (Json::arrayAt($data, 'data', 'appointments') as $appointment) {
+            $this->assertSame('REQUESTED', Json::at($appointment, 'status'));
         }
     }
 
@@ -73,10 +74,10 @@ final class ListAppointmentsControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertSame(1, $data['data']['pagination']['page']);
-        $this->assertSame(2, $data['data']['pagination']['limit']);
-        $this->assertCount(2, $data['data']['appointments']);
-        $this->assertGreaterThanOrEqual(3, $data['data']['pagination']['total']);
+        $this->assertSame(1, Json::at($data, 'data', 'pagination', 'page'));
+        $this->assertSame(2, Json::at($data, 'data', 'pagination', 'limit'));
+        $this->assertCount(2, Json::arrayAt($data, 'data', 'appointments'));
+        $this->assertGreaterThanOrEqual(3, Json::at($data, 'data', 'pagination', 'total'));
     }
 
     public function testListAppointmentsPaginationWithStatusFilter(): void
@@ -88,9 +89,9 @@ final class ListAppointmentsControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertCount(1, $data['data']['appointments']);
-        $this->assertSame(1, $data['data']['pagination']['limit']);
-        $this->assertGreaterThanOrEqual(2, $data['data']['pagination']['total']);
+        $this->assertCount(1, Json::arrayAt($data, 'data', 'appointments'));
+        $this->assertSame(1, Json::at($data, 'data', 'pagination', 'limit'));
+        $this->assertGreaterThanOrEqual(2, Json::at($data, 'data', 'pagination', 'total'));
     }
 
     public function testListAppointmentsLimitCappedAt100(): void
@@ -99,7 +100,7 @@ final class ListAppointmentsControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertSame(100, $data['data']['pagination']['limit']);
+        $this->assertSame(100, Json::at($data, 'data', 'pagination', 'limit'));
     }
 
     public function testListAppointmentsWithInvalidStatus(): void

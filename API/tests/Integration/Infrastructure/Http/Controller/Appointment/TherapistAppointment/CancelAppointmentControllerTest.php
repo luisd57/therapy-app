@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
 
 final class CancelAppointmentControllerTest extends ApiTestCase
@@ -29,6 +30,6 @@ final class CancelAppointmentControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('CANCELLED', $data['data']['appointment']['status']);
+        $this->assertSame('CANCELLED', Json::at($data, 'data', 'appointment', 'status'));
     }
 }

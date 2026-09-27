@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 
 final class RegisterControllerTest extends ApiTestCase
@@ -24,7 +25,7 @@ final class RegisterControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('ROLE_PATIENT', $data['data']['user']['role']);
+        $this->assertSame('ROLE_PATIENT', Json::at($data, 'data', 'user', 'role'));
     }
 
     public function testRegisterMissingTokenReturns422(): void
@@ -63,12 +64,12 @@ final class RegisterControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
-        $this->assertSame('VALIDATION_ERROR', $data['error']['code']);
+        $this->assertSame('VALIDATION_ERROR', Json::at($data, 'error', 'code'));
         $this->assertSame(
             'Password must contain at least one special character',
-            $data['error']['details']['password'],
+            Json::at($data, 'error', 'details', 'password'),
         );
-        $this->assertArrayNotHasKey('token', $data['error']['details']);
-        $this->assertArrayNotHasKey('password_confirmation', $data['error']['details']);
+        $this->assertArrayNotHasKey('token', Json::arrayAt($data, 'error', 'details'));
+        $this->assertArrayNotHasKey('password_confirmation', Json::arrayAt($data, 'error', 'details'));
     }
 }

@@ -9,10 +9,13 @@ use App\Infrastructure\Http\Validation\PasswordStrengthValidator;
 use Symfony\Component\Validator\ConstraintValidatorInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+use Symfony\Component\Validator\Exception\UnexpectedValueException;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * Each input below violates exactly one rule, so a test going red names the rule that broke.
+ *
+ * @extends ConstraintValidatorTestCase<PasswordStrengthValidator>
  */
 final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
 {
@@ -58,8 +61,7 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
 
     public function testAcceptsAPasswordExactlyAtTheMaximum(): void
     {
-        $password = 'Ab1!' . str_repeat('x', 68);
-        $this->assertSame(72, strlen($password));
+        $password = str_pad('Ab1!', 72, 'x');
 
         $this->validator->validate($password, $this->passwordStrength);
 
@@ -72,8 +74,7 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
      */
     public function testRejectsAPasswordOneCharacterOverTheMaximum(): void
     {
-        $password = 'Ab1!' . str_repeat('x', 69);
-        $this->assertSame(73, strlen($password));
+        $password = str_pad('Ab1!', 73, 'x');
 
         $this->validator->validate($password, $this->passwordStrength);
 
@@ -124,6 +125,14 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate(null, $this->passwordStrength);
 
         $this->assertNoViolation();
+    }
+
+    /** A number is not a password, even one that would pass every rule once cast. */
+    public function testRefusesAValueThatIsNotAString(): void
+    {
+        $this->expectException(UnexpectedValueException::class);
+
+        $this->validator->validate(12345678, $this->passwordStrength);
     }
 
     public function testRefusesAConstraintItDoesNotOwn(): void

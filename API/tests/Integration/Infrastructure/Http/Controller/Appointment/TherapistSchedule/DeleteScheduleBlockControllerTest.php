@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistSchedule;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use Symfony\Component\Uid\Uuid;
 
 final class DeleteScheduleBlockControllerTest extends ApiTestCase
@@ -23,7 +24,7 @@ final class DeleteScheduleBlockControllerTest extends ApiTestCase
         ], $token);
         $this->assertResponseStatusCodeSame(201);
         $createData = $this->getResponseData();
-        $scheduleId = $createData['data']['schedule']['id'];
+        $scheduleId = Json::stringAt($createData, 'data', 'schedule', 'id');
 
         // Delete it
         $this->jsonRequest('DELETE', '/api/therapist/schedule/' . $scheduleId, [], $token);

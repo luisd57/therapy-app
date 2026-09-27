@@ -15,7 +15,6 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\UserId;
 use App\Domain\Appointment\Entity\Appointment;
 use App\Tests\Helper\IntegrationTestCase;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use DateTimeImmutable;
 
@@ -47,7 +46,7 @@ final class SendDailyAgendaCommandTest extends IntegrationTestCase
      */
     private function commandTester(): CommandTester
     {
-        $application = new Application(self::$kernel);
+        $application = self::consoleApplication();
 
         return new CommandTester($application->find('app:send-daily-agenda'));
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Health;
 
+use App\Tests\Helper\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -22,11 +23,11 @@ final class ApiRootControllerTest extends WebTestCase
         $this->client->request('GET', '/api/');
 
         $this->assertResponseIsSuccessful();
-        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
 
-        $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('name', $data['data']);
-        $this->assertArrayHasKey('version', $data['data']);
+        $this->assertTrue(Json::at($data, 'success'));
+        $this->assertArrayHasKey('name', Json::arrayAt($data, 'data'));
+        $this->assertArrayHasKey('version', Json::arrayAt($data, 'data'));
         // Route name and URL are frozen: security.yaml matches ^/api/$ exactly, trailing slash included.
         $this->assertSame('api_index', $this->client->getRequest()->attributes->get('_route'));
     }
@@ -35,7 +36,7 @@ final class ApiRootControllerTest extends WebTestCase
     {
         $this->client->request('GET', '/api/');
 
-        $data = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('endpoints', $data['data']);
+        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('endpoints', Json::arrayAt($data, 'data'));
     }
 }

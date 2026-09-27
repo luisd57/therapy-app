@@ -8,6 +8,7 @@ use App\Application\User\DTO\Input\UpdatePatientProfileInputDTO;
 use App\Application\User\Handler\UpdatePatientProfileHandler;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,22 +31,24 @@ final class UpdatePatientProfileController extends AbstractController
     #[IsGranted('ROLE_PATIENT')]
     public function __invoke(Request $request, UpdatePatientProfileHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateProfileUpdateRequest($data);
+        $errors = $this->validateProfileUpdateRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
+        $address = $jsonBody->object('address');
+
         try {
             $user = $handler->__invoke(new UpdatePatientProfileInputDTO(
                 userId: $this->currentUserId(),
-                phone: $data['phone'] ?? null,
-                street: $data['address']['street'] ?? null,
-                city: $data['address']['city'] ?? null,
-                country: $data['address']['country'] ?? null,
-                postalCode: $data['address']['postal_code'] ?? null,
-                state: $data['address']['state'] ?? null,
+                phone: $jsonBody->optionalString('phone'),
+                street: $address?->optionalString('street'),
+                city: $address?->optionalString('city'),
+                country: $address?->optionalString('country'),
+                postalCode: $address?->optionalString('postal_code'),
+                state: $address?->optionalString('state'),
             ));
 
             return $this->success([
@@ -62,13 +65,15 @@ final class UpdatePatientProfileController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateProfileUpdateRequest(array $data): array
+    private function validateProfileUpdateRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
         // Phone validation (if provided)
-        if (isset($data['phone']) && !empty($data['phone'])) {
-            $phone = preg_replace('/[^0-9+]/', '', $data['phone']);
+        if ($jsonBody->hasNonString('phone')) {
+            $errors['phone'] = 'Phone number must be a string';
+        } elseif ($jsonBody->string('phone') !== '') {
+            $phone = preg_replace('/[^0-9+]/', '', $jsonBody->string('phone'));
             $phoneViolations = $this->validator->validate($phone, [
                 new Assert\Length(
                     min: 7,
@@ -79,24 +84,36 @@ final class UpdatePatientProfileController extends AbstractController
             ]);
 
             if (count($phoneViolations) > 0) {
-                $errors['phone'] = $phoneViolations[0]->getMessage();
+                $errors['phone'] = (string) $phoneViolations->get(0)->getMessage();
             }
         }
 
         // Address validation (if any field is provided, all required fields must be present)
-        if (isset($data['address']) && is_array($data['address'])) {
-            $address = $data['address'];
-            $hasAnyField = !empty($address['street']) || !empty($address['city']) || !empty($address['country']);
+        $address = $jsonBody->object('address');
+        if ($jsonBody->has('address') && $address === null) {
+            $errors['address'] = 'Address must be an object';
+        }
+
+        if ($address !== null) {
+            $hasAnyField = !empty($address->string('street')) || !empty($address->string('city')) || !empty($address->string('country'));
 
             if ($hasAnyField) {
-                if (empty($address['street'])) {
+                if (empty($address->string('street'))) {
                     $errors['address.street'] = 'Street is required when updating address';
                 }
-                if (empty($address['city'])) {
+                if (empty($address->string('city'))) {
                     $errors['address.city'] = 'City is required when updating address';
                 }
-                if (empty($address['country'])) {
+                if (empty($address->string('country'))) {
                     $errors['address.country'] = 'Country is required when updating address';
+                }
+            }
+
+            // After the required checks, so a wrong type reports as that rather than as missing.
+            $labels = ['street' => 'Street', 'city' => 'City', 'country' => 'Country', 'postal_code' => 'Postal code', 'state' => 'State'];
+            foreach ($labels as $key => $label) {
+                if ($address->hasNonString($key)) {
+                    $errors['address.' . $key] = $label . ' must be a string';
                 }
             }
         }

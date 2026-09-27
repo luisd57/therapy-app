@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistSchedule;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
+use PHPUnit\Framework\Attributes\TestWith;
 
 final class AddScheduleExceptionControllerTest extends ApiTestCase
 {
@@ -31,10 +33,10 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['exception', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['exception', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
             ['id', 'start_date_time', 'end_date_time', 'reason', 'is_all_day', 'created_at'],
-            array_keys($data['data']['exception']),
+            array_keys(Json::arrayAt($data, 'data', 'exception')),
             'data.exception keys',
         );
     }
@@ -53,11 +55,11 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseStatusCodeSame(201);
-        $exception = $this->getResponseData()['data']['exception'];
+        $exception = Json::at($this->getResponseData(), 'data', 'exception');
 
         // Caracas is UTC-4, so its midnight is 04:00 the same day in UTC.
-        $this->assertSame('2026-06-01T04:00:00+00:00', $exception['start_date_time']);
-        $this->assertSame('2026-06-02T04:00:00+00:00', $exception['end_date_time']);
+        $this->assertSame('2026-06-01T04:00:00+00:00', Json::at($exception, 'start_date_time'));
+        $this->assertSame('2026-06-02T04:00:00+00:00', Json::at($exception, 'end_date_time'));
     }
 
     public function testAddNonAllDayExceptionKeepsTheSubmittedRangeAndEmitsItInUtc(): void
@@ -72,13 +74,13 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseStatusCodeSame(201);
-        $exception = $this->getResponseData()['data']['exception'];
+        $exception = Json::at($this->getResponseData(), 'data', 'exception');
 
         // The instants the caller sent, unsnapped and restated in UTC. Echoing
         // their offset would disagree with the list response. See ADR-0001.
-        $this->assertSame('2026-06-01T14:00:00+00:00', $exception['start_date_time']);
-        $this->assertSame('2026-06-01T22:00:00+00:00', $exception['end_date_time']);
-        $this->assertSame('2026-05-01T00:00:00+00:00', $exception['created_at']);
+        $this->assertSame('2026-06-01T14:00:00+00:00', Json::at($exception, 'start_date_time'));
+        $this->assertSame('2026-06-01T22:00:00+00:00', Json::at($exception, 'end_date_time'));
+        $this->assertSame('2026-05-01T00:00:00+00:00', Json::at($exception, 'created_at'));
     }
 
     public function testAddExceptionReturns422WithMissingFields(): void
@@ -92,6 +94,22 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
+    }
+
+    #[TestWith(['reason', 42, 'Reason must be a string'])]
+    #[TestWith(['is_all_day', 'false', 'All day must be true or false'])]
+    public function testAddExceptionRejectsAWrongTypedOptionalField(string $field, int|string $value, string $message): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-15T09:00:00-04:00',
+            'end_date_time' => '2026-06-15T17:00:00-04:00',
+            $field => $value,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([$field => $message], Json::at($this->getResponseData(), 'error', 'details'));
     }
 
     public function testAddExceptionUnauthenticatedReturns401(): void

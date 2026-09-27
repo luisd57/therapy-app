@@ -10,6 +10,7 @@ use App\Domain\Appointment\Exception\InvalidLockTokenException;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\User\Exception\IncompleteProfileException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -37,9 +38,9 @@ final class PatientAppointmentController extends AbstractController
         Request $request,
         PatientRequestAppointmentHandler $handler,
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateRequest($data);
+        $errors = $this->validateRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -47,10 +48,10 @@ final class PatientAppointmentController extends AbstractController
         try {
             $result = $handler->__invoke(new PatientRequestAppointmentInputDTO(
                 patientId: $this->currentUserId(),
-                slotStartTime: $data['slot_start_time'],
-                modality: $data['modality'],
-                lockToken: $data['lock_token'] ?? null,
-                requesterTimezone: $data['timezone'] ?? null,
+                slotStartTime: $jsonBody->string('slot_start_time'),
+                modality: $jsonBody->string('modality'),
+                lockToken: $jsonBody->optionalString('lock_token'),
+                requesterTimezone: $jsonBody->optionalString('timezone'),
             ));
 
             $patientData = array_intersect_key($result->toArray(), array_flip([
@@ -74,31 +75,35 @@ final class PatientAppointmentController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateRequest(array $data): array
+    private function validateRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $slotViolations = $this->validator->validate($data['slot_start_time'] ?? '', [
+        $slotViolations = $this->validator->validate($jsonBody->string('slot_start_time'), [
             new Assert\NotBlank(message: 'Slot start time is required'),
         ]);
 
         if (count($slotViolations) > 0) {
-            $errors['slot_start_time'] = $slotViolations[0]->getMessage();
-        } elseif (!$this->isValidInstant($data['slot_start_time'])) {
+            $errors['slot_start_time'] = (string) $slotViolations->get(0)->getMessage();
+        } elseif (!$this->isValidInstant($jsonBody->string('slot_start_time'))) {
             $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
         }
 
-        if (isset($data['timezone']) && !$this->isValidTimezone((string) $data['timezone'])) {
+        if ($jsonBody->has('timezone') && !$this->isValidTimezone($jsonBody->string('timezone'))) {
             $errors['timezone'] = 'Timezone must be an IANA identifier, e.g. Europe/Madrid';
         }
 
-        $modalityViolations = $this->validator->validate($data['modality'] ?? '', [
+        $modalityViolations = $this->validator->validate($jsonBody->string('modality'), [
             new Assert\NotBlank(message: 'Modality is required'),
             new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
         ]);
 
         if (count($modalityViolations) > 0) {
-            $errors['modality'] = $modalityViolations[0]->getMessage();
+            $errors['modality'] = (string) $modalityViolations->get(0)->getMessage();
+        }
+
+        if ($jsonBody->hasNonString('lock_token')) {
+            $errors['lock_token'] = 'Lock token must be a string';
         }
 
         return $errors;

@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Infrastructure\Persistence\Doctrine\Type;
 use App\Domain\User\ValueObject\Phone;
 use App\Infrastructure\Persistence\Doctrine\Type\PhoneType;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Types\Exception\InvalidType;
 use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -68,5 +69,19 @@ final class PhoneTypeTest extends TestCase
         } catch (ValueNotConvertible $exception) {
             $this->assertInstanceOf(InvalidArgumentException::class, $exception->getPrevious());
         }
+    }
+
+    public function testRefusesToStoreAValueThatIsNotAString(): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $this->type->convertToDatabaseValue(42, $this->platform);
+    }
+
+    public function testRefusesToReadAValueThatIsNotAString(): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $this->type->convertToPHPValue(42, $this->platform);
     }
 }

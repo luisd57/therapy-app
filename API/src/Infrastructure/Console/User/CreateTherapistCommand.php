@@ -44,6 +44,11 @@ final class CreateTherapistCommand extends Command
         $name = $input->getArgument('name');
         $password = $input->getArgument('password');
 
+        // Required arguments always arrive as strings. The guard is for the analyser.
+        if (!is_string($email) || !is_string($name) || !is_string($password)) {
+            throw new \LogicException('Required arguments must be strings.');
+        }
+
         $passwordError = PasswordValidator::validate($password);
         if ($passwordError !== null) {
             $io->error($passwordError);

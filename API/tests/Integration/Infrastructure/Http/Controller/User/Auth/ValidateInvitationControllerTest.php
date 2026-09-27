@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 
 final class ValidateInvitationControllerTest extends ApiTestCase
@@ -24,7 +25,7 @@ final class ValidateInvitationControllerTest extends ApiTestCase
         // No email: anyone holding the link could otherwise read who it was sent to.
         $this->assertEqualsCanonicalizing(
             ['id', 'patient_name', 'status', 'created_at', 'expires_at'],
-            array_keys($data['data']),
+            array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );
     }

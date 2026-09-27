@@ -15,42 +15,44 @@ trait ValidatesScheduleBlockRequestTrait
     /**
      * @return array<string, string>
      */
-    private function validateScheduleBlockRequest(ValidatorInterface $validator, array $data): array
+    private function validateScheduleBlockRequest(ValidatorInterface $validator, JsonBody $jsonBody): array
     {
         $errors = [];
 
-        if (!isset($data['day_of_week'])) {
-            $errors['day_of_week'] = 'Day of week is required';
-        } else {
-            $dayViolations = $validator->validate($data['day_of_week'], [
-                new Assert\Range(min: 1, max: 7, notInRangeMessage: 'Day of week must be between 1 (Monday) and 7 (Sunday)'),
-            ]);
+        $dayOfWeek = $jsonBody->int('day_of_week');
 
-            if (!is_numeric($data['day_of_week']) || count($dayViolations) > 0) {
-                $errors['day_of_week'] = 'Day of week must be between 1 (Monday) and 7 (Sunday)';
-            }
+        if (!$jsonBody->has('day_of_week')) {
+            $errors['day_of_week'] = 'Day of week is required';
+        } elseif ($dayOfWeek === null || $dayOfWeek < 1 || $dayOfWeek > 7) {
+            $errors['day_of_week'] = 'Day of week must be between 1 (Monday) and 7 (Sunday)';
         }
 
-        $startViolations = $validator->validate($data['start_time'] ?? '', [
+        $startViolations = $validator->validate($jsonBody->string('start_time'), [
             new Assert\NotBlank(message: 'Start time is required'),
             new Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'Start time must be in HH:MM format'),
         ]);
 
         if (count($startViolations) > 0) {
-            $errors['start_time'] = $startViolations[0]->getMessage();
+            $errors['start_time'] = (string) $startViolations->get(0)->getMessage();
         }
 
-        $endViolations = $validator->validate($data['end_time'] ?? '', [
+        $endViolations = $validator->validate($jsonBody->string('end_time'), [
             new Assert\NotBlank(message: 'End time is required'),
             new Assert\Regex(pattern: '/^\d{2}:\d{2}$/', message: 'End time must be in HH:MM format'),
         ]);
 
         if (count($endViolations) > 0) {
-            $errors['end_time'] = $endViolations[0]->getMessage();
+            $errors['end_time'] = (string) $endViolations->get(0)->getMessage();
         }
 
-        if (empty($errors['start_time']) && empty($errors['end_time']) && ($data['start_time'] ?? '') >= ($data['end_time'] ?? '')) {
+        if (empty($errors['start_time']) && empty($errors['end_time']) && $jsonBody->string('start_time') >= $jsonBody->string('end_time')) {
             $errors['end_time'] = 'End time must be after start time';
+        }
+
+        foreach (['supports_online' => 'Supports online', 'supports_in_person' => 'Supports in person'] as $key => $label) {
+            if ($jsonBody->hasNonBool($key)) {
+                $errors[$key] = $label . ' must be true or false';
+            }
         }
 
         return $errors;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 
 final class CurrentUserControllerTest extends ApiTestCase
@@ -18,7 +19,7 @@ final class CurrentUserControllerTest extends ApiTestCase
         // Login to set the cookie
         $this->client->request('POST', '/api/auth/therapist/login', [], [], [
             'CONTENT_TYPE' => 'application/json',
-        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD]));
+        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD], JSON_THROW_ON_ERROR));
 
         // Call /auth/me - cookie sent automatically
         $this->client->request('GET', '/api/auth/me');
@@ -30,10 +31,10 @@ final class CurrentUserControllerTest extends ApiTestCase
         $this->assertEqualsCanonicalizing([
             'id', 'email', 'full_name', 'role', 'is_active', 'phone',
             'address', 'created_at', 'activated_at', 'timezone',
-        ], array_keys($data['data']), 'data keys');
-        $this->assertNull($data['data']['address']);
-        $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
-        $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
+        ], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertNull(Json::at($data, 'data', 'address'));
+        $this->assertSame(self::THERAPIST_EMAIL, Json::at($data, 'data', 'email'));
+        $this->assertSame('ROLE_THERAPIST', Json::at($data, 'data', 'role'));
     }
 
     public function testAuthMeWithoutCookieReturns401(): void

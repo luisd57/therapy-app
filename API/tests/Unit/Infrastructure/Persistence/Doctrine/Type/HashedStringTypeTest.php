@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Infrastructure\Persistence\Doctrine\Type;
 use App\Infrastructure\Persistence\Doctrine\Type\HashedStringType;
 use App\Infrastructure\Security\SecureTokenGenerator;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Types\Exception\InvalidType;
 use PHPUnit\Framework\TestCase;
 
 final class HashedStringTypeTest extends TestCase
@@ -56,5 +57,12 @@ final class HashedStringTypeTest extends TestCase
     public function testReadsNullAsNull(): void
     {
         $this->assertNull($this->type->convertToPHPValue(null, $this->platform));
+    }
+
+    public function testRefusesToStoreAValueThatIsNotAString(): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $this->type->convertToDatabaseValue(42, $this->platform);
     }
 }

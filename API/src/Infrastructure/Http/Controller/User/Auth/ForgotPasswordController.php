@@ -7,6 +7,7 @@ namespace App\Infrastructure\Http\Controller\User\Auth;
 use App\Application\User\DTO\Input\RequestPasswordResetInputDTO;
 use App\Application\User\Handler\RequestPasswordResetHandler;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,9 +26,9 @@ final class ForgotPasswordController extends AbstractController
     #[Route('/api/auth/password/forgot', name: 'api_forgot_password', methods: ['POST'])]
     public function __invoke(Request $request, RequestPasswordResetHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $violations = $this->validator->validate($data['email'] ?? '', [
+        $violations = $this->validator->validate($jsonBody->string('email'), [
             new Assert\NotBlank(message: 'Email is required'),
             new Assert\Email(message: 'Invalid email format'),
         ]);
@@ -35,13 +36,13 @@ final class ForgotPasswordController extends AbstractController
         if (count($violations) > 0) {
             $errors = [];
             foreach ($violations as $violation) {
-                $errors['email'] = $violation->getMessage();
+                $errors['email'] = (string) $violation->getMessage();
             }
 
             return $this->validationError($errors);
         }
 
-        $handler->__invoke(new RequestPasswordResetInputDTO(email: $data['email']));
+        $handler->__invoke(new RequestPasswordResetInputDTO(email: $jsonBody->string('email')));
 
         // Always return success to prevent email enumeration
         return $this->success([

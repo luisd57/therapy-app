@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistAppointment;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class BookAppointmentControllerTest extends ApiTestCase
 {
@@ -33,9 +34,9 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('CONFIRMED', $data['data']['appointment']['status']);
-        $this->assertSame('Walk-in Patient', $data['data']['appointment']['full_name']);
-        $this->assertSame('Appointment booked successfully.', $data['data']['message']);
+        $this->assertSame('CONFIRMED', Json::at($data, 'data', 'appointment', 'status'));
+        $this->assertSame('Walk-in Patient', Json::at($data, 'data', 'appointment', 'full_name'));
+        $this->assertSame('Appointment booked successfully.', Json::at($data, 'data', 'message'));
     }
 
     public function testBookingForAnUnknownPatientReturns404(): void
@@ -53,6 +54,43 @@ final class BookAppointmentControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(404);
         $this->assertFalse($this->getResponseData()['success']);
+    }
+
+    public function testBookingReadsANullPatientIdAsNoPatient(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+            'patient_id' => null,
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(201);
+        $this->assertNull(Json::at($this->getResponseData(), 'data', 'appointment', 'patient_id'));
+    }
+
+    public function testBookingRejectsANumericPatientIdRatherThanDroppingIt(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+            'patient_id' => 42,
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(
+            ['patient_id' => 'Patient ID must be a string'],
+            Json::at($this->getResponseData(), 'error', 'details'),
+        );
     }
 
     public function testBookAppointmentWithMissingFields(): void

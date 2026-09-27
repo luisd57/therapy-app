@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
 
 final class PatientAppointmentControllerTest extends ApiTestCase
@@ -55,18 +56,33 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
             ['id', 'start_time', 'end_time', 'modality', 'status', 'patient_id', 'created_at'],
-            array_keys($data['data']['appointment']),
+            array_keys(Json::arrayAt($data, 'data', 'appointment')),
             'data.appointment keys',
         );
-        $this->assertSame('REQUESTED', $data['data']['appointment']['status']);
-        $this->assertSame('ONLINE', $data['data']['appointment']['modality']);
-        $this->assertNotNull($data['data']['appointment']['patient_id']);
+        $this->assertSame('REQUESTED', Json::at($data, 'data', 'appointment', 'status'));
+        $this->assertSame('ONLINE', Json::at($data, 'data', 'appointment', 'modality'));
+        $this->assertNotNull(Json::at($data, 'data', 'appointment', 'patient_id'));
     }
 
     // ── Validation errors ─────────────────────────────────────────────
+
+    public function testRequestAppointmentRejectsANumericLockTokenRatherThanDroppingIt(): void
+    {
+        $this->createTherapistWithSchedule();
+        $patientToken = $this->createPatientWithProfileAndGetToken();
+
+        $this->jsonRequest('POST', '/api/patient/appointments', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'lock_token' => 42,
+        ], $patientToken);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(['lock_token' => 'Lock token must be a string'], Json::at($this->getResponseData(), 'error', 'details'));
+    }
 
     public function testRequestAppointmentReturns422WithMissingFields(): void
     {
@@ -119,7 +135,7 @@ final class PatientAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
-        $this->assertSame('INCOMPLETE_PROFILE', $data['error']['code']);
+        $this->assertSame('INCOMPLETE_PROFILE', Json::at($data, 'error', 'code'));
     }
 
     // ── Slot not available ────────────────────────────────────────────

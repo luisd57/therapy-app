@@ -6,6 +6,9 @@ namespace App\Domain\User\ValueObject;
 
 final readonly class Email
 {
+    /**
+     * @param non-empty-string $value
+     */
     private function __construct(
         private string $value,
     ) {
@@ -13,15 +16,18 @@ final readonly class Email
 
     public static function fromString(string $value): self
     {
-        $normalized = strtolower(trim($value));
-        
-        if (!filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
+        $normalized = filter_var(strtolower(trim($value)), FILTER_VALIDATE_EMAIL);
+
+        if ($normalized === false) {
             throw new \InvalidArgumentException('Invalid email format.');
         }
 
         return new self($normalized);
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function getValue(): string
     {
         return $this->value;

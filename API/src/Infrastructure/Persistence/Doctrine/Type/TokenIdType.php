@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class TokenIdType extends GuidType
 {
+    use ReadsStringValueTrait;
+
     public const string NAME = 'token_id';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?TokenId
@@ -21,7 +23,7 @@ final class TokenIdType extends GuidType
         }
 
         try {
-            return TokenId::fromString((string) $value);
+            return TokenId::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class TokenIdType extends GuidType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

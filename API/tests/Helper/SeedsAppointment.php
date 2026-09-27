@@ -15,8 +15,7 @@ trait SeedsAppointment
 {
     protected function createTestAppointment(AppointmentStatus $appointmentStatus = AppointmentStatus::REQUESTED): Appointment
     {
-        // No arm for the terminal statuses: a test asking for one gets an
-        // UnhandledMatchError rather than a silently REQUESTED appointment.
+        // A test asking for a terminal status gets an error rather than a silently REQUESTED appointment.
         $appointment = match ($appointmentStatus) {
             AppointmentStatus::REQUESTED => DomainTestHelper::createRequestedAppointment(
                 fullName: 'Test Patient',
@@ -25,6 +24,9 @@ trait SeedsAppointment
             AppointmentStatus::CONFIRMED => DomainTestHelper::createConfirmedAppointment(
                 fullName: 'Test Patient',
                 email: 'patient@test.com',
+            ),
+            AppointmentStatus::COMPLETED, AppointmentStatus::CANCELLED => throw new \LogicException(
+                'Seed REQUESTED or CONFIRMED, then transition it to reach a terminal status.',
             ),
         };
 

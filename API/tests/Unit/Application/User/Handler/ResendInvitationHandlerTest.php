@@ -14,6 +14,7 @@ use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -75,7 +76,7 @@ final class ResendInvitationHandlerTest extends TestCase
         $this->emailSender->expects($this->once())
             ->method('sendInvitation')
             ->with(
-                $this->callback(fn ($email) => $email->getValue() === 'patient@example.com'),
+                $this->callback(fn (Email $email) => $email->getValue() === 'patient@example.com'),
                 'Jane Doe',
                 self::FRONTEND_URL . '/register?token=' . self::FRESH_TOKEN,
             );

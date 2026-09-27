@@ -90,6 +90,27 @@ final class JwtDecodedListenerTest extends TestCase
         $this->assertTrue($event->isValid());
     }
 
+    public function testRejectsAJtiThatIsNotAString(): void
+    {
+        $this->jwtBlocklist->expects($this->never())->method('isRevoked');
+        $event = new JWTDecodedEvent(['jti' => 42, 'iat' => 1787306400, 'email' => 'user@example.com']);
+
+        $this->listener->onJWTDecoded($event);
+
+        $this->assertFalse($event->isValid());
+    }
+
+    public function testRejectsAnIatThatIsNotAnInteger(): void
+    {
+        $this->jwtBlocklist->method('isRevoked')->willReturn(false);
+        $this->jwtBlocklist->expects($this->never())->method('isRevokedByCutoff');
+        $event = new JWTDecodedEvent(['jti' => 'abc', 'iat' => '1787306400', 'email' => 'user@example.com']);
+
+        $this->listener->onJWTDecoded($event);
+
+        $this->assertFalse($event->isValid());
+    }
+
     public function testLeavesAPayloadWithoutIatAlone(): void
     {
         $this->jwtBlocklist->method('isRevoked')->willReturn(false);

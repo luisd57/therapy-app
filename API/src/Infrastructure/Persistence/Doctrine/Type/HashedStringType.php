@@ -9,6 +9,8 @@ use Doctrine\DBAL\Types\StringType;
 
 final class HashedStringType extends StringType
 {
+    use ReadsStringValueTrait;
+
     public const string NAME = 'hashed_string';
 
     public function convertToDatabaseValue(mixed $value, AbstractPlatform $platform): ?string
@@ -17,7 +19,7 @@ final class HashedStringType extends StringType
             return null;
         }
 
-        $value = (string) $value;
+        $value = self::stringValue($value);
 
         // No "already hashed" shortcut: raw tokens are 64 hex chars too, so a
         // shape check on the digest skips hashing every real token.

@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class SlotLockIdType extends GuidType
 {
+    use ReadsStringValueTrait;
+
     public const string NAME = 'slot_lock_id';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?SlotLockId
@@ -21,7 +23,7 @@ final class SlotLockIdType extends GuidType
         }
 
         try {
-            return SlotLockId::fromString((string) $value);
+            return SlotLockId::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class SlotLockIdType extends GuidType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

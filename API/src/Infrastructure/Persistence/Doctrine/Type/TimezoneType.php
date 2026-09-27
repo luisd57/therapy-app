@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class TimezoneType extends StringType
 {
+    use ReadsStringValueTrait;
+
     public const string NAME = 'timezone';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?Timezone
@@ -21,7 +23,7 @@ final class TimezoneType extends StringType
         }
 
         try {
-            return Timezone::fromString((string) $value);
+            return Timezone::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class TimezoneType extends StringType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

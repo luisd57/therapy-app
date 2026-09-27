@@ -149,6 +149,12 @@ final class AvailabilityComputerTest extends TestCase
         );
     }
 
+    /**
+     * @param list<TherapistSchedule> $schedules
+     * @param list<ScheduleException> $exceptions
+     * @param list<Appointment> $blockingAppointments
+     * @param list<SlotLock> $activeLocks
+     */
     private function createContext(
         array $schedules = [],
         array $exceptions = [],

@@ -8,6 +8,7 @@ use App\Application\User\DTO\Input\ActivatePatientInputDTO;
 use App\Application\User\Handler\ActivatePatientHandler;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\MapsTokenErrorsTrait;
 use App\Infrastructure\Http\Validation\PasswordStrength;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,17 +30,17 @@ final class RegisterController extends AbstractController
     #[Route('/api/auth/register', name: 'api_register', methods: ['POST'])]
     public function __invoke(Request $request, ActivatePatientHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateRegistrationRequest($data);
+        $errors = $this->validateRegistrationRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $user = $handler->__invoke(new ActivatePatientInputDTO(
-                token: $data['token'],
-                password: $data['password'],
+                token: $jsonBody->string('token'),
+                password: $jsonBody->string('password'),
             ));
 
             return $this->created([
@@ -54,28 +55,28 @@ final class RegisterController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateRegistrationRequest(array $data): array
+    private function validateRegistrationRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $tokenViolations = $this->validator->validate($data['token'] ?? '', [
+        $tokenViolations = $this->validator->validate($jsonBody->string('token'), [
             new Assert\NotBlank(message: 'Invitation token is required'),
         ]);
 
         if (count($tokenViolations) > 0) {
-            $errors['token'] = $tokenViolations[0]->getMessage();
+            $errors['token'] = (string) $tokenViolations->get(0)->getMessage();
         }
 
-        $passwordViolations = $this->validator->validate($data['password'] ?? '', [
+        $passwordViolations = $this->validator->validate($jsonBody->string('password'), [
             new Assert\NotBlank(message: 'Password is required'),
             new PasswordStrength(),
         ]);
 
         if (count($passwordViolations) > 0) {
-            $errors['password'] = $passwordViolations[0]->getMessage();
+            $errors['password'] = (string) $passwordViolations->get(0)->getMessage();
         }
 
-        if (($data['password'] ?? '') !== ($data['password_confirmation'] ?? '')) {
+        if ($jsonBody->string('password') !== $jsonBody->string('password_confirmation')) {
             $errors['password_confirmation'] = 'Passwords do not match';
         }
 

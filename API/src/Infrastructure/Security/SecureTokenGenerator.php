@@ -13,10 +13,12 @@ final class SecureTokenGenerator implements TokenGeneratorInterface
      */
     public function generate(int $length = 64): string
     {
-        if ($length < 32) {
+        $bytes = intdiv($length, 2);
+
+        if ($bytes < 16) {
             throw new \InvalidArgumentException('Token length must be at least 32 characters (16 bytes of entropy).');
         }
 
-        return bin2hex(random_bytes(intdiv($length, 2)));
+        return bin2hex(random_bytes($bytes));
     }
 }

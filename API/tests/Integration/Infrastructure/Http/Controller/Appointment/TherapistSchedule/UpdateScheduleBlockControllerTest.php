@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistSchedule;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use Symfony\Component\Uid\Uuid;
 
 final class UpdateScheduleBlockControllerTest extends ApiTestCase
@@ -23,7 +24,7 @@ final class UpdateScheduleBlockControllerTest extends ApiTestCase
         ], $token);
         $this->assertResponseStatusCodeSame(201);
         $createData = $this->getResponseData();
-        $scheduleId = $createData['data']['schedule']['id'];
+        $scheduleId = Json::stringAt($createData, 'data', 'schedule', 'id');
 
         // Update it
         $this->jsonRequest('PUT', '/api/therapist/schedule/' . $scheduleId, [
@@ -37,9 +38,9 @@ final class UpdateScheduleBlockControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('schedule', $data['data']);
-        $this->assertSame('10:00', $data['data']['schedule']['start_time']);
-        $this->assertSame('13:00', $data['data']['schedule']['end_time']);
+        $this->assertArrayHasKey('schedule', Json::arrayAt($data, 'data'));
+        $this->assertSame('10:00', Json::at($data, 'data', 'schedule', 'start_time'));
+        $this->assertSame('13:00', Json::at($data, 'data', 'schedule', 'end_time'));
     }
 
     public function testUpdateScheduleReturns404WhenNotFound(): void

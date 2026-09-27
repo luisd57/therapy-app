@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\PublicAppointment;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
 
 final class GetAvailableSlotsControllerTest extends ApiTestCase
@@ -36,21 +37,21 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(
             ['from', 'to', 'modality', 'practice_timezone', 'slots', 'total_slots'],
-            array_keys($data['data']),
+            array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );
-        $this->assertTrue(array_is_list($data['data']['slots']), 'data.slots is a list');
+        $this->assertTrue(array_is_list(Json::arrayAt($data, 'data', 'slots')), 'data.slots is a list');
         $this->assertEqualsCanonicalizing(
             ['start_time', 'end_time', 'duration_minutes'],
-            array_keys($data['data']['slots'][0]),
+            array_keys(Json::arrayAt($data, 'data', 'slots', 0)),
             'data.slots[0] keys',
         );
-        $this->assertSame('2026-06-01T04:00:00+00:00', $data['data']['from']);
-        $this->assertSame('America/Caracas', $data['data']['practice_timezone']);
-        $this->assertGreaterThan(0, $data['data']['total_slots']);
+        $this->assertSame('2026-06-01T04:00:00+00:00', Json::at($data, 'data', 'from'));
+        $this->assertSame('America/Caracas', Json::at($data, 'data', 'practice_timezone'));
+        $this->assertGreaterThan(0, Json::at($data, 'data', 'total_slots'));
 
         // Every instant is emitted in UTC regardless of the offset the caller used.
-        $this->assertSame('2026-06-01T12:00:00+00:00', $data['data']['slots'][0]['start_time']);
+        $this->assertSame('2026-06-01T12:00:00+00:00', Json::at($data, 'data', 'slots', 0, 'start_time'));
     }
 
     public function testAvailableSlotsReturns422WithMissingFrom(): void
@@ -87,7 +88,7 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('ONLINE', $data['data']['modality']);
-        $this->assertGreaterThan(0, $data['data']['total_slots']);
+        $this->assertSame('ONLINE', Json::at($data, 'data', 'modality'));
+        $this->assertGreaterThan(0, Json::at($data, 'data', 'total_slots'));
     }
 }

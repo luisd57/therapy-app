@@ -48,6 +48,7 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
 
     public function testStoresNullAsNull(): void
     {
+        // @phpstan-ignore method.alreadyNarrowedType (a conditional return type is not checked against the body, this pins it)
         $this->assertNull($this->type->convertToDatabaseValue(null, $this->platform));
     }
 
@@ -70,7 +71,6 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     {
         $dateTime = $this->type->convertToPHPValue($stored, $this->platform);
 
-        $this->assertNotNull($dateTime);
         self::assertInstantIs('2026-03-10T14:00:00+00:00', $dateTime);
         $this->assertSame('UTC', $dateTime->getTimezone()->getName());
     }
@@ -88,13 +88,13 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
 
         $dateTime = $this->type->convertToPHPValue($caracas, $this->platform);
 
-        $this->assertNotNull($dateTime);
         $this->assertSame('UTC', $dateTime->getTimezone()->getName());
         self::assertInstantIs('2026-03-10T14:00:00+00:00', $dateTime);
     }
 
     public function testReadsNullAsNull(): void
     {
+        // @phpstan-ignore method.alreadyNarrowedType (a conditional return type is not checked against the body, this pins it)
         $this->assertNull($this->type->convertToPHPValue(null, $this->platform));
     }
 
@@ -112,5 +112,12 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     public function testDeclaresAZoneAwareColumn(): void
     {
         $this->assertSame('TIMESTAMP(0) WITH TIME ZONE', $this->type->getSQLDeclaration([], $this->platform));
+    }
+
+    public function testRefusesToReadAValueThatIsNotAString(): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $this->type->convertToPHPValue(42, $this->platform);
     }
 }

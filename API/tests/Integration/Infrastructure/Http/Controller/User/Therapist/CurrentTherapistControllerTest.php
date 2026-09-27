@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class CurrentTherapistControllerTest extends ApiTestCase
 {
@@ -17,7 +18,7 @@ final class CurrentTherapistControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
+        $this->assertSame('ROLE_THERAPIST', Json::at($data, 'data', 'role'));
     }
 
     public function testMeUnauthenticatedReturns401(): void

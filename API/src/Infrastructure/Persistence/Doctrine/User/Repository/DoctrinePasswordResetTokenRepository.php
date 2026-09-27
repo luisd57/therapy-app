@@ -56,7 +56,9 @@ final class DoctrinePasswordResetTokenRepository implements PasswordResetTokenRe
             ->setParameter('now', $this->clock->now(), UtcDateTimeImmutableType::NAME)
             ->setMaxResults(1);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        $token = $qb->getQuery()->getOneOrNullResult();
+
+        return $token instanceof PasswordResetToken ? $token : null;
     }
 
     public function delete(PasswordResetToken $token): void

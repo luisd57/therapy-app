@@ -9,6 +9,7 @@ use App\Application\User\Handler\TherapistLoginHandler;
 use App\Domain\User\Exception\InvalidCredentialsException;
 use App\Domain\User\Exception\UserNotActiveException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ValidatesLoginRequestTrait;
 use App\Infrastructure\Security\JwtCookieManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,17 +31,17 @@ final class TherapistLoginController extends AbstractController
     #[Route('/api/auth/therapist/login', name: 'api_therapist_login', methods: ['POST'])]
     public function __invoke(Request $request, TherapistLoginHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateLoginRequest($this->validator, $data);
+        $errors = $this->validateLoginRequest($this->validator, $jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $result = $handler->__invoke(new TherapistLoginInputDTO(
-                email: $data['email'],
-                password: $data['password'],
+                email: $jsonBody->string('email'),
+                password: $jsonBody->string('password'),
             ));
 
             $response = $this->success(['user' => $result->user->toArray()]);
