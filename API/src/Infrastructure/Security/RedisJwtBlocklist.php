@@ -38,7 +38,9 @@ final class RedisJwtBlocklist implements JwtBlocklistInterface
     {
         $item = $this->cache->getItem($this->cutoffKey($userIdentifier));
 
-        return $item->isHit() && $issuedAt <= (int) $item->get();
+        $cutoff = $item->get();
+
+        return $item->isHit() && is_int($cutoff) && $issuedAt <= $cutoff;
     }
 
     private function cacheKey(string $jti): string

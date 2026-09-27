@@ -19,6 +19,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
+use App\Domain\Appointment\Enum\AppointmentModality;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -161,7 +162,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
                 $this->anything(),
                 $this->anything(),
                 $this->anything(),
-                $this->callback(fn ($modality) => $modality !== null && $modality->value === 'ONLINE'),
+                $this->callback(fn (?AppointmentModality $modality) => $modality === AppointmentModality::ONLINE),
             )
             ->willReturn(new ArrayCollection([$slot]));
 

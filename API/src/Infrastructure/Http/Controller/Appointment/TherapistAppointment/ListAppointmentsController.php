@@ -37,7 +37,7 @@ final class ListAppointmentsController extends AbstractController
             ]);
 
             if (count($violations) > 0) {
-                return $this->validationError(['status' => $violations[0]->getMessage()]);
+                return $this->validationError(['status' => (string) $violations->get(0)->getMessage()]);
             }
         }
 

@@ -29,6 +29,7 @@ abstract class ApiTestCase extends WebTestCase
         $this->entityManager->beginTransaction();
     }
 
+    // @phpstan-ignore phpunit.callParent (the rule does not look inside finally, where the call is)
     protected function tearDown(): void
     {
         try {
@@ -41,6 +42,9 @@ abstract class ApiTestCase extends WebTestCase
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function jsonRequest(string $method, string $uri, array $data = [], ?string $token = null): void
     {
         $headers = ['CONTENT_TYPE' => 'application/json'];
@@ -50,12 +54,15 @@ abstract class ApiTestCase extends WebTestCase
             // Clear any lingering auth cookie to ensure truly unauthenticated requests
             $this->client->getCookieJar()->expire(JwtCookieManager::COOKIE_NAME, '/api');
         }
-        $this->client->request($method, $uri, [], [], $headers, json_encode($data));
+        $this->client->request($method, $uri, [], [], $headers, json_encode($data, JSON_THROW_ON_ERROR));
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function getResponseData(): array
     {
-        return json_decode($this->client->getResponse()->getContent(), true);
+        return Json::arrayAt(json_decode((string) $this->client->getResponse()->getContent(), true));
     }
 
     protected function createTherapistAndGetToken(

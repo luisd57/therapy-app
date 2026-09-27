@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class PhoneType extends StringType
 {
+    use ReadsStringValue;
+
     public const string NAME = 'phone';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?Phone
@@ -21,7 +23,7 @@ final class PhoneType extends StringType
         }
 
         try {
-            return Phone::fromString((string) $value);
+            return Phone::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class PhoneType extends StringType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

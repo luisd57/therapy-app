@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class ExceptionIdType extends GuidType
 {
+    use ReadsStringValue;
+
     public const string NAME = 'exception_id';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?ExceptionId
@@ -21,7 +23,7 @@ final class ExceptionIdType extends GuidType
         }
 
         try {
-            return ExceptionId::fromString((string) $value);
+            return ExceptionId::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class ExceptionIdType extends GuidType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

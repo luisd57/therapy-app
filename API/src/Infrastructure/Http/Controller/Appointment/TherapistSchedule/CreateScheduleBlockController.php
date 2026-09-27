@@ -8,6 +8,7 @@ use App\Application\Appointment\DTO\Input\SetTherapistScheduleInputDTO;
 use App\Application\Appointment\Handler\SetTherapistScheduleHandler;
 use App\Domain\Appointment\Exception\ScheduleConflictException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use App\Infrastructure\Http\Controller\ValidatesScheduleBlockRequestTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,9 +32,9 @@ final class CreateScheduleBlockController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(Request $request, SetTherapistScheduleHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $body = JsonBody::fromRequest($request);
 
-        $errors = $this->validateScheduleBlockRequest($this->validator, $data);
+        $errors = $this->validateScheduleBlockRequest($this->validator, $body);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -41,11 +42,11 @@ final class CreateScheduleBlockController extends AbstractController
         try {
             $result = $handler->__invoke(new SetTherapistScheduleInputDTO(
                 therapistId: $this->currentUserId(),
-                dayOfWeek: (int) $data['day_of_week'],
-                startTime: $data['start_time'],
-                endTime: $data['end_time'],
-                supportsOnline: $data['supports_online'] ?? true,
-                supportsInPerson: $data['supports_in_person'] ?? true,
+                dayOfWeek: $body->int('day_of_week') ?? 0,
+                startTime: $body->string('start_time'),
+                endTime: $body->string('end_time'),
+                supportsOnline: $body->bool('supports_online') ?? true,
+                supportsInPerson: $body->bool('supports_in_person') ?? true,
             ));
 
             return $this->created([

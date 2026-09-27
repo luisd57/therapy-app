@@ -12,6 +12,8 @@ use InvalidArgumentException;
 
 final class ScheduleIdType extends GuidType
 {
+    use ReadsStringValue;
+
     public const string NAME = 'schedule_id';
 
     public function convertToPHPValue(mixed $value, AbstractPlatform $platform): ?ScheduleId
@@ -21,7 +23,7 @@ final class ScheduleIdType extends GuidType
         }
 
         try {
-            return ScheduleId::fromString((string) $value);
+            return ScheduleId::fromString(self::stringValue($value));
         } catch (InvalidArgumentException $exception) {
             throw ValueNotConvertible::new($value, static::class, $exception->getMessage(), $exception);
         }
@@ -37,6 +39,6 @@ final class ScheduleIdType extends GuidType
             return $value->getValue();
         }
 
-        return (string) $value;
+        return self::stringValue($value);
     }
 }

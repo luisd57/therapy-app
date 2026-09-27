@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http;
 
 use App\Infrastructure\Security\JwtCookieManager;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 
 /**
@@ -33,8 +34,8 @@ final class JwtCookieTransportTest extends ApiTestCase
         // Verify response body does not contain the token
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayNotHasKey('token', $data['data']);
-        $this->assertArrayHasKey('user', $data['data']);
+        $this->assertArrayNotHasKey('token', Json::arrayAt($data, 'data'));
+        $this->assertArrayHasKey('user', Json::arrayAt($data, 'data'));
     }
 
     /**
@@ -68,7 +69,7 @@ final class JwtCookieTransportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
+        $this->assertSame(self::THERAPIST_EMAIL, Json::at($data, 'data', 'email'));
     }
 
     public function testBearerTokenStillWorksOnProtectedEndpoints(): void
@@ -83,7 +84,7 @@ final class JwtCookieTransportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
+        $this->assertSame(self::THERAPIST_EMAIL, Json::at($data, 'data', 'email'));
     }
 
     public function testFullLoginThenAccessProtectedResourceFlow(): void
@@ -96,7 +97,7 @@ final class JwtCookieTransportTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
+        $this->assertSame(self::THERAPIST_EMAIL, Json::at($data, 'data', 'email'));
     }
 
     public function testSecondLoginReplacesSessionCookieSingleSession(): void
@@ -108,7 +109,7 @@ final class JwtCookieTransportTest extends ApiTestCase
 
         $this->client->request('POST', '/api/auth/patient/login', [], [], [
             'CONTENT_TYPE' => 'application/json',
-        ], json_encode(['email' => self::PATIENT_EMAIL, 'password' => self::PATIENT_PASSWORD]));
+        ], json_encode(['email' => self::PATIENT_EMAIL, 'password' => self::PATIENT_PASSWORD], JSON_THROW_ON_ERROR));
         $patientCookie = $this->client->getCookieJar()->get(JwtCookieManager::COOKIE_NAME, '/api');
         $this->assertNotNull($patientCookie);
         $patientToken = $patientCookie->getValue();
@@ -122,8 +123,8 @@ final class JwtCookieTransportTest extends ApiTestCase
         $this->client->request('GET', '/api/auth/me');
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertSame('ROLE_THERAPIST', $data['data']['role']);
-        $this->assertSame(self::THERAPIST_EMAIL, $data['data']['email']);
+        $this->assertSame('ROLE_THERAPIST', Json::at($data, 'data', 'role'));
+        $this->assertSame(self::THERAPIST_EMAIL, Json::at($data, 'data', 'email'));
     }
 
     /**
@@ -133,6 +134,6 @@ final class JwtCookieTransportTest extends ApiTestCase
     {
         $this->client->request('POST', '/api/auth/therapist/login', [], [], [
             'CONTENT_TYPE' => 'application/json',
-        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD]));
+        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD], JSON_THROW_ON_ERROR));
     }
 }

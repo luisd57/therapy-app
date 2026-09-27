@@ -12,6 +12,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Domain\User\ValueObject\Email;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -121,7 +122,7 @@ final class ActivatePatientHandlerTest extends TestCase
             ->expects($this->once())
             ->method('sendWelcome')
             ->with(
-                $this->callback(fn($email) => $email->getValue() === 'welcome@example.com'),
+                $this->callback(fn (Email $email) => $email->getValue() === 'welcome@example.com'),
                 'Welcome Patient',
             );
 

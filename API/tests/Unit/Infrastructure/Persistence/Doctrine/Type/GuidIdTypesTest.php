@@ -17,13 +17,18 @@ use App\Infrastructure\Persistence\Doctrine\Type\SlotLockIdType;
 use App\Infrastructure\Persistence\Doctrine\Type\TokenIdType;
 use App\Infrastructure\Persistence\Doctrine\Type\UserIdType;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+use Doctrine\DBAL\Types\Exception\InvalidType;
 use Doctrine\DBAL\Types\Exception\ValueNotConvertible;
 use Doctrine\DBAL\Types\GuidType;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/** One file for all six: the types differ only in the id class, and six copies would drift. */
+/**
+ * One file for all six: the types differ only in the id class, and six copies would drift.
+ *
+ * @phpstan-type IdClass class-string<AppointmentId|ExceptionId|ScheduleId|SlotLockId|TokenId|UserId>
+ */
 final class GuidIdTypesTest extends TestCase
 {
     private const string UUID = '01890a5d-ac96-774b-bcce-b302099a8057';
@@ -35,7 +40,7 @@ final class GuidIdTypesTest extends TestCase
         $this->platform = new PostgreSQLPlatform();
     }
 
-    /** @return iterable<string, array{GuidType, class-string}> */
+    /** @return iterable<string, array{GuidType, IdClass}> */
     public static function idTypes(): iterable
     {
         yield 'AppointmentIdType' => [new AppointmentIdType(), AppointmentId::class];
@@ -46,28 +51,28 @@ final class GuidIdTypesTest extends TestCase
         yield 'UserIdType' => [new UserIdType(), UserId::class];
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testStoresTheIdAsItsUuidString(GuidType $type, string $idClass): void
     {
         $this->assertSame(self::UUID, $type->convertToDatabaseValue($idClass::fromString(self::UUID), $this->platform));
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testStoresARawUuidStringUnchanged(GuidType $type, string $idClass): void
     {
         $this->assertSame(self::UUID, $type->convertToDatabaseValue(self::UUID, $this->platform));
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testStoresNullAsNull(GuidType $type, string $idClass): void
     {
         $this->assertNull($type->convertToDatabaseValue(null, $this->platform));
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testReadsAStoredUuidAsTheId(GuidType $type, string $idClass): void
     {
@@ -77,7 +82,7 @@ final class GuidIdTypesTest extends TestCase
         $this->assertSame(self::UUID, $id->getValue());
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testReadsAnAlreadyConvertedIdAsTheSameValue(GuidType $type, string $idClass): void
     {
@@ -87,14 +92,14 @@ final class GuidIdTypesTest extends TestCase
         $this->assertSame(self::UUID, $id->getValue());
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testReadsNullAsNull(GuidType $type, string $idClass): void
     {
         $this->assertNull($type->convertToPHPValue(null, $this->platform));
     }
 
-    /** @param class-string $idClass */
+    /** @param IdClass $idClass */
     #[DataProvider('idTypes')]
     public function testRejectsAMalformedStoredValue(GuidType $type, string $idClass): void
     {
@@ -104,5 +109,14 @@ final class GuidIdTypesTest extends TestCase
         } catch (ValueNotConvertible $exception) {
             $this->assertInstanceOf(InvalidArgumentException::class, $exception->getPrevious());
         }
+    }
+
+    /** @param IdClass $idClass */
+    #[DataProvider('idTypes')]
+    public function testRefusesToStoreAValueThatIsNotAString(GuidType $type, string $idClass): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $type->convertToDatabaseValue(42, $this->platform);
     }
 }

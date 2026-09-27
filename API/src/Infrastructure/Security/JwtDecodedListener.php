@@ -18,7 +18,8 @@ final class JwtDecodedListener
         $payload = $jwtDecodedEvent->getPayload();
         $jti = $payload['jti'] ?? null;
 
-        if ($jti !== null && $this->jwtBlocklist->isRevoked($jti)) {
+        // A claim of the wrong type fails closed: every token we sign carries the right ones.
+        if ($jti !== null && (!is_string($jti) || $this->jwtBlocklist->isRevoked($jti))) {
             $jwtDecodedEvent->markAsInvalid();
 
             return;
@@ -27,7 +28,9 @@ final class JwtDecodedListener
         $issuedAt = $payload['iat'] ?? null;
         $email = $payload['email'] ?? null;
 
-        if ($issuedAt !== null && $email !== null && $this->jwtBlocklist->isRevokedByCutoff((string) $email, (int) $issuedAt)) {
+        if ($issuedAt !== null && $email !== null
+            && (!is_int($issuedAt) || !is_string($email) || $this->jwtBlocklist->isRevokedByCutoff($email, $issuedAt))
+        ) {
             $jwtDecodedEvent->markAsInvalid();
         }
     }

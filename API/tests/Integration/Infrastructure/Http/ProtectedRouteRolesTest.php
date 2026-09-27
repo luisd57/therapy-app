@@ -76,6 +76,7 @@ final class ProtectedRouteRolesTest extends KernelTestCase
 
             // Symfony registers an invokable controller as the bare class name, no "::method"
             $parts = explode('::', $controller);
+            self::assertTrue(class_exists($parts[0]), sprintf('Route %s points at a missing class', $routeName));
             $controllers[$routeName] = [
                 'class' => $parts[0],
                 'method' => $parts[1] ?? '__invoke',
@@ -86,6 +87,7 @@ final class ProtectedRouteRolesTest extends KernelTestCase
         return $controllers;
     }
 
+    /** @param class-string $class */
     private function grantsRole(string $class, string $method, string $role): bool
     {
         $reflectionClass = new \ReflectionClass($class);

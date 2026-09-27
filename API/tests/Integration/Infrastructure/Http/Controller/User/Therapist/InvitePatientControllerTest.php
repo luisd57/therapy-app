@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class InvitePatientControllerTest extends ApiTestCase
 {
@@ -21,13 +22,13 @@ final class InvitePatientControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['invitation', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['invitation', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
             ['id', 'email', 'patient_name', 'status', 'created_at', 'expires_at'],
-            array_keys($data['data']['invitation']),
+            array_keys(Json::arrayAt($data, 'data', 'invitation')),
             'data.invitation keys',
         );
-        $this->assertSame('invited@test.com', $data['data']['invitation']['email']);
+        $this->assertSame('invited@test.com', Json::at($data, 'data', 'invitation', 'email'));
     }
 
     public function testInvitePatientMissingFieldsReturns422(): void

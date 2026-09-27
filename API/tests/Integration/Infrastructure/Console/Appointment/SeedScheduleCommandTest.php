@@ -11,7 +11,6 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -40,7 +39,7 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
 
     private function commandTester(): CommandTester
     {
-        $application = new Application(self::$kernel);
+        $application = self::consoleApplication();
 
         return new CommandTester($application->find('app:seed-schedule'));
     }
@@ -111,7 +110,7 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
         $this->assertStringContainsString('Use --force', $tester->getDisplay());
         $active = $this->scheduleRepository->findActiveByTherapist($therapist->getId());
         $this->assertCount(1, $active);
-        $this->assertTrue($existing->getId()->equals($active->first()->getId()));
+        $this->assertTrue($active->get(0)?->getId()->equals($existing->getId()));
     }
 
     public function testForceDeactivatesExistingBlocksAndReseeds(): void
@@ -126,8 +125,8 @@ final class SeedScheduleCommandTest extends IntegrationTestCase
 
         $tester->assertCommandIsSuccessful();
         $this->entityManager->clear();
-        $this->assertFalse($this->scheduleRepository->findById($monday->getId())->isActive());
-        $this->assertFalse($this->scheduleRepository->findById($saturday->getId())->isActive());
+        $this->assertFalse($this->scheduleRepository->findById($monday->getId())?->isActive());
+        $this->assertFalse($this->scheduleRepository->findById($saturday->getId())?->isActive());
         $this->assertSame(self::SEEDED_BLOCKS, $this->activeBlockSummaries($therapist));
     }
 }

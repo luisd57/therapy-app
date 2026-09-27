@@ -11,19 +11,13 @@ use App\Domain\User\Id\UserId;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use App\Infrastructure\Persistence\Doctrine\Type\UtcDateTimeImmutableType;
 
 final class DoctrineScheduleExceptionRepository implements ScheduleExceptionRepositoryInterface
 {
-    /** @var EntityRepository<ScheduleException> */
-    private EntityRepository $repository;
-
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-    ) {
-        $this->repository = $entityManager->getRepository(ScheduleException::class);
-    }
+    ) {}
 
     public function save(ScheduleException $exception): void
     {

@@ -69,12 +69,14 @@ final class GetTherapistScheduleHandlerTest extends TestCase
         $this->assertCount(2, $result);
 
         $first = $result->first();
+        $this->assertNotFalse($first);
         $this->assertSame(1, $first->dayOfWeek);
         $this->assertSame('Monday', $first->dayName);
         $this->assertSame('09:00', $first->startTime);
         $this->assertSame('12:00', $first->endTime);
 
         $last = $result->last();
+        $this->assertNotFalse($last);
         $this->assertSame(3, $last->dayOfWeek);
         $this->assertSame('Wednesday', $last->dayName);
         $this->assertSame('14:00', $last->startTime);

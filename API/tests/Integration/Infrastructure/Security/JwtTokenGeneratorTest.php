@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Security;
 
 use App\Domain\User\Service\JwtTokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\Json;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -13,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 // mocked JWTTokenManagerInterface would assert only that the wrapper calls the wrapper.
 final class JwtTokenGeneratorTest extends KernelTestCase
 {
-    /** @var array<string, mixed> */
+    /** @var array<mixed> */
     private array $payload;
 
     protected function setUp(): void
@@ -32,8 +33,9 @@ final class JwtTokenGeneratorTest extends KernelTestCase
      */
     public function testTheTokenCarriesAJti(): void
     {
-        $this->assertArrayHasKey('jti', $this->payload);
-        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $this->payload['jti']);
+        $jti = Json::at($this->payload, 'jti');
+        $this->assertIsString($jti);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $jti);
     }
 
     /**
@@ -48,7 +50,7 @@ final class JwtTokenGeneratorTest extends KernelTestCase
 
     public function testTheTokenCarriesTheUsersRoles(): void
     {
-        $this->assertContains('ROLE_THERAPIST', $this->payload['roles']);
+        $this->assertContains('ROLE_THERAPIST', Json::arrayAt($this->payload, 'roles'));
     }
 
     /**
@@ -66,6 +68,11 @@ final class JwtTokenGeneratorTest extends KernelTestCase
     {
         // Absolute, not read back from JWT_TOKEN_TTL: an expectation taken from the same env var
         // the code reads agrees with any value. Change this literal when .env.test changes.
-        $this->assertSame(28800, $this->payload['exp'] - $this->payload['iat']);
+        $exp = Json::at($this->payload, 'exp');
+        $iat = Json::at($this->payload, 'iat');
+        // Integers, not numeric strings: JwtDecodedListener rejects a token whose iat is not one.
+        $this->assertIsInt($exp);
+        $this->assertIsInt($iat);
+        $this->assertSame(28800, $exp - $iat);
     }
 }

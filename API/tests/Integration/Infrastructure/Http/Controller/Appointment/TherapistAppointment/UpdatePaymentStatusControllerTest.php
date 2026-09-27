@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
 
 final class UpdatePaymentStatusControllerTest extends ApiTestCase
@@ -31,7 +32,7 @@ final class UpdatePaymentStatusControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertTrue($data['data']['appointment']['payment_verified']);
+        $this->assertTrue(Json::at($data, 'data', 'appointment', 'payment_verified'));
     }
 
     public function testUpdatePaymentStatusWithMissingField(): void

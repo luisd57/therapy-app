@@ -58,7 +58,7 @@ final class GetAvailableSlotsController extends AbstractController
         ]);
 
         if (count($fromViolations) > 0) {
-            $errors['from'] = $fromViolations[0]->getMessage();
+            $errors['from'] = (string) $fromViolations->get(0)->getMessage();
         } elseif (!$this->isValidInstant($from)) {
             $errors['from'] = 'From must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T00:00:00-04:00';
         }
@@ -68,7 +68,7 @@ final class GetAvailableSlotsController extends AbstractController
         ]);
 
         if (count($toViolations) > 0) {
-            $errors['to'] = $toViolations[0]->getMessage();
+            $errors['to'] = (string) $toViolations->get(0)->getMessage();
         } elseif (!$this->isValidInstant($to)) {
             $errors['to'] = 'To must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-08T00:00:00-04:00';
         }

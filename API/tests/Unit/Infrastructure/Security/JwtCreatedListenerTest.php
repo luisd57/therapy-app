@@ -30,6 +30,7 @@ final class JwtCreatedListenerTest extends TestCase
         $payload = $this->payloadAfterListener();
 
         $this->assertArrayHasKey('jti', $payload);
+        $this->assertIsString($payload['jti']);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $payload['jti']);
     }
 
@@ -61,7 +62,7 @@ final class JwtCreatedListenerTest extends TestCase
     /**
      * @param array<string, mixed> $data
      *
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
     private function payloadAfterListener(array $data = []): array
     {

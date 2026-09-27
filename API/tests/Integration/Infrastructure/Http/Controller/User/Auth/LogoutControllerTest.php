@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Infrastructure\Security\JwtCookieManager;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\KeepsBlocklistAcrossRequests;
 use App\Tests\Helper\SeedsAuthFixtures;
 
@@ -37,7 +38,7 @@ final class LogoutControllerTest extends ApiTestCase
         // Login to get the cookie
         $this->client->request('POST', '/api/auth/therapist/login', [], [], [
             'CONTENT_TYPE' => 'application/json',
-        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD]));
+        ], json_encode(['email' => self::THERAPIST_EMAIL, 'password' => self::THERAPIST_PASSWORD], JSON_THROW_ON_ERROR));
 
         // Logout using only the cookie (no Authorization header)
         $this->client->request('POST', '/api/auth/logout', [], [], [
@@ -46,7 +47,7 @@ final class LogoutControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertSame('Successfully logged out.', $data['data']['message']);
+        $this->assertSame('Successfully logged out.', Json::at($data, 'data', 'message'));
     }
 
     /**

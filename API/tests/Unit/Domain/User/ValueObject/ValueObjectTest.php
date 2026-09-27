@@ -286,14 +286,16 @@ final class ValueObjectTest extends TestCase
 
     // --- UserRole ---
 
-    public function testUserRoleTherapistValue(): void
+    /** The values are the role names security.yaml and #[IsGranted] match on. */
+    public function testUserRoleValuesAreTheSecurityRoleNames(): void
     {
-        $this->assertSame('ROLE_THERAPIST', UserRole::THERAPIST->value);
-    }
+        $valuesByName = [];
+        foreach (UserRole::cases() as $role) {
+            $valuesByName[$role->name] = $role->value;
+        }
 
-    public function testUserRolePatientValue(): void
-    {
-        $this->assertSame('ROLE_PATIENT', UserRole::PATIENT->value);
+        // @phpstan-ignore method.alreadyNarrowedType (the analyser reads the enum, the assertion still pins the stored values)
+        $this->assertSame(['THERAPIST' => 'ROLE_THERAPIST', 'PATIENT' => 'ROLE_PATIENT'], $valuesByName);
     }
 
     public function testUserRoleIsTherapist(): void

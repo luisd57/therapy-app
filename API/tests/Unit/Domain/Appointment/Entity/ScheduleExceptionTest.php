@@ -49,13 +49,14 @@ final class ScheduleExceptionTest extends TestCase
         $therapist = DomainTestHelper::createTherapist();
         $start = new DateTimeImmutable('2026-04-01 09:00');
         $end = new DateTimeImmutable('2026-04-01 12:00');
+        $now = new DateTimeImmutable('2026-03-01T10:00:00+00:00');
 
         $exception = ScheduleException::create(
             id: $id,
             therapist: $therapist,
             startDateTime: $start,
             endDateTime: $end,
-            now: new DateTimeImmutable(),
+            now: $now,
             practiceTimeZone: self::practiceTimeZone(),
             reason: 'Personal day',
             isAllDay: false,
@@ -67,7 +68,7 @@ final class ScheduleExceptionTest extends TestCase
         $this->assertSame($end, $exception->getEndDateTime());
         $this->assertSame('Personal day', $exception->getReason());
         $this->assertFalse($exception->isAllDay());
-        $this->assertNotNull($exception->getCreatedAt());
+        $this->assertSame($now, $exception->getCreatedAt());
     }
 
     public function testCreateWithEmptyReasonTrimsToEmpty(): void

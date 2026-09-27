@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\EventSubscriber;
 
 use App\Infrastructure\Http\EventSubscriber\RateLimitSubscriber;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\KeepsRateLimitsAcrossRequests;
 use App\Tests\Helper\RateLimitedRoutes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -112,7 +113,10 @@ final class RateLimitSubscriberTest extends ApiTestCase
             $object = is_array($listener) ? $listener[0] : $listener;
 
             if ($object instanceof $listenerClass) {
-                return $dispatcher->getListenerPriority(KernelEvents::REQUEST, $listener);
+                $priority = $dispatcher->getListenerPriority(KernelEvents::REQUEST, $listener);
+                self::assertNotNull($priority);
+
+                return $priority;
             }
         }
 
@@ -133,8 +137,8 @@ final class RateLimitSubscriberTest extends ApiTestCase
 
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
-        $this->assertSame('RATE_LIMIT_EXCEEDED', $data['error']['code']);
-        $this->assertSame('Too many requests. Please try again later.', $data['error']['message']);
+        $this->assertSame('RATE_LIMIT_EXCEEDED', Json::at($data, 'error', 'code'));
+        $this->assertSame('Too many requests. Please try again later.', Json::at($data, 'error', 'message'));
 
         $this->assertResponseHeaderSame('X-RateLimit-Limit', (string) $expectedCeiling);
         // The rejected hit is not counted, so this reports the exhausted window, not a negative.

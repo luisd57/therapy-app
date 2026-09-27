@@ -8,6 +8,7 @@ use App\Application\User\DTO\Input\ResetPasswordInputDTO;
 use App\Application\User\Handler\ResetPasswordHandler;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\MapsTokenErrorsTrait;
 use App\Infrastructure\Http\Validation\PasswordStrength;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,17 +30,17 @@ final class ResetPasswordController extends AbstractController
     #[Route('/api/auth/password/reset', name: 'api_reset_password', methods: ['POST'])]
     public function __invoke(Request $request, ResetPasswordHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $body = JsonBody::fromRequest($request);
 
-        $errors = $this->validateResetPasswordRequest($data);
+        $errors = $this->validateResetPasswordRequest($body);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $handler->__invoke(new ResetPasswordInputDTO(
-                token: $data['token'],
-                newPassword: $data['password'],
+                token: $body->string('token'),
+                newPassword: $body->string('password'),
             ));
 
             return $this->success([
@@ -53,25 +54,25 @@ final class ResetPasswordController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateResetPasswordRequest(array $data): array
+    private function validateResetPasswordRequest(JsonBody $body): array
     {
         $errors = [];
 
-        $tokenViolations = $this->validator->validate($data['token'] ?? '', [
+        $tokenViolations = $this->validator->validate($body->string('token'), [
             new Assert\NotBlank(message: 'Reset token is required'),
         ]);
 
         if (count($tokenViolations) > 0) {
-            $errors['token'] = $tokenViolations[0]->getMessage();
+            $errors['token'] = (string) $tokenViolations->get(0)->getMessage();
         }
 
-        $passwordViolations = $this->validator->validate($data['password'] ?? '', [
+        $passwordViolations = $this->validator->validate($body->string('password'), [
             new Assert\NotBlank(message: 'Password is required'),
             new PasswordStrength(),
         ]);
 
         if (count($passwordViolations) > 0) {
-            $errors['password'] = $passwordViolations[0]->getMessage();
+            $errors['password'] = (string) $passwordViolations->get(0)->getMessage();
         }
 
         return $errors;

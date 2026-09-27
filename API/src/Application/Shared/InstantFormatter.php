@@ -14,6 +14,9 @@ use DateTimeZone;
  */
 final readonly class InstantFormatter
 {
+    /**
+     * @return ($instant is null ? null : string)
+     */
     public static function toAtomUtc(?DateTimeImmutable $instant): ?string
     {
         return $instant?->setTimezone(new DateTimeZone('UTC'))->format(DateTimeInterface::ATOM);

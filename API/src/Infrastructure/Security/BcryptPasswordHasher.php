@@ -19,13 +19,7 @@ final class BcryptPasswordHasher implements PasswordHasherInterface
 
     public function hash(string $plainPassword): string
     {
-        $hash = password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => $this->cost]);
-
-        if ($hash === false) {
-            throw new \RuntimeException('Failed to hash password.');
-        }
-
-        return $hash;
+        return password_hash($plainPassword, PASSWORD_BCRYPT, ['cost' => $this->cost]);
     }
 
     public function verify(string $plainPassword, string $hashedPassword): bool

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class ResendInvitationControllerTest extends ApiTestCase
 {
@@ -17,15 +18,15 @@ final class ResendInvitationControllerTest extends ApiTestCase
             'patient_name' => 'Resend Target',
         ], $token);
         $createData = $this->getResponseData();
-        $invitationId = $createData['data']['invitation']['id'];
+        $invitationId = Json::stringAt($createData, 'data', 'invitation', 'id');
 
         $this->jsonRequest('POST', "/api/therapist/invitations/{$invitationId}/resend", [], $token);
 
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('pending', $data['data']['invitation']['status']);
-        $this->assertNotSame($invitationId, $data['data']['invitation']['id']);
+        $this->assertSame('pending', Json::at($data, 'data', 'invitation', 'status'));
+        $this->assertNotSame($invitationId, Json::at($data, 'data', 'invitation', 'id'));
     }
 
     public function testResendInvitationNotFoundReturns404(): void
@@ -38,7 +39,7 @@ final class ResendInvitationControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(404);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
-        $this->assertSame('INVITATION_NOT_FOUND', $data['error']['code']);
+        $this->assertSame('INVITATION_NOT_FOUND', Json::at($data, 'error', 'code'));
     }
 
     public function testResendInvitationAlreadyRevokedReturns409(): void
@@ -49,7 +50,7 @@ final class ResendInvitationControllerTest extends ApiTestCase
             'email' => 'resend-twice@test.com',
             'patient_name' => 'Resend Twice',
         ], $token);
-        $invitationId = $this->getResponseData()['data']['invitation']['id'];
+        $invitationId = Json::stringAt($this->getResponseData(), 'data', 'invitation', 'id');
 
         // First resend revokes the original
         $this->jsonRequest('POST', "/api/therapist/invitations/{$invitationId}/resend", [], $token);
@@ -60,7 +61,7 @@ final class ResendInvitationControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(409);
         $data = $this->getResponseData();
-        $this->assertSame('INVALID_INVITATION_STATE', $data['error']['code']);
+        $this->assertSame('INVALID_INVITATION_STATE', Json::at($data, 'error', 'code'));
     }
 
     public function testResendInvitationUnauthenticatedReturns401(): void

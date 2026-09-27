@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\TherapistSchedule;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use Symfony\Component\Uid\Uuid;
 
 final class RemoveScheduleExceptionControllerTest extends ApiTestCase
@@ -29,7 +30,7 @@ final class RemoveScheduleExceptionControllerTest extends ApiTestCase
         ], $token);
         $this->assertResponseStatusCodeSame(201);
         $createData = $this->getResponseData();
-        $exceptionId = $createData['data']['exception']['id'];
+        $exceptionId = Json::stringAt($createData, 'data', 'exception', 'id');
 
         // Delete it
         $this->jsonRequest('DELETE', '/api/therapist/schedule/exceptions/' . $exceptionId, [], $token);

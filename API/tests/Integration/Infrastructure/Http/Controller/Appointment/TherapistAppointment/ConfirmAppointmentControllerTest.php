@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
 
 final class ConfirmAppointmentControllerTest extends ApiTestCase
@@ -30,8 +31,8 @@ final class ConfirmAppointmentControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertSame('CONFIRMED', $data['data']['appointment']['status']);
-        $this->assertSame('Appointment confirmed successfully.', $data['data']['message']);
+        $this->assertSame('CONFIRMED', Json::at($data, 'data', 'appointment', 'status'));
+        $this->assertSame('Appointment confirmed successfully.', Json::at($data, 'data', 'message'));
     }
 
     public function testConfirmAlreadyConfirmedAppointment(): void

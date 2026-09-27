@@ -68,10 +68,12 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
         $this->assertCount(2, $result);
 
         $first = $result->first();
+        $this->assertNotFalse($first);
         $this->assertSame('Day off', $first->reason);
         $this->assertTrue($first->isAllDay);
 
         $last = $result->last();
+        $this->assertNotFalse($last);
         $this->assertSame('Doctor appointment', $last->reason);
         $this->assertFalse($last->isAllDay);
     }

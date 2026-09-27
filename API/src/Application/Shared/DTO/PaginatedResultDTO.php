@@ -6,12 +6,15 @@ namespace App\Application\Shared\DTO;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * @template T
+ */
 final readonly class PaginatedResultDTO
 {
     public int $totalPages;
 
     /**
-     * @param ArrayCollection<int, mixed> $items
+     * @param ArrayCollection<int, T> $items
      */
     public function __construct(
         public ArrayCollection $items,

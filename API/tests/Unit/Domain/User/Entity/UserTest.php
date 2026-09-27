@@ -121,7 +121,7 @@ final class UserTest extends TestCase
 
         $user->updatePhone($phone, new DateTimeImmutable());
 
-        $this->assertSame('+9876543210', $user->getPhone()->getValue());
+        $this->assertSame('+9876543210', $user->getPhone()?->getValue());
     }
 
     public function testUpdateAddress(): void
@@ -131,7 +131,7 @@ final class UserTest extends TestCase
 
         $user->updateAddress($address, new DateTimeImmutable());
 
-        $this->assertTrue($address->equals($user->getAddress()));
+        $this->assertTrue($user->getAddress()?->equals($address));
     }
 
     public function testDeactivate(): void
@@ -173,8 +173,8 @@ final class UserTest extends TestCase
         $this->assertSame('Test User', $user->getFullName());
         $this->assertSame(UserRole::PATIENT, $user->getRole());
         $this->assertSame('hashed_pw', $user->getPassword());
-        $this->assertTrue($phone->equals($user->getPhone()));
-        $this->assertTrue($address->equals($user->getAddress()));
+        $this->assertTrue($user->getPhone()?->equals($phone));
+        $this->assertTrue($user->getAddress()?->equals($address));
         $this->assertTrue($user->isActive());
         $this->assertSame($createdAt, $user->getCreatedAt());
         $this->assertSame($activatedAt, $user->getActivatedAt());

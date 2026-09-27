@@ -41,8 +41,8 @@ final class ListPatientsHandlerTest extends TestCase
         $result = $this->handler->__invoke(new ListPatientsInputDTO());
 
         $this->assertCount(2, $result->items);
-        $this->assertSame('p1@example.com', $result->items->get(0)->email);
-        $this->assertSame('p2@example.com', $result->items->get(1)->email);
+        $this->assertSame('p1@example.com', $result->items->get(0)?->email);
+        $this->assertSame('p2@example.com', $result->items->get(1)?->email);
         $this->assertSame(2, $result->total);
         $this->assertSame(1, $result->page);
     }

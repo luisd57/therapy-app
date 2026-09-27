@@ -125,7 +125,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         $this->assertNull($result->modality);
         $this->assertSame('America/Caracas', $result->practiceTimezone);
         $this->assertCount(1, $result->slots);
-        $this->assertSame('2025-06-02T13:00:00+00:00', $result->slots->first()->startTime);
+        $this->assertSame('2025-06-02T13:00:00+00:00', $result->slots->get(0)?->startTime);
     }
 
     public function testHandleWithModalityFilter(): void

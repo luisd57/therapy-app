@@ -27,7 +27,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $requestEvent): void
     {
         $request = $requestEvent->getRequest();
-        $route = $request->attributes->get('_route', '');
+        $route = $request->attributes->getString('_route');
         $clientIp = $request->getClientIp() ?? 'unknown';
 
         $limiter = $this->resolveLimiter($route, $clientIp);

@@ -43,7 +43,7 @@ final class ListAppointmentsHandlerTest extends TestCase
         $result = $this->handler->__invoke(new ListAppointmentsInputDTO());
 
         $this->assertCount(1, $result->items);
-        $this->assertSame($appointment->getId()->getValue(), $result->items->first()->id);
+        $this->assertSame($appointment->getId()->getValue(), $result->items->get(0)?->id);
         $this->assertSame(1, $result->total);
         $this->assertSame(1, $result->page);
         $this->assertSame(20, $result->limit);
@@ -68,7 +68,7 @@ final class ListAppointmentsHandlerTest extends TestCase
         $result = $this->handler->__invoke(new ListAppointmentsInputDTO(status: 'REQUESTED'));
 
         $this->assertCount(1, $result->items);
-        $this->assertSame('REQUESTED', $result->items->first()->status);
+        $this->assertSame('REQUESTED', $result->items->get(0)?->status);
         $this->assertSame(1, $result->total);
     }
 

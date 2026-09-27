@@ -34,6 +34,7 @@ final class InstantFormatterTest extends TestCase
 
     public function testNullPassesThrough(): void
     {
+        // @phpstan-ignore method.alreadyNarrowedType (a conditional return type is not checked against the body, this pins it)
         $this->assertNull(InstantFormatter::toAtomUtc(null));
     }
 }

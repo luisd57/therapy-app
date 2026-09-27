@@ -33,8 +33,7 @@ final class PasswordValidatorTest extends TestCase
 
     public function testAcceptsAPasswordExactlyAtTheMaximum(): void
     {
-        $password = 'Ab1!' . str_repeat('x', 68);
-        $this->assertSame(72, strlen($password));
+        $password = str_pad('Ab1!', 72, 'x');
 
         $this->assertNull(PasswordValidator::validate($password));
     }
@@ -44,8 +43,7 @@ final class PasswordValidatorTest extends TestCase
      */
     public function testRejectsAPasswordOneCharacterOverTheMaximum(): void
     {
-        $password = 'Ab1!' . str_repeat('x', 69);
-        $this->assertSame(73, strlen($password));
+        $password = str_pad('Ab1!', 73, 'x');
 
         $this->assertSame('Password must be between 8 and 72 characters', PasswordValidator::validate($password));
     }

@@ -11,7 +11,6 @@ use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Tests\Helper\IntegrationTestCase;
 use App\Tests\Helper\UsesUtcInstants;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
 final class CleanupExpiredLocksCommandTest extends IntegrationTestCase
@@ -50,7 +49,7 @@ final class CleanupExpiredLocksCommandTest extends IntegrationTestCase
         $this->saveLockExpiringAt('expiring-now-lock', '2026-06-15 12:00:00');
         $this->saveLockExpiringAt('live-lock', '2026-06-15 12:05:00');
 
-        $tester = new CommandTester((new Application(self::$kernel))->find('app:cleanup-slot-locks'));
+        $tester = new CommandTester(self::consoleApplication()->find('app:cleanup-slot-locks'));
         $tester->execute([]);
 
         $tester->assertCommandIsSuccessful();

@@ -55,7 +55,8 @@ existing name, so `PatientAppointmentController` is not a breach.
 - Private constructors, immutable (readonly), self-validating
 
 ## Validation (deliberate, do not "fix")
-- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers validate the decoded array with an injected `ValidatorInterface` and return `validationError()` (422, `details` = field → first message). Value Objects are the real guard - attribute validation duplicates their rules and drifts out of sync with them.
+- NO `#[Assert]` attributes on DTOs, NO `#[MapRequestPayload]`. Controllers read the body through `JsonBody`, validate it with an injected `ValidatorInterface` and return `validationError()` (422, `details` = field → first message). Value Objects are the real guard - attribute validation duplicates their rules and drifts out of sync with them.
+- Never index `json_decode()` output in a controller. `JsonBody` reads by type, so a wrong-typed value fails validation instead of reaching a typed constructor as a 500. An optional field of the wrong type gets its own 422 (`hasNonString()`, `hasNonBool()`), never a silent default.
 
 ## Errors (deliberate, do not "fix")
 - NO kernel exception listener. Each action catches the specific domain exceptions it can produce - a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.

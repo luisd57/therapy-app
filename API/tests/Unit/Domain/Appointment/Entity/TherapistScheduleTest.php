@@ -37,6 +37,7 @@ final class TherapistScheduleTest extends TestCase
     {
         $id = ScheduleId::generate();
         $therapist = DomainTestHelper::createTherapist();
+        $now = new DateTimeImmutable('2026-03-01T10:00:00+00:00');
 
         $schedule = TherapistSchedule::create(
             id: $id,
@@ -44,7 +45,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
-            now: new DateTimeImmutable(),
+            now: $now,
             supportsOnline: true,
             supportsInPerson: false,
         );
@@ -57,8 +58,8 @@ final class TherapistScheduleTest extends TestCase
         $this->assertTrue($schedule->isSupportsOnline());
         $this->assertFalse($schedule->isSupportsInPerson());
         $this->assertTrue($schedule->isActive());
-        $this->assertNotNull($schedule->getCreatedAt());
-        $this->assertNotNull($schedule->getUpdatedAt());
+        $this->assertSame($now, $schedule->getCreatedAt());
+        $this->assertSame($now, $schedule->getUpdatedAt());
     }
 
     public function testCreateDefaultsToActiveAndBothModalities(): void

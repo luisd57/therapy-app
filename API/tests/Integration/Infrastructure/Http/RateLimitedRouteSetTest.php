@@ -92,7 +92,7 @@ final class RateLimitedRouteSetTest extends KernelTestCase
             $request->attributes->set('_route', $routeName);
         }
 
-        return new RequestEvent(self::$kernel, $request, HttpKernelInterface::MAIN_REQUEST);
+        return new RequestEvent(self::$kernel ?? self::bootKernel(), $request, HttpKernelInterface::MAIN_REQUEST);
     }
 
     private function subscriber(): RateLimitSubscriber

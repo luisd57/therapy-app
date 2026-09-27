@@ -8,6 +8,7 @@ use App\Application\User\DTO\Input\InvitePatientInputDTO;
 use App\Application\User\Handler\InvitePatientHandler;
 use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
+use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,17 +31,17 @@ final class InvitePatientController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(Request $request, InvitePatientHandler $handler): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $body = JsonBody::fromRequest($request);
 
-        $errors = $this->validateInviteRequest($data);
+        $errors = $this->validateInviteRequest($body);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $invitation = $handler->__invoke(new InvitePatientInputDTO(
-                email: $data['email'],
-                patientName: $data['patient_name'],
+                email: $body->string('email'),
+                patientName: $body->string('patient_name'),
                 therapistId: $this->currentUserId(),
             ));
 
@@ -56,26 +57,26 @@ final class InvitePatientController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateInviteRequest(array $data): array
+    private function validateInviteRequest(JsonBody $body): array
     {
         $errors = [];
 
-        $emailViolations = $this->validator->validate($data['email'] ?? '', [
+        $emailViolations = $this->validator->validate($body->string('email'), [
             new Assert\NotBlank(message: 'Email is required'),
             new Assert\Email(message: 'Invalid email format'),
         ]);
 
         if (count($emailViolations) > 0) {
-            $errors['email'] = $emailViolations[0]->getMessage();
+            $errors['email'] = (string) $emailViolations->get(0)->getMessage();
         }
 
-        $nameViolations = $this->validator->validate($data['patient_name'] ?? '', [
+        $nameViolations = $this->validator->validate($body->string('patient_name'), [
             new Assert\NotBlank(message: 'Patient name is required'),
             new Assert\Length(max: 255, maxMessage: 'Patient name must not exceed 255 characters'),
         ]);
 
         if (count($nameViolations) > 0) {
-            $errors['patient_name'] = $nameViolations[0]->getMessage();
+            $errors['patient_name'] = (string) $nameViolations->get(0)->getMessage();
         }
 
         return $errors;

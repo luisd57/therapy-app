@@ -63,7 +63,7 @@ final class ListScheduleExceptionsController extends AbstractController
         ]);
 
         if (count($fromViolations) > 0) {
-            $errors['from'] = $fromViolations[0]->getMessage();
+            $errors['from'] = (string) $fromViolations->get(0)->getMessage();
         } elseif (!$this->isValidDate($from)) {
             $errors['from'] = 'From date must be a valid date (YYYY-MM-DD)';
         }
@@ -73,7 +73,7 @@ final class ListScheduleExceptionsController extends AbstractController
         ]);
 
         if (count($toViolations) > 0) {
-            $errors['to'] = $toViolations[0]->getMessage();
+            $errors['to'] = (string) $toViolations->get(0)->getMessage();
         } elseif (!$this->isValidDate($to)) {
             $errors['to'] = 'To date must be a valid date (YYYY-MM-DD)';
         }

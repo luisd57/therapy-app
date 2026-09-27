@@ -100,7 +100,7 @@ final class EntityRelationsTest extends IntegrationTestCase
         $reloaded = $appointmentRepository->findById($appointment->getId());
 
         $this->assertNotNull($reloaded);
-        $this->assertTrue($patient->getId()->equals($reloaded->getPatientId()));
+        $this->assertTrue($reloaded->getPatientId()?->equals($patient->getId()));
         $this->assertTrue($this->entityManager->getUnitOfWork()->isUninitializedObject($reloaded->getPatient()));
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Patient;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 
 final class UpdatePatientProfileControllerTest extends ApiTestCase
 {
@@ -52,14 +53,14 @@ final class UpdatePatientProfileControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['user', 'message'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['user', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing([
             'id', 'email', 'full_name', 'role', 'is_active', 'phone',
             'address', 'created_at', 'activated_at', 'timezone',
-        ], array_keys($data['data']['user']), 'data.user keys');
+        ], array_keys(Json::arrayAt($data, 'data', 'user')), 'data.user keys');
         $this->assertEqualsCanonicalizing(
             ['street', 'city', 'country', 'postal_code', 'state'],
-            array_keys($data['data']['user']['address']),
+            array_keys(Json::arrayAt($data, 'data', 'user', 'address')),
             'data.user.address keys',
         );
     }

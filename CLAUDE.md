@@ -39,6 +39,7 @@ Single-therapist practice. Requesters and Patients browse Slots and submit Appoi
 docker-compose up -d                          # Start all containers
 docker-compose exec php bash                  # Shell into PHP container
 docker-compose exec php vendor/bin/phpunit    # Full API suite
+docker-compose exec php vendor/bin/phpstan analyse --memory-limit=1G   # Level 10, no baseline (ADR-0008)
 ```
 
 | Service   | URL                          |

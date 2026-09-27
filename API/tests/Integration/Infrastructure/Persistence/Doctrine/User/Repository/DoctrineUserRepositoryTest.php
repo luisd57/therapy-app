@@ -43,6 +43,7 @@ final class DoctrineUserRepositoryTest extends IntegrationTestCase
         $this->repository->save($user);
 
         $found = $this->repository->findById($user->getId());
+        $this->assertNotNull($found);
         $this->assertSame('new_hashed_pw', $found->getPassword());
     }
 

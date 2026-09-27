@@ -18,6 +18,8 @@ use Exception;
  */
 final class UtcDateTimeImmutableType extends DateTimeImmutableType
 {
+    use ReadsStringValue;
+
     public const string NAME = 'utc_datetime_immutable';
 
     /** Always emitted with an explicit offset so the DB never has to guess. */
@@ -56,10 +58,12 @@ final class UtcDateTimeImmutableType extends DateTimeImmutableType
             return $value->setTimezone(self::utc());
         }
 
+        $stored = self::stringValue($value);
+
         try {
-            return (new DateTimeImmutable((string) $value))->setTimezone(self::utc());
+            return (new DateTimeImmutable($stored))->setTimezone(self::utc());
         } catch (Exception $exception) {
-            throw InvalidFormat::new((string) $value, static::class, self::FORMAT, $exception);
+            throw InvalidFormat::new($stored, static::class, self::FORMAT, $exception);
         }
     }
 

@@ -43,10 +43,10 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('You have been invited to join Therapy App', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('href="' . $url . '"', $html);
         $this->assertStringContainsString('>Complete Registration</a>', $html);
-        $this->assertStringContainsString($url, $this->sentEmail->getTextBody());
+        $this->assertStringContainsString($url, $this->textBody());
     }
 
     public function testPasswordResetEmailContainsResetButton(): void
@@ -58,10 +58,10 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('Password Reset Request', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('href="' . $url . '"', $html);
         $this->assertStringContainsString('>Reset Password</a>', $html);
-        $this->assertStringContainsString($url, $this->sentEmail->getTextBody());
+        $this->assertStringContainsString($url, $this->textBody());
     }
 
     public function testWelcomeEmailContainsLoginButton(): void
@@ -72,12 +72,12 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('Welcome to Therapy App', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $expectedUrl = self::FRONTEND_URL . '/patient-login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
         $this->assertStringContainsString('>Log in</a>', $html);
         $this->assertStringContainsString('Jane Doe', $html);
-        $this->assertStringContainsString($expectedUrl, $this->sentEmail->getTextBody());
+        $this->assertStringContainsString($expectedUrl, $this->textBody());
     }
 
     public function testRequestAcknowledgmentCarriesRequesterNameAndModality(): void
@@ -94,7 +94,7 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('Your Appointment Request Has Been Received', $this->sentEmail->getSubject());
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('John Smith', $html);
         $this->assertStringContainsString('Online', $html);
     }
@@ -112,7 +112,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('Monday, June 15, 2026', $html);
         $this->assertStringContainsString('4:30 PM (Madrid)', $html);
         $this->assertStringNotContainsString('2:30 PM', $html);
@@ -131,7 +131,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('10:30 AM (Caracas)', $html);
         // Both parties read the same clock here, so a second line would only repeat it.
         $this->assertStringNotContainsString("Therapist's time", $html);
@@ -150,14 +150,14 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString(
             "Therapist's time: Monday, June 15, 2026 at 10:30 AM (Caracas)",
             $html,
         );
         $this->assertStringContainsString(
             "Therapist's time: Monday, June 15, 2026 at 10:30 AM (Caracas)",
-            (string) $this->sentEmail->getTextBody(),
+            $this->textBody(),
         );
     }
 
@@ -175,12 +175,12 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('New Appointment Request', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $expectedUrl = self::FRONTEND_URL . '/login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
         $this->assertStringContainsString('>Open Dashboard</a>', $html);
         $this->assertStringContainsString('John Smith', $html);
-        $this->assertStringContainsString($expectedUrl, $this->sentEmail->getTextBody());
+        $this->assertStringContainsString($expectedUrl, $this->textBody());
     }
 
     public function testTherapistNewRequestAlertRendersPracticeZoneAndRequesterTime(): void
@@ -196,7 +196,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('10:30 AM (Caracas)', $html);
         $this->assertStringContainsString(
             "Requester's time: Monday, June 15, 2026 at 4:30 PM (Madrid)",
@@ -218,7 +218,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('10:30 AM (Caracas)', $html);
         $this->assertStringNotContainsString("Requester's time", $html);
     }
@@ -237,7 +237,7 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('Your Appointment Has Been Confirmed', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('Jane Doe', $html);
         $this->assertStringContainsString('Appointment Confirmed', $html);
     }
@@ -256,7 +256,7 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertSame('Your Appointment Has Been Cancelled', $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('Jane Doe', $html);
         $this->assertStringContainsString('Appointment Cancelled', $html);
     }
@@ -274,7 +274,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('4:30 PM (Madrid)', $html);
         $this->assertStringContainsString(
             "Therapist's time: Monday, June 15, 2026 at 10:30 AM (Caracas)",
@@ -296,7 +296,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('4:30 PM (Madrid)', $html);
         $this->assertStringContainsString(
             "Therapist's time: Monday, June 15, 2026 at 10:30 AM (Caracas)",
@@ -318,7 +318,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('10:30 AM (Caracas)', $html);
         $this->assertStringNotContainsString("Therapist's time", $html);
     }
@@ -348,14 +348,14 @@ final class EmailRenderingTest extends TestCase
 
         $this->assertNotNull($this->sentEmail);
         $this->assertStringContainsString('Daily Agenda', (string) $this->sentEmail->getSubject());
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $expectedUrl = self::FRONTEND_URL . '/login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
         $this->assertStringContainsString('>Open Dashboard</a>', $html);
         $this->assertStringContainsString('Alice Patient', $html);
         $this->assertStringContainsString('Bob Patient', $html);
         $this->assertStringContainsString('2 confirmed appointments', $html);
-        $this->assertStringContainsString($expectedUrl, $this->sentEmail->getTextBody());
+        $this->assertStringContainsString($expectedUrl, $this->textBody());
     }
 
     public function testDailyAgendaRendersPracticeZoneAndEachPatientsTime(): void
@@ -385,14 +385,14 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = (string) $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('Monday, June 15, 2026', $html);
         $this->assertStringContainsString('Time (Caracas)', $html);
         $this->assertStringContainsString('>10:30 AM<', $html);
         $this->assertStringContainsString('>12:00 PM<', $html);
         $this->assertStringContainsString('4:30 PM (Madrid)', $html);
         $this->assertStringNotContainsString('2:30 PM', $html);
-        $text = (string) $this->sentEmail->getTextBody();
+        $text = $this->textBody();
         $this->assertStringContainsString('10:30 AM (Caracas) | patient: 4:30 PM (Madrid)', $text);
         // Bob keeps the practice clock, so his line carries no second time.
         $this->assertStringContainsString("12:00 PM (Caracas) | Bob Patient", $text);
@@ -411,7 +411,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $this->assertNotNull($this->sentEmail);
-        $html = $this->sentEmail->getHtmlBody();
+        $html = $this->htmlBody();
         $this->assertStringContainsString('No confirmed appointments for today', $html);
         $expectedUrl = self::FRONTEND_URL . '/login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
@@ -425,6 +425,22 @@ final class EmailRenderingTest extends TestCase
     private static function instant(): DateTimeImmutable
     {
         return new DateTimeImmutable('2026-06-15T14:30:00+00:00');
+    }
+
+    private function htmlBody(): string
+    {
+        $html = $this->sentEmail?->getHtmlBody();
+        $this->assertIsString($html);
+
+        return $html;
+    }
+
+    private function textBody(): string
+    {
+        $text = $this->sentEmail?->getTextBody();
+        $this->assertIsString($text);
+
+        return $text;
     }
 
     private function appointmentSender(): AppointmentEmailSender

@@ -55,3 +55,9 @@ layout rather than syntax. Prose and review still carry those.
 - [ ] Every rule carries a message naming the convention and where it is written down, not just the violation
 - [ ] Introducing each violation deliberately fails the pipeline, one at a time, proving no rule is inert
 - [ ] Full pipeline green
+
+## Comments
+
+**2026-09-27** - Unblocked. Ticket 11 kept `API/tests/` in scope at level 10, so the rules have
+somewhere to run. See ADR-0008. `phpstan.dist.neon` has no `rules:` section yet, and
+`reportIgnoresWithoutComments` is on, so any exemption a rule needs must carry its reason inline.

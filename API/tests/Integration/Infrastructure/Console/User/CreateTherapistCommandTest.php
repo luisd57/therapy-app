@@ -10,7 +10,6 @@ use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Tests\Helper\IntegrationTestCase;
 use App\Tests\Helper\SeedsAuthFixtures;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -29,7 +28,7 @@ final class CreateTherapistCommandTest extends IntegrationTestCase
 
     private function commandTester(): CommandTester
     {
-        $application = new Application(self::$kernel);
+        $application = self::consoleApplication();
 
         return new CommandTester($application->find('app:create-therapist'));
     }
@@ -49,7 +48,7 @@ final class CreateTherapistCommandTest extends IntegrationTestCase
         $this->assertSame('Dr. New Therapist', $therapist->getFullName());
         $this->assertTrue(self::getContainer()->get(PasswordHasherInterface::class)->verify(
             'Therapist1!',
-            $therapist->getPassword(),
+            (string) $therapist->getPassword(),
         ));
     }
 

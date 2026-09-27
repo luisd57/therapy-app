@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\PublicAppointment;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
 
 final class LockSlotControllerTest extends ApiTestCase
@@ -34,7 +35,7 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(
             ['lock_token', 'slot_start_time', 'slot_end_time', 'expires_at'],
-            array_keys($data['data']),
+            array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );
     }
@@ -53,11 +54,11 @@ final class LockSlotControllerTest extends ApiTestCase
 
         // The handler parses the caller's string, so the lock carries their zone
         // until it is formatted. See ADR-0001.
-        $this->assertSame('2026-06-01T13:00:00+00:00', $data['slot_start_time']);
+        $this->assertSame('2026-06-01T13:00:00+00:00', Json::at($data, 'slot_start_time'));
         // End and expiry follow from configured duration and TTL, so pin the zone
         // rather than a value that moves when either is retuned.
-        $this->assertStringEndsWith('+00:00', $data['slot_end_time']);
-        $this->assertStringEndsWith('+00:00', $data['expires_at']);
+        $this->assertStringEndsWith('+00:00', Json::stringAt($data, 'slot_end_time'));
+        $this->assertStringEndsWith('+00:00', Json::stringAt($data, 'expires_at'));
     }
 
     public function testLockSlotReturns422WithMissingFields(): void
@@ -118,7 +119,7 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
-        $this->assertArrayHasKey('slot_start_time', $data['error']['details']);
+        $this->assertArrayHasKey('slot_start_time', Json::arrayAt($data, 'error', 'details'));
     }
 
     public function testLockSlotAcceptsZuluAndOffsetFormsAsTheSameInstant(): void

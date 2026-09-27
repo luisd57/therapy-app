@@ -10,7 +10,7 @@ All of it lives in `API/tests/Helper/`. Read the list before writing a fixture b
 
 Base classes:
 - **DomainTestHelper**: Factory methods for domain objects in controlled states. Use instead of calling constructors directly. Entity factories take the related `User` object, not a `UserId` - see ADR-0007.
-- **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests.
+- **IntegrationTestCase**: Extends KernelTestCase with automatic transaction wrapping. Use for repository tests. `consoleApplication()` gives console tests the booted kernel's application.
 - **ApiTestCase**: Extends WebTestCase with transaction isolation, `jsonRequest()`, `createTherapistAndGetToken()` / `createPatientAndGetToken()`. Use for controller tests.
 - Exception: a test needing neither the database nor auth skips these base classes, since transaction wrapping would buy it nothing. Use `WebTestCase` when it still drives HTTP (`Controller/Health/`, `EventSubscriber/SecurityHeadersSubscriberTest`) and `KernelTestCase` when it works off the container rather than a request (`Application/Appointment/Service/SlotGenerationRulesFactoryTest`, `Http/ProtectedRouteRolesTest`, `Http/RateLimitedRouteSetTest`). Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
@@ -24,6 +24,7 @@ Traits:
 - **KeepsRateLimitsAcrossRequests**: the same swap for both rate limiters, so a sliding window still holds the earlier requests' hits. Call it before the test's first request - the container refuses to replace a service it has already built.
 
 Data:
+- **Json**: `at()`, `arrayAt()` and `stringAt()` read a path in decoded JSON and fail the test on a missing key or wrong type. Use them instead of `$data['data']['id']`, which PHPStan rejects as offset access on `mixed` (ADR-0008).
 - **RateLimitedRoutes**: the rate-limited routes and their ceilings, as `DataProviderExternal` providers plus `urlFor()`, `ceilingFor()`, `names()` and `highestCeiling()`. Not a trait - both rate limit test files read it, and neither should own the list.
 
 Adding or changing a file in `Helper/` updates this list in the same pull request. An undocumented

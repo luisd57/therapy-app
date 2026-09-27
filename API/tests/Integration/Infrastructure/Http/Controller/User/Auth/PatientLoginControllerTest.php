@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 
 final class PatientLoginControllerTest extends ApiTestCase
@@ -20,11 +21,11 @@ final class PatientLoginControllerTest extends ApiTestCase
         $data = $this->getResponseData();
         $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
         // The token travels in the httpOnly cookie only, so no key here may carry it.
-        $this->assertEqualsCanonicalizing(['user'], array_keys($data['data']), 'data keys');
+        $this->assertEqualsCanonicalizing(['user'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing([
             'id', 'email', 'full_name', 'role', 'is_active', 'phone',
             'address', 'created_at', 'activated_at', 'timezone',
-        ], array_keys($data['data']['user']), 'data.user keys');
+        ], array_keys(Json::arrayAt($data, 'data', 'user')), 'data.user keys');
     }
 
     public function testPatientLoginWrongRoleReturns401(): void

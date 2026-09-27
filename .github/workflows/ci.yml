@@ -95,6 +95,12 @@ jobs:
         working-directory: API
         run: php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
 
+      # Level and no-baseline stance: docs/adr/0008. Reads the test container that
+      # composer install just warmed, so it needs no database.
+      - name: Run PHPStan
+        working-directory: API
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
       - name: Create test database
         working-directory: API
         run: php bin/console doctrine:database:create --env=test --if-not-exists --no-interaction

@@ -37,6 +37,9 @@ trait ApiResponseTrait
         ], $status);
     }
 
+    /**
+     * @param array<string, string> $errors
+     */
     protected function validationError(array $errors): JsonResponse
     {
         return new JsonResponse([

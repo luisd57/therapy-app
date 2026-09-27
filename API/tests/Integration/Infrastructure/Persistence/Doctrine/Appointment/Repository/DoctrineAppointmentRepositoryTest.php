@@ -197,9 +197,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findConfirmedByDate($targetDate);
 
-        $this->assertCount(2, $results);
-        $this->assertTrue($earlier->getId()->equals($results->first()->getId()));
-        $this->assertTrue($later->getId()->equals($results->last()->getId()));
+        $this->assertSame([$earlier, $later], $results->toArray());
     }
 
     public function testFindConfirmedByDateReturnsEmptyCollectionWhenNone(): void

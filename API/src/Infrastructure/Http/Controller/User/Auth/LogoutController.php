@@ -41,12 +41,12 @@ final class LogoutController extends AbstractController
             $payload = $jwtEncoder->decode($token);
             $jti = $payload['jti'] ?? null;
 
-            if ($jti === null) {
+            if (!is_string($jti)) {
                 return $this->error('Token has no JTI claim', 'INVALID_TOKEN', 400);
             }
 
             $exp = $payload['exp'] ?? 0;
-            $ttlSeconds = max(0, $exp - time());
+            $ttlSeconds = max(0, (is_int($exp) ? $exp : 0) - time());
             $jwtBlocklist->revoke($jti, $ttlSeconds);
 
             $response = $this->success(['message' => 'Successfully logged out.']);
