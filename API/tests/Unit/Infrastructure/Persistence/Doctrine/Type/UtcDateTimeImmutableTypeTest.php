@@ -113,4 +113,11 @@ final class UtcDateTimeImmutableTypeTest extends TestCase
     {
         $this->assertSame('TIMESTAMP(0) WITH TIME ZONE', $this->type->getSQLDeclaration([], $this->platform));
     }
+
+    public function testRefusesToReadAValueThatIsNotAString(): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $this->type->convertToPHPValue(42, $this->platform);
+    }
 }

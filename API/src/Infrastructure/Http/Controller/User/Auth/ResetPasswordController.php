@@ -30,17 +30,17 @@ final class ResetPasswordController extends AbstractController
     #[Route('/api/auth/password/reset', name: 'api_reset_password', methods: ['POST'])]
     public function __invoke(Request $request, ResetPasswordHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateResetPasswordRequest($body);
+        $errors = $this->validateResetPasswordRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $handler->__invoke(new ResetPasswordInputDTO(
-                token: $body->string('token'),
-                newPassword: $body->string('password'),
+                token: $jsonBody->string('token'),
+                newPassword: $jsonBody->string('password'),
             ));
 
             return $this->success([
@@ -54,11 +54,11 @@ final class ResetPasswordController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateResetPasswordRequest(JsonBody $body): array
+    private function validateResetPasswordRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $tokenViolations = $this->validator->validate($body->string('token'), [
+        $tokenViolations = $this->validator->validate($jsonBody->string('token'), [
             new Assert\NotBlank(message: 'Reset token is required'),
         ]);
 
@@ -66,7 +66,7 @@ final class ResetPasswordController extends AbstractController
             $errors['token'] = (string) $tokenViolations->get(0)->getMessage();
         }
 
-        $passwordViolations = $this->validator->validate($body->string('password'), [
+        $passwordViolations = $this->validator->validate($jsonBody->string('password'), [
             new Assert\NotBlank(message: 'Password is required'),
             new PasswordStrength(),
         ]);

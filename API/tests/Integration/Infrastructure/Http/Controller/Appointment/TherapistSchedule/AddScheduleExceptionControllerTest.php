@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use PHPUnit\Framework\Attributes\TestWith;
 
 final class AddScheduleExceptionControllerTest extends ApiTestCase
 {
@@ -93,6 +94,22 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
+    }
+
+    #[TestWith(['reason', 42, 'Reason must be a string'])]
+    #[TestWith(['is_all_day', 'false', 'All day must be true or false'])]
+    public function testAddExceptionRejectsAWrongTypedOptionalField(string $field, int|string $value, string $message): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule/exceptions', [
+            'start_date_time' => '2026-06-15T09:00:00-04:00',
+            'end_date_time' => '2026-06-15T17:00:00-04:00',
+            $field => $value,
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([$field => $message], Json::at($this->getResponseData(), 'error', 'details'));
     }
 
     public function testAddExceptionUnauthenticatedReturns401(): void

@@ -6,7 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Type;
 
 use Doctrine\DBAL\Types\Exception\InvalidType;
 
-trait ReadsStringValue
+trait ReadsStringValueTrait
 {
     /** The value as a string, or InvalidType when it is neither a string nor Stringable. */
     private static function stringValue(mixed $value): string

@@ -93,6 +93,25 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         $this->assertSame(['phone' => 'Phone number is required'], Json::at($this->getResponseData(), 'error', 'details'));
     }
 
+    public function testRequestAppointmentRejectsANumericLockTokenRatherThanDroppingIt(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => 'john@test.com',
+            'city' => 'New York',
+            'country' => 'US',
+            'lock_token' => 42,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(['lock_token' => 'Lock token must be a string'], Json::at($this->getResponseData(), 'error', 'details'));
+    }
+
     public function testRequestAppointmentReturns409WhenSlotNotAvailable(): void
     {
         // Create therapist but no schedule, so no slots are available

@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class AppointmentIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'appointment_id';
 

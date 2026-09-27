@@ -12,11 +12,11 @@ trait ValidatesLoginRequestTrait
     /**
      * @return array<string, string>
      */
-    private function validateLoginRequest(ValidatorInterface $validator, JsonBody $body): array
+    private function validateLoginRequest(ValidatorInterface $validator, JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $emailViolations = $validator->validate($body->string('email'), [
+        $emailViolations = $validator->validate($jsonBody->string('email'), [
             new Assert\NotBlank(message: 'Email is required'),
             new Assert\Email(message: 'Invalid email format'),
         ]);
@@ -25,7 +25,7 @@ trait ValidatesLoginRequestTrait
             $errors['email'] = (string) $emailViolations->get(0)->getMessage();
         }
 
-        $passwordViolations = $validator->validate($body->string('password'), [
+        $passwordViolations = $validator->validate($jsonBody->string('password'), [
             new Assert\NotBlank(message: 'Password is required'),
         ]);
 

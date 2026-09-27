@@ -58,7 +58,7 @@ There were seven at adoption, all in `tests/`, none in `src/`. Five keep an asse
 can already prove: the `WeekDay` and `UserRole` backing values, which are stored and matched on,
 and three `null` in, `null` out checks through a conditional return type that PHPStan does not check
 against the method body. Two are the `phpunit.callParent` rule not seeing the `parent::tearDown()`
-inside a `finally`. Count them again before quoting this.
+inside a `finally`.
 
 ## Tests are in scope
 
@@ -80,7 +80,9 @@ Real defects, each now covered by a test shown to fail against the old code:
   `phone`, a string sent as `supports_online`. Every controller now reads its body through
   `JsonBody`: a required field of the wrong type reads as missing and gets the usual 422, and an
   optional one of the wrong type gets its own 422 rather than being silently dropped. The worst case
-  was `patient_id`, where a number would have booked the Appointment with no Patient attached.
+  was `patient_id`, where a number would have booked the Appointment with no Patient attached. The
+  profile update dropped a non-object `address` and a wrong-typed `postal_code` or `state` the same
+  way.
 - **`day_of_week: 3.5` was accepted as Wednesday.** It is now rejected.
 - **A JWT claim of the wrong type threw inside the decode listener.** It now fails closed.
 - **The Doctrine types cast anything to a string.** They now refuse a value that is neither a string
@@ -89,8 +91,11 @@ Real defects, each now covered by a test shown to fail against the old code:
 ## Consequences
 
 Tests read decoded JSON through `Json::at()`, `arrayAt()` and `stringAt()` in `tests/Helper`, which
-fail the test on a missing key rather than return `mixed`. Longer than `$data['data']['id']`, and the
-price of analysing the tests at all.
+fail the test on a missing key rather than return `mixed`.
+
+A type guard is not covered just because PHPStan asked for it. Review found fourteen mutations of
+the new guards that left the suite green, and each now has a test that kills it. New guards get one
+too.
 
 What this cannot catch: anything the types do not describe. A value of the right type with the
 wrong meaning, a test asserting the right shape of the wrong thing, and the timezone tautology

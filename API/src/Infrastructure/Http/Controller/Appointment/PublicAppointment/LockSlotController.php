@@ -29,17 +29,17 @@ final class LockSlotController extends AbstractController
     #[Route('/api/appointments/lock-slot', name: 'api_lock_slot', methods: ['POST'])]
     public function __invoke(Request $request, LockSlotHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateLockSlotRequest($body);
+        $errors = $this->validateLockSlotRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $result = $handler->__invoke(new LockSlotInputDTO(
-                slotStartTime: $body->string('slot_start_time'),
-                modality: $body->string('modality'),
+                slotStartTime: $jsonBody->string('slot_start_time'),
+                modality: $jsonBody->string('modality'),
             ));
 
             return $this->created($result->toArray());
@@ -51,21 +51,21 @@ final class LockSlotController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateLockSlotRequest(JsonBody $body): array
+    private function validateLockSlotRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $slotViolations = $this->validator->validate($body->string('slot_start_time'), [
+        $slotViolations = $this->validator->validate($jsonBody->string('slot_start_time'), [
             new Assert\NotBlank(message: 'Slot start time is required'),
         ]);
 
         if (count($slotViolations) > 0) {
             $errors['slot_start_time'] = (string) $slotViolations->get(0)->getMessage();
-        } elseif (!$this->isValidInstant($body->string('slot_start_time'))) {
+        } elseif (!$this->isValidInstant($jsonBody->string('slot_start_time'))) {
             $errors['slot_start_time'] = 'Slot start time must be an ISO-8601 instant with a UTC offset, e.g. 2026-06-01T09:30:00-04:00';
         }
 
-        $modalityViolations = $this->validator->validate($body->string('modality'), [
+        $modalityViolations = $this->validator->validate($jsonBody->string('modality'), [
             new Assert\NotBlank(message: 'Modality is required'),
             new Assert\Choice(choices: ['ONLINE', 'IN_PERSON'], message: 'Modality must be ONLINE or IN_PERSON'),
         ]);

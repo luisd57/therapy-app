@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class ScheduleIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'schedule_id';
 

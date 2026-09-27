@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class ExceptionIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'exception_id';
 

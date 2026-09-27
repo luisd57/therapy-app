@@ -30,17 +30,17 @@ final class RegisterController extends AbstractController
     #[Route('/api/auth/register', name: 'api_register', methods: ['POST'])]
     public function __invoke(Request $request, ActivatePatientHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateRegistrationRequest($body);
+        $errors = $this->validateRegistrationRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $user = $handler->__invoke(new ActivatePatientInputDTO(
-                token: $body->string('token'),
-                password: $body->string('password'),
+                token: $jsonBody->string('token'),
+                password: $jsonBody->string('password'),
             ));
 
             return $this->created([
@@ -55,11 +55,11 @@ final class RegisterController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateRegistrationRequest(JsonBody $body): array
+    private function validateRegistrationRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $tokenViolations = $this->validator->validate($body->string('token'), [
+        $tokenViolations = $this->validator->validate($jsonBody->string('token'), [
             new Assert\NotBlank(message: 'Invitation token is required'),
         ]);
 
@@ -67,7 +67,7 @@ final class RegisterController extends AbstractController
             $errors['token'] = (string) $tokenViolations->get(0)->getMessage();
         }
 
-        $passwordViolations = $this->validator->validate($body->string('password'), [
+        $passwordViolations = $this->validator->validate($jsonBody->string('password'), [
             new Assert\NotBlank(message: 'Password is required'),
             new PasswordStrength(),
         ]);
@@ -76,7 +76,7 @@ final class RegisterController extends AbstractController
             $errors['password'] = (string) $passwordViolations->get(0)->getMessage();
         }
 
-        if ($body->string('password') !== $body->string('password_confirmation')) {
+        if ($jsonBody->string('password') !== $jsonBody->string('password_confirmation')) {
             $errors['password_confirmation'] = 'Passwords do not match';
         }
 

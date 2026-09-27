@@ -32,9 +32,9 @@ final class CreateScheduleBlockController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(Request $request, SetTherapistScheduleHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateScheduleBlockRequest($this->validator, $body);
+        $errors = $this->validateScheduleBlockRequest($this->validator, $jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
@@ -42,11 +42,11 @@ final class CreateScheduleBlockController extends AbstractController
         try {
             $result = $handler->__invoke(new SetTherapistScheduleInputDTO(
                 therapistId: $this->currentUserId(),
-                dayOfWeek: $body->int('day_of_week') ?? 0,
-                startTime: $body->string('start_time'),
-                endTime: $body->string('end_time'),
-                supportsOnline: $body->bool('supports_online') ?? true,
-                supportsInPerson: $body->bool('supports_in_person') ?? true,
+                dayOfWeek: $jsonBody->int('day_of_week') ?? 0,
+                startTime: $jsonBody->string('start_time'),
+                endTime: $jsonBody->string('end_time'),
+                supportsOnline: $jsonBody->bool('supports_online') ?? true,
+                supportsInPerson: $jsonBody->bool('supports_in_person') ?? true,
             ));
 
             return $this->created([

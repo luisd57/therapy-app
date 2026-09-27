@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class EmailType extends StringType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'email';
 

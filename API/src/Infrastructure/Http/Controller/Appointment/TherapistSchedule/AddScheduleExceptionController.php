@@ -32,19 +32,19 @@ final class AddScheduleExceptionController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(Request $request, AddScheduleExceptionHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateExceptionRequest($body);
+        $errors = $this->validateExceptionRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         $result = $handler->__invoke(new AddScheduleExceptionInputDTO(
             therapistId: $this->currentUserId(),
-            startDateTime: $body->string('start_date_time'),
-            endDateTime: $body->string('end_date_time'),
-            reason: $body->string('reason'),
-            isAllDay: $body->bool('is_all_day') ?? false,
+            startDateTime: $jsonBody->string('start_date_time'),
+            endDateTime: $jsonBody->string('end_date_time'),
+            reason: $jsonBody->string('reason'),
+            isAllDay: $jsonBody->bool('is_all_day') ?? false,
         ));
 
         return $this->created([
@@ -56,27 +56,27 @@ final class AddScheduleExceptionController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateExceptionRequest(JsonBody $body): array
+    private function validateExceptionRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $startViolations = $this->validator->validate($body->string('start_date_time'), [
+        $startViolations = $this->validator->validate($jsonBody->string('start_date_time'), [
             new Assert\NotBlank(message: 'Start date/time is required'),
         ]);
 
         if (count($startViolations) > 0) {
             $errors['start_date_time'] = (string) $startViolations->get(0)->getMessage();
-        } elseif (!$this->isValidInstant($body->string('start_date_time'))) {
+        } elseif (!$this->isValidInstant($jsonBody->string('start_date_time'))) {
             $errors['start_date_time'] = 'Start date/time must be an ISO-8601 instant with a UTC offset';
         }
 
-        $endViolations = $this->validator->validate($body->string('end_date_time'), [
+        $endViolations = $this->validator->validate($jsonBody->string('end_date_time'), [
             new Assert\NotBlank(message: 'End date/time is required'),
         ]);
 
         if (count($endViolations) > 0) {
             $errors['end_date_time'] = (string) $endViolations->get(0)->getMessage();
-        } elseif (!$this->isValidInstant($body->string('end_date_time'))) {
+        } elseif (!$this->isValidInstant($jsonBody->string('end_date_time'))) {
             $errors['end_date_time'] = 'End date/time must be an ISO-8601 instant with a UTC offset';
         }
 
@@ -84,16 +84,16 @@ final class AddScheduleExceptionController extends AbstractController
         // '10:00:00+14:00' while being four hours later on the timeline, so a
         // string comparison would wave an inverted range through.
         if (empty($errors)
-            && new \DateTimeImmutable($body->string('start_date_time')) >= new \DateTimeImmutable($body->string('end_date_time'))
+            && new \DateTimeImmutable($jsonBody->string('start_date_time')) >= new \DateTimeImmutable($jsonBody->string('end_date_time'))
         ) {
             $errors['end_date_time'] = 'End date/time must be after start date/time';
         }
 
-        if ($body->hasNonString('reason')) {
+        if ($jsonBody->hasNonString('reason')) {
             $errors['reason'] = 'Reason must be a string';
         }
 
-        if ($body->hasNonBool('is_all_day')) {
+        if ($jsonBody->hasNonBool('is_all_day')) {
             $errors['is_all_day'] = 'All day must be true or false';
         }
 

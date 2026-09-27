@@ -65,8 +65,9 @@ The real defects it found, each with a test shown to fail against the old code:
 
 - A JSON value of the wrong type reached a typed DTO constructor and answered 500. A number as
   `phone` on the public request endpoint, a string as `supports_online`. Now 422.
-- An optional field of the wrong type would have been dropped. A numeric `patient_id` on a
-  therapist booking would have booked the Appointment with no Patient attached. Now 422.
+- An optional field of the wrong type would have been dropped. A numeric `patient_id` on an
+  Appointment the therapist enters would have left it with no Patient attached. The profile update
+  dropped a non-object `address` and a wrong-typed `postal_code` or `state`. Now 422.
 - `day_of_week: 3.5` was accepted and cast to Wednesday. Now 422.
 - A JWT claim of the wrong type threw inside `JwtDecodedListener`. Now fails closed.
 - The Doctrine types cast any value to a string. They now throw `InvalidType` for a value that is
@@ -76,3 +77,7 @@ It also flagged 31 test assertions it could prove always true. Details in ADR-00
 
 Gate checked locally: a planted `return.type` error in `src`, an offset read on `mixed` in
 `tests`, and a bare `@phpstan-ignore` without a reason each fail the analysis.
+
+Review ran the new guards as mutants. Fourteen left the suite green, and each now has a test that
+kills it. One more cannot be reached: `LogoutController` checks `is_string($jti)`, but the logout
+firewall has `JwtDecodedListener` reject a non-string jti with a 401 first.

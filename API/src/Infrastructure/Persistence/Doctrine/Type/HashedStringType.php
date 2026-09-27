@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\StringType;
 
 final class HashedStringType extends StringType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'hashed_string';
 

@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class UserIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'user_id';
 

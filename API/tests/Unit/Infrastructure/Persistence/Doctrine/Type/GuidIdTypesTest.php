@@ -119,4 +119,13 @@ final class GuidIdTypesTest extends TestCase
 
         $type->convertToDatabaseValue(42, $this->platform);
     }
+
+    /** @param IdClass $idClass */
+    #[DataProvider('idTypes')]
+    public function testRefusesToReadAValueThatIsNotAString(GuidType $type, string $idClass): void
+    {
+        $this->expectException(InvalidType::class);
+
+        $type->convertToPHPValue(42, $this->platform);
+    }
 }

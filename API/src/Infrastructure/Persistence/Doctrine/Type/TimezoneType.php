@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class TimezoneType extends StringType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'timezone';
 

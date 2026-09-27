@@ -26,9 +26,9 @@ final class ForgotPasswordController extends AbstractController
     #[Route('/api/auth/password/forgot', name: 'api_forgot_password', methods: ['POST'])]
     public function __invoke(Request $request, RequestPasswordResetHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $violations = $this->validator->validate($body->string('email'), [
+        $violations = $this->validator->validate($jsonBody->string('email'), [
             new Assert\NotBlank(message: 'Email is required'),
             new Assert\Email(message: 'Invalid email format'),
         ]);
@@ -42,7 +42,7 @@ final class ForgotPasswordController extends AbstractController
             return $this->validationError($errors);
         }
 
-        $handler->__invoke(new RequestPasswordResetInputDTO(email: $body->string('email')));
+        $handler->__invoke(new RequestPasswordResetInputDTO(email: $jsonBody->string('email')));
 
         // Always return success to prevent email enumeration
         return $this->success([

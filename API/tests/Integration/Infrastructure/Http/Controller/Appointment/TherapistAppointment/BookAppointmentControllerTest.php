@@ -56,6 +56,23 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertFalse($this->getResponseData()['success']);
     }
 
+    public function testBookingReadsANullPatientIdAsNoPatient(): void
+    {
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+            'patient_id' => null,
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(201);
+        $this->assertNull(Json::at($this->getResponseData(), 'data', 'appointment', 'patient_id'));
+    }
+
     public function testBookingRejectsANumericPatientIdRatherThanDroppingIt(): void
     {
         $this->jsonRequest('POST', '/api/therapist/appointments', [

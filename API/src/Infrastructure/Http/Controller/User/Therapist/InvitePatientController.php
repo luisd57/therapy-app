@@ -31,17 +31,17 @@ final class InvitePatientController extends AbstractController
     #[IsGranted('ROLE_THERAPIST')]
     public function __invoke(Request $request, InvitePatientHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateInviteRequest($body);
+        $errors = $this->validateInviteRequest($jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $invitation = $handler->__invoke(new InvitePatientInputDTO(
-                email: $body->string('email'),
-                patientName: $body->string('patient_name'),
+                email: $jsonBody->string('email'),
+                patientName: $jsonBody->string('patient_name'),
                 therapistId: $this->currentUserId(),
             ));
 
@@ -57,11 +57,11 @@ final class InvitePatientController extends AbstractController
     /**
      * @return array<string, string>
      */
-    private function validateInviteRequest(JsonBody $body): array
+    private function validateInviteRequest(JsonBody $jsonBody): array
     {
         $errors = [];
 
-        $emailViolations = $this->validator->validate($body->string('email'), [
+        $emailViolations = $this->validator->validate($jsonBody->string('email'), [
             new Assert\NotBlank(message: 'Email is required'),
             new Assert\Email(message: 'Invalid email format'),
         ]);
@@ -70,7 +70,7 @@ final class InvitePatientController extends AbstractController
             $errors['email'] = (string) $emailViolations->get(0)->getMessage();
         }
 
-        $nameViolations = $this->validator->validate($body->string('patient_name'), [
+        $nameViolations = $this->validator->validate($jsonBody->string('patient_name'), [
             new Assert\NotBlank(message: 'Patient name is required'),
             new Assert\Length(max: 255, maxMessage: 'Patient name must not exceed 255 characters'),
         ]);

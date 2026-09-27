@@ -18,7 +18,7 @@ use Exception;
  */
 final class UtcDateTimeImmutableType extends DateTimeImmutableType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'utc_datetime_immutable';
 

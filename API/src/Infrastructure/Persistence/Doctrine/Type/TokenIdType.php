@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class TokenIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'token_id';
 

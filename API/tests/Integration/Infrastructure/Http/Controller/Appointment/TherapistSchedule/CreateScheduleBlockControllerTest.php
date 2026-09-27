@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use PHPUnit\Framework\Attributes\TestWith;
 
 final class CreateScheduleBlockControllerTest extends ApiTestCase
 {
@@ -54,6 +55,20 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
         ], $this->getResponseData());
     }
 
+    public function testCreateScheduleAcceptsTheDayOfWeekAsADigitString(): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/schedule', [
+            'day_of_week' => '3',
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(201);
+        $this->assertSame(3, Json::at($this->getResponseData(), 'data', 'schedule', 'day_of_week'));
+    }
+
     public function testCreateScheduleRejectsAFractionalDayOfWeek(): void
     {
         $token = $this->createTherapistAndGetToken();
@@ -71,7 +86,9 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
         );
     }
 
-    public function testCreateScheduleRejectsAStringWhereABooleanIsExpected(): void
+    #[TestWith(['supports_online', 'Supports online must be true or false'])]
+    #[TestWith(['supports_in_person', 'Supports in person must be true or false'])]
+    public function testCreateScheduleRejectsAStringWhereABooleanIsExpected(string $field, string $message): void
     {
         $token = $this->createTherapistAndGetToken();
 
@@ -79,14 +96,11 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
             'day_of_week' => 1,
             'start_time' => '09:00',
             'end_time' => '12:00',
-            'supports_online' => 'false',
+            $field => 'false',
         ], $token);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertSame(
-            ['supports_online' => 'Supports online must be true or false'],
-            Json::at($this->getResponseData(), 'error', 'details'),
-        );
+        $this->assertSame([$field => $message], Json::at($this->getResponseData(), 'error', 'details'));
     }
 
     public function testCreateScheduleReturns409WhenOverlapping(): void

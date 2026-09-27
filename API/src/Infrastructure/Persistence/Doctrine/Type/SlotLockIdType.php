@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class SlotLockIdType extends GuidType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'slot_lock_id';
 

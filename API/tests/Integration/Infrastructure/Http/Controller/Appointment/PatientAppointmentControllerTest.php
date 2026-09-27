@@ -69,6 +69,21 @@ final class PatientAppointmentControllerTest extends ApiTestCase
 
     // ── Validation errors ─────────────────────────────────────────────
 
+    public function testRequestAppointmentRejectsANumericLockTokenRatherThanDroppingIt(): void
+    {
+        $this->createTherapistWithSchedule();
+        $patientToken = $this->createPatientWithProfileAndGetToken();
+
+        $this->jsonRequest('POST', '/api/patient/appointments', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'lock_token' => 42,
+        ], $patientToken);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame(['lock_token' => 'Lock token must be a string'], Json::at($this->getResponseData(), 'error', 'details'));
+    }
+
     public function testRequestAppointmentReturns422WithMissingFields(): void
     {
         $patientToken = $this->createPatientWithProfileAndGetToken();

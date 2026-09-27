@@ -31,17 +31,17 @@ final class PatientLoginController extends AbstractController
     #[Route('/api/auth/patient/login', name: 'api_patient_login', methods: ['POST'])]
     public function __invoke(Request $request, PatientLoginHandler $handler): JsonResponse
     {
-        $body = JsonBody::fromRequest($request);
+        $jsonBody = JsonBody::fromRequest($request);
 
-        $errors = $this->validateLoginRequest($this->validator, $body);
+        $errors = $this->validateLoginRequest($this->validator, $jsonBody);
         if (!empty($errors)) {
             return $this->validationError($errors);
         }
 
         try {
             $result = $handler->__invoke(new PatientLoginInputDTO(
-                email: $body->string('email'),
-                password: $body->string('password'),
+                email: $jsonBody->string('email'),
+                password: $jsonBody->string('password'),
             ));
 
             $response = $this->success(['user' => $result->user->toArray()]);

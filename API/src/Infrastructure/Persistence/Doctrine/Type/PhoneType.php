@@ -12,7 +12,7 @@ use InvalidArgumentException;
 
 final class PhoneType extends StringType
 {
-    use ReadsStringValue;
+    use ReadsStringValueTrait;
 
     public const string NAME = 'phone';
 
