@@ -1,5 +1,7 @@
 # 11 - Adopt PHP static analysis
 
+> Frozen record, resolved 2026-09-27.
+
 **What to build:** the API has a static analysis gate, so the class of bug that
 survives a green test suite is caught before review.
 
@@ -31,14 +33,16 @@ layers. Those are the places where analysis pays for itself.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #97](https://github.com/luisd57/therapy-app/pull/97)
 
 - [x] A static analysis tool is installed and configured for the API
 - [x] The chosen level and the baseline stance are recorded in an ADR, with the reasoning
-- [ ] The analysis runs in continuous integration and a violation fails the build
+- [x] The analysis runs in continuous integration and a violation fails the build
 - [x] The tests directory is in scope or is deliberately excluded with a stated reason
-- [ ] Introducing a deliberate violation fails the pipeline, proving the gate is connected
-- [ ] Full pipeline green
+- [x] Introducing a deliberate violation fails the pipeline, proving the gate is connected
+- [x] Full pipeline green
 
 ## Comments
 
@@ -81,3 +85,9 @@ Gate checked locally: a planted `return.type` error in `src`, an offset read on 
 Review ran the new guards as mutants. Fourteen left the suite green, and each now has a test that
 kills it. One more cannot be reached: `LogoutController` checks `is_string($jti)`, but the logout
 firewall has `JwtDecodedListener` reject a non-string jti with a 401 first.
+
+**2026-09-27** - Gate proven connected in CI on PR #97. A planted `return.type` error in
+`tests/Unit/PlantedViolation.php` failed the `test` job at "Run PHPStan", and PHPUnit was skipped
+(run 36347971610). It went in `tests/` because the skill gate blocks `src/` edits once a PR is open,
+and PHPStan analyses both in the same step. Reverted. The revert leaves the tree identical to
+`8ad95a4`, where both jobs passed (run 36347925500).
