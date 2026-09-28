@@ -33,3 +33,23 @@ land it exercises a grid the practice will never run on.
 - [ ] A Requester can complete a reservation end to end
 - [ ] The suite runs green against the real seeded schedule and 90-minute sessions
 - [ ] Any failure traced to this work is fixed, not skipped or retried around
+
+## Comments
+
+**2026-09-28** - A gap left by `test-suite-hardening/12` (PR #98), recorded here because it is a
+landing e2e check and small enough to fold in.
+
+Since that PR the e2e helpers take `PRACTICE_ZONE` from `PRACTICE_TIMEZONE_FALLBACK` in
+`landing/src/config.ts`, not from the API's `PRACTICE_TIMEZONE`. Ticket 05 accepted the fallback
+because every slots response overwrites it. But `AppointmentFlow.svelte` computes the first
+Modality preselection from the fallback before any fetch. If the API zone changes and the
+fallback does not, a Requester gets the wrong preselection, and both `Preselection` groups stay
+green because they read the same fallback.
+
+The fix is one assertion. `landing/e2e/global-setup.ts` already fetches `next-available-week`,
+and that response carries `practice_timezone`. Fail the setup when it differs from
+`PRACTICE_TIMEZONE_FALLBACK`.
+
+Not worth doing: the stubbed Slot instants in `modality-first.spec.ts` and
+`next-available-week.spec.ts` hardcode the Caracas offset ("08:00 practice-local"). A zone change
+turns them red with a wrong rendered time, which is the failure you want.
