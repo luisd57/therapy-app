@@ -1,5 +1,7 @@
 # 12 - Clear the small drift the audit found
 
+> Frozen record, resolved 2026-09-28.
+
 **What to build:** five unrelated small things the audit turned up, none of them
 worth a ticket alone, all of them cheap and currently costing something.
 
