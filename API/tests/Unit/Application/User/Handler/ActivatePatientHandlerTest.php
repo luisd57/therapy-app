@@ -12,6 +12,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use App\Domain\User\ValueObject\Email;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -20,6 +21,8 @@ use PHPUnit\Framework\TestCase;
 
 final class ActivatePatientHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
@@ -35,7 +38,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new ActivatePatientHandler(
@@ -54,6 +57,7 @@ final class ActivatePatientHandlerTest extends TestCase
             token: 'valid-token',
             email: 'newpatient@example.com',
             patientName: 'New Patient',
+            now: self::utc('2026-06-15 11:00:00'),
         );
 
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
@@ -69,6 +73,7 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->assertSame('New Patient', $result->fullName);
         $this->assertSame('ROLE_PATIENT', $result->role);
         $this->assertTrue($result->isActive);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->activatedAt);
     }
 
     public function testHandleTokenNotFoundThrowsInvalidTokenException(): void
@@ -90,7 +95,7 @@ final class ActivatePatientHandlerTest extends TestCase
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
     {
-        $invitation = DomainTestHelper::createExpiredInvitation();
+        $invitation = DomainTestHelper::createExpiredInvitation(now: self::utc('2026-06-15 12:00:00'));
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);

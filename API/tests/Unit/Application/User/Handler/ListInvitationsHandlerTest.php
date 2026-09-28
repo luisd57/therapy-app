@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Application\User\Handler;
 use App\Application\User\Handler\ListInvitationsHandler;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -14,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 final class ListInvitationsHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
     private ClockInterface&MockObject $clock;
     private ListInvitationsHandler $handler;
@@ -22,14 +25,16 @@ final class ListInvitationsHandlerTest extends TestCase
     {
         $this->invitationRepository = $this->createMock(InvitationTokenRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new ListInvitationsHandler($this->invitationRepository, $this->clock);
     }
 
     public function testHandleReturnsMappedDTOs(): void
     {
-        $inv1 = DomainTestHelper::createValidInvitation(token: 'tok1', email: 'p1@example.com', patientName: 'Patient 1');
-        $inv2 = DomainTestHelper::createValidInvitation(token: 'tok2', email: 'p2@example.com', patientName: 'Patient 2');
+        // Issued an hour before the pinned now with a one-day TTL, so the status turns on the clock.
+        $issuedAt = self::utc('2026-06-15 11:00:00');
+        $inv1 = DomainTestHelper::createValidInvitation(token: 'tok1', email: 'p1@example.com', patientName: 'Patient 1', now: $issuedAt);
+        $inv2 = DomainTestHelper::createValidInvitation(token: 'tok2', email: 'p2@example.com', patientName: 'Patient 2', now: $issuedAt);
 
         $this->invitationRepository
             ->method('findAll')

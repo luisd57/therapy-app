@@ -10,15 +10,21 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 
 final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
 {
+    use UsesUtcInstants;
+
     private SlotLockRepositoryInterface $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // The active-lock queries compare against this instant. Frozen before the repository
+        // is resolved, since it takes the clock at construction.
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->repository = self::getContainer()->get(SlotLockRepositoryInterface::class);
     }
 
@@ -58,7 +64,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'active-token',
             ttlSeconds: 600,
-            now: new DateTimeImmutable(),
+            now: self::utc('2026-05-30 08:55:00'),
         );
         $this->repository->save($activeLock);
 
@@ -78,8 +84,8 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 10:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'expired-token',
-            createdAt: new DateTimeImmutable('-20 minutes'),
-            expiresAt: new DateTimeImmutable('-10 minutes'),
+            createdAt: self::utc('2026-05-30 08:40:00'),
+            expiresAt: self::utc('2026-05-30 08:50:00'),
         );
         $this->repository->save($expiredLock);
 
@@ -99,7 +105,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'keep-active-token',
             ttlSeconds: 600,
-            now: new DateTimeImmutable(),
+            now: self::utc('2026-05-30 08:55:00'),
         );
         $this->repository->save($activeLock);
 
@@ -108,8 +114,8 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 11:00:00'), 50),
             modality: AppointmentModality::IN_PERSON,
             lockToken: 'remove-expired-token',
-            createdAt: new DateTimeImmutable('-30 minutes'),
-            expiresAt: new DateTimeImmutable('-15 minutes'),
+            createdAt: self::utc('2026-05-30 08:30:00'),
+            expiresAt: self::utc('2026-05-30 08:45:00'),
         );
         $this->repository->save($expiredLock);
 

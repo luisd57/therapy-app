@@ -11,15 +11,21 @@ use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\UsesUtcInstants;
 
 final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 {
+    use UsesUtcInstants;
+
     private InvitationTokenRepositoryInterface $repository;
     private User $therapist;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // The expiry queries compare against this instant. Frozen before the repository
+        // is resolved, since it takes the clock at construction.
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->repository = self::getContainer()->get(InvitationTokenRepositoryInterface::class);
 
         $this->therapist = DomainTestHelper::createTherapist(email: 'inviter-' . bin2hex(random_bytes(4)) . '@example.com');
@@ -61,6 +67,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
             token: 'valid-email-token',
             email: 'valid@example.com',
             invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 08:00:00'),
         );
         $this->repository->save($invitation);
 
@@ -76,6 +83,7 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
             token: 'expired-only-token',
             email: 'expired-only@example.com',
             invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 09:00:00'),
         );
         $this->repository->save($expired);
 
@@ -98,8 +106,18 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testFindPendingInvitationsReturnsOnlyValidTokens(): void
     {
-        $valid = DomainTestHelper::createValidInvitation(token: 'pending-valid', email: 'pv@example.com', invitedBy: $this->therapist);
-        $expired = DomainTestHelper::createExpiredInvitation(token: 'pending-expired', email: 'pe@example.com', invitedBy: $this->therapist);
+        $valid = DomainTestHelper::createValidInvitation(
+            token: 'pending-valid',
+            email: 'pv@example.com',
+            invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 08:00:00'),
+        );
+        $expired = DomainTestHelper::createExpiredInvitation(
+            token: 'pending-expired',
+            email: 'pe@example.com',
+            invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 09:00:00'),
+        );
         $used = DomainTestHelper::createUsedInvitation(token: 'pending-used', email: 'pu@example.com', invitedBy: $this->therapist);
 
         $this->repository->save($valid);
@@ -116,8 +134,18 @@ final class DoctrineInvitationTokenRepositoryTest extends IntegrationTestCase
 
     public function testDeleteExpiredRemovesExpiredAndReturnsCount(): void
     {
-        $valid = DomainTestHelper::createValidInvitation(token: 'de-valid', email: 'de-v@example.com', invitedBy: $this->therapist);
-        $expired = DomainTestHelper::createExpiredInvitation(token: 'de-expired', email: 'de-e@example.com', invitedBy: $this->therapist);
+        $valid = DomainTestHelper::createValidInvitation(
+            token: 'de-valid',
+            email: 'de-v@example.com',
+            invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 08:00:00'),
+        );
+        $expired = DomainTestHelper::createExpiredInvitation(
+            token: 'de-expired',
+            email: 'de-e@example.com',
+            invitedBy: $this->therapist,
+            now: self::utc('2026-05-30 09:00:00'),
+        );
 
         $this->repository->save($valid);
         $this->repository->save($expired);

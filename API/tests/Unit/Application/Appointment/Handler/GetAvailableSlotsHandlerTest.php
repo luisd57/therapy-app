@@ -12,6 +12,7 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
@@ -25,6 +26,8 @@ use PHPUnit\Framework\TestCase;
 
 final class GetAvailableSlotsHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
@@ -41,7 +44,7 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         // Real collaborators: both are pure configuration with no I/O, so
         // mocking them would only restate their behaviour.
@@ -107,9 +110,22 @@ final class GetAvailableSlotsHandlerTest extends TestCase
             50,
         );
 
+        $passedNow = null;
         $this->availabilityComputer
             ->method('computeAvailableSlots')
-            ->willReturn(new ArrayCollection([$slot]));
+            ->willReturnCallback(
+                function (
+                    mixed $context,
+                    mixed $rules,
+                    mixed $from,
+                    mixed $to,
+                    \DateTimeImmutable $now,
+                ) use (&$passedNow, $slot): ArrayCollection {
+                    $passedNow = $now;
+
+                    return new ArrayCollection([$slot]);
+                },
+            );
 
         $input = new GetAvailableSlotsInputDTO(
             from: '2025-06-02T00:00:00-04:00',
@@ -117,6 +133,10 @@ final class GetAvailableSlotsHandlerTest extends TestCase
         );
 
         $result = $this->handler->__invoke($input);
+
+        // Slots before "now" are filtered by the computer, so it must get the injected clock's instant.
+        $this->assertInstanceOf(\DateTimeImmutable::class, $passedNow);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $passedNow);
 
         // The window is echoed back normalised to UTC, so a client can see
         // exactly which instants the server understood.

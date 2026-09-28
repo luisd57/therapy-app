@@ -13,6 +13,7 @@ use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,6 +21,8 @@ use PHPUnit\Framework\TestCase;
 
 final class InvitePatientHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
@@ -35,7 +38,7 @@ final class InvitePatientHandlerTest extends TestCase
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->userRepository->method('getByIdOrFail')->willReturn(DomainTestHelper::createTherapist());
 
@@ -70,6 +73,8 @@ final class InvitePatientHandlerTest extends TestCase
         $this->assertSame('newpatient@example.com', $result->email);
         $this->assertSame('New Patient', $result->patientName);
         $this->assertSame('pending', $result->status);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
+        $this->assertSame('2026-06-16T12:00:00+00:00', $result->expiresAt);
     }
 
     public function testHandleUserAlreadyExistsThrowsException(): void
@@ -91,6 +96,7 @@ final class InvitePatientHandlerTest extends TestCase
         $existingInvitation = DomainTestHelper::createValidInvitation(
             email: 'patient@example.com',
             patientName: 'Already Invited',
+            now: self::utc('2026-06-15 11:00:00'),
         );
 
         $this->userRepository->method('existsByEmail')->willReturn(false);
@@ -107,6 +113,7 @@ final class InvitePatientHandlerTest extends TestCase
         $result = $this->handler->__invoke($input);
 
         $this->assertSame('patient@example.com', $result->email);
+        $this->assertSame('pending', $result->status);
     }
 
     public function testHandleSuccessGeneratesCorrectRegistrationUrl(): void

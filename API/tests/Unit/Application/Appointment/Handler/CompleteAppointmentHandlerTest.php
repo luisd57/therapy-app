@@ -12,11 +12,14 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class CompleteAppointmentHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private ClockInterface&MockObject $clock;
     private CompleteAppointmentHandler $handler;
@@ -25,7 +28,7 @@ final class CompleteAppointmentHandlerTest extends TestCase
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new CompleteAppointmentHandler($this->appointmentRepository, $this->clock);
     }
 
@@ -48,6 +51,7 @@ final class CompleteAppointmentHandlerTest extends TestCase
         ));
 
         $this->assertSame('COMPLETED', $result->status);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testCompleteRequestedAppointmentThrowsException(): void

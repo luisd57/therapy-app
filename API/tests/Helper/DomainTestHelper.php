@@ -265,7 +265,10 @@ final class DomainTestHelper
         string $token = 'expired-token',
         string $email = 'expired@example.com',
         ?User $invitedBy = null,
+        ?DateTimeImmutable $now = null,
     ): InvitationToken {
+        $now ??= new DateTimeImmutable();
+
         return InvitationToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
@@ -273,8 +276,8 @@ final class DomainTestHelper
             patientName: 'Expired Patient',
             invitedBy: $invitedBy ?? self::createTherapist(),
             isUsed: false,
-            createdAt: new DateTimeImmutable('-2 hours'),
-            expiresAt: new DateTimeImmutable('-1 hour'),
+            createdAt: $now->modify('-2 hours'),
+            expiresAt: $now->modify('-1 hour'),
             usedAt: null,
         );
     }
@@ -361,14 +364,17 @@ final class DomainTestHelper
     public static function createExpiredPasswordResetToken(
         string $token = 'expired-reset-token',
         ?User $user = null,
+        ?DateTimeImmutable $now = null,
     ): PasswordResetToken {
+        $now ??= new DateTimeImmutable();
+
         return PasswordResetToken::reconstitute(
             id: TokenId::generate(),
             token: $token,
             user: $user ?? self::createActivePatient(),
             isUsed: false,
-            createdAt: new DateTimeImmutable('-2 hours'),
-            expiresAt: new DateTimeImmutable('-1 hour'),
+            createdAt: $now->modify('-2 hours'),
+            expiresAt: $now->modify('-1 hour'),
             usedAt: null,
         );
     }

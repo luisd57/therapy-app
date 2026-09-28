@@ -58,3 +58,10 @@ Appointment repository test (6 of its 10), the Schedule Exception repository tes
 - [ ] The temporary past-Instant guard leaves the whole Integration suite green, not only the controller tests
 - [ ] The Therapist schedule repository test is left unchanged, with the reason stated in the pull request
 - [ ] Full API suite green
+
+**2026-09-28** - Ticket 13 froze the clock in the Slot Lock repository test and gave
+literal instants to the three methods whose query reads it:
+`testFindActiveByTimeSlotReturnsActiveLock`, `testFindActiveByTimeSlotIgnoresExpiredLock`
+and `testDeleteExpiredRemovesOnlyExpiredLocks`. Their Slot start times are still naive
+June 2026 strings, so they stay in scope here along with the file's other three
+methods. Re-measure before picking this up.

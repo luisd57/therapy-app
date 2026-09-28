@@ -16,6 +16,9 @@ final class GetNextAvailableWeekControllerTest extends ApiTestCase
 
     public function testNextAvailableWeekReturns200WithSchedule(): void
     {
+        // Saturday 05:00 in Caracas. The week runs from that practice-local midnight and
+        // takes in Monday's block, so the first week searched is the one returned.
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->createTherapistWithSchedule();
 
         $this->client->request('GET', '/api/appointments/next-available-week');
@@ -36,8 +39,8 @@ final class GetNextAvailableWeekControllerTest extends ApiTestCase
             'data.slots[0] keys',
         );
         $this->assertTrue(Json::at($data, 'data', 'found'));
-        $this->assertNotNull(Json::at($data, 'data', 'week_start'));
-        $this->assertNotNull(Json::at($data, 'data', 'week_end'));
+        $this->assertSame('2026-05-30T04:00:00+00:00', Json::at($data, 'data', 'week_start'));
+        $this->assertSame('2026-06-06T04:00:00+00:00', Json::at($data, 'data', 'week_end'));
         $this->assertGreaterThan(0, Json::at($data, 'data', 'total_slots'));
         $this->assertSame('America/Caracas', Json::at($data, 'data', 'practice_timezone'));
     }

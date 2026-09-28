@@ -26,6 +26,7 @@ use App\Domain\User\ValueObject\Timezone;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -34,6 +35,8 @@ use PHPUnit\Framework\TestCase;
 
 final class AppointmentRequestServiceTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private SlotLockRepositoryInterface&MockObject $slotLockRepository;
@@ -55,7 +58,7 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->availabilityComputer = $this->createMock(AvailabilityComputerInterface::class);
         $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $practiceTimezoneProvider = new EnvPracticeTimezoneProvider('America/Caracas');
@@ -156,6 +159,7 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->assertSame('Berlin', $result->city);
         $this->assertSame('Germany', $result->country);
         $this->assertNull($result->patientId);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
     }
 
     public function testRequestAppointmentPassesRequesterTimezoneToBothEmails(): void
@@ -197,8 +201,8 @@ final class AppointmentRequestServiceTest extends TestCase
             timeSlot: $timeSlot,
             modality: AppointmentModality::ONLINE,
             lockToken: 'valid-lock-token',
-            createdAt: new \DateTimeImmutable(),
-            expiresAt: new \DateTimeImmutable('+10 minutes'),
+            createdAt: self::utc('2026-06-15 12:00:00'),
+            expiresAt: self::utc('2026-06-15 12:10:00'),
         );
 
         $this->slotLockRepository

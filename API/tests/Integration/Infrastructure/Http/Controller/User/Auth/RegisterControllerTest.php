@@ -7,14 +7,23 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
+use App\Tests\Helper\UsesUtcInstants;
 
 final class RegisterControllerTest extends ApiTestCase
 {
     use SeedsAuthFixtures;
+    use UsesUtcInstants;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // The handler checks the invitation's expiry against this instant.
+        $this->freezeClock('2026-05-30 09:00:00');
+    }
 
     public function testRegisterValidTokenReturns201(): void
     {
-        $invitation = $this->seedInvitation();
+        $invitation = $this->seedInvitation(now: self::utc('2026-05-30 08:00:00'));
 
         $this->jsonRequest('POST', '/api/auth/register', [
             'token' => $invitation->getToken(),
@@ -53,7 +62,7 @@ final class RegisterControllerTest extends ApiTestCase
      */
     public function testRegisterReportsWhichPasswordRuleFailed(): void
     {
-        $invitation = $this->seedInvitation();
+        $invitation = $this->seedInvitation(now: self::utc('2026-05-30 08:00:00'));
 
         $this->jsonRequest('POST', '/api/auth/register', [
             'token' => $invitation->getToken(),

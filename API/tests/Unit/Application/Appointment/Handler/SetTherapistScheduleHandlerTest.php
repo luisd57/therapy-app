@@ -14,6 +14,7 @@ use App\Domain\Appointment\Enum\WeekDay;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -21,6 +22,8 @@ use PHPUnit\Framework\TestCase;
 
 final class SetTherapistScheduleHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
     private UserRepositoryInterface&MockObject $userRepository;
     private ClockInterface&MockObject $clock;
@@ -32,7 +35,7 @@ final class SetTherapistScheduleHandlerTest extends TestCase
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->therapist = DomainTestHelper::createTherapist();
         $this->userRepository->method('getByIdOrFail')->willReturn($this->therapist);
@@ -52,9 +55,13 @@ final class SetTherapistScheduleHandlerTest extends TestCase
             ->method('findActiveByTherapistAndDay')
             ->willReturn(new ArrayCollection());
 
+        $saved = null;
         $this->scheduleRepository
             ->expects($this->once())
-            ->method('save');
+            ->method('save')
+            ->willReturnCallback(function (TherapistSchedule $schedule) use (&$saved): void {
+                $saved = $schedule;
+            });
 
         $input = new SetTherapistScheduleInputDTO(
             therapistId: $therapistId,
@@ -66,6 +73,10 @@ final class SetTherapistScheduleHandlerTest extends TestCase
         );
 
         $result = $this->handler->__invoke($input);
+
+        // The output DTO carries no timestamp, so the stamp is read off the saved entity.
+        $this->assertInstanceOf(TherapistSchedule::class, $saved);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $saved->getCreatedAt());
 
         $this->assertSame(1, $result->dayOfWeek);
         $this->assertSame('Monday', $result->dayName);

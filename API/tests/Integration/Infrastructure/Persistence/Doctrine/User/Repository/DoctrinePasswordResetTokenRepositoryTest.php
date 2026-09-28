@@ -11,15 +11,21 @@ use App\Domain\User\Id\UserId;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\UsesUtcInstants;
 
 final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
 {
+    use UsesUtcInstants;
+
     private PasswordResetTokenRepositoryInterface $repository;
     private UserRepositoryInterface $userRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // The expiry queries compare against this instant. Frozen before the repository
+        // is resolved, since it takes the clock at construction.
+        $this->freezeClock('2026-05-30 09:00:00');
         $this->repository = self::getContainer()->get(PasswordResetTokenRepositoryInterface::class);
         $this->userRepository = self::getContainer()->get(UserRepositoryInterface::class);
     }
@@ -58,6 +64,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $token = DomainTestHelper::createValidPasswordResetToken(
             token: 'valid-user-reset',
             user: $user,
+            now: self::utc('2026-05-30 08:30:00'),
         );
         $this->repository->save($token);
 
@@ -73,6 +80,7 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
         $expired = DomainTestHelper::createExpiredPasswordResetToken(
             token: 'expired-user-reset',
             user: $user,
+            now: self::utc('2026-05-30 09:00:00'),
         );
         $this->repository->save($expired);
 
@@ -94,8 +102,16 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testDeleteExpiredRemovesExpiredTokensOnly(): void
     {
         $user = $this->persistUser();
-        $valid = DomainTestHelper::createValidPasswordResetToken(token: 'de-valid-reset', user: $user);
-        $expired = DomainTestHelper::createExpiredPasswordResetToken(token: 'de-expired-reset', user: $user);
+        $valid = DomainTestHelper::createValidPasswordResetToken(
+            token: 'de-valid-reset',
+            user: $user,
+            now: self::utc('2026-05-30 08:30:00'),
+        );
+        $expired = DomainTestHelper::createExpiredPasswordResetToken(
+            token: 'de-expired-reset',
+            user: $user,
+            now: self::utc('2026-05-30 09:00:00'),
+        );
 
         $this->repository->save($valid);
         $this->repository->save($expired);
@@ -110,8 +126,9 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
     public function testInvalidateAllForUserMarksAllAsUsed(): void
     {
         $user = $this->persistUser();
-        $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-1', user: $user);
-        $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-2', user: $user);
+        // Live against the frozen clock, so only the invalidation can make the lookup come back empty
+        $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-1', user: $user, now: self::utc('2026-05-30 08:30:00'));
+        $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'inv-2', user: $user, now: self::utc('2026-05-30 08:30:00'));
 
         $this->repository->save($token1);
         $this->repository->save($token2);
@@ -128,8 +145,8 @@ final class DoctrinePasswordResetTokenRepositoryTest extends IntegrationTestCase
     {
         $user1 = $this->persistUser();
         $user2 = $this->persistUser();
-        $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'user1-reset', user: $user1);
-        $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'user2-reset', user: $user2);
+        $token1 = DomainTestHelper::createValidPasswordResetToken(token: 'user1-reset', user: $user1, now: self::utc('2026-05-30 08:30:00'));
+        $token2 = DomainTestHelper::createValidPasswordResetToken(token: 'user2-reset', user: $user2, now: self::utc('2026-05-30 08:30:00'));
 
         $this->repository->save($token1);
         $this->repository->save($token2);

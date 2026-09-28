@@ -10,12 +10,15 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class BookAppointmentHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private const string PATIENT_ID = '019525f3-5be1-7190-a6e1-aaa000000001';
 
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
@@ -26,7 +29,7 @@ final class BookAppointmentHandlerTest extends TestCase
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $userRepository = $this->createMock(UserRepositoryInterface::class);
         $userRepository->method('getByIdOrFail')->willReturn(
@@ -61,6 +64,8 @@ final class BookAppointmentHandlerTest extends TestCase
         $this->assertSame('John Doe', $result->fullName);
         $this->assertSame('ONLINE', $result->modality);
         $this->assertNull($result->patientId);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testBookWithPatientId(): void

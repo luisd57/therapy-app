@@ -6,11 +6,13 @@ namespace App\Tests\Unit\Application\User\Handler;
 
 use App\Application\User\DTO\Input\RequestPasswordResetInputDTO;
 use App\Application\User\Handler\RequestPasswordResetHandler;
+use App\Domain\User\Entity\PasswordResetToken;
 use App\Domain\User\Repository\PasswordResetTokenRepositoryInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use App\Domain\User\Id\UserId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
@@ -19,6 +21,8 @@ use PHPUnit\Framework\TestCase;
 
 final class RequestPasswordResetHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordResetTokenRepositoryInterface&MockObject $resetTokenRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
@@ -34,7 +38,7 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new RequestPasswordResetHandler(
@@ -56,10 +60,18 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn($user);
         $this->tokenGenerator->method('generate')->willReturn('reset-token');
         $this->resetTokenRepository->expects($this->once())->method('invalidateAllForUser');
-        $this->resetTokenRepository->expects($this->once())->method('save');
+        $saved = null;
+        $this->resetTokenRepository->expects($this->once())
+            ->method('save')
+            ->willReturnCallback(function (PasswordResetToken $token) use (&$saved): void {
+                $saved = $token;
+            });
         $this->emailSender->expects($this->once())->method('sendPasswordReset');
 
         $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'active@example.com'));
+
+        $this->assertInstanceOf(PasswordResetToken::class, $saved);
+        self::assertInstantIs('2026-06-15T13:00:00+00:00', $saved->getExpiresAt());
     }
 
     public function testHandleNonExistentUserSilentlyReturnsNoEmailSent(): void

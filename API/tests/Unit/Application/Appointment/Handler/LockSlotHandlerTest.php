@@ -13,12 +13,15 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Service\TokenGeneratorInterface;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class LockSlotHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private SlotLockRepositoryInterface&MockObject $slotLockRepository;
     private TokenGeneratorInterface&MockObject $tokenGenerator;
     private ClockInterface&MockObject $clock;
@@ -29,7 +32,7 @@ final class LockSlotHandlerTest extends TestCase
         $this->slotLockRepository = $this->createMock(SlotLockRepositoryInterface::class);
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->handler = new LockSlotHandler(
             $this->slotLockRepository,
@@ -64,7 +67,7 @@ final class LockSlotHandlerTest extends TestCase
         $this->assertSame('generated-lock-token', $result->lockToken);
         $this->assertNotEmpty($result->slotStartTime);
         $this->assertNotEmpty($result->slotEndTime);
-        $this->assertNotEmpty($result->expiresAt);
+        $this->assertSame('2026-06-15T12:10:00+00:00', $result->expiresAt);
     }
 
     public function testHandleAlreadyLockedThrowsSlotNotAvailableException(): void
@@ -76,8 +79,8 @@ final class LockSlotHandlerTest extends TestCase
             timeSlot: $timeSlot,
             modality: AppointmentModality::ONLINE,
             lockToken: 'existing-token',
-            createdAt: new \DateTimeImmutable(),
-            expiresAt: new \DateTimeImmutable('+10 minutes'),
+            createdAt: self::utc('2026-06-15 12:00:00'),
+            expiresAt: self::utc('2026-06-15 12:10:00'),
         );
 
         $this->slotLockRepository
