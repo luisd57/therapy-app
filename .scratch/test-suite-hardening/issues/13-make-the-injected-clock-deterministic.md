@@ -1,5 +1,7 @@
 # 13 - Make the injected clock deterministic
 
+> Frozen record, resolved 2026-09-28.
+
 **What to build:** the tests that inject a clock actually control time with it, so
 a time-dependent behaviour is pinned rather than re-measured on every run.
 
@@ -57,14 +59,16 @@ before.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] No test doubles `ClockInterface` and then returns the real current instant from it
-- [ ] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant
-- [ ] Integration test methods asserting on a date, an expiry or an ordering freeze the clock before the request, judged per method rather than per file
-- [ ] Methods deliberately left unfrozen are named with a reason, rather than silently skipped
-- [ ] Each pinned test is shown to go red when the instant moves, and any that cannot are named in the pull request rather than counted as done
-- [ ] Full API suite green
+**Resolved by:** [PR #100](https://github.com/luisd57/therapy-app/pull/100)
+
+- [x] No test doubles `ClockInterface` and then returns the real current instant from it. All 23 stubs return a literal instant
+- [x] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant. Each of the 20 handlers also asserts its now-derived output (a stamp, an expiry, the instant handed to the availability computer) against a literal
+- [x] Integration test methods asserting on a date, an expiry or an ordering freeze the clock before the request, judged per method rather than per file. 15 methods in 6 files, with their fixtures moved to literal instants
+- [x] Methods deliberately left unfrozen are named with a reason, rather than silently skipped. In the pull request, per file
+- [x] Each pinned test is shown to go red when the instant moves, and any that cannot are named in the pull request rather than counted as done. Every one of the 20 unit files and 6 integration files goes red under a moved instant. The tests that stay green are named in the pull request
+- [x] Full API suite green. 825 tests, 2964 assertions
 
 ## Comments
 
@@ -87,3 +91,26 @@ two in `ResetPasswordHandlerTest`.
 constructor against a fixture Slot dated June 2026. They are out of scope here for
 the reason already stated, there being no clock to inject, and were out of scope
 for ticket 02 because its criterion names controller fixtures only.
+
+**2026-09-28** - Resolved. Measured on the branch: 0 of 23 unit clock stubs return the
+real instant, and 16 of 58 integration files call the freeze helper, up from 10.
+
+Pinning a stub is not enough on its own. The token fixtures in `DomainTestHelper`
+expired relative to the wall clock, so against a clock pinned in the past an "expired"
+token read as valid. `createExpiredInvitation`, `createExpiredPasswordResetToken` and
+`SeedsAuthFixtures::seedInvitation` now take a `now`, and every pinned test passes them
+a literal rather than the pinned clock itself. Keep them separate literals: a fixture
+that follows the clock moves with it, and the red proof below could not see anything.
+
+The red proof moved only the stub or the `freezeClock` argument and left the fixtures
+where they were: unit stubs to 12:30, 10:30 and two days later, integration freezes to
+07:30 and two days later. All 26 files went red at least once.
+
+One integration method must stay on the real clock.
+`ResetPasswordControllerTest::testResetInvalidatesSessionsIssuedBeforeIt` compares a
+JWT `iat`, which Lexik takes from `time()`, with a cutoff the handler takes from the
+container clock. No frozen instant satisfies both. The whole JWT path ignores the
+container clock, which is why freezing never breaks a login in these tests.
+
+The three Slot Lock repository methods that read the clock got literal instants here,
+because the freeze needs them. The file's other three methods are still ticket 18's.

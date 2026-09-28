@@ -17,7 +17,7 @@ Base classes:
 Traits:
 - **RollsBackTestTransaction**: the `tearDown()` both base classes share, rolling back the transaction their `setUp()` began. Owns `$entityManager`.
 - **UsesUtcInstants**: `utc($dateTime)` builds a fixture instant read as UTC, and `assertInstantIs($expectedUtc, $actual)` compares one against a hand-written literal. Never build the expectation by formatting the object under test - it then shifts with the process zone on both sides and agrees with any implementation. See ADR-0003.
-- **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset. For an entity that takes `now` as an ordinary constructor argument, pass a literal instead - it never reads the container's clock.
+- **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset. For an entity that takes `now` as an ordinary constructor argument, pass a literal instead - it never reads the container's clock. A fixture the frozen code compares against needs a literal too, or it drifts with the wall clock: the `DomainTestHelper` token factories and `seedInvitation()` take a `now`.
 - **SeedsAuthFixtures**: seeds a therapist, an activated patient or an invitation. Credentials match the `ApiTestCase` defaults, so a seeded user logs in with them.
 - **SeedsTherapistSchedule**: seeds a therapist plus a Schedule Block wide enough that Slot queries return something.
 - **SeedsAppointment**: seeds one Appointment. Takes REQUESTED or CONFIRMED only, and throws on a terminal status rather than silently seeding REQUESTED.

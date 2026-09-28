@@ -47,7 +47,8 @@ trait SeedsAuthFixtures
         );
     }
 
-    protected function seedInvitation(): InvitationToken
+    /** Pass $now when the test freezes the clock, or the invitation's expiry follows the wall clock. */
+    protected function seedInvitation(?\DateTimeImmutable $now = null): InvitationToken
     {
         // Randomised so the unique constraints hold when several tests seed in one transaction
         $inviter = DomainTestHelper::createTherapist(
@@ -61,6 +62,7 @@ trait SeedsAuthFixtures
             email: 'newpatient@test.com',
             patientName: 'New Patient',
             invitedBy: $inviter,
+            now: $now,
         );
         self::getContainer()->get(InvitationTokenRepositoryInterface::class)->save($invitation);
 

@@ -9,12 +9,15 @@ use App\Application\User\Handler\UpdatePatientProfileHandler;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdatePatientProfileHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private ClockInterface&MockObject $clock;
     private UpdatePatientProfileHandler $handler;
@@ -23,7 +26,7 @@ final class UpdatePatientProfileHandlerTest extends TestCase
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new UpdatePatientProfileHandler($this->userRepository, $this->clock);
     }
 
@@ -42,6 +45,8 @@ final class UpdatePatientProfileHandlerTest extends TestCase
 
         $this->assertSame('+1234567890', $result->phone);
         $this->assertNull($result->address);
+        // The output DTO carries no updated_at, so the stamp is read off the entity.
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $user->getUpdatedAt());
     }
 
     public function testHandleUpdateAddressOnly(): void

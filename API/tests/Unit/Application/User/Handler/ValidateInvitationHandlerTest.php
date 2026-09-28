@@ -8,12 +8,15 @@ use App\Application\User\Handler\ValidateInvitationHandler;
 use App\Domain\User\Exception\InvalidTokenException;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ValidateInvitationHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private InvitationTokenRepositoryInterface&MockObject $invitationRepository;
     private ClockInterface&MockObject $clock;
     private ValidateInvitationHandler $handler;
@@ -22,7 +25,7 @@ final class ValidateInvitationHandlerTest extends TestCase
     {
         $this->invitationRepository = $this->createMock(InvitationTokenRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new ValidateInvitationHandler($this->invitationRepository, $this->clock);
     }
 
@@ -32,6 +35,7 @@ final class ValidateInvitationHandlerTest extends TestCase
             token: 'valid-token',
             email: 'patient@example.com',
             patientName: 'Test Patient',
+            now: self::utc('2026-06-15 11:00:00'),
         );
 
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
@@ -62,7 +66,7 @@ final class ValidateInvitationHandlerTest extends TestCase
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
     {
-        $invitation = DomainTestHelper::createExpiredInvitation();
+        $invitation = DomainTestHelper::createExpiredInvitation(now: self::utc('2026-06-15 12:00:00'));
         $this->invitationRepository->method('findByToken')->willReturn($invitation);
 
         $this->expectException(InvalidTokenException::class);

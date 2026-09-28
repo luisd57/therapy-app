@@ -13,12 +13,15 @@ use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdateTherapistScheduleHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
     private ClockInterface&MockObject $clock;
     private UpdateTherapistScheduleHandler $handler;
@@ -27,7 +30,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
     {
         $this->scheduleRepository = $this->createMock(TherapistScheduleRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->handler = new UpdateTherapistScheduleHandler(
             $this->scheduleRepository,
@@ -40,7 +43,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         $therapist = DomainTestHelper::createTherapist();
         $therapistId = $therapist->getId();
         $scheduleId = ScheduleId::generate();
-        $now = new \DateTimeImmutable();
+        $lastSavedAt = self::utc('2026-06-01 09:00:00');
 
         $schedule = TherapistSchedule::reconstitute(
             id: $scheduleId,
@@ -51,8 +54,8 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
             supportsOnline: true,
             supportsInPerson: true,
             isActive: true,
-            createdAt: $now,
-            updatedAt: $now,
+            createdAt: $lastSavedAt,
+            updatedAt: $lastSavedAt,
         );
 
         $this->scheduleRepository
@@ -85,6 +88,8 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         $this->assertSame('17:00', $result->endTime);
         $this->assertFalse($result->supportsOnline);
         $this->assertTrue($result->supportsInPerson);
+        // The output DTO carries no updated_at, so the Instant is read off the entity.
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $schedule->getUpdatedAt());
     }
 
     public function testHandleNotFoundThrowsScheduleConflictException(): void

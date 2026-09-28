@@ -10,6 +10,7 @@ use App\Domain\User\Exception\InvitationNotFoundException;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +18,8 @@ use Symfony\Component\Clock\ClockInterface;
 
 final class RevokeInvitationHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private InvitationTokenRepositoryInterface&MockObject $repository;
     private ClockInterface&MockObject $clock;
     private RevokeInvitationHandler $handler;
@@ -25,7 +28,7 @@ final class RevokeInvitationHandlerTest extends TestCase
     {
         $this->repository = $this->createMock(InvitationTokenRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->handler = new RevokeInvitationHandler($this->repository, $this->clock);
     }
@@ -44,6 +47,9 @@ final class RevokeInvitationHandlerTest extends TestCase
 
         $this->assertTrue($invitation->isRevoked());
         $this->assertSame('revoked', $result->status);
+        $revokedAt = $invitation->getRevokedAt();
+        $this->assertNotNull($revokedAt);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $revokedAt);
     }
 
     public function testThrowsWhenInvitationNotFound(): void

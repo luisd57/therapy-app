@@ -15,12 +15,15 @@ use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ConfirmAppointmentHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private AppointmentEmailSenderInterface&MockObject $emailSender;
     private ClockInterface&MockObject $clock;
@@ -32,7 +35,7 @@ final class ConfirmAppointmentHandlerTest extends TestCase
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->emailSender = $this->createMock(AppointmentEmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->handler = new ConfirmAppointmentHandler($this->appointmentRepository, $this->emailSender, $this->clock, $this->logger);
     }
@@ -60,6 +63,7 @@ final class ConfirmAppointmentHandlerTest extends TestCase
         ));
 
         $this->assertSame('CONFIRMED', $result->status);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testConfirmPassesRequesterTimezoneToTheEmailSender(): void

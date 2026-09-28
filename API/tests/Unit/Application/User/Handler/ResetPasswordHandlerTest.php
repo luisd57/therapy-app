@@ -12,12 +12,15 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\JwtBlocklistInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ResetPasswordHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private PasswordResetTokenRepositoryInterface&MockObject $resetTokenRepository;
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
@@ -32,7 +35,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->jwtBlocklist = $this->createMock(JwtBlocklistInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->handler = $this->makeHandler($this->jwtBlocklist, $this->clock);
     }
@@ -55,6 +58,7 @@ final class ResetPasswordHandlerTest extends TestCase
         $resetToken = DomainTestHelper::createValidPasswordResetToken(
             token: 'valid-reset',
             user: $user,
+            now: self::utc('2026-06-15 11:30:00'),
         );
 
         $this->resetTokenRepository->method('findByToken')->willReturn($resetToken);
@@ -65,6 +69,10 @@ final class ResetPasswordHandlerTest extends TestCase
         $this->handler->__invoke(new ResetPasswordInputDTO(token: 'valid-reset', newPassword: 'newpass123'));
 
         $this->assertSame('new_hashed_pw', $user->getPassword());
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $user->getUpdatedAt());
+        $usedAt = $resetToken->getUsedAt();
+        $this->assertNotNull($usedAt);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $usedAt);
     }
 
     public function testHandleTokenNotFoundThrowsInvalidTokenException(): void
@@ -86,7 +94,7 @@ final class ResetPasswordHandlerTest extends TestCase
 
     public function testHandleTokenExpiredThrowsInvalidTokenException(): void
     {
-        $token = DomainTestHelper::createExpiredPasswordResetToken();
+        $token = DomainTestHelper::createExpiredPasswordResetToken(now: self::utc('2026-06-15 12:00:00'));
         $this->resetTokenRepository->method('findByToken')->willReturn($token);
 
         $this->expectException(InvalidTokenException::class);

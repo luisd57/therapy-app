@@ -11,12 +11,15 @@ use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use Doctrine\Common\Collections\ArrayCollection;
+use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class CreateTherapistHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private ClockInterface&MockObject $clock;
@@ -27,7 +30,7 @@ final class CreateTherapistHandlerTest extends TestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new CreateTherapistHandler($this->userRepository, $this->passwordHasher, $this->clock);
     }
 
@@ -50,6 +53,7 @@ final class CreateTherapistHandlerTest extends TestCase
         $this->assertSame('Dr. Test', $result->fullName);
         $this->assertSame('ROLE_THERAPIST', $result->role);
         $this->assertTrue($result->isActive);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
     }
 
     public function testHandleTherapistAlreadyExistsThrowsException(): void

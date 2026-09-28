@@ -11,11 +11,14 @@ use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class UpdatePaymentStatusHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private ClockInterface&MockObject $clock;
     private UpdatePaymentStatusHandler $handler;
@@ -24,7 +27,7 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
     {
         $this->appointmentRepository = $this->createMock(AppointmentRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new \DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->handler = new UpdatePaymentStatusHandler($this->appointmentRepository, $this->clock);
     }
 
@@ -48,13 +51,14 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
         ));
 
         $this->assertTrue($result->paymentVerified);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testMarkPaymentUnverified(): void
     {
         $id = AppointmentId::generate();
         $appointment = DomainTestHelper::createConfirmedAppointment(id: $id);
-        $appointment->markPaymentVerified(new \DateTimeImmutable());
+        $appointment->markPaymentVerified(self::utc('2026-06-14 12:00:00'));
 
         $this->appointmentRepository
             ->expects($this->once())
@@ -71,6 +75,7 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
         ));
 
         $this->assertFalse($result->paymentVerified);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testUpdatePaymentForNonExistentAppointmentThrowsException(): void

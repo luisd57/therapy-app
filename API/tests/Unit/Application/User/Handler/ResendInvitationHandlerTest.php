@@ -14,6 +14,7 @@ use App\Domain\User\Repository\InvitationTokenRepositoryInterface;
 use App\Domain\User\Service\EmailSenderInterface;
 use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use App\Domain\User\ValueObject\Email;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -23,6 +24,8 @@ use Symfony\Component\Clock\ClockInterface;
 
 final class ResendInvitationHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private const FRONTEND_URL = 'http://localhost:4200';
     private const INVITATION_TTL = 86400;
     private const FRESH_TOKEN = 'fresh-raw-token-abc';
@@ -40,7 +43,7 @@ final class ResendInvitationHandlerTest extends TestCase
         $this->tokenGenerator = $this->createMock(TokenGeneratorInterface::class);
         $this->emailSender = $this->createMock(EmailSenderInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
-        $this->clock->method('now')->willReturn(new DateTimeImmutable());
+        $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->handler = new ResendInvitationHandler(
@@ -92,6 +95,10 @@ final class ResendInvitationHandlerTest extends TestCase
         $this->assertSame('pending', $result->status);
         $this->assertSame('patient@example.com', $result->email);
         $this->assertSame('Jane Doe', $result->patientName);
+        $this->assertSame('2026-06-16T12:00:00+00:00', $result->expiresAt);
+        $revokedAt = $savedEntities[0]->getRevokedAt();
+        $this->assertNotNull($revokedAt);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $revokedAt);
     }
 
     public function testThrowsWhenInvitationNotFound(): void
