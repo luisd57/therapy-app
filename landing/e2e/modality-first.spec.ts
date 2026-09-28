@@ -17,8 +17,10 @@ import {
   validRequestForm,
 } from './fixtures/helpers';
 
-/** The container runs as UTC, so Online is preselected in this block. */
+/** Pinned outside the Practice Timezone, so Online is preselected in this block. */
 test.describe('Modality gate', (): void => {
+  test.use({ timezoneId: 'UTC', locale: 'es-ES' });
+
   test('no slot is reachable until a modality is confirmed', async ({
     page,
   }: PlaywrightTestArgs): Promise<void> => {
