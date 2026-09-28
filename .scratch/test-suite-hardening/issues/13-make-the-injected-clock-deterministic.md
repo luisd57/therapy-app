@@ -61,7 +61,7 @@ before.
 
 **Status:** resolved
 
-**Resolved by:** PR pending
+**Resolved by:** [PR #100](https://github.com/luisd57/therapy-app/pull/100)
 
 - [x] No test doubles `ClockInterface` and then returns the real current instant from it. All 23 stubs return a literal instant
 - [x] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant. Each of the 20 handlers also asserts its now-derived output (a stamp, an expiry, the instant handed to the availability computer) against a literal
