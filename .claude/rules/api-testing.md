@@ -15,6 +15,7 @@ Base classes:
 - Exception: a test needing neither the database nor auth skips these base classes, since transaction wrapping would buy it nothing. Use `WebTestCase` when it still drives HTTP (`Controller/Health/`, `EventSubscriber/SecurityHeadersSubscriberTest`) and `KernelTestCase` when it works off the container rather than a request (`Application/Appointment/Service/SlotGenerationRulesFactoryTest`, `Http/ProtectedRouteRolesTest`, `Http/RateLimitedRouteSetTest`). Say why in a comment at the top of the class, so the next reader doesn't "fix" it back.
 
 Traits:
+- **RollsBackTestTransaction**: the `tearDown()` both base classes share, rolling back the transaction their `setUp()` began. Owns `$entityManager`.
 - **UsesUtcInstants**: `utc($dateTime)` builds a fixture instant read as UTC, and `assertInstantIs($expectedUtc, $actual)` compares one against a hand-written literal. Never build the expectation by formatting the object under test - it then shifts with the process zone on both sides and agrees with any implementation. See ADR-0003.
 - **FreezesClock**: `freezeClock($now)` swaps the container's clock for a frozen one. Call it before the test resolves the clock-using service. `$now` is read as UTC unless it carries an offset. For an entity that takes `now` as an ordinary constructor argument, pass a literal instead - it never reads the container's clock.
 - **SeedsAuthFixtures**: seeds a therapist, an activated patient or an invitation. Credentials match the `ApiTestCase` defaults, so a seeded user logs in with them.

@@ -1,5 +1,7 @@
 # 12 - Clear the small drift the audit found
 
+> Frozen record, resolved 2026-09-28.
+
 **What to build:** five unrelated small things the audit turned up, none of them
 worth a ticket alone, all of them cheap and currently costing something.
 
@@ -37,16 +39,18 @@ them once.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The transaction teardown exists in one place and both base classes use it
-- [ ] The orphaned compose override is gone and no stray container is created by a normal compose run
-- [ ] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
-- [ ] The Practice Timezone is declared once and the e2e helpers read it rather than repeating it
+**Resolved by:** [PR #98](https://github.com/luisd57/therapy-app/pull/98)
+
+- [x] The transaction teardown exists in one place and both base classes use it
+- [x] The orphaned compose override is gone and no stray container is created by a normal compose run
+- [x] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
+- [x] The Practice Timezone is declared once and the e2e helpers read it rather than repeating it
 - [x] No document instructs the reader to run a `make` target
-- [ ] Full API suite green, which is what observes the teardown extraction: break the rollback and integration tests start leaking into each other
-- [ ] Landing e2e suite green, which is the level that can observe the Viewer Zone pin and the shared Practice Timezone
-- [ ] The compose and documentation items are verified by a normal compose up and by following the changed docs end to end, since no suite can observe either
+- [x] Full API suite green, which is what observes the teardown extraction: break the rollback and integration tests start leaking into each other
+- [x] Landing e2e suite green, which is the level that can observe the Viewer Zone pin and the shared Practice Timezone
+- [x] The compose and documentation items are verified by a normal compose up and by following the changed docs end to end, since no suite can observe either
 
 ## Comments
 
@@ -57,3 +61,28 @@ dev gotchas rule and the API README now name the direct `docker-compose` command
 `make` half collapsed the Windows and Mac/Linux split in the README, since the remaining command
 is the same on both. The Makefile itself is untouched, per the spec entry that says so. The other
 four items are still open and the ticket stays `ready-for-agent`.
+
+**2026-09-28** - The remaining four items landed. The teardown is the `RollsBackTestTransaction`
+trait, which also owns `$entityManager`. Swapping its `rollback()` for `commit()` failed the
+Integration suite with 130 errors and 6 failures, so the full suite does observe it. Deleting the
+call would not have, and neither would deleting `close()`. `EntityManager::close()` only clears,
+while `parent::tearDown()` shuts the kernel down, and `DoctrineBundle::shutdown()` closes the
+connection, so Postgres discards the open transaction either way.
+
+The compose override was not being loaded any more. `docker compose config` from the root and
+from `API/` both resolve to the root `docker-compose.yml`, with no `mailpit` in either. The
+orphan warning comes from `therapy-database-1`, a container left over from when the recipe files
+were live, labelled service `database` of project `therapy`. Removing the file stops anything
+recreating it. The existing container is local state, not repository state, and goes with
+`docker compose up -d --remove-orphans` or `docker rm therapy-database-1`. Its named volume
+`therapy_database_data` survives either.
+
+The `Modality gate` group pins `UTC`, which is what continuous integration always ran it under.
+No assertion depends on it, contrary to the criterion that calls e2e the level observing it.
+Pinning it to the Practice Timezone instead leaves all three tests green, because each one clicks
+a modality, and the chooser sets rather than toggles. The pin keeps the group deterministic for
+the next test added to it. Preselection itself is covered by the two `Preselection` groups.
+
+Left alone, as outside this ticket: the e2e now agrees with the landing's fallback, not with the
+API's `PRACTICE_TIMEZONE`, and the stubbed slots in `modality-first` and `next-available-week`
+still hardcode the Caracas offset in their "08:00 practice-local" instants.

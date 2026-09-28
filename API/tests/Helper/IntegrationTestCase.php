@@ -11,8 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 abstract class IntegrationTestCase extends KernelTestCase
 {
     use FreezesClock;
-
-    protected EntityManagerInterface $entityManager;
+    use RollsBackTestTransaction;
 
     protected function setUp(): void
     {
@@ -25,18 +24,5 @@ abstract class IntegrationTestCase extends KernelTestCase
     protected static function consoleApplication(): Application
     {
         return new Application(self::$kernel ?? throw new \LogicException('setUp() boots the kernel.'));
-    }
-
-    // @phpstan-ignore phpunit.callParent (the rule does not look inside finally, where the call is)
-    protected function tearDown(): void
-    {
-        try {
-            if ($this->entityManager->getConnection()->isTransactionActive()) {
-                $this->entityManager->rollback();
-            }
-            $this->entityManager->close();
-        } finally {
-            parent::tearDown();
-        }
     }
 }

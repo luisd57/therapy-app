@@ -1,10 +1,11 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import { PRACTICE_TIMEZONE_FALLBACK } from '../../src/config';
 
 export const API_BASE_URL: string = process.env['API_BASE_URL'] ?? 'http://localhost:8080/api';
 
 export type Modality = 'ONLINE' | 'IN_PERSON';
 
-export const PRACTICE_ZONE: string = 'America/Caracas';
+export const PRACTICE_ZONE: string = PRACTICE_TIMEZONE_FALLBACK;
 
 export interface RequestFormData {
   fullName: string;

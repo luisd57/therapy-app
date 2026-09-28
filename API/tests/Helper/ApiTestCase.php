@@ -17,9 +17,9 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 abstract class ApiTestCase extends WebTestCase
 {
     use FreezesClock;
+    use RollsBackTestTransaction;
 
     protected KernelBrowser $client;
-    protected EntityManagerInterface $entityManager;
 
     protected function setUp(): void
     {
@@ -27,19 +27,6 @@ abstract class ApiTestCase extends WebTestCase
         $this->client->disableReboot();
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
         $this->entityManager->beginTransaction();
-    }
-
-    // @phpstan-ignore phpunit.callParent (the rule does not look inside finally, where the call is)
-    protected function tearDown(): void
-    {
-        try {
-            if ($this->entityManager->getConnection()->isTransactionActive()) {
-                $this->entityManager->rollback();
-            }
-            $this->entityManager->close();
-        } finally {
-            parent::tearDown();
-        }
     }
 
     /**
