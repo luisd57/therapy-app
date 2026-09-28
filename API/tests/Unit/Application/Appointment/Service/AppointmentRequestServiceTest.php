@@ -47,6 +47,7 @@ final class AppointmentRequestServiceTest extends TestCase
     private ClockInterface&MockObject $clock;
     private LoggerInterface&MockObject $logger;
     private AppointmentRequestService $service;
+    private ?\DateTimeImmutable $availabilityNow = null;
 
     protected function setUp(): void
     {
@@ -123,7 +124,19 @@ final class AppointmentRequestServiceTest extends TestCase
 
         $this->availabilityComputer
             ->method('computeAvailableSlots')
-            ->willReturn(new ArrayCollection([$matchingSlot]));
+            ->willReturnCallback(
+                function (
+                    mixed $context,
+                    mixed $rules,
+                    mixed $from,
+                    mixed $to,
+                    \DateTimeImmutable $now,
+                ) use ($matchingSlot): ArrayCollection {
+                    $this->availabilityNow = $now;
+
+                    return new ArrayCollection([$matchingSlot]);
+                },
+            );
     }
 
     public function testRequestAppointmentSuccessWithoutLockToken(): void
@@ -160,6 +173,9 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->assertSame('Germany', $result->country);
         $this->assertNull($result->patientId);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
+        // A past Slot is only refused if the availability check gets the injected clock's instant.
+        $this->assertInstanceOf(\DateTimeImmutable::class, $this->availabilityNow);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $this->availabilityNow);
     }
 
     public function testRequestAppointmentPassesRequesterTimezoneToBothEmails(): void

@@ -73,7 +73,11 @@ final class ActivatePatientHandlerTest extends TestCase
         $this->assertSame('New Patient', $result->fullName);
         $this->assertSame('ROLE_PATIENT', $result->role);
         $this->assertTrue($result->isActive);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->activatedAt);
+        $usedAt = $invitation->getUsedAt();
+        $this->assertNotNull($usedAt);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $usedAt);
     }
 
     public function testHandleTokenNotFoundThrowsInvalidTokenException(): void

@@ -58,7 +58,7 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
     {
         $id = AppointmentId::generate();
         $appointment = DomainTestHelper::createConfirmedAppointment(id: $id);
-        $appointment->markPaymentVerified(new \DateTimeImmutable());
+        $appointment->markPaymentVerified(self::utc('2026-06-14 12:00:00'));
 
         $this->appointmentRepository
             ->expects($this->once())
@@ -75,6 +75,7 @@ final class UpdatePaymentStatusHandlerTest extends TestCase
         ));
 
         $this->assertFalse($result->paymentVerified);
+        $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
 
     public function testUpdatePaymentForNonExistentAppointmentThrowsException(): void

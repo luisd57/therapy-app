@@ -43,7 +43,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         $therapist = DomainTestHelper::createTherapist();
         $therapistId = $therapist->getId();
         $scheduleId = ScheduleId::generate();
-        $createdAt = self::utc('2026-06-01 09:00:00');
+        $lastSavedAt = self::utc('2026-06-01 09:00:00');
 
         $schedule = TherapistSchedule::reconstitute(
             id: $scheduleId,
@@ -54,8 +54,8 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
             supportsOnline: true,
             supportsInPerson: true,
             isActive: true,
-            createdAt: $createdAt,
-            updatedAt: $createdAt,
+            createdAt: $lastSavedAt,
+            updatedAt: $lastSavedAt,
         );
 
         $this->scheduleRepository
@@ -88,7 +88,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
         $this->assertSame('17:00', $result->endTime);
         $this->assertFalse($result->supportsOnline);
         $this->assertTrue($result->supportsInPerson);
-        // The output DTO carries no timestamp, so the stamp is read off the entity.
+        // The output DTO carries no updated_at, so the Instant is read off the entity.
         self::assertInstantIs('2026-06-15T12:00:00+00:00', $schedule->getUpdatedAt());
     }
 

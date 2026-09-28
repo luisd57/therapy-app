@@ -74,7 +74,7 @@ final class SetTherapistScheduleHandlerTest extends TestCase
 
         $result = $this->handler->__invoke($input);
 
-        // The output DTO carries no timestamp, so the stamp is read off the saved entity.
+        // The output DTO carries no created_at, so the Instant is read off the saved entity.
         $this->assertInstanceOf(TherapistSchedule::class, $saved);
         self::assertInstantIs('2026-06-15T12:00:00+00:00', $saved->getCreatedAt());
 

@@ -64,11 +64,11 @@ before.
 **Resolved by:** PR pending
 
 - [x] No test doubles `ClockInterface` and then returns the real current instant from it. All 23 stubs return a literal instant
-- [x] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant. Went further than asked: each of the 20 handlers now also asserts its now-derived output (a stamp, an expiry, the instant handed to the availability computer) against a literal
+- [x] Every unit test whose assertions depend on "now" pins an explicit instant, and states an absolute expected value rather than one derived from that instant. Each of the 20 handlers also asserts its now-derived output (a stamp, an expiry, the instant handed to the availability computer) against a literal
 - [x] Integration test methods asserting on a date, an expiry or an ordering freeze the clock before the request, judged per method rather than per file. 15 methods in 6 files, with their fixtures moved to literal instants
 - [x] Methods deliberately left unfrozen are named with a reason, rather than silently skipped. In the pull request, per file
 - [x] Each pinned test is shown to go red when the instant moves, and any that cannot are named in the pull request rather than counted as done. Every one of the 20 unit files and 6 integration files goes red under a moved instant. The tests that stay green are named in the pull request
-- [x] Full API suite green. 825 tests, 2956 assertions
+- [x] Full API suite green. 825 tests, 2964 assertions
 
 ## Comments
 

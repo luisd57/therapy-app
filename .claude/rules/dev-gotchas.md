@@ -36,14 +36,13 @@ more. Incident history and dates belong in project memory, not here.
 
 - Auditing the suite with `grep -l` measures the file, not the test. A file that freezes the clock
   inside one method leaves the others on the wall clock, so a file-level hit says nothing about
-  the method you care about. Walk it per method, and match a call rather than the bare name, or a docblock
-  mentioning the helper counts as a freeze:
+  the method you care about. Walk it per method, and match a call rather than the bare name, or
+  a docblock mentioning the helper counts as a freeze:
   ```bash
   find API/tests -name '*Test.php' -exec awk 'FNR==1{fn=""} /function [A-Za-z0-9_]+\(/{fn=$0} /->freezeClock\(/{print FILENAME": "fn}' {} +
   ```
-  A hit in `setUp` covers every method in that file. The recipe tracks every function, not only
-  tests, and resets per file: tracking only `test*` credited a `setUp` freeze to the previous
-  file's last test.
+  A hit in `setUp` covers every method in that file. Match every function, not only `test*`,
+  or a `setUp` freeze is credited to whichever test the previous file ended on.
   Use `find`, not `**/*.php`. Git Bash has `globstar` off, so `**` collapses to a single level and
   silently sweeps a fraction of the tree.
   The same trap applies to any per-method fact: mocked clocks, skipped assertions, seeded fixtures.

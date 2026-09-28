@@ -70,6 +70,9 @@ final class ResetPasswordHandlerTest extends TestCase
 
         $this->assertSame('new_hashed_pw', $user->getPassword());
         self::assertInstantIs('2026-06-15T12:00:00+00:00', $user->getUpdatedAt());
+        $usedAt = $resetToken->getUsedAt();
+        $this->assertNotNull($usedAt);
+        self::assertInstantIs('2026-06-15T12:00:00+00:00', $usedAt);
     }
 
     public function testHandleTokenNotFoundThrowsInvalidTokenException(): void
