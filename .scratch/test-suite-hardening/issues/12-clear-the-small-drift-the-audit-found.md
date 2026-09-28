@@ -61,7 +61,9 @@ four items are still open and the ticket stays `ready-for-agent`.
 **2026-09-28** - The remaining four items landed. The teardown is the `RollsBackTestTransaction`
 trait, which also owns `$entityManager`. Swapping its `rollback()` for `commit()` failed the
 Integration suite with 130 errors and 6 failures, so the full suite does observe it. Deleting the
-call would not have: `close()` drops the connection and Postgres discards the open transaction.
+call would not have, and neither would deleting `close()`. `EntityManager::close()` only clears,
+while `parent::tearDown()` shuts the kernel down, and `DoctrineBundle::shutdown()` closes the
+connection, so Postgres discards the open transaction either way.
 
 The compose override was not being loaded any more. `docker compose config` from the root and
 from `API/` both resolve to the root `docker-compose.yml`, with no `mailpit` in either. The
@@ -72,3 +74,11 @@ recreating it. The existing container is local state, not repository state, and 
 `therapy_database_data` survives either.
 
 The `Modality gate` group pins `UTC`, which is what continuous integration always ran it under.
+No assertion depends on it, contrary to the criterion that calls e2e the level observing it.
+Pinning it to the Practice Timezone instead leaves all three tests green, because each one clicks
+a modality, and the chooser sets rather than toggles. The pin keeps the group deterministic for
+the next test added to it. Preselection itself is covered by the two `Preselection` groups.
+
+Left alone, as outside this ticket: the e2e now agrees with the landing's fallback, not with the
+API's `PRACTICE_TIMEZONE`, and the stubbed slots in `modality-first` and `next-available-week`
+still hardcode the Caracas offset in their "08:00 practice-local" instants.
