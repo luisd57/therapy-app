@@ -41,6 +41,8 @@ them once.
 
 **Status:** resolved
 
+**Resolved by:** [PR #98](https://github.com/luisd57/therapy-app/pull/98)
+
 - [x] The transaction teardown exists in one place and both base classes use it
 - [x] The orphaned compose override is gone and no stray container is created by a normal compose run
 - [x] Every zone-aware group in the landing spec file pins its Viewer Zone explicitly
