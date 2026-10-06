@@ -20,6 +20,12 @@ active one.
 The reason is the one written in `API/Product-Requirements.md#slot-lock-token-flow`. Commit
 `6568cfc` has no message body, so nothing closer to the decision records it.
 
+The client brainstorm (`API/Product-brainstorm-with-client.md`) never mentions locks. Its
+"Notes 06/10/2025" section does describe the model this follows: the Therapist agrees a time with
+the person by phone, then enters it herself, and that entry is what blocks the time. Its earlier
+text has the calendar change as soon as an interested party picks a time, which those notes
+replace.
+
 ## Considered and rejected
 
 **Subtracting active locks from availability.** This is what the word "lock" suggests, and it is
