@@ -2,6 +2,15 @@
 const tseslint = require("typescript-eslint");
 const angular = require("angular-eslint");
 const prettier = require("eslint-config-prettier");
+const playwright = require("eslint-plugin-playwright");
+
+// The plugin ships most of its recommended rules as "warn", which never fails the pipeline.
+const playwrightRulesAsErrors = Object.fromEntries(
+  Object.entries(playwright.configs["flat/recommended"].rules).map(
+    // "off" is the preset freeing `({}, use)` in fixtures from no-empty-pattern.
+    ([rule, severity]) => [rule, severity === "off" ? "off" : "error"],
+  ),
+);
 
 module.exports = tseslint.config(
   {
@@ -114,6 +123,17 @@ module.exports = tseslint.config(
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility,
     ],
+  },
+
+  // Playwright specs and fixtures
+  {
+    files: ["e2e/**/*.ts"],
+    extends: [playwright.configs["flat/recommended"]],
+    rules: {
+      ...playwrightRulesAsErrors,
+      // test.fixme stops a test running just as test.skip does, and is allowed by default.
+      "playwright/no-skipped-test": ["error", { disallowFixme: true }],
+    },
   },
 
   // Prettier must be last
