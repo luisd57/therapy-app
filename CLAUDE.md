@@ -14,9 +14,11 @@ All from the **mattpocock-skills** plugin. Invoke them; do NOT restate their gui
 | Implementing anything | `tdd` |
 | Something broken, throwing, or slow | `diagnosing-bugs` |
 | Before opening a PR | `code-review` |
+| Writing the PR body | `pr` |
+| After the review, what the agent setup should change | `retro` |
 | Terminology or an ADR | `domain-modeling` |
 
-`to-spec`, `to-tickets` and `wayfinder` are user-invocable only. Ask for them rather than writing
+`to-spec`, `to-tickets`, `wayfinder` and `retro` are user-invocable only. Ask for them rather than writing
 a spec or ticket by hand. `docs/agents/` and the ADRs assume these flows.
 
 Testing expectations are in `.claude/rules/testing-policy.md`.
@@ -79,7 +81,7 @@ Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: IS
 - Patient registration is invitation-only (time-limited token via email).
 - Multiple Requesters CAN request the same Slot. Therapist resolves conflicts manually.
 - Payment verification is a manual boolean toggle, not an automated gateway.
-- Session duration is `APPOINTMENT_DURATION_MINUTES`. Read it, never hardcode the number, and never assume it equals the Slot start increment - they are separate rules (see `CONTEXT.md`).
+- Session duration is `APPOINTMENT_DURATION_MINUTES`. Read it, never hardcode the number, and never assume it equals the Slot start increment - they are separate rules (see `GLOSSARY.md`).
 
 ## On-Demand Documentation
 
@@ -99,4 +101,4 @@ Current per-component status: `docs/STATUS.md`. Read it when the state of an unf
 
 Issue tracker (local markdown in `.scratch/`), triage labels, and domain-doc layout: see `docs/agents/`. Decisions are `docs/adr/`.
 
-`CONTEXT.md` is the glossary - every domain term with the wordings to avoid. Read it before naming anything.
+`GLOSSARY.md` is the glossary - every domain term with the wordings to avoid. Read it before naming anything.

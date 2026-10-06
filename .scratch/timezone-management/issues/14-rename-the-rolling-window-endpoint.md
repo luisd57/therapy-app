@@ -19,7 +19,7 @@ Scope, all of it in one ticket: the endpoint path becomes `next-availability`; t
 handler and both DTOs follow the new name; the response fields `week_start` and
 `week_end` become `window_start` and `window_end`; the landing API client, its
 types and the slot browser move with them; the Postman collection and the landing
-e2e global setup and README are updated. The term is recorded in `CONTEXT.md`
+e2e global setup and README are updated. The term is recorded in `GLOSSARY.md`
 alongside the existing availability vocabulary.
 
 One ticket rather than an expand-contract sequence: there are 16 in-repo consumers
@@ -33,7 +33,7 @@ Ticket 12 comes first because both touch the slot browser's mount path.
 **Status:** ready-for-agent
 
 - [ ] No `next-available-week` or `week_start`/`week_end` reference survives outside the ADRs and resolved tickets that describe the history
-- [ ] The renamed term is in `CONTEXT.md`, with the rolling-versus-calendar distinction stated
+- [ ] The renamed term is in `GLOSSARY.md`, with the rolling-versus-calendar distinction stated
 - [ ] API suite green, including the handler unit test and the controller integration test that pin the new field names
 - [ ] Landing unit suite, build and e2e green
 - [ ] Postman collection requests still run against the renamed endpoint
