@@ -145,7 +145,7 @@ the Therapist currently performs by hand.
 - Slot **length** and Slot **Start Increment** are separate rules. A 90-minute
   session offered every 30 minutes produces overlapping candidates, and a
   CONFIRMED Appointment suppresses every candidate it overlaps. Slot Locks do not
-  (see `CONTEXT.md`). The existing half-open overlap predicate already handles
+  (see `GLOSSARY.md`). The existing half-open overlap predicate already handles
   this and needs no change.
 - A Slot is offered only if it fits entirely inside its Schedule Block.
 - Results are clipped to the requested half-open Instant window.

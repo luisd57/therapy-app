@@ -314,4 +314,4 @@ therapy/
 | [`docs/STATUS.md`](docs/STATUS.md) | État d'avancement par composant. La référence pour savoir ce qui est fait. |
 | [`docs/adr/`](docs/adr/) | Décisions d'architecture (stockage UTC, ancrage des récurrences, tests, jobs planifiés). |
 | [`API/README.md`](API/README.md) | Référence complète de l'API : endpoints, architecture, tests. |
-| [`CONTEXT.md`](CONTEXT.md) | Glossaire du domaine. À lire avant de nommer quoi que ce soit. |
+| [`GLOSSARY.md`](GLOSSARY.md) | Glossaire du domaine. À lire avant de nommer quoi que ce soit. |
