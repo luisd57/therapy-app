@@ -82,11 +82,9 @@ _Avoid_: step, interval, granularity
 **Slot Lock**:
 A short-lived UI helper taken while a Requester fills in the form. It never
 affects availability - the therapist resolves double-booking manually, so a lock
-does not hide the Slot from other browsers or block a request. Every caller of
-`AvailabilityComputer` passes an empty lock collection deliberately; the
-filtering code is scaffolding kept in case the client changes their mind. See
-`API/Product-Requirements.md#slot-lock-token-flow`. Locks do conflict with *each other*: taking one
-over a window that overlaps an active lock is rejected.
+does not hide the Slot from other browsers or block a request. Locks do conflict
+with *each other*: taking one over a window that overlaps an active lock is
+rejected.
 _Avoid_: reservation, hold
 
 **Appointment**:
