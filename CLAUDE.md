@@ -101,4 +101,4 @@ Current per-component status: `docs/STATUS.md`. Read it when the state of an unf
 
 Issue tracker (local markdown in `.scratch/`), triage labels, and domain-doc layout: see `docs/agents/`. Decisions are `docs/adr/`.
 
-`GLOSSARY.md` is the glossary - every domain term with the wordings to avoid. Read it before naming anything.
+`GLOSSARY.md` holds every domain term with the wordings to avoid. Read it before naming anything.
