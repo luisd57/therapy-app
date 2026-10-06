@@ -4,19 +4,18 @@ import tseslint from 'typescript-eslint';
 import playwright from 'eslint-plugin-playwright';
 import vitest from '@vitest/eslint-plugin';
 
-/**
- * Both plugins ship some recommended rules as "warn", which never fails the pipeline.
- * @param {Partial<import('eslint').Linter.RulesRecord> | undefined} rules
- * @returns {import('eslint').Linter.RulesRecord}
- */
-function asErrors(rules) {
-  return Object.fromEntries(
+/** @typedef {import('eslint').Linter.RulesRecord} Rules */
+
+// Both plugins ship some recommended rules as "warn", which never fails the pipeline.
+/** @type {(rules: Partial<Rules> | undefined) => Rules} */
+const asErrors = (rules) =>
+  Object.fromEntries(
     Object.entries(rules ?? {}).map(([rule, severity]) => [
       rule,
+      // "off" is the Playwright preset freeing `({}, use)` in fixtures from no-empty-pattern.
       severity === 'off' ? /** @type {const} */ ('off') : /** @type {const} */ ('error'),
     ]),
   );
-}
 
 // Same TypeScript standard as dashboard/eslint.config.js, minus the Angular parts.
 // Scoped to e2e by ticket 10. src/ .ts files need no plugin and can join, .astro and .svelte cannot.
@@ -75,11 +74,14 @@ export default defineConfig(
   {
     files: ['e2e/**/*.ts'],
     extends: [playwright.configs['flat/recommended']],
-    rules: asErrors(playwright.configs['flat/recommended'].rules),
+    rules: {
+      ...asErrors(playwright.configs['flat/recommended'].rules),
+      // test.fixme stops a test running just as test.skip does, and is allowed by default.
+      'playwright/no-skipped-test': ['error', { disallowFixme: true }],
+    },
   },
 
-  // Unit tests get the Vitest rules only. The TypeScript standard above stays scoped to e2e,
-  // as ticket 10 left it.
+  // Unit tests get the Vitest rules only, not the TypeScript standard above.
   {
     files: ['src/**/*.test.ts'],
     languageOptions: { parser: tseslint.parser },
