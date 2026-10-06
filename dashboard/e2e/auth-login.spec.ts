@@ -22,6 +22,7 @@ test.describe('Auth - login', (): void => {
     const ctx: BrowserContext = await browser.newContext({ storageState: undefined });
     const page: Page = await ctx.newPage();
     await loginAsTherapist(page);
+    await expect(page).toHaveURL(/\/appointments$/);
     await ctx.close();
   });
 
