@@ -27,6 +27,7 @@ final class TimezoneGuardTest extends TestCase
 
     public function testHostileTimezoneIsAheadOfUtcSoImplicitLocalBugsShowUp(): void
     {
+        // @phpstan-ignore testConvention.naiveDateTimeLiteral (the naive literal is the point: it shows which zone a missing one falls back to)
         $instant = new \DateTimeImmutable('2026-06-01 00:00:00');
 
         $this->assertSame('+14:00', $instant->format('P'));

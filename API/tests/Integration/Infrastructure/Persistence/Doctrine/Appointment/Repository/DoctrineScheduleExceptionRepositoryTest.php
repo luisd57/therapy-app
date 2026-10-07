@@ -12,11 +12,14 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use DateTimeZone;
 
 final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
 {
+    use UsesUtcInstants;
+
     private ScheduleExceptionRepositoryInterface $repository;
     private UserRepositoryInterface $userRepository;
     private UserId $therapistId;
@@ -38,8 +41,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: $this->therapist,
-            startDateTime: new DateTimeImmutable('2026-03-15 09:00:00'),
-            endDateTime: new DateTimeImmutable('2026-03-15 17:00:00'),
+            startDateTime: self::utc('2026-03-15 09:00:00'),
+            endDateTime: self::utc('2026-03-15 17:00:00'),
             reason: 'Day off',
             isAllDay: false,
             now: new DateTimeImmutable(),
@@ -67,8 +70,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
         $inRange = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: $this->therapist,
-            startDateTime: new DateTimeImmutable('2026-04-10 09:00:00'),
-            endDateTime: new DateTimeImmutable('2026-04-10 17:00:00'),
+            startDateTime: self::utc('2026-04-10 09:00:00'),
+            endDateTime: self::utc('2026-04-10 17:00:00'),
             reason: 'Conference',
             now: new DateTimeImmutable(),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
@@ -78,8 +81,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
         $outOfRange = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: $this->therapist,
-            startDateTime: new DateTimeImmutable('2026-06-15 09:00:00'),
-            endDateTime: new DateTimeImmutable('2026-06-15 17:00:00'),
+            startDateTime: self::utc('2026-06-15 09:00:00'),
+            endDateTime: self::utc('2026-06-15 17:00:00'),
             reason: 'Vacation',
             now: new DateTimeImmutable(),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
@@ -88,8 +91,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findByTherapistAndDateRange(
             $this->therapistId,
-            new DateTimeImmutable('2026-04-01 00:00:00'),
-            new DateTimeImmutable('2026-04-30 23:59:59'),
+            self::utc('2026-04-01 00:00:00'),
+            self::utc('2026-04-30 23:59:59'),
         );
 
         $ids = $results->map(fn(ScheduleException $scheduleException) => $scheduleException->getId()->getValue())->toArray();
@@ -102,8 +105,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: $this->therapist,
-            startDateTime: new DateTimeImmutable('2026-07-01 09:00:00'),
-            endDateTime: new DateTimeImmutable('2026-07-01 17:00:00'),
+            startDateTime: self::utc('2026-07-01 09:00:00'),
+            endDateTime: self::utc('2026-07-01 17:00:00'),
             reason: 'Holiday',
             now: new DateTimeImmutable(),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
@@ -112,8 +115,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
 
         $results = $this->repository->findByTherapistAndDateRange(
             $this->therapistId,
-            new DateTimeImmutable('2026-03-01 00:00:00'),
-            new DateTimeImmutable('2026-03-31 23:59:59'),
+            self::utc('2026-03-01 00:00:00'),
+            self::utc('2026-03-31 23:59:59'),
         );
 
         $this->assertCount(0, $results);
@@ -124,8 +127,8 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: $this->therapist,
-            startDateTime: new DateTimeImmutable('2026-05-20 08:00:00'),
-            endDateTime: new DateTimeImmutable('2026-05-20 16:00:00'),
+            startDateTime: self::utc('2026-05-20 08:00:00'),
+            endDateTime: self::utc('2026-05-20 16:00:00'),
             reason: 'Personal',
             now: new DateTimeImmutable(),
             practiceTimeZone: new DateTimeZone('America/Caracas'),

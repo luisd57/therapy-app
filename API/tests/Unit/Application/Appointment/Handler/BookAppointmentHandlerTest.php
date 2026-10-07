@@ -51,7 +51,7 @@ final class BookAppointmentHandlerTest extends TestCase
             ->method('save');
 
         $result = $this->handler->__invoke(new BookAppointmentInputDTO(
-            slotStartTime: '2026-04-01T10:00:00',
+            slotStartTime: '2026-04-01T10:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'John Doe',
             phone: '+1234567890',
@@ -75,7 +75,7 @@ final class BookAppointmentHandlerTest extends TestCase
             ->method('save');
 
         $result = $this->handler->__invoke(new BookAppointmentInputDTO(
-            slotStartTime: '2026-04-01T10:00:00',
+            slotStartTime: '2026-04-01T10:00:00+00:00',
             modality: 'IN_PERSON',
             fullName: 'Jane Smith',
             phone: '+9876543210',

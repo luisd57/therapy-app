@@ -22,10 +22,13 @@ use App\Domain\User\Enum\UserRole;
 use App\Domain\Appointment\Enum\AppointmentModality;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
+use App\Tests\Helper\UsesUtcInstants;
 use PHPUnit\Framework\TestCase;
 
 final class GetNextAvailableWeekHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private TherapistScheduleRepositoryInterface&MockObject $scheduleRepository;
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
@@ -110,7 +113,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
     {
         $this->setUpDefaultMocks();
 
-        $slot = TimeSlot::create(new \DateTimeImmutable('tomorrow 09:00:00'), 50);
+        $slot = TimeSlot::create(self::utc('2026-06-16 13:00:00'), 50);
 
         // First call (week 0) returns empty, second call (week 1) returns a slot
         $this->availabilityComputer
@@ -151,7 +154,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
     {
         $this->setUpDefaultMocks();
 
-        $slot = TimeSlot::create(new \DateTimeImmutable('tomorrow 09:00:00'), 50);
+        $slot = TimeSlot::create(self::utc('2026-06-16 13:00:00'), 50);
 
         $this->availabilityComputer
             ->expects($this->atLeastOnce())
@@ -207,7 +210,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
     {
         $this->setUpDefaultMocks();
 
-        $slot = TimeSlot::create(new \DateTimeImmutable('tomorrow 09:00:00'), 50);
+        $slot = TimeSlot::create(self::utc('2026-06-16 13:00:00'), 50);
 
         $this->availabilityComputer
             ->expects($this->once())
@@ -226,7 +229,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
     {
         $this->setUpDefaultMocks();
 
-        $slot = TimeSlot::create(new \DateTimeImmutable('tomorrow 09:00:00'), 50);
+        $slot = TimeSlot::create(self::utc('2026-06-16 13:00:00'), 50);
 
         $this->availabilityComputer
             ->method('computeAvailableSlots')

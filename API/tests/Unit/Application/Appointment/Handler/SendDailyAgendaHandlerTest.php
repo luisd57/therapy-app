@@ -11,12 +11,15 @@ use App\Domain\Appointment\Service\AppointmentEmailSenderInterface;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class SendDailyAgendaHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private UserRepositoryInterface&MockObject $userRepository;
     private AppointmentRepositoryInterface&MockObject $appointmentRepository;
     private AppointmentEmailSenderInterface&MockObject $emailSender;
@@ -39,12 +42,12 @@ final class SendDailyAgendaHandlerTest extends TestCase
     {
         $therapist = DomainTestHelper::createTherapist();
         $appointment1 = DomainTestHelper::createConfirmedAppointment(
-            startTime: new \DateTimeImmutable('2026-06-01 09:00:00'),
+            startTime: self::utc('2026-06-01 09:00:00'),
             fullName: 'Alice',
             email: 'alice@test.com',
         );
         $appointment2 = DomainTestHelper::createConfirmedAppointment(
-            startTime: new \DateTimeImmutable('2026-06-01 10:00:00'),
+            startTime: self::utc('2026-06-01 10:00:00'),
             fullName: 'Bob',
             email: 'bob@test.com',
         );

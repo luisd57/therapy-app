@@ -13,11 +13,14 @@ use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use DateTimeZone;
 
 final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 {
+    use UsesUtcInstants;
+
     private AppointmentRepositoryInterface $repository;
 
     protected function setUp(): void
@@ -34,7 +37,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
     ): Appointment {
         return Appointment::request(
             id: $id ?? AppointmentId::generate(),
-            timeSlot: TimeSlot::create($startTime ?? new DateTimeImmutable('2026-06-02 09:00:00'), 50),
+            timeSlot: TimeSlot::create($startTime ?? self::utc('2026-06-02 09:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             fullName: $fullName,
             email: Email::fromString($email),
@@ -71,20 +74,20 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
     public function testFindBlockingByDateRangeReturnsRequestedAndConfirmed(): void
     {
         $requested = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-06-02 09:00:00'),
+            startTime: self::utc('2026-06-02 09:00:00'),
             email: 'requested@test.com',
         );
         $this->repository->save($requested);
 
         $confirmed = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-06-02 10:00:00'),
+            startTime: self::utc('2026-06-02 10:00:00'),
             email: 'confirmed@test.com',
         );
         $confirmed->confirm(new DateTimeImmutable());
         $this->repository->save($confirmed);
 
         $completed = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-06-02 11:00:00'),
+            startTime: self::utc('2026-06-02 11:00:00'),
             email: 'completed@test.com',
         );
         $completed->confirm(new DateTimeImmutable());
@@ -92,15 +95,15 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $this->repository->save($completed);
 
         $cancelled = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-06-02 12:00:00'),
+            startTime: self::utc('2026-06-02 12:00:00'),
             email: 'cancelled@test.com',
         );
         $cancelled->cancel(new DateTimeImmutable());
         $this->repository->save($cancelled);
 
         $results = $this->repository->findBlockingByDateRange(
-            new DateTimeImmutable('2026-06-02 00:00:00'),
-            new DateTimeImmutable('2026-06-02 23:59:59'),
+            self::utc('2026-06-02 00:00:00'),
+            self::utc('2026-06-02 23:59:59'),
         );
 
         $ids = $results->map(fn(Appointment $appointment) => $appointment->getId()->getValue())->toArray();
@@ -113,13 +116,13 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
     public function testFindByStatus(): void
     {
         $requested = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-07-01 09:00:00'),
+            startTime: self::utc('2026-07-01 09:00:00'),
             email: 'status-req@test.com',
         );
         $this->repository->save($requested);
 
         $confirmed = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-07-01 10:00:00'),
+            startTime: self::utc('2026-07-01 10:00:00'),
             email: 'status-conf@test.com',
         );
         $confirmed->confirm(new DateTimeImmutable());
@@ -134,19 +137,20 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
     public function testFindConfirmedByDateReturnsOnlyConfirmedForGivenDate(): void
     {
-        $targetDate = new DateTimeImmutable('2026-09-15');
+        // The day is the caller's, so its edges are practice-local midnights, not UTC ones.
+        $targetDate = new DateTimeImmutable('2026-09-15T00:00:00-04:00');
 
         // Confirmed on target date - should be included
         $confirmedOnDate = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-15 09:00:00'),
+            startTime: self::utc('2026-09-15 09:00:00'),
             email: 'confirmed-on-date@test.com',
         );
         $confirmedOnDate->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate);
 
-        // Another confirmed on target date - should be included
+        // Late evening in the practice zone, already the 16th in UTC - should be included
         $confirmedOnDate2 = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-15 14:00:00'),
+            startTime: new DateTimeImmutable('2026-09-15T22:00:00-04:00'),
             email: 'confirmed-on-date2@test.com',
         );
         $confirmedOnDate2->confirm(new DateTimeImmutable());
@@ -154,14 +158,14 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
         // Requested on target date - should NOT be included
         $requestedOnDate = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-15 11:00:00'),
+            startTime: self::utc('2026-09-15 11:00:00'),
             email: 'requested-on-date@test.com',
         );
         $this->repository->save($requestedOnDate);
 
-        // Confirmed on different date - should NOT be included
+        // The evening before in the practice zone, already the 15th in UTC - should NOT be included
         $confirmedOtherDate = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-16 09:00:00'),
+            startTime: new DateTimeImmutable('2026-09-14T23:00:00-04:00'),
             email: 'confirmed-other-date@test.com',
         );
         $confirmedOtherDate->confirm(new DateTimeImmutable());
@@ -179,17 +183,17 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
     public function testFindConfirmedByDateOrdersByStartTimeAsc(): void
     {
-        $targetDate = new DateTimeImmutable('2026-09-20');
+        $targetDate = new DateTimeImmutable('2026-09-20T00:00:00-04:00');
 
         $later = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-20 15:00:00'),
+            startTime: self::utc('2026-09-20 15:00:00'),
             email: 'later@test.com',
         );
         $later->confirm(new DateTimeImmutable());
         $this->repository->save($later);
 
         $earlier = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-09-20 08:00:00'),
+            startTime: self::utc('2026-09-20 08:00:00'),
             email: 'earlier@test.com',
         );
         $earlier->confirm(new DateTimeImmutable());
@@ -202,7 +206,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
     public function testFindConfirmedByDateReturnsEmptyCollectionWhenNone(): void
     {
-        $results = $this->repository->findConfirmedByDate(new DateTimeImmutable('2030-01-01'));
+        $results = $this->repository->findConfirmedByDate(self::utc('2030-01-01'));
 
         $this->assertCount(0, $results);
     }
@@ -266,7 +270,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
     public function testDeleteRemovesAppointment(): void
     {
         $appointment = $this->createAppointment(
-            startTime: new DateTimeImmutable('2026-08-01 09:00:00'),
+            startTime: self::utc('2026-08-01 09:00:00'),
             email: 'delete@test.com',
         );
         $this->repository->save($appointment);

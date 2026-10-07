@@ -10,12 +10,15 @@ use App\Domain\Appointment\Entity\ScheduleException;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ListScheduleExceptionsHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private ListScheduleExceptionsHandler $handler;
 
@@ -36,8 +39,8 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
         $exception1 = ScheduleException::reconstitute(
             id: ExceptionId::generate(),
             therapist: $therapist,
-            startDateTime: new \DateTimeImmutable('2025-06-01 09:00:00'),
-            endDateTime: new \DateTimeImmutable('2025-06-01 17:00:00'),
+            startDateTime: self::utc('2025-06-01 09:00:00'),
+            endDateTime: self::utc('2025-06-01 17:00:00'),
             reason: 'Day off',
             isAllDay: true,
             createdAt: new \DateTimeImmutable(),
@@ -46,8 +49,8 @@ final class ListScheduleExceptionsHandlerTest extends TestCase
         $exception2 = ScheduleException::reconstitute(
             id: ExceptionId::generate(),
             therapist: $therapist,
-            startDateTime: new \DateTimeImmutable('2025-06-15 10:00:00'),
-            endDateTime: new \DateTimeImmutable('2025-06-15 12:00:00'),
+            startDateTime: self::utc('2025-06-15 10:00:00'),
+            endDateTime: self::utc('2025-06-15 12:00:00'),
             reason: 'Doctor appointment',
             isAllDay: false,
             createdAt: new \DateTimeImmutable(),

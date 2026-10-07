@@ -94,7 +94,7 @@ final class PatientRequestAppointmentHandlerTest extends TestCase
     {
         return new PatientRequestAppointmentInputDTO(
             patientId: self::PATIENT_ID,
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             lockToken: $lockToken,
         );
@@ -130,7 +130,7 @@ final class PatientRequestAppointmentHandlerTest extends TestCase
             ->expects($this->once())
             ->method('requestAppointment')
             ->with(
-                '2025-06-02 09:00:00',
+                '2025-06-02T09:00:00+00:00',
                 'ONLINE',
                 'Test Patient',
                 '+1234567890',
@@ -178,7 +178,7 @@ final class PatientRequestAppointmentHandlerTest extends TestCase
             ->expects($this->once())
             ->method('requestAppointment')
             ->with(
-                '2025-06-02 09:00:00',
+                '2025-06-02T09:00:00+00:00',
                 'ONLINE',
                 'Test Patient',
                 '+1234567890',

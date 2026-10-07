@@ -32,7 +32,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
     {
         $lock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 09:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 09:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'test-lock-token-123',
             ttlSeconds: 600,
@@ -60,7 +60,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
     {
         $activeLock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 09:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 09:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'active-token',
             ttlSeconds: 600,
@@ -69,8 +69,8 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
         $this->repository->save($activeLock);
 
         $found = $this->repository->findActiveByTimeSlot(
-            new DateTimeImmutable('2026-06-02 09:00:00'),
-            new DateTimeImmutable('2026-06-02 09:50:00'),
+            self::utc('2026-06-02 09:00:00'),
+            self::utc('2026-06-02 09:50:00'),
         );
 
         $this->assertNotNull($found);
@@ -81,7 +81,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
     {
         $expiredLock = SlotLock::reconstitute(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 10:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 10:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'expired-token',
             createdAt: self::utc('2026-05-30 08:40:00'),
@@ -90,8 +90,8 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
         $this->repository->save($expiredLock);
 
         $found = $this->repository->findActiveByTimeSlot(
-            new DateTimeImmutable('2026-06-02 10:00:00'),
-            new DateTimeImmutable('2026-06-02 10:50:00'),
+            self::utc('2026-06-02 10:00:00'),
+            self::utc('2026-06-02 10:50:00'),
         );
 
         $this->assertNull($found);
@@ -101,7 +101,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
     {
         $activeLock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 09:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 09:00:00'), 50),
             modality: AppointmentModality::ONLINE,
             lockToken: 'keep-active-token',
             ttlSeconds: 600,
@@ -111,7 +111,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
 
         $expiredLock = SlotLock::reconstitute(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 11:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 11:00:00'), 50),
             modality: AppointmentModality::IN_PERSON,
             lockToken: 'remove-expired-token',
             createdAt: self::utc('2026-05-30 08:30:00'),
@@ -130,7 +130,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
     {
         $lock = SlotLock::create(
             id: SlotLockId::generate(),
-            timeSlot: TimeSlot::create(new DateTimeImmutable('2026-06-02 14:00:00'), 50),
+            timeSlot: TimeSlot::create(self::utc('2026-06-02 14:00:00'), 50),
             modality: AppointmentModality::IN_PERSON,
             lockToken: 'delete-me-token',
             ttlSeconds: 600,

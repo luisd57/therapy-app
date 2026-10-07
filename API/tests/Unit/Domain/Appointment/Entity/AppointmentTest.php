@@ -14,11 +14,14 @@ use App\Domain\User\ValueObject\Email;
 use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Entity\User;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 final class AppointmentTest extends TestCase
 {
+    use UsesUtcInstants;
+
     public function testAppointmentHoldsThePatientWhenOneIsLinked(): void
     {
         $patient = DomainTestHelper::createActivePatient();
@@ -427,7 +430,7 @@ final class AppointmentTest extends TestCase
     public function testReconstituteRestoresAllProperties(): void
     {
         $id = AppointmentId::generate();
-        $timeSlot = TimeSlot::create(new DateTimeImmutable('2026-04-01 10:00'), 50);
+        $timeSlot = TimeSlot::create(self::utc('2026-04-01 10:00'), 50);
         $email = Email::fromString('jane@example.com');
         $phone = Phone::fromString('+9876543210');
         $patient = DomainTestHelper::createActivePatient();

@@ -120,7 +120,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('findConfirmedByDateRange')
             ->willReturn(new ArrayCollection());
 
-        $matchingSlot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
+        $matchingSlot = TimeSlot::create(self::utc('2025-06-02 09:00:00'), 50);
 
         $this->availabilityComputer
             ->method('computeAvailableSlots')
@@ -156,7 +156,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('sendNewRequestAlertToTherapist');
 
         $result = $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -197,7 +197,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->with($this->anything(), $this->anything(), $this->anything(), $this->anything(), $isMadrid);
 
         $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -210,7 +210,7 @@ final class AppointmentRequestServiceTest extends TestCase
 
     public function testRequestAppointmentSuccessWithValidLockToken(): void
     {
-        $timeSlot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
+        $timeSlot = TimeSlot::create(self::utc('2025-06-02 09:00:00'), 50);
 
         $lock = SlotLock::reconstitute(
             id: SlotLockId::generate(),
@@ -246,7 +246,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('sendNewRequestAlertToTherapist');
 
         $result = $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -274,7 +274,7 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->expectException(InvalidLockTokenException::class);
 
         $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -316,7 +316,7 @@ final class AppointmentRequestServiceTest extends TestCase
         $this->expectException(SlotNotAvailableException::class);
 
         $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -348,7 +348,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->willReturn(DomainTestHelper::createActivePatient(id: UserId::fromString($patientId)));
 
         $result = $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -385,7 +385,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('sendNewRequestAlertToTherapist');
 
         $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -412,7 +412,7 @@ final class AppointmentRequestServiceTest extends TestCase
             ->method('error');
 
         $result = $this->service->requestAppointment(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
