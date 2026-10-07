@@ -12,11 +12,14 @@ use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Id\ExceptionId;
 use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class RemoveScheduleExceptionHandlerTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private ScheduleExceptionRepositoryInterface&MockObject $exceptionRepository;
     private RemoveScheduleExceptionHandler $handler;
 
@@ -38,8 +41,8 @@ final class RemoveScheduleExceptionHandlerTest extends TestCase
         $exception = ScheduleException::reconstitute(
             id: $exceptionId,
             therapist: $therapist,
-            startDateTime: new \DateTimeImmutable('2025-06-01 09:00:00'),
-            endDateTime: new \DateTimeImmutable('2025-06-01 17:00:00'),
+            startDateTime: self::utc('2025-06-01 09:00:00'),
+            endDateTime: self::utc('2025-06-01 17:00:00'),
             reason: 'Day off',
             isAllDay: true,
             createdAt: new \DateTimeImmutable(),

@@ -47,8 +47,8 @@ final class ScheduleExceptionTest extends TestCase
     {
         $id = ExceptionId::generate();
         $therapist = DomainTestHelper::createTherapist();
-        $start = new DateTimeImmutable('2026-04-01 09:00');
-        $end = new DateTimeImmutable('2026-04-01 12:00');
+        $start = self::utc('2026-04-01 09:00');
+        $end = self::utc('2026-04-01 12:00');
         $now = new DateTimeImmutable('2026-03-01T10:00:00+00:00');
 
         $exception = ScheduleException::create(
@@ -76,8 +76,8 @@ final class ScheduleExceptionTest extends TestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 09:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
+            startDateTime: self::utc('2026-04-01 09:00'),
+            endDateTime: self::utc('2026-04-01 12:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
@@ -109,8 +109,8 @@ final class ScheduleExceptionTest extends TestCase
         ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 12:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 09:00'),
+            startDateTime: self::utc('2026-04-01 12:00'),
+            endDateTime: self::utc('2026-04-01 09:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
@@ -120,7 +120,7 @@ final class ScheduleExceptionTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
 
-        $time = new DateTimeImmutable('2026-04-01 12:00');
+        $time = self::utc('2026-04-01 12:00');
         ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
@@ -253,15 +253,15 @@ final class ScheduleExceptionTest extends TestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 12:00'),
+            startDateTime: self::utc('2026-04-01 10:00'),
+            endDateTime: self::utc('2026-04-01 12:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
 
         $slot = TimeSlot::fromStartEnd(
-            new DateTimeImmutable('2026-04-01 11:00'),
-            new DateTimeImmutable('2026-04-01 11:50'),
+            self::utc('2026-04-01 11:00'),
+            self::utc('2026-04-01 11:50'),
         );
 
         $this->assertTrue($exception->overlapsTimeSlot($slot));
@@ -272,15 +272,15 @@ final class ScheduleExceptionTest extends TestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            startDateTime: self::utc('2026-04-01 10:00'),
+            endDateTime: self::utc('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
 
         $slot = TimeSlot::fromStartEnd(
-            new DateTimeImmutable('2026-04-01 10:30'),
-            new DateTimeImmutable('2026-04-01 11:30'),
+            self::utc('2026-04-01 10:30'),
+            self::utc('2026-04-01 11:30'),
         );
 
         $this->assertTrue($exception->overlapsTimeSlot($slot));
@@ -291,15 +291,15 @@ final class ScheduleExceptionTest extends TestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            startDateTime: self::utc('2026-04-01 10:00'),
+            endDateTime: self::utc('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
 
         $slot = TimeSlot::fromStartEnd(
-            new DateTimeImmutable('2026-04-01 14:00'),
-            new DateTimeImmutable('2026-04-01 14:50'),
+            self::utc('2026-04-01 14:00'),
+            self::utc('2026-04-01 14:50'),
         );
 
         $this->assertFalse($exception->overlapsTimeSlot($slot));
@@ -310,15 +310,15 @@ final class ScheduleExceptionTest extends TestCase
         $exception = ScheduleException::create(
             id: ExceptionId::generate(),
             therapist: DomainTestHelper::createTherapist(),
-            startDateTime: new DateTimeImmutable('2026-04-01 10:00'),
-            endDateTime: new DateTimeImmutable('2026-04-01 11:00'),
+            startDateTime: self::utc('2026-04-01 10:00'),
+            endDateTime: self::utc('2026-04-01 11:00'),
             now: new DateTimeImmutable(),
             practiceTimeZone: self::practiceTimeZone(),
         );
 
         $slot = TimeSlot::fromStartEnd(
-            new DateTimeImmutable('2026-04-01 11:00'),
-            new DateTimeImmutable('2026-04-01 11:50'),
+            self::utc('2026-04-01 11:00'),
+            self::utc('2026-04-01 11:50'),
         );
 
         $this->assertFalse($exception->overlapsTimeSlot($slot));
@@ -330,8 +330,8 @@ final class ScheduleExceptionTest extends TestCase
     {
         $id = ExceptionId::generate();
         $therapist = DomainTestHelper::createTherapist();
-        $start = new DateTimeImmutable('2026-04-01 09:00');
-        $end = new DateTimeImmutable('2026-04-01 17:00');
+        $start = self::utc('2026-04-01 09:00');
+        $end = self::utc('2026-04-01 17:00');
         $createdAt = new DateTimeImmutable('-1 day');
 
         $exception = ScheduleException::reconstitute(

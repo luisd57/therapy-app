@@ -58,7 +58,7 @@ final class LockSlotHandlerTest extends TestCase
             ->method('save');
 
         $input = new LockSlotInputDTO(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
         );
 
@@ -72,7 +72,7 @@ final class LockSlotHandlerTest extends TestCase
 
     public function testHandleAlreadyLockedThrowsSlotNotAvailableException(): void
     {
-        $timeSlot = TimeSlot::create(new \DateTimeImmutable('2025-06-02 09:00:00'), 50);
+        $timeSlot = TimeSlot::create(self::utc('2025-06-02 09:00:00'), 50);
 
         $existingLock = SlotLock::reconstitute(
             id: SlotLockId::generate(),
@@ -92,7 +92,7 @@ final class LockSlotHandlerTest extends TestCase
             ->method('save');
 
         $input = new LockSlotInputDTO(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
         );
 

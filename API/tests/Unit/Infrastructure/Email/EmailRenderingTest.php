@@ -11,6 +11,7 @@ use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Infrastructure\Email\Appointment\AppointmentEmailSender;
 use App\Infrastructure\Email\User\SymfonyEmailSender;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,6 +21,8 @@ use Symfony\Component\Mime\Email as MimeEmail;
 
 final class EmailRenderingTest extends TestCase
 {
+    use UsesUtcInstants;
+
     private const FRONTEND_URL = 'http://localhost:4200';
     private const PRACTICE_TIMEZONE = 'America/Caracas';
 
@@ -326,15 +329,15 @@ final class EmailRenderingTest extends TestCase
     public function testDailyAgendaEmailContainsDashboardButtonAndTable(): void
     {
         $sender = $this->appointmentSender();
-        $date = new DateTimeImmutable('2026-06-15 00:00:00');
+        $date = new DateTimeImmutable('2026-06-15T00:00:00-04:00');
 
         $appointments = new ArrayCollection([
             DomainTestHelper::createConfirmedAppointment(
-                startTime: new DateTimeImmutable('2026-06-15 10:00:00'),
+                startTime: self::utc('2026-06-15 10:00:00'),
                 fullName: 'Alice Patient',
             ),
             DomainTestHelper::createConfirmedAppointment(
-                startTime: new DateTimeImmutable('2026-06-15 11:00:00'),
+                startTime: self::utc('2026-06-15 11:00:00'),
                 fullName: 'Bob Patient',
             ),
         ]);
@@ -401,7 +404,7 @@ final class EmailRenderingTest extends TestCase
     public function testDailyAgendaEmailHandlesEmptyAppointmentList(): void
     {
         $sender = $this->appointmentSender();
-        $date = new DateTimeImmutable('2026-06-15 00:00:00');
+        $date = new DateTimeImmutable('2026-06-15T00:00:00-04:00');
 
         $sender->sendDailyAgendaToTherapist(
             Email::fromString('therapist@example.com'),
