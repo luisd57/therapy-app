@@ -16,3 +16,22 @@ function everythingTheRulesBan(ClockInterface&MockObject $clock): void
     new DateTimeImmutable('2026-06-02 09:00:00');
     $clock->method('now')->willReturn(new DateTimeImmutable());
 }
+
+function handWrittenClock(): ClockInterface
+{
+    return new class implements ClockInterface {
+        public function now(): DateTimeImmutable
+        {
+            return new DateTimeImmutable();
+        }
+
+        public function sleep(float|int $seconds): void
+        {
+        }
+
+        public function withTimeZone(\DateTimeZone|string $timezone): static
+        {
+            return $this;
+        }
+    };
+}

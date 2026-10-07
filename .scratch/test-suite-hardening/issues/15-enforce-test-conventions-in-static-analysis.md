@@ -68,8 +68,14 @@ somewhere to run. See ADR-0008. `phpstan.dist.neon` has no `rules:` section yet,
 
 The first three landed green, there being nothing to clear. The naive-literal rule found 96 literals
 in 14 files, matching the estimate above. This ticket cleared them itself, in a commit before the
-rule: 91 became `utc()`, the four `'tomorrow 09:00:00'` became a literal a day after the pinned
-clock, and `TimezoneGuardTest` keeps its one on purpose behind the only ignore. No allowlist.
+rule: 89 became `utc()`, counting the four `'tomorrow 09:00:00'` that are now a literal a day after
+the pinned clock. Six that mean a practice-local time carry `-04:00`. `TimezoneGuardTest` keeps its
+one on purpose behind the only ignore. No allowlist.
+
+`utc()` is not always the right swap. `findConfirmedByDate` cuts the day in the zone of the date it
+is handed, and under +14:00 its repository test could tell a practice-local day from a UTC one. A
+blanket `utc()` would have lost that, so the test now passes a `-04:00` midnight with an Appointment
+just inside each edge. Normalising the date to UTC in the repository turns it red.
 
 Clearing them was not neutral. Six `AppointmentRequestServiceTest` methods went red, because the
 test sent a wire string with no offset and built its fixture the same way, so both were read at
@@ -79,7 +85,7 @@ wire string to a mocked service, which no rule here sees.
 
 The clock rule also rejects `willReturnCallback`, `createConfiguredMock`, `createConfiguredStub` and
 a hand-written clock class, none of which the suite uses, so one shape is left to check. A stub fed
-through a variable still gets past it. The fix for that is the zero-argument rule ticket 18 asks
+through a variable still gets past it, as does a `MockClock` built with no argument. The fix for that is the zero-argument rule ticket 18 asks
 for, which is red on 167 sites today and needs its own ticket after 18.
 
 Each of the eight plants (six banned names, one unpinned stub, one naive literal) failed

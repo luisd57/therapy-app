@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\PHPStan\Rule;
 
+use DateTimeImmutable;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 
 final class TestScope
@@ -16,5 +19,11 @@ final class TestScope
         $namespace = $scope->getNamespace() ?? '';
 
         return $namespace === 'App\Tests' || str_starts_with($namespace, 'App\Tests\\');
+    }
+
+    public static function buildsDateTimeImmutable(New_ $new, Scope $scope): bool
+    {
+        return $new->class instanceof Name
+            && strcasecmp($scope->resolveName($new->class), DateTimeImmutable::class) === 0;
     }
 }

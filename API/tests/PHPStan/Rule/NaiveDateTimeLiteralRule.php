@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\PHPStan\Rule;
 
-use DateTimeImmutable;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -26,11 +24,7 @@ final class NaiveDateTimeLiteralRule implements Rule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (
-            !TestScope::covers($scope)
-            || !$node->class instanceof Name
-            || strcasecmp($scope->resolveName($node->class), DateTimeImmutable::class) !== 0
-        ) {
+        if (!TestScope::covers($scope) || !TestScope::buildsDateTimeImmutable($node, $scope)) {
             return [];
         }
 
@@ -66,7 +60,7 @@ final class NaiveDateTimeLiteralRule implements Rule
     {
         $parsed = date_parse($text);
 
-        if ($parsed['error_count'] > 0 || $parsed['is_localtime']) {
+        if ($parsed['is_localtime']) {
             return false;
         }
 

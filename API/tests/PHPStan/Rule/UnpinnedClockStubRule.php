@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\PHPStan\Rule;
 
-use DateTimeImmutable;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -26,6 +24,8 @@ use Symfony\Component\Clock\ClockInterface;
  */
 final class UnpinnedClockStubRule implements Rule
 {
+    private const array RETURNS = ['willreturn', 'willreturnonconsecutivecalls'];
+
     /** Ways to double the clock that would hide the returned instant from this rule. */
     private const array HIDING_SHAPES = [
         'willreturncallback' => 'willReturnCallback',
@@ -46,19 +46,22 @@ final class UnpinnedClockStubRule implements Rule
 
         $name = $node->name->toLowerString();
 
-        if ($name === 'willreturn') {
+        if (in_array($name, self::RETURNS, true)) {
             return self::stubsClockNow($node, $scope) && self::returnsRealInstant($node, $scope)
                 ? [self::unpinned()]
                 : [];
         }
 
-        $doublesClock = match ($name) {
-            'willreturncallback' => self::stubsClockNow($node, $scope),
-            'createconfiguredmock', 'createconfiguredstub' => self::namesClock($node, $scope),
-            default => false,
-        };
+        $shape = self::HIDING_SHAPES[$name] ?? null;
+        if ($shape === null) {
+            return [];
+        }
 
-        return $doublesClock ? [ClockDoubleShape::error(self::HIDING_SHAPES[$name] . '()')] : [];
+        $doublesClock = $name === 'willreturncallback'
+            ? self::stubsClockNow($node, $scope)
+            : self::namesClock($node, $scope);
+
+        return $doublesClock ? [ClockDoubleShape::error($shape . '()')] : [];
     }
 
     /** True for a chain like $clock->expects(...)->method('now')->willReturn(...). */
@@ -129,28 +132,22 @@ final class UnpinnedClockStubRule implements Rule
         return false;
     }
 
+    /** True for a DateTimeImmutable with no arguments, or one whose text sets no calendar date. */
     private static function isRealInstant(Arg $argument, Scope $scope): bool
     {
         $new = $argument->value;
-        if (
-            !$new instanceof New_
-            || !$new->class instanceof Name
-            || strcasecmp($scope->resolveName($new->class), DateTimeImmutable::class) !== 0
-        ) {
+        if (!$new instanceof New_ || !TestScope::buildsDateTimeImmutable($new, $scope)) {
             return false;
         }
 
-        $arguments = $new->getArgs();
-        if ($arguments === []) {
+        $text = $new->getArgs()[0] ?? null;
+        if ($text === null) {
             return true;
         }
 
-        if (count($arguments) > 1) {
-            return false;
-        }
-
-        foreach ($scope->getType($arguments[0]->value)->getConstantStrings() as $text) {
-            if (in_array(strtolower(trim($text->getValue())), ['', 'now'], true)) {
+        // 'now', '' and '-1 hour' all move with the wall clock, whatever zone a second argument names.
+        foreach ($scope->getType($text->value)->getConstantStrings() as $literal) {
+            if (date_parse($literal->getValue())['year'] === false) {
                 return true;
             }
         }

@@ -51,4 +51,14 @@ final class BannedTestCallRuleTest extends RuleTestCase
     {
         $this->analyse([__DIR__ . '/Fixture/outside-tests.php'], []);
     }
+
+    public function testTheRootTestNamespaceIsCoveredAndALookalikeIsNot(): void
+    {
+        $tip = 'Pin time with freezeClock() or a stubbed ClockInterface. ' . self::DOC;
+
+        $this->analyse([__DIR__ . '/Fixture/tests-root-namespace.php'], [
+            ['sleep() is banned in tests: waiting on the wall clock is slow and flaky.', 9, $tip],
+        ]);
+        $this->analyse([__DIR__ . '/Fixture/lookalike-namespace.php'], []);
+    }
 }

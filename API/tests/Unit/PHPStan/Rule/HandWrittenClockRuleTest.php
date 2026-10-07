@@ -32,4 +32,9 @@ final class HandWrittenClockRuleTest extends RuleTestCase
     {
         $this->analyse([__DIR__ . '/Fixture/NotAnAssert.php'], []);
     }
+
+    public function testAClockClassOutsideTheTestNamespaceIsLeftAlone(): void
+    {
+        $this->analyse([__DIR__ . '/Fixture/outside-tests.php'], []);
+    }
 }

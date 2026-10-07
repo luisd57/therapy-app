@@ -137,7 +137,8 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
     public function testFindConfirmedByDateReturnsOnlyConfirmedForGivenDate(): void
     {
-        $targetDate = self::utc('2026-09-15');
+        // The day is the caller's, so its edges are practice-local midnights, not UTC ones.
+        $targetDate = new DateTimeImmutable('2026-09-15T00:00:00-04:00');
 
         // Confirmed on target date - should be included
         $confirmedOnDate = $this->createAppointment(
@@ -147,9 +148,9 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $confirmedOnDate->confirm(new DateTimeImmutable());
         $this->repository->save($confirmedOnDate);
 
-        // Another confirmed on target date - should be included
+        // Late evening in the practice zone, already the 16th in UTC - should be included
         $confirmedOnDate2 = $this->createAppointment(
-            startTime: self::utc('2026-09-15 14:00:00'),
+            startTime: new DateTimeImmutable('2026-09-15T22:00:00-04:00'),
             email: 'confirmed-on-date2@test.com',
         );
         $confirmedOnDate2->confirm(new DateTimeImmutable());
@@ -162,9 +163,9 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         );
         $this->repository->save($requestedOnDate);
 
-        // Confirmed on different date - should NOT be included
+        // The evening before in the practice zone, already the 15th in UTC - should NOT be included
         $confirmedOtherDate = $this->createAppointment(
-            startTime: self::utc('2026-09-16 09:00:00'),
+            startTime: new DateTimeImmutable('2026-09-14T23:00:00-04:00'),
             email: 'confirmed-other-date@test.com',
         );
         $confirmedOtherDate->confirm(new DateTimeImmutable());
@@ -182,7 +183,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 
     public function testFindConfirmedByDateOrdersByStartTimeAsc(): void
     {
-        $targetDate = self::utc('2026-09-20');
+        $targetDate = new DateTimeImmutable('2026-09-20T00:00:00-04:00');
 
         $later = $this->createAppointment(
             startTime: self::utc('2026-09-20 15:00:00'),

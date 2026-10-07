@@ -30,9 +30,14 @@ final class UnpinnedClockStubRuleTest extends RuleTestCase
             [$message, 20, $tip],
             [$message, 21, $tip],
             [$message, 22, $tip],
-            ['A ClockInterface double is stubbed with willReturn() only: willReturnCallback() hides the instant from this check.', 28, $shapeTip],
-            ['A ClockInterface double is stubbed with willReturn() only: createConfiguredMock() hides the instant from this check.', 29, $shapeTip],
-            ['A ClockInterface double is stubbed with willReturn() only: createConfiguredStub() hides the instant from this check.', 30, $shapeTip],
+            [$message, 23, $tip],
+            [$message, 24, $tip],
+            [$message, 25, $tip],
+            [$message, 26, $tip],
+            [$message, 27, $tip],
+            ['A ClockInterface double is stubbed with willReturn() only: willReturnCallback() hides the instant from this check.', 33, $shapeTip],
+            ['A ClockInterface double is stubbed with willReturn() only: createConfiguredMock() hides the instant from this check.', 34, $shapeTip],
+            ['A ClockInterface double is stubbed with willReturn() only: createConfiguredStub() hides the instant from this check.', 35, $shapeTip],
         ]);
     }
 
