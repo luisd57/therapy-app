@@ -27,3 +27,4 @@ rules:
     - App\Tests\PHPStan\Rule\BannedTestCallRule
     - App\Tests\PHPStan\Rule\UnpinnedClockStubRule
     - App\Tests\PHPStan\Rule\HandWrittenClockRule
+    - App\Tests\PHPStan\Rule\NaiveDateTimeLiteralRule
