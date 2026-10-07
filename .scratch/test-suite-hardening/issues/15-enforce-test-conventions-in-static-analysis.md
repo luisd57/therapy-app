@@ -1,5 +1,7 @@
 # 15 - Enforce the test conventions in static analysis
 
+> Frozen record, resolved 2026-10-07.
+
 **What to build:** the API testing conventions that are currently prose become
 rules that fail the build, so a new test cannot reintroduce a defect this effort
 removed.
@@ -47,14 +49,16 @@ layout rather than syntax. Prose and review still carry those.
 
 **Blocked by:** 11
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #104](https://github.com/luisd57/therapy-app/pull/104)
 
 - [x] The clock-stub rule and the naive-literal rule each exist and are scoped to the tests directory
 - [x] Each rule is added by the ticket that clears its existing violations, so none lands against a red suite and no allowlist is introduced
 - [x] The banned-assertion and banned-function rules cover `assertEquals`, `assertNotEquals`, `markTestSkipped`, `markTestIncomplete`, `sleep` and `usleep`
 - [x] Every rule carries a message naming the convention and where it is written down, not just the violation
-- [ ] Introducing each violation deliberately fails the pipeline, one at a time, proving no rule is inert
-- [ ] Full pipeline green
+- [x] Introducing each violation deliberately fails the pipeline, one at a time, proving no rule is inert
+- [x] Full pipeline green
 
 ## Comments
 
@@ -92,5 +96,6 @@ through a variable still gets past it, as does a `MockClock` built with no argum
 for, which is red on 167 sites today and needs its own ticket after 18.
 
 Each of the eight plants (six banned names, one unpinned stub, one naive literal) failed
-`phpstan analyse` locally, one at a time, each with its own message. The red run in CI is recorded
-in the pull request.
+`phpstan analyse` locally, one at a time, each with its own message. In CI a throwaway commit holding
+all eight failed the `Run PHPStan` step with eight errors, and was dropped. The run is linked in the
+pull request. The clean branch is green on both jobs.
