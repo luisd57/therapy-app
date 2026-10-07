@@ -37,6 +37,22 @@ before it became a trait.
 - Kernel reboot disabled in API tests for transaction isolation across multiple HTTP requests.
 - `reconstitute()` is for test helpers ONLY - never in handlers or controllers.
 
+## Enforced by PHPStan
+
+Rules in `API/tests/PHPStan/Rule/`, registered in `phpstan.dist.neon`. They only look at code under
+`App\Tests`, and they read shapes, not meaning.
+
+- No `assertEquals` or `assertNotEquals`. The date comparator sees the instant, not the offset, so a wrong zone passes. Use `assertSame`, or `assertInstantIs` for an instant.
+- No `markTestSkipped` or `markTestIncomplete`. A skipped test lets the suite shrink without failing. Fix it or delete it.
+- No `sleep` or `usleep`. Waiting on the wall clock is slow and flaky. Pin time instead.
+- A `ClockInterface` double returns a pinned instant, never `new DateTimeImmutable()`. Stub it with `willReturn()` on `createMock()` or `createStub()`, or use `MockClock`. `willReturnCallback`, `createConfiguredMock` and a hand-written clock class are rejected because the rule cannot read the instant through them.
+- A one-argument `new DateTimeImmutable('...')` literal names its zone, or goes through `utc()`. Without one it is read at the suite's +14:00. A pure relative duration (`'-1 hour'`) is exempt. See ADR-0003.
+
+Not caught: a stub fed through a variable, zero-argument `new DateTimeImmutable()` outside a clock
+stub, and mutable `DateTime`. An exemption is an inline `@phpstan-ignore` with its reason (ADR-0008).
+The fixtures in `tests/Unit/PHPStan/Rule/Fixture/` break the rules on purpose and are excluded from
+analysis.
+
 ## Running Tests
 ```bash
 docker-compose exec php vendor/bin/phpunit                    # All tests

@@ -65,3 +65,10 @@ literal instants to the three methods whose query reads it:
 and `testDeleteExpiredRemovesOnlyExpiredLocks`. Their Slot start times are still naive
 June 2026 strings, so they stay in scope here along with the file's other three
 methods. Re-measure before picking this up.
+
+**2026-10-07** - Ticket 15 gave every naive string literal in the three repository tests a zone, so
+the Slot start times above are no longer in scope here. The wall-clock `now` arguments still are.
+Ticket 15 also could not write the rule this ticket proposes: a ban on zero-argument
+`new DateTimeImmutable()` in `App\Tests` is red on 167 sites, including the Therapist schedule
+repository test this ticket says to leave alone. It needs a ticket of its own once this one lands,
+and a way to say "time does not matter here" that the rule can allow.

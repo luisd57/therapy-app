@@ -49,10 +49,10 @@ layout rather than syntax. Prose and review still carry those.
 
 **Status:** ready-for-agent
 
-- [ ] The clock-stub rule and the naive-literal rule each exist and are scoped to the tests directory
-- [ ] Each rule is added by the ticket that clears its existing violations, so none lands against a red suite and no allowlist is introduced
-- [ ] The banned-assertion and banned-function rules cover `assertEquals`, `assertNotEquals`, `markTestSkipped`, `markTestIncomplete`, `sleep` and `usleep`
-- [ ] Every rule carries a message naming the convention and where it is written down, not just the violation
+- [x] The clock-stub rule and the naive-literal rule each exist and are scoped to the tests directory
+- [x] Each rule is added by the ticket that clears its existing violations, so none lands against a red suite and no allowlist is introduced
+- [x] The banned-assertion and banned-function rules cover `assertEquals`, `assertNotEquals`, `markTestSkipped`, `markTestIncomplete`, `sleep` and `usleep`
+- [x] Every rule carries a message naming the convention and where it is written down, not just the violation
 - [ ] Introducing each violation deliberately fails the pipeline, one at a time, proving no rule is inert
 - [ ] Full pipeline green
 
@@ -61,3 +61,27 @@ layout rather than syntax. Prose and review still carry those.
 **2026-09-27** - Unblocked. Ticket 11 kept `API/tests/` in scope at level 10, so the rules have
 somewhere to run. See ADR-0008. `phpstan.dist.neon` has no `rules:` section yet, and
 `reportIgnoresWithoutComments` is on, so any exemption a rule needs must carry its reason inline.
+
+**2026-10-07** - Built on PHPStan 2.2.16. Four rule classes in `API/tests/PHPStan/Rule/`, each with a
+`RuleTestCase` in the Unit suite: `BannedTestCallRule`, `UnpinnedClockStubRule`,
+`HandWrittenClockRule` and `NaiveDateTimeLiteralRule`. All are scoped by namespace to `App\Tests`.
+
+The first three landed green, there being nothing to clear. The naive-literal rule found 96 literals
+in 14 files, matching the estimate above. This ticket cleared them itself, in a commit before the
+rule: 91 became `utc()`, the four `'tomorrow 09:00:00'` became a literal a day after the pinned
+clock, and `TimezoneGuardTest` keeps its one on purpose behind the only ignore. No allowlist.
+
+Clearing them was not neutral. Six `AppointmentRequestServiceTest` methods went red, because the
+test sent a wire string with no offset and built its fixture the same way, so both were read at
++14:00 and agreed. The controllers already refuse such a string. The wire strings carry an offset
+now. `PatientRequestAppointmentHandlerTest` and `RequestAppointmentHandlerTest` still pass a naive
+wire string to a mocked service, which no rule here sees.
+
+The clock rule also rejects `willReturnCallback`, `createConfiguredMock`, `createConfiguredStub` and
+a hand-written clock class, none of which the suite uses, so one shape is left to check. A stub fed
+through a variable still gets past it. The fix for that is the zero-argument rule ticket 18 asks
+for, which is red on 167 sites today and needs its own ticket after 18.
+
+Each of the eight plants (six banned names, one unpinned stub, one naive literal) failed
+`phpstan analyse` locally, one at a time, each with its own message. The red run in CI is recorded
+in the pull request.

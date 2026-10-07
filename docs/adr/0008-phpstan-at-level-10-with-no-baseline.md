@@ -69,6 +69,11 @@ returns became assertions on the exact instant, or were removed. `assertInstance
 hierarchy the same test already relies on was removed. Length self-checks on password fixtures gave
 way to `str_pad`. What remains are the pins above.
 
+Those rules landed on 2026-10-07 and are listed in `.claude/rules/api-testing.md`. Their test
+fixtures break them on purpose, so `tests/Unit/PHPStan/Rule/Fixture` is in `excludePaths`. That is
+the one excluded path under `tests/`, and it holds no suite code. The rules brought an eighth ignore:
+`TimezoneGuardTest` keeps a naive literal because that is what it tests.
+
 Out of scope: `migrations/`, `config/`, `bin/`, `public/`. Generated or framework glue with no domain
 code.
 
