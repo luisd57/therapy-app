@@ -28,7 +28,7 @@ final class RequestAppointmentHandlerTest extends TestCase
     private function createInputDTO(?string $lockToken = null): RequestAppointmentInputDTO
     {
         return new RequestAppointmentInputDTO(
-            slotStartTime: '2025-06-02 09:00:00',
+            slotStartTime: '2025-06-02T09:00:00+00:00',
             modality: 'ONLINE',
             fullName: 'Jane Doe',
             phone: '+1234567890',
@@ -68,7 +68,7 @@ final class RequestAppointmentHandlerTest extends TestCase
             ->expects($this->once())
             ->method('requestAppointment')
             ->with(
-                '2025-06-02 09:00:00',
+                '2025-06-02T09:00:00+00:00',
                 'ONLINE',
                 'Jane Doe',
                 '+1234567890',
@@ -93,7 +93,7 @@ final class RequestAppointmentHandlerTest extends TestCase
             ->expects($this->once())
             ->method('requestAppointment')
             ->with(
-                '2025-06-02 09:00:00',
+                '2025-06-02T09:00:00+00:00',
                 'ONLINE',
                 'Jane Doe',
                 '+1234567890',

@@ -80,8 +80,11 @@ just inside each edge. Normalising the date to UTC in the repository turns it re
 Clearing them was not neutral. Six `AppointmentRequestServiceTest` methods went red, because the
 test sent a wire string with no offset and built its fixture the same way, so both were read at
 +14:00 and agreed. The controllers already refuse such a string. The wire strings carry an offset
-now. `PatientRequestAppointmentHandlerTest` and `RequestAppointmentHandlerTest` still pass a naive
-wire string to a mocked service, which no rule here sees.
+now, as do the ones in `PatientRequestAppointmentHandlerTest`, `RequestAppointmentHandlerTest` and
+`BookAppointmentHandlerTest`, which stayed green only because nothing compared them to a fixture.
+No rule sees a wire string: a date with no zone is often right as an argument (the daily agenda
+takes a calendar day), so a rule would have to know which parameters are Instants. The two
+controller tests that send one on purpose, to get the 422, are the only ones left.
 
 The clock rule also rejects `willReturnCallback`, `createConfiguredMock`, `createConfiguredStub` and
 a hand-written clock class, none of which the suite uses, so one shape is left to check. A stub fed
