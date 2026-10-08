@@ -13,12 +13,14 @@ use App\Domain\User\Id\UserId;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\IntegrationTestCase;
 use App\Tests\Helper\UsesUtcInstants;
-use DateTimeImmutable;
 use DateTimeZone;
 
 final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
 {
     use UsesUtcInstants;
+
+    // Before every Schedule Exception below, so none is created after its own start.
+    private const string CREATED_AT = '2026-03-01 00:00:00';
 
     private ScheduleExceptionRepositoryInterface $repository;
     private UserRepositoryInterface $userRepository;
@@ -45,7 +47,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             endDateTime: self::utc('2026-03-15 17:00:00'),
             reason: 'Day off',
             isAllDay: false,
-            now: new DateTimeImmutable(),
+            now: self::utc(self::CREATED_AT),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);
@@ -73,7 +75,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: self::utc('2026-04-10 09:00:00'),
             endDateTime: self::utc('2026-04-10 17:00:00'),
             reason: 'Conference',
-            now: new DateTimeImmutable(),
+            now: self::utc(self::CREATED_AT),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($inRange);
@@ -84,7 +86,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: self::utc('2026-06-15 09:00:00'),
             endDateTime: self::utc('2026-06-15 17:00:00'),
             reason: 'Vacation',
-            now: new DateTimeImmutable(),
+            now: self::utc(self::CREATED_AT),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($outOfRange);
@@ -108,7 +110,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: self::utc('2026-07-01 09:00:00'),
             endDateTime: self::utc('2026-07-01 17:00:00'),
             reason: 'Holiday',
-            now: new DateTimeImmutable(),
+            now: self::utc(self::CREATED_AT),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);
@@ -130,7 +132,7 @@ final class DoctrineScheduleExceptionRepositoryTest extends IntegrationTestCase
             startDateTime: self::utc('2026-05-20 08:00:00'),
             endDateTime: self::utc('2026-05-20 16:00:00'),
             reason: 'Personal',
-            now: new DateTimeImmutable(),
+            now: self::utc(self::CREATED_AT),
             practiceTimeZone: new DateTimeZone('America/Caracas'),
         );
         $this->repository->save($exception);

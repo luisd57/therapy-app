@@ -20,6 +20,10 @@ use DateTimeImmutable;
 
 final class SendDailyAgendaCommandTest extends IntegrationTestCase
 {
+    // Before every Slot below. Not the frozen clock: the agenda lists Appointments
+    // earlier on the frozen day, which nobody could request at that instant.
+    private const string REQUESTED_AT = '2026-06-01T00:00:00+00:00';
+
     private AppointmentRepositoryInterface $appointmentRepository;
 
     protected function setUp(): void
@@ -62,9 +66,9 @@ final class SendDailyAgendaCommandTest extends IntegrationTestCase
             phone: Phone::fromString('+1234567890'),
             city: 'Test City',
             country: 'US',
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable(self::REQUESTED_AT),
         );
-        $appointment->confirm(new DateTimeImmutable());
+        $appointment->confirm(new DateTimeImmutable(self::REQUESTED_AT));
         $this->appointmentRepository->save($appointment);
     }
 
