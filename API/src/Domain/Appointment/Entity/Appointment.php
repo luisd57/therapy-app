@@ -93,7 +93,7 @@ class Appointment
             throw new \InvalidArgumentException('Full name is required.');
         }
 
-        if (trim($city) === '') {
+        if ('' === trim($city)) {
             throw new \InvalidArgumentException('City is required.');
         }
 
