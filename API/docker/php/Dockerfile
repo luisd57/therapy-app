@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
         zip \
         intl \
         opcache \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
+    && pecl install redis pcov \
+    && docker-php-ext-enable redis pcov \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

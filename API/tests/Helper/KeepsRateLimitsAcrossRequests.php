@@ -19,7 +19,8 @@ trait KeepsRateLimitsAcrossRequests
      */
     protected function useRateLimitStorageThatSurvivesRequests(): void
     {
-        $pool = new FilesystemAdapter('rate-limiter-test', 0, sys_get_temp_dir());
+        // TEST_TOKEN keeps parallel workers (Infection) out of each other's pool.
+        $pool = new FilesystemAdapter('rate-limiter-test' . (string) getenv('TEST_TOKEN'), 0, sys_get_temp_dir());
         $pool->clear();
 
         foreach (['api_login', 'api_public'] as $limiter) {

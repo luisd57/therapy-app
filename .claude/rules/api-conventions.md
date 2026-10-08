@@ -61,6 +61,12 @@ existing name, so `PatientAppointmentController` is not a breach.
 ## Errors (deliberate, do not "fix")
 - NO kernel exception listener. Each action catches the specific domain exceptions it can produce - a central listener has to guess, and turns every unmapped exception into a 500 nobody notices.
 
+## Mutation gate
+- CI mutates the `src/` lines a pull request changes and fails on any survivor (ADR-0010). Kill it with a test on behaviour, or put `// @infection-ignore-all <reason>` on the statement.
+- The comment covers the whole statement, nested block included. On an `if` it also drops the mutants inside the braces, so put it on the smallest statement that holds the survivor.
+- The ignore is for a mutant no test should kill (a log context key). Never for one that is only awkward to reach, and never without the reason.
+- Touching an old line brings its old survivors into the diff. Check the line in `.scratch/test-suite-hardening/mutation/api-survivors.md` first.
+
 ## API Responses
 - Use `ApiResponseTrait` for consistent envelope format
 - Pagination: `?page=1&limit=20` (defaults: page=1, limit=20, max 100)

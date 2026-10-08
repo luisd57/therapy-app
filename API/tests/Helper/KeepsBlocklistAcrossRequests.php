@@ -20,7 +20,8 @@ trait KeepsBlocklistAcrossRequests
      */
     protected function useBlocklistThatSurvivesRequests(): void
     {
-        $pool = new FilesystemAdapter('jwt-blocklist-test', 0, sys_get_temp_dir());
+        // TEST_TOKEN keeps parallel workers (Infection) out of each other's pool.
+        $pool = new FilesystemAdapter('jwt-blocklist-test' . (string) getenv('TEST_TOKEN'), 0, sys_get_temp_dir());
         $pool->clear();
 
         self::getContainer()->set(JwtBlocklistInterface::class, new RedisJwtBlocklist($pool));

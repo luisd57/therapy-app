@@ -134,6 +134,25 @@ final class AppointmentTest extends TestCase
         );
     }
 
+    public function testRequestTrimsTheRequestersNameCityAndCountry(): void
+    {
+        $appointment = Appointment::request(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: '  John Doe ',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: ' New York  ',
+            country: "\tUSA\n",
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
+        );
+
+        $this->assertSame('John Doe', $appointment->getFullName());
+        $this->assertSame('New York', $appointment->getCity());
+        $this->assertSame('USA', $appointment->getCountry());
+    }
+
     public function testRequestWithEmptyCityThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);

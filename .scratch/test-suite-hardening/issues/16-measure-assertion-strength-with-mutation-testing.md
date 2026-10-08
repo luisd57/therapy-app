@@ -1,5 +1,7 @@
 # 16 - Measure assertion strength with mutation testing
 
+> Frozen record, resolved 2026-10-08.
+
 **What to build:** a report naming every line of production code that can be
 broken without failing a test, so "the suite is green" stops being the only thing
 anyone knows about it.
@@ -48,21 +50,23 @@ Discovery is worth more once tickets 13 and 18 have landed. See the comment belo
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #106](https://github.com/luisd57/therapy-app/pull/106)
 
 Discovery:
 
-- [ ] Whether a coverage driver is required is confirmed against the current release, and if so one is present in the PHP image with the reason recorded
-- [ ] A full mutation run over the API completes and its surviving mutants are committed as a file, so the next reader starts from the list rather than rerunning the hour
-- [ ] Every survivor falling in code a `test-suite-hardening` ticket already covers is annotated with that ticket number in the committed list
-- [ ] The landing utilities have an equivalent run and list
+- [x] Whether a coverage driver is required is confirmed against the current release, and if so one is present in the PHP image with the reason recorded
+- [x] A full mutation run over the API completes and its surviving mutants are committed as a file, so the next reader starts from the list rather than rerunning the hour
+- [x] Every survivor falling in code a `test-suite-hardening` ticket already covers is annotated with that ticket number in the committed list. Annotated per file, one Ticket line above each file's rows
+- [x] The landing utilities have an equivalent run and list
 
 Gating:
 
-- [ ] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
-- [ ] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date
-- [ ] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds
-- [ ] Full pipeline green, including whatever image change the driver required
+- [x] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
+- [x] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date. Corrected 2026-10-08: the baseline is recorded (87.45%), but the gate is 100 on changed lines and not that figure, see the comment of that date
+- [x] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds. Done with a new test, not an edit to an existing assertion
+- [x] Full pipeline green, including whatever image change the driver required. Both jobs green on run 37837573825, where the e2e job builds the image with pcov
 
 ## Comments
 
@@ -136,3 +140,57 @@ leftover-swap refusal in `recordBaseline`, the missing-baseline early exit, the 
 `restoreBaseline`). Removing any of them leaves the suite green, checked by hand only. The
 landing run above mutates `landing/src` utilities, and Vitest does not include `e2e/`, so
 these stay unmeasured unless someone decides the e2e fixtures are worth a seam of their own.
+
+**2026-10-08** - Run on Infection 0.35.6, not 0.32. What the run settled, with the decisions in
+ADR-0010 and the lists in `.scratch/test-suite-hardening/mutation/`.
+
+**Driver.** Still required. With pcov left off, the initial run fails on PHPUnit's "No code
+coverage driver available". pcov 1.0.12 built on PHP 8.4.26. It is in the image and off
+(`pcov.enabled = 0`), and Infection turns it on for its own initial run.
+
+**Flags.** `--test-framework-options` is deprecated for `--test-framework-extra-args`, and
+`--filter` for a positional path. Every other flag the 2026-09-03 comment names is still there. `infection git:default-base` prints `origin/master`
+here, so `--git-diff-base=origin/main` stays mandatory.
+
+**The thread question was the wrong question.** Infection sets `TEST_TOKEN` per worker and the
+test database name ends with it, so the first trial, at one thread, reported 100% killed: every
+integration test was failing on a missing `therapy_db_test1`. A `--noop` run showed it, 67 kills
+in 96 mutants that changed nothing. Per-worker databases took that to 2 in 211, and naming the
+two `Keeps*` test pools with `TEST_TOKEN` took it to 0 in 211. Threads are safe with that state
+split and unsafe at any count without it.
+
+**Two more things the plan did not have.** Infection stops its initial run on the first stderr
+write, so the test environment's kernel log moved to a file. And the default 10 second timeout
+skipped 56 mutants in one directory, so it is 300.
+
+**API baseline.** Two full runs at 8 threads. The first, 19m 1s: 1370 mutants, 1129 killed by
+tests, 12 by PHPStan, 228 escaped, 1 timed out, covered MSI 83.36%. 66 of those survivors sat on
+Doctrine mapping attributes, which no test can kill and which would fail the diff gate on any
+new column, so `infection.json5` now ignores those lines. The second, 13m 21s, is the committed
+list and the baseline: 1375 mutants, 68 ignored, 1130 killed by tests, 12 by PHPStan, 164 escaped,
+1 timed out, covered MSI 87.45%. The two runs agree mutant for mutant
+apart from those changes. Not "well over an hour": uncovered code and the excluded directories
+are not mutated.
+
+**Landing.** Stryker 10.0.0, 13 seconds. 131 mutants, 88 killed, 15 survived, 28 with no coverage.
+
+**The measurement responds.** `src/Domain/Appointment/Entity/Appointment.php` had 28 survivors in
+the first run. `AppointmentTest::testRequestTrimsTheRequestersNameCityAndCountry`, a new test and
+not an edit to an old one, took it to 25 by killing the `UnwrapTrim` mutants on lines 108, 111 and
+112. The second run confirms it: those three moved from escaped to killed and nothing else moved.
+The committed list shows 9 for that file, the 25 less the 16 mapping-attribute survivors.
+
+**Not run locally:** the diff mode. The php container mounts `API/` and has no git repository.
+
+**The gate is 100 on changed lines, not the baseline rounded down.** Decided 2026-10-08, after
+the gate was first written at 87. A percentage over a diff depends on the diff's size, so one
+survivor fails a small pull request and passes a large one. At 100 a survivor on a changed line
+is killed by a test or carries `// @infection-ignore-all <reason>`. This replaces the criterion
+"The threshold is taken from a baseline": the baseline figure is still recorded with its date,
+and it describes the tree, not the gate. Reasons in ADR-0010.
+
+**The gate fires, proven on the pull request.** Green: run 37837573825 on `b1b8e6a`, which
+changes no `API/src` line and exits with "Could not find any modified files". Red: run
+37837594406 on `2bf4372`, a planted edit to `Appointment.php` line 96. Three mutants, two killed,
+the `UnwrapTrim` one escaped, "should be 100%, but actual is 66.67%". Reverted in `84dfdc1`, and
+`git diff b1b8e6a 84dfdc1` is empty.

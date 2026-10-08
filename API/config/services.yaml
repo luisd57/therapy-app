@@ -151,3 +151,12 @@ services:
     App\Application\Appointment\Handler\BookAppointmentHandler:
         arguments:
             $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
+
+when@test:
+    services:
+        # Kernel logs go to a file, not stderr. Infection stops its initial test run on the
+        # first stderr write, and the default logger prints every expected 403 there.
+        logger:
+            class: Symfony\Component\HttpKernel\Log\Logger
+            arguments:
+                $output: '%kernel.cache_dir%/kernel.log'
