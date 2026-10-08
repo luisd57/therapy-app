@@ -72,3 +72,16 @@ Ticket 15 also could not write the rule this ticket proposes: a ban on zero-argu
 `new DateTimeImmutable()` in `App\Tests` is red on 167 sites, including the Therapist schedule
 repository test this ticket says to leave alone. It needs a ticket of its own once this one lands,
 and a way to say "time does not matter here" that the rule can allow.
+
+**2026-10-08** - Re-measured before starting: the probe failed 15 Integration tests, split 8 in the
+Appointment repository test, 4 in the Schedule Exception one, 2 in the Slot Lock one and 1 console
+test. The split moved because more fixture dates have passed since September.
+
+The console criterion cannot be met as written. The test freezes the clock at 2026-06-16 02:00 UTC
+and saves an Appointment at 09:00 on the therapist's 15 June, which is before that instant.
+Threading the frozen instant through the helper would build an Appointment requested after its own
+start, the exact fixture this ticket removes. The helper takes a pinned literal before every Slot
+instead. Read the second checkbox as "the helper no longer reads the wall clock".
+
+Still open after this ticket: the rule against zero-argument `new DateTimeImmutable()` in
+`App\Tests` that the 2026-10-07 comment describes. It needs its own ticket.

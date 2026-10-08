@@ -94,7 +94,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             email: 'completed@test.com',
         );
         $completed->confirm(self::utc(self::REQUESTED_AT));
-        $completed->complete(self::utc(self::REQUESTED_AT));
+        $completed->complete(self::utc('2026-06-02 12:00:00'));
         $this->repository->save($completed);
 
         $cancelled = $this->createAppointment(
@@ -256,7 +256,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-06-01 13:00:00', new DateTimeZone('UTC')),
             email: 'offset-range@test.com',
         );
-        $appointment->confirm(new DateTimeImmutable('2026-05-01 00:00:00', new DateTimeZone('UTC')));
+        $appointment->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($appointment);
         $this->entityManager->clear();
 
