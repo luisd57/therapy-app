@@ -141,13 +141,11 @@ these stay unmeasured unless someone decides the e2e fixtures are worth a seam o
 ADR-0010 and the lists in `.scratch/test-suite-hardening/mutation/`.
 
 **Driver.** Still required. With pcov left off, the initial run fails on PHPUnit's "No code
-coverage driver available". pcov 1.0.12 built on PHP
-8.4.26. It is in the image and off (`pcov.enabled = 0`), and Infection turns it on for its own
-initial run.
+coverage driver available". pcov 1.0.12 built on PHP 8.4.26. It is in the image and off
+(`pcov.enabled = 0`), and Infection turns it on for its own initial run.
 
 **Flags.** `--test-framework-options` is deprecated for `--test-framework-extra-args`, and
-`--filter` for a positional path. Every other flag
-the 2026-09-03 comment names is still there. `infection git:default-base` prints `origin/master`
+`--filter` for a positional path. Every other flag the 2026-09-03 comment names is still there. `infection git:default-base` prints `origin/master`
 here, so `--git-diff-base=origin/main` stays mandatory.
 
 **The thread question was the wrong question.** Infection sets `TEST_TOKEN` per worker and the
@@ -161,16 +159,21 @@ split and unsafe at any count without it.
 write, so the test environment's kernel log moved to a file. And the default 10 second timeout
 skipped 56 mutants in one directory, so it is 300.
 
-**API baseline.** 19m 1s at 8 threads. 1370 mutants, 1117 killed by tests, 12 by PHPStan, 228
-escaped, 1 timed out, covered MSI 83.36%. The CI threshold is 83. Not "well over an hour": 1370
-mutants is far fewer than 219 files suggested, because uncovered code and the excluded
-directories are not mutated.
+**API baseline.** Two full runs at 8 threads. The first, 19m 1s: 1370 mutants, 1129 killed by
+tests, 12 by PHPStan, 228 escaped, 1 timed out, covered MSI 83.36%. 66 of those survivors sat on
+Doctrine mapping attributes, which no test can kill and which would fail the diff gate on any
+new column, so `infection.json5` now ignores those lines. The second, 13m 21s, is the committed
+list and the baseline: 1375 mutants, 68 ignored, 1130 killed by tests, 12 by PHPStan, 164 escaped,
+1 timed out, covered MSI 87.45%. The CI threshold is 87. The two runs agree mutant for mutant
+apart from those changes. Not "well over an hour": uncovered code and the excluded directories
+are not mutated.
 
 **Landing.** Stryker 10.0.0, 13 seconds. 131 mutants, 88 killed, 15 survived, 28 with no coverage.
 
-**The measurement responds.** `src/Domain/Appointment/Entity/Appointment.php` had 28 survivors.
-`AppointmentTest::testRequestTrimsTheRequestersNameCityAndCountry` took it to 25, killing the
-`UnwrapTrim` mutants on lines 108, 111 and 112. The committed list is the run before that test,
-so it still shows 28.
+**The measurement responds.** `src/Domain/Appointment/Entity/Appointment.php` had 28 survivors in
+the first run. `AppointmentTest::testRequestTrimsTheRequestersNameCityAndCountry`, a new test and
+not an edit to an old one, took it to 25 by killing the `UnwrapTrim` mutants on lines 108, 111 and
+112. The second run confirms it: those three moved from escaped to killed and nothing else moved.
+The committed list shows 9 for that file, the 25 less the 16 mapping-attribute survivors.
 
 **Not run locally:** the diff mode. The php container mounts `API/` and has no git repository.

@@ -73,8 +73,9 @@ more. Incident history and dates belong in project memory, not here.
 - Infection sets `TEST_TOKEN` per worker, from 1, even at one thread, and the test database name
   ends with it. With no `therapy_db_test1` every integration test fails on the connection and
   Infection counts each failure as a kill, so the score reads near 100% and is false. Create one
-  database per thread first, then prove the setup with `--noop`: it mutates nothing, so any
-  mutant it reports killed is a broken setup. A full run is about 20 minutes (ADR-0010).
+  database per thread first (the loop below covers `--threads=8`), then prove the setup with
+  `--noop`: it mutates nothing, so any mutant it reports killed is a broken setup. A full run is
+  13 to 19 minutes (ADR-0010).
   ```bash
   for n in $(seq 1 8); do docker compose exec -T -e TEST_TOKEN=$n php sh -c 'php bin/console doctrine:database:create --env=test --if-not-exists && php bin/console doctrine:migrations:migrate --env=test --no-interaction'; done
   ```

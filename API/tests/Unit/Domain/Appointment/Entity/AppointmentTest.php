@@ -145,7 +145,7 @@ final class AppointmentTest extends TestCase
             phone: Phone::fromString('+1234567890'),
             city: ' New York  ',
             country: "\tUSA\n",
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
 
         $this->assertSame('John Doe', $appointment->getFullName());

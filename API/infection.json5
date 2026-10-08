@@ -19,6 +19,11 @@
         "json": "var/infection/infection.json",
         "summaryJson": "var/infection/summary.json"
     },
+    "mutators": {
+        "@default": true,
+        // Doctrine mapping attributes are schema. No test reads them, so they can only survive.
+        "global-ignoreSourceCodeByRegex": [".*\\[ORM\\\\.*"]
+    },
     "staticAnalysisTool": "phpstan",
     "staticAnalysisToolOptions": "--memory-limit=1G",
     // pcov is off in php.ini and php.ini caps memory at 512M.

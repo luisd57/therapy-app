@@ -138,7 +138,7 @@ jobs:
           --git-diff-base=origin/main
           --only-covering-test-cases
           --threads=4
-          --min-covered-msi=83
+          --min-covered-msi=87
           --ignore-msi-with-no-mutations
           --logger-github
           --no-progress

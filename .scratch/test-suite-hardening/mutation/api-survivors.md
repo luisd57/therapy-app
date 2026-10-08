@@ -7,19 +7,20 @@ from the list and not from a rerun, and so tickets can be aimed. Gating is on ne
 | | |
 |---|---|
 | Date | 2026-10-08 |
-| Commit | `f52f608` plus the ticket 16 branch |
+| Tree | the ticket 16 branch as merged, on top of `f52f608` |
 | Tool | Infection 0.35.6, PHPUnit 10.5.63, PHPStan 2.2.16, pcov 1.0.12, PHP 8.4.26 |
 | Command | `vendor/bin/infection --threads=8 --only-covering-test-cases` |
 | Config | `API/infection.json5` (timeout 300s, PHPStan on escaped mutants) |
-| Wall time | 19m 1s, 8 threads, one test database per thread |
-| Mutants | 1370 |
-| Killed by tests | 1117 |
+| Wall time | 13m 21s, 8 threads, one test database per thread |
+| Mutants | 1375 |
+| Ignored | 68 |
+| Killed by tests | 1130 |
 | Killed by PHPStan | 12 |
-| Escaped | 228 |
+| Escaped | 164 |
 | Timed out | 1 |
 | Errors, skipped | 0, 0 |
 | Uncovered | not generated (covered-only is the default, no `--with-uncovered`) |
-| MSI, covered MSI | 83.36%, 83.36% |
+| MSI, covered MSI | 87.45%, 87.45% |
 
 The two MSI figures are equal because uncovered code was never mutated. Code no test reaches
 is absent from this list, not vouched for by it.
@@ -27,8 +28,14 @@ is absent from this list, not vouched for by it.
 Not mutated, by `source.excludes`: `Infrastructure/Http/Controller`, `Infrastructure/Config`,
 and the three `Application/*/DTO` directories. Reasons in ADR-0010.
 
-66 of the 228 are a Doctrine mapping attribute (a column length, a nullable flag). No test
-reads the schema, so only a migration diff would notice those.
+Ignored mutants sit on a line carrying a Doctrine mapping attribute: a column length, a nullable
+flag. No test reads the schema, so they could only survive. They count in no figure above but
+the total.
+
+Five survivors are an artefact of a cold cache: the `getSubscribedEvents()` lines of the two HTTP
+subscribers. They are only covered when the container is compiled during the initial run, and
+every mutant then runs against the compiled container, so nothing can kill them. A run on a
+warm `var/cache/test` does not generate them (1370 mutants, not 1375).
 
 The Ticket column names the `test-suite-hardening` ticket whose scope the file falls in.
 Empty means no ticket covers it.
@@ -41,22 +48,17 @@ Empty means no ticket covers it.
 
 | Survivors | File | Ticket |
 |---|---|---|
-| 28 | `src/Domain/Appointment/Entity/Appointment.php` |  |
-| 19 | `src/Domain/Appointment/Entity/TherapistSchedule.php` |  |
-| 17 | `src/Domain/User/ValueObject/Address.php` |  |
 | 15 | `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php` | 13 |
 | 15 | `src/Infrastructure/Console/Appointment/SeedScheduleCommand.php` | 06 |
+| 12 | `src/Domain/Appointment/Entity/TherapistSchedule.php` |  |
 | 11 | `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php` |  |
+| 9 | `src/Domain/Appointment/Entity/Appointment.php` |  |
 | 9 | `src/Domain/Appointment/Service/AvailabilityComputer.php` | 01 |
 | 9 | `src/Infrastructure/Security/RedisJwtBlocklist.php` |  |
-| 8 | `src/Domain/User/Entity/InvitationToken.php` | 02 |
-| 8 | `src/Domain/User/Entity/User.php` |  |
 | 7 | `src/Application/Appointment/Service/AppointmentRequestService.php` | 17 |
 | 7 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php` | 18 |
-| 6 | `src/Domain/Appointment/Entity/ScheduleException.php` |  |
-| 5 | `src/Domain/Appointment/Entity/SlotLock.php` | 02 |
 | 5 | `src/Infrastructure/Email/User/SymfonyEmailSender.php` |  |
-| 4 | `src/Domain/User/Entity/PasswordResetToken.php` | 02 |
+| 4 | `src/Infrastructure/Http/EventSubscriber/RateLimitSubscriber.php` |  |
 | 4 | `src/Infrastructure/Http/Validation/PasswordStrengthValidator.php` | 04, 21 |
 | 3 | `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php` |  |
 | 3 | `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php` |  |
@@ -66,15 +68,19 @@ Empty means no ticket covers it.
 | 2 | `src/Application/Appointment/Handler/CancelAppointmentHandler.php` |  |
 | 2 | `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php` |  |
 | 2 | `src/Application/User/Handler/ActivatePatientHandler.php` |  |
+| 2 | `src/Domain/Appointment/Entity/ScheduleException.php` |  |
 | 2 | `src/Domain/Appointment/Service/SlotGenerationRules.php` | 01, 17 |
 | 2 | `src/Domain/Exception/DomainException.php` |  |
+| 2 | `src/Domain/User/ValueObject/Address.php` |  |
 | 2 | `src/Infrastructure/Console/User/CreateTherapistCommand.php` | 06 |
 | 2 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineTherapistScheduleRepository.php` |  |
 | 2 | `src/Infrastructure/Persistence/Doctrine/User/Repository/DoctrineUserRepository.php` |  |
 | 1 | `src/Application/Appointment/Handler/LockSlotHandler.php` | 17 |
 | 1 | `src/Application/Appointment/Handler/PatientRequestAppointmentHandler.php` |  |
 | 1 | `src/Domain/Appointment/Exception/InvalidLockTokenException.php` |  |
+| 1 | `src/Domain/User/Entity/User.php` |  |
 | 1 | `src/Infrastructure/Email/Appointment/RenderedTime.php` |  |
+| 1 | `src/Infrastructure/Http/EventSubscriber/SecurityHeadersSubscriber.php` |  |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php` | 18 |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Type/AppointmentIdType.php` | 05 |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Type/EmailType.php` | 05 |
@@ -94,91 +100,6 @@ Empty means no ticket covers it.
 
 ## Survivors
 
-### `src/Domain/Appointment/Entity/Appointment.php`
-
-Ticket: none
-
-| Line | Mutator | Change |
-|---|---|---|
-| 44 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]` became `#[ORM\Column(type: Types::STRING, length: 19, enumType: AppointmentModality::class)]` |
-| 44 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]` became `#[ORM\Column(type: Types::STRING, length: 21, enumType: AppointmentModality::class)]` |
-| 48 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 254)]` |
-| 48 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 256)]` |
-| 50 | DecrementInteger | `#[ORM\Column(type: 'email', length: 255)]` became `#[ORM\Column(type: 'email', length: 254)]` |
-| 50 | IncrementInteger | `#[ORM\Column(type: 'email', length: 255)]` became `#[ORM\Column(type: 'email', length: 256)]` |
-| 52 | DecrementInteger | `#[ORM\Column(type: 'phone', length: 50)]` became `#[ORM\Column(type: 'phone', length: 49)]` |
-| 52 | IncrementInteger | `#[ORM\Column(type: 'phone', length: 50)]` became `#[ORM\Column(type: 'phone', length: 51)]` |
-| 54 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 100)]` became `#[ORM\Column(type: Types::STRING, length: 99)]` |
-| 54 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 100)]` became `#[ORM\Column(type: Types::STRING, length: 101)]` |
-| 56 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 100)]` became `#[ORM\Column(type: Types::STRING, length: 99)]` |
-| 56 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 100)]` became `#[ORM\Column(type: Types::STRING, length: 101)]` |
-| 59 | TrueValue | `#[ORM\JoinColumn(name: 'patient_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET N...` became `#[ORM\JoinColumn(name: 'patient_id', referencedColumnName: 'id', nullable: false, onDelete: 'SET ...` |
-| 67 | DecrementInteger | `#[ORM\Column(type: 'timezone', length: 64, nullable: true)]` became `#[ORM\Column(type: 'timezone', length: 63, nullable: true)]` |
-| 67 | IncrementInteger | `#[ORM\Column(type: 'timezone', length: 64, nullable: true)]` became `#[ORM\Column(type: 'timezone', length: 65, nullable: true)]` |
-| 67 | TrueValue | `#[ORM\Column(type: 'timezone', length: 64, nullable: true)]` became `#[ORM\Column(type: 'timezone', length: 64, nullable: false)]` |
-| 96 | UnwrapTrim | `if (trim($city) === '') {` became `if ($city === '') {` |
-| 100 | UnwrapTrim | `if (trim($country) === '') {` became `if ($country === '') {` |
-| 108 | UnwrapTrim | `fullName: trim($fullName),` became `fullName: $fullName,` |
-| 111 | UnwrapTrim | `city: trim($city),` became `city: $city,` |
-| 112 | UnwrapTrim | `country: trim($country),` became `country: $country,` |
-| 132 | UnwrapTrim | `if (trim($fullName) === '') {` became `if ($fullName === '') {` |
-| 136 | UnwrapTrim | `if (trim($city) === '') {` became `if ($city === '') {` |
-| 140 | UnwrapTrim | `if (trim($country) === '') {` became `if ($country === '') {` |
-| 148 | UnwrapTrim | `fullName: trim($fullName),` became `fullName: $fullName,` |
-| 151 | UnwrapTrim | `city: trim($city),` became `city: $city,` |
-| 152 | UnwrapTrim | `country: trim($country),` became `country: $country,` |
-| 288 | FalseValue | `bool $paymentVerified = false,` became `bool $paymentVerified = true,` |
-
-### `src/Domain/Appointment/Entity/TherapistSchedule.php`
-
-Ticket: none
-
-| Line | Mutator | Change |
-|---|---|---|
-| 32 | FalseValue | `#[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: false, onDelete: 'CA...` became `#[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: true, onDelete: 'CAS...` |
-| 36 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 5)]` became `#[ORM\Column(type: Types::STRING, length: 4)]` |
-| 36 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 5)]` became `#[ORM\Column(type: Types::STRING, length: 6)]` |
-| 38 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 5)]` became `#[ORM\Column(type: Types::STRING, length: 4)]` |
-| 38 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 5)]` became `#[ORM\Column(type: Types::STRING, length: 6)]` |
-| 40 | TrueValue | `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]` became `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]` |
-| 42 | TrueValue | `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]` became `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]` |
-| 60 | MethodCallRemoval | removed `self::validateTimeFormat($startTime);` |
-| 61 | MethodCallRemoval | removed `self::validateTimeFormat($endTime);` |
-| 87 | MethodCallRemoval | removed `self::validateTimeFormat($startTime);` |
-| 88 | MethodCallRemoval | removed `self::validateTimeFormat($endTime);` |
-| 90 | GreaterThanOrEqualTo | `if ($startTime >= $endTime) {` became `if ($startTime > $endTime) {` |
-| 208 | PregMatchRemoveCaret | `if (!preg_match('/^\d{2}:\d{2}$/', $time)) {` became `if (!preg_match('/\d{2}:\d{2}$/', $time)) {` |
-| 208 | PregMatchRemoveDollar | `if (!preg_match('/^\d{2}:\d{2}$/', $time)) {` became `if (!preg_match('/^\d{2}:\d{2}/', $time)) {` |
-| 213 | CastInt | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ($hours > 23 \|\| (int) $minutes > 59) {` |
-| 213 | GreaterThan | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours >= 23 \|\| (int) $minutes > 59) {` |
-| 213 | CastInt | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 \|\| $minutes > 59) {` |
-| 213 | GreaterThan | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 \|\| (int) $minutes >= 59) {` |
-| 213 | LogicalOr | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 && (int) $minutes > 59) {` |
-
-### `src/Domain/User/ValueObject/Address.php`
-
-Ticket: none
-
-| Line | Mutator | Change |
-|---|---|---|
-| 14 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 255, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 254, nullable: true)]` |
-| 14 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 255, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 256, nullable: true)]` |
-| 14 | TrueValue | `#[ORM\Column(type: Types::STRING, length: 255, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 255, nullable: false)]` |
-| 16 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 99, nullable: true)]` |
-| 16 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 101, nullable: true)]` |
-| 16 | TrueValue | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 100, nullable: false)]` |
-| 18 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 99, nullable: true)]` |
-| 18 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 101, nullable: true)]` |
-| 18 | TrueValue | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 100, nullable: false)]` |
-| 20 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 19, nullable: true)]` |
-| 20 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 21, nullable: true)]` |
-| 20 | TrueValue | `#[ORM\Column(type: Types::STRING, length: 20, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 20, nullable: false)]` |
-| 22 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 99, nullable: true)]` |
-| 22 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 101, nullable: true)]` |
-| 22 | TrueValue | `#[ORM\Column(type: Types::STRING, length: 100, nullable: true)]` became `#[ORM\Column(type: Types::STRING, length: 100, nullable: false)]` |
-| 54 | UnwrapTrim | `postalCode: $postalCode ? trim($postalCode) : null,` became `postalCode: $postalCode ? $postalCode : null,` |
-| 55 | UnwrapTrim | `state: $state ? trim($state) : null,` became `state: $state ? $state : null,` |
-
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
 Ticket: 13
@@ -188,18 +109,18 @@ Ticket: 13
 | 72 | LessThan | `for ($week = 0; $week < $this->maxLookaheadWeeks; $week++) {` became `for ($week = 0; $week <= $this->maxLookaheadWeeks; $week++) {` |
 | 78 | LessThan | `$exception->getStartDateTime() < $weekEnd` became `$exception->getStartDateTime() <= $weekEnd` |
 | 78 | LessThanNegotiation | `$exception->getStartDateTime() < $weekEnd` became `$exception->getStartDateTime() >= $weekEnd` |
-| 78 | LogicalAndAllSubExprNegation | `$exception->getStartDateTime() < $weekEnd && $exception->getEndDateTime() > $weekStart,` became `!($exception->getStartDateTime() < $weekEnd) && !($exception->getEndDateTime() > $weekStart),` |
 | 78 | LogicalAnd | `$exception->getStartDateTime() < $weekEnd && $exception->getEndDateTime() > $weekStart,` became `$exception->getStartDateTime() < $weekEnd \|\| $exception->getEndDateTime() > $weekStart,` |
+| 78 | LogicalAndAllSubExprNegation | `$exception->getStartDateTime() < $weekEnd && $exception->getEndDateTime() > $weekStart,` became `!($exception->getStartDateTime() < $weekEnd) && !($exception->getEndDateTime() > $weekStart),` |
 | 78 | LogicalAndNegation | `$exception->getStartDateTime() < $weekEnd && $exception->getEndDateTime() > $weekStart,` became `!($exception->getStartDateTime() < $weekEnd && $exception->getEndDateTime() > $weekStart),` |
 | 79 | GreaterThan | `&& $exception->getEndDateTime() > $weekStart,` became `&& $exception->getEndDateTime() >= $weekStart,` |
 | 79 | GreaterThanNegotiation | `&& $exception->getEndDateTime() > $weekStart,` became `&& $exception->getEndDateTime() <= $weekStart,` |
 | 83 | LessThan | `$appointment->getTimeSlot()->getStartTime() < $weekEnd` became `$appointment->getTimeSlot()->getStartTime() <= $weekEnd` |
 | 83 | LessThanNegotiation | `$appointment->getTimeSlot()->getStartTime() < $weekEnd` became `$appointment->getTimeSlot()->getStartTime() >= $weekEnd` |
-| 83 | LogicalAndAllSubExprNegation | `$appointment->getTimeSlot()->getStartTime() < $weekEnd && $appointment->getTimeSlot()->getEndTime...` became `!($appointment->getTimeSlot()->getStartTime() < $weekEnd) && !($appointment->getTimeSlot()->getEn...` |
 | 83 | LogicalAnd | `$appointment->getTimeSlot()->getStartTime() < $weekEnd && $appointment->getTimeSlot()->getEndTime...` became `$appointment->getTimeSlot()->getStartTime() < $weekEnd \|\| $appointment->getTimeSlot()->getEndTime...` |
+| 83 | LogicalAndAllSubExprNegation | `$appointment->getTimeSlot()->getStartTime() < $weekEnd && $appointment->getTimeSlot()->getEndTime...` became `!($appointment->getTimeSlot()->getStartTime() < $weekEnd) && !($appointment->getTimeSlot()->getEn...` |
 | 83 | LogicalAndNegation | `$appointment->getTimeSlot()->getStartTime() < $weekEnd && $appointment->getTimeSlot()->getEndTime...` became `!($appointment->getTimeSlot()->getStartTime() < $weekEnd && $appointment->getTimeSlot()->getEndTi...` |
-| 84 | GreaterThan | `&& $appointment->getTimeSlot()->getEndTime() > $weekStart,` became `&& $appointment->getTimeSlot()->getEndTime() >= $weekStart,` |
 | 84 | GreaterThanNegotiation | `&& $appointment->getTimeSlot()->getEndTime() > $weekStart,` became `&& $appointment->getTimeSlot()->getEndTime() <= $weekStart,` |
+| 84 | GreaterThan | `&& $appointment->getTimeSlot()->getEndTime() > $weekStart,` became `&& $appointment->getTimeSlot()->getEndTime() >= $weekStart,` |
 
 ### `src/Infrastructure/Console/Appointment/SeedScheduleCommand.php`
 
@@ -215,13 +136,32 @@ Ticket: 06
 | 99 | ArrayItemRemoval | `$headers = ['Day', 'Start', 'End', 'Online', 'In-Person'];` became `$headers = ['Start', 'End', 'Online', 'In-Person'];` |
 | 100 | ArrayItemRemoval | removed `$b[0]->name,` |
 | 102 | IncrementInteger | `$b[1],` became `$b[2],` |
-| 103 | DecrementInteger | `$b[2],` became `$b[1],` |
 | 103 | IncrementInteger | `$b[2],` became `$b[3],` |
-| 104 | IncrementInteger | `$b[3] ? 'Yes' : 'No',` became `$b[4] ? 'Yes' : 'No',` |
+| 103 | DecrementInteger | `$b[2],` became `$b[1],` |
 | 104 | Ternary | `$b[3] ? 'Yes' : 'No',` became `$b[3] ? 'No' : 'Yes',` |
+| 104 | IncrementInteger | `$b[3] ? 'Yes' : 'No',` became `$b[4] ? 'Yes' : 'No',` |
 | 105 | DecrementInteger | `$b[4] ? 'Yes' : 'No',` became `$b[3] ? 'Yes' : 'No',` |
 | 105 | Ternary | `$b[4] ? 'Yes' : 'No',` became `$b[4] ? 'No' : 'Yes',` |
 | 107 | MethodCallRemoval | removed `$io->table($headers, $rows);` |
+
+### `src/Domain/Appointment/Entity/TherapistSchedule.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 60 | MethodCallRemoval | removed `self::validateTimeFormat($startTime);` |
+| 61 | MethodCallRemoval | removed `self::validateTimeFormat($endTime);` |
+| 87 | MethodCallRemoval | removed `self::validateTimeFormat($startTime);` |
+| 88 | MethodCallRemoval | removed `self::validateTimeFormat($endTime);` |
+| 90 | GreaterThanOrEqualTo | `if ($startTime >= $endTime) {` became `if ($startTime > $endTime) {` |
+| 208 | PregMatchRemoveCaret | `if (!preg_match('/^\d{2}:\d{2}$/', $time)) {` became `if (!preg_match('/\d{2}:\d{2}$/', $time)) {` |
+| 208 | PregMatchRemoveDollar | `if (!preg_match('/^\d{2}:\d{2}$/', $time)) {` became `if (!preg_match('/^\d{2}:\d{2}/', $time)) {` |
+| 213 | CastInt | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ($hours > 23 \|\| (int) $minutes > 59) {` |
+| 213 | GreaterThan | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours >= 23 \|\| (int) $minutes > 59) {` |
+| 213 | GreaterThan | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 \|\| (int) $minutes >= 59) {` |
+| 213 | CastInt | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 \|\| $minutes > 59) {` |
+| 213 | LogicalOr | `if ((int) $hours > 23 \|\| (int) $minutes > 59) {` became `if ((int) $hours > 23 && (int) $minutes > 59) {` |
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
 
@@ -241,6 +181,22 @@ Ticket: none
 | 520 | Ternary | `$summary = $appointmentCount === 1 ? '1 confirmed appointment' : "{$appointmentCount} confirmed a...` became `$summary = $appointmentCount === 1 ? "{$appointmentCount} confirmed appointments" : '1 confirmed ...` |
 | 537 | Ternary | `$payment = $appointment->isPaymentVerified() ? 'Verified' : 'Pending';` became `$payment = $appointment->isPaymentVerified() ? 'Pending' : 'Verified';` |
 
+### `src/Domain/Appointment/Entity/Appointment.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 96 | UnwrapTrim | `if (trim($city) === '') {` became `if ($city === '') {` |
+| 100 | UnwrapTrim | `if (trim($country) === '') {` became `if ($country === '') {` |
+| 132 | UnwrapTrim | `if (trim($fullName) === '') {` became `if ($fullName === '') {` |
+| 136 | UnwrapTrim | `if (trim($city) === '') {` became `if ($city === '') {` |
+| 140 | UnwrapTrim | `if (trim($country) === '') {` became `if ($country === '') {` |
+| 148 | UnwrapTrim | `fullName: trim($fullName),` became `fullName: $fullName,` |
+| 151 | UnwrapTrim | `city: trim($city),` became `city: $city,` |
+| 152 | UnwrapTrim | `country: trim($country),` became `country: $country,` |
+| 288 | FalseValue | `bool $paymentVerified = false,` became `bool $paymentVerified = true,` |
+
 ### `src/Domain/Appointment/Service/AvailabilityComputer.php`
 
 Ticket: 01
@@ -249,8 +205,8 @@ Ticket: 01
 |---|---|---|
 | 30 | LessThanOrEqualTo | `if ($to <= $from) {` became `if ($to < $from) {` |
 | 39 | DecrementInteger | `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);` became `$cursor = $from->setTimezone($practiceTimeZone)->setTime(-1, 0);` |
-| 39 | DecrementInteger | `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);` became `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, -1);` |
 | 39 | IncrementInteger | `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);` became `$cursor = $from->setTimezone($practiceTimeZone)->setTime(1, 0);` |
+| 39 | DecrementInteger | `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);` became `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, -1);` |
 | 39 | IncrementInteger | `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 0);` became `$cursor = $from->setTimezone($practiceTimeZone)->setTime(0, 1);` |
 | 96 | LessThanOrEqualTo | `if ($blockStart === null \|\| $blockEnd === null \|\| $blockEnd <= $blockStart) {` became `if ($blockStart === null \|\| $blockEnd === null \|\| $blockEnd < $blockStart) {` |
 | 112 | LessThan | `&& $slotStart < $to` became `&& $slotStart <= $to` |
@@ -273,36 +229,6 @@ Ticket: none
 | 54 | Concat | `return 'therapy_jwt_min_iat_' . hash('sha256', $userIdentifier);` became `return hash('sha256', $userIdentifier) . 'therapy_jwt_min_iat_';` |
 | 54 | ConcatOperandRemoval | `return 'therapy_jwt_min_iat_' . hash('sha256', $userIdentifier);` became `return hash('sha256', $userIdentifier);` |
 
-### `src/Domain/User/Entity/InvitationToken.php`
-
-Ticket: 02
-
-| Line | Mutator | Change |
-|---|---|---|
-| 39 | IncrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 256, unique: true)]` |
-| 39 | DecrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 254, unique: true)]` |
-| 39 | TrueValue | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 255, unique: false)]` |
-| 41 | DecrementInteger | `#[ORM\Column(type: 'email', length: 255)]` became `#[ORM\Column(type: 'email', length: 254)]` |
-| 41 | IncrementInteger | `#[ORM\Column(type: 'email', length: 255)]` became `#[ORM\Column(type: 'email', length: 256)]` |
-| 43 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 254)]` |
-| 43 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 256)]` |
-| 46 | FalseValue | `#[ORM\JoinColumn(name: 'invited_by', referencedColumnName: 'id', nullable: false, onDelete: 'CASC...` became `#[ORM\JoinColumn(name: 'invited_by', referencedColumnName: 'id', nullable: true, onDelete: 'CASCA...` |
-
-### `src/Domain/User/Entity/User.php`
-
-Ticket: none
-
-| Line | Mutator | Change |
-|---|---|---|
-| 94 | IncrementInteger | `#[ORM\Column(type: 'email', length: 255, unique: true)]` became `#[ORM\Column(type: 'email', length: 256, unique: true)]` |
-| 94 | DecrementInteger | `#[ORM\Column(type: 'email', length: 255, unique: true)]` became `#[ORM\Column(type: 'email', length: 254, unique: true)]` |
-| 94 | TrueValue | `#[ORM\Column(type: 'email', length: 255, unique: true)]` became `#[ORM\Column(type: 'email', length: 255, unique: false)]` |
-| 96 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 254)]` |
-| 96 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 255)]` became `#[ORM\Column(type: Types::STRING, length: 256)]` |
-| 98 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 50, enumType: UserRole::class)]` became `#[ORM\Column(type: Types::STRING, length: 51, enumType: UserRole::class)]` |
-| 98 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 50, enumType: UserRole::class)]` became `#[ORM\Column(type: Types::STRING, length: 49, enumType: UserRole::class)]` |
-| 205 | NotIdentical | `if ($timezone !== null) {` became `if ($timezone === null) {` |
-
 ### `src/Application/Appointment/Service/AppointmentRequestService.php`
 
 Ticket: 17
@@ -312,9 +238,9 @@ Ticket: 17
 | 77 | LogicalOr | `if ($lock->getTimeSlot()->getStartTime() != $startTime \|\| $lock->getModality() !== $appointmentMo...` became `if ($lock->getTimeSlot()->getStartTime() != $startTime && $lock->getModality() !== $appointmentMo...` |
 | 131 | ArrayItemRemoval | removed `'message' => $e->getMessage(),` |
 | 132 | ArrayItem | `'message' => $e->getMessage(),` became `'message' > $e->getMessage(),` |
-| 150 | DecrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(0, -1);` |
-| 150 | IncrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(1, 0);` |
 | 150 | DecrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(-1, 0);` |
+| 150 | IncrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(1, 0);` |
+| 150 | DecrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(0, -1);` |
 | 150 | IncrementInteger | `$dayStart = $practiceDay->setTime(0, 0);` became `$dayStart = $practiceDay->setTime(0, 1);` |
 
 ### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php`
@@ -323,38 +249,13 @@ Ticket: 18
 
 | Line | Mutator | Change |
 |---|---|---|
+| 158 | DecrementInteger | `$dayStart = $date->setTime(0, 0);` became `$dayStart = $date->setTime(0, -1);` |
 | 158 | IncrementInteger | `$dayStart = $date->setTime(0, 0);` became `$dayStart = $date->setTime(1, 0);` |
 | 158 | IncrementInteger | `$dayStart = $date->setTime(0, 0);` became `$dayStart = $date->setTime(0, 1);` |
-| 158 | DecrementInteger | `$dayStart = $date->setTime(0, 0);` became `$dayStart = $date->setTime(0, -1);` |
 | 159 | DecrementInteger | `$dayEnd = $date->modify('+1 day')->setTime(0, 0);` became `$dayEnd = $date->modify('+1 day')->setTime(-1, 0);` |
 | 159 | IncrementInteger | `$dayEnd = $date->modify('+1 day')->setTime(0, 0);` became `$dayEnd = $date->modify('+1 day')->setTime(1, 0);` |
 | 159 | DecrementInteger | `$dayEnd = $date->modify('+1 day')->setTime(0, 0);` became `$dayEnd = $date->modify('+1 day')->setTime(0, -1);` |
 | 159 | IncrementInteger | `$dayEnd = $date->modify('+1 day')->setTime(0, 0);` became `$dayEnd = $date->modify('+1 day')->setTime(0, 1);` |
-
-### `src/Domain/Appointment/Entity/ScheduleException.php`
-
-Ticket: none
-
-| Line | Mutator | Change |
-|---|---|---|
-| 26 | FalseValue | `#[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: false, onDelete: 'CA...` became `#[ORM\JoinColumn(name: 'therapist_id', referencedColumnName: 'id', nullable: true, onDelete: 'CAS...` |
-| 32 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 500, options: ['default' => ''])]` became `#[ORM\Column(type: Types::STRING, length: 501, options: ['default' => ''])]` |
-| 32 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 500, options: ['default' => ''])]` became `#[ORM\Column(type: Types::STRING, length: 499, options: ['default' => ''])]` |
-| 34 | FalseValue | `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]` became `#[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]` |
-| 65 | UnwrapTrim | `reason: trim($reason),` became `reason: $reason,` |
-| 100 | LessThan | `return $this->startDateTime < $slot->getEndTime()` became `return $this->startDateTime <= $slot->getEndTime()` |
-
-### `src/Domain/Appointment/Entity/SlotLock.php`
-
-Ticket: 02
-
-| Line | Mutator | Change |
-|---|---|---|
-| 25 | DecrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]` became `#[ORM\Column(type: Types::STRING, length: 19, enumType: AppointmentModality::class)]` |
-| 25 | IncrementInteger | `#[ORM\Column(type: Types::STRING, length: 20, enumType: AppointmentModality::class)]` became `#[ORM\Column(type: Types::STRING, length: 21, enumType: AppointmentModality::class)]` |
-| 27 | DecrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 254, unique: true)]` |
-| 27 | IncrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 256, unique: true)]` |
-| 27 | TrueValue | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 255, unique: false)]` |
 
 ### `src/Infrastructure/Email/User/SymfonyEmailSender.php`
 
@@ -368,16 +269,16 @@ Ticket: none
 | 159 | BitwiseOr | `$userName = htmlspecialchars($userName, ENT_QUOTES \| ENT_HTML5, 'UTF-8');` became `$userName = htmlspecialchars($userName, ENT_QUOTES & ENT_HTML5, 'UTF-8');` |
 | 160 | BitwiseOr | `$loginUrl = htmlspecialchars($loginUrl, ENT_QUOTES \| ENT_HTML5, 'UTF-8');` became `$loginUrl = htmlspecialchars($loginUrl, ENT_QUOTES & ENT_HTML5, 'UTF-8');` |
 
-### `src/Domain/User/Entity/PasswordResetToken.php`
+### `src/Infrastructure/Http/EventSubscriber/RateLimitSubscriber.php`
 
-Ticket: 02
+Ticket: none
 
 | Line | Mutator | Change |
 |---|---|---|
-| 29 | DecrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 254, unique: true)]` |
-| 29 | IncrementInteger | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 256, unique: true)]` |
-| 29 | TrueValue | `#[ORM\Column(type: 'hashed_string', length: 255, unique: true)]` became `#[ORM\Column(type: 'hashed_string', length: 255, unique: false)]` |
-| 32 | FalseValue | `#[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]` became `#[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]` |
+| 22 | ArrayItemRemoval | `return [ KernelEvents::REQUEST => ['onKernelRequest', 10], ];` became `return [];` |
+| 23 | DecrementInteger | `KernelEvents::REQUEST => ['onKernelRequest', 10],` became `KernelEvents::REQUEST => ['onKernelRequest', 9],` |
+| 23 | IncrementInteger | `KernelEvents::REQUEST => ['onKernelRequest', 10],` became `KernelEvents::REQUEST => ['onKernelRequest', 11],` |
+| 23 | ArrayItemRemoval | `KernelEvents::REQUEST => ['onKernelRequest', 10],` became `KernelEvents::REQUEST => [10],` |
 
 ### `src/Infrastructure/Http/Validation/PasswordStrengthValidator.php`
 
@@ -396,8 +297,8 @@ Ticket: none
 
 | Line | Mutator | Change |
 |---|---|---|
-| 73 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 && $start2 <= $end1;` |
 | 73 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 <= $end2 && $start2 < $end1;` |
+| 73 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 && $start2 <= $end1;` |
 | 73 | LogicalAnd | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 \|\| $start2 < $end1;` |
 
 ### `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php`
@@ -406,8 +307,8 @@ Ticket: none
 
 | Line | Mutator | Change |
 |---|---|---|
-| 76 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 && $start2 <= $end1;` |
 | 76 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 <= $end2 && $start2 < $end1;` |
+| 76 | LessThan | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 && $start2 <= $end1;` |
 | 76 | LogicalAnd | `return $start1 < $end2 && $start2 < $end1;` became `return $start1 < $end2 \|\| $start2 < $end1;` |
 
 ### `src/Application/User/Handler/InvitePatientHandler.php`
@@ -467,6 +368,15 @@ Ticket: none
 | 77 | ArrayItemRemoval | removed `'message' => $e->getMessage(),` |
 | 78 | ArrayItem | `'message' => $e->getMessage(),` became `'message' > $e->getMessage(),` |
 
+### `src/Domain/Appointment/Entity/ScheduleException.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 65 | UnwrapTrim | `reason: trim($reason),` became `reason: $reason,` |
+| 100 | LessThan | `return $this->startDateTime < $slot->getEndTime()` became `return $this->startDateTime <= $slot->getEndTime()` |
+
 ### `src/Domain/Appointment/Service/SlotGenerationRules.php`
 
 Ticket: 01, 17
@@ -484,6 +394,15 @@ Ticket: none
 |---|---|---|
 | 14 | DecrementInteger | `parent::__construct($message, 0, $previous);` became `parent::__construct($message, -1, $previous);` |
 | 14 | IncrementInteger | `parent::__construct($message, 0, $previous);` became `parent::__construct($message, 1, $previous);` |
+
+### `src/Domain/User/ValueObject/Address.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 54 | UnwrapTrim | `postalCode: $postalCode ? trim($postalCode) : null,` became `postalCode: $postalCode ? $postalCode : null,` |
+| 55 | UnwrapTrim | `state: $state ? trim($state) : null,` became `state: $state ? $state : null,` |
 
 ### `src/Infrastructure/Console/User/CreateTherapistCommand.php`
 
@@ -536,6 +455,14 @@ Ticket: none
 |---|---|---|
 | 13 | MethodCallRemoval | removed `parent::__construct( message: 'The slot lock token is invalid or has expired.', errorCode: 'INVAL...` |
 
+### `src/Domain/User/Entity/User.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 205 | NotIdentical | `if ($timezone !== null) {` became `if ($timezone === null) {` |
+
 ### `src/Infrastructure/Email/Appointment/RenderedTime.php`
 
 Ticket: none
@@ -543,6 +470,14 @@ Ticket: none
 | Line | Mutator | Change |
 |---|---|---|
 | 39 | UnwrapStrReplace | `return str_replace('_', ' ', (string) end($parts));` became `return (string) end($parts);` |
+
+### `src/Infrastructure/Http/EventSubscriber/SecurityHeadersSubscriber.php`
+
+Ticket: none
+
+| Line | Mutator | Change |
+|---|---|---|
+| 15 | ArrayItemRemoval | `return [ KernelEvents::RESPONSE => 'onKernelResponse', ];` became `return [];` |
 
 ### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php`
 

@@ -154,8 +154,8 @@ services:
 
 when@test:
     services:
-        # Kernel logs go to a file under var/cache/test. Infection stops its initial test
-        # run on the first stderr write, and every expected 403 used to print there.
+        # Kernel logs go to a file, not stderr. Infection stops its initial test run on the
+        # first stderr write, and the default logger prints every expected 403 there.
         logger:
             class: Symfony\Component\HttpKernel\Log\Logger
             arguments:
