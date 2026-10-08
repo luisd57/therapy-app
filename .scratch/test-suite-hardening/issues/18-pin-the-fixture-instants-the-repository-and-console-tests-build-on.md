@@ -1,5 +1,7 @@
 # 18 - Pin the fixture Instants the repository and console tests build on
 
+> Frozen record, resolved 2026-10-08.
+
 **What to build:** the integration tests that save an entity straight to the
 database stop depending on a hardcoded date still being in the future, so a
 past-Instant guard can be added without breaking them for an unrelated reason.
@@ -51,13 +53,15 @@ Appointment repository test (6 of its 10), the Schedule Exception repository tes
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Every fixture in the three Doctrine repository test files takes a literal Instant as `now`, not the wall clock
-- [ ] The daily agenda command test builds its Appointments from the instant it froze, rather than around it
-- [ ] The temporary past-Instant guard leaves the whole Integration suite green, not only the controller tests
-- [ ] The Therapist schedule repository test is left unchanged, with the reason stated in the pull request
-- [ ] Full API suite green
+**Resolved by:** [PR #105](https://github.com/luisd57/therapy-app/pull/105)
+
+- [x] Every fixture in the three Doctrine repository test files takes a literal Instant as `now`, not the wall clock
+- [x] The daily agenda command test builds its Appointments from a pinned instant before every Slot, not the wall clock. Corrected 2026-10-08: the frozen instant is after one of the Slots, see the comment of that date
+- [x] The temporary past-Instant guard leaves the whole Integration suite green, not only the controller tests
+- [x] The Therapist schedule repository test is left unchanged, with the reason stated in the pull request
+- [x] Full API suite green
 
 **2026-09-28** - Ticket 13 froze the clock in the Slot Lock repository test and gave
 literal instants to the three methods whose query reads it:
@@ -72,3 +76,16 @@ Ticket 15 also could not write the rule this ticket proposes: a ban on zero-argu
 `new DateTimeImmutable()` in `App\Tests` is red on 167 sites, including the Therapist schedule
 repository test this ticket says to leave alone. It needs a ticket of its own once this one lands,
 and a way to say "time does not matter here" that the rule can allow.
+
+**2026-10-08** - Re-measured before starting: the probe failed 15 Integration tests, split 8 in the
+Appointment repository test, 4 in the Schedule Exception one, 2 in the Slot Lock one and 1 console
+test. The split moved because more fixture dates have passed since September.
+
+The console criterion cannot be met as written. The test freezes the clock at 2026-06-16 02:00 UTC
+and saves an Appointment at 09:00 on the therapist's 15 June, which is before that instant.
+Threading the frozen instant through the helper would build an Appointment requested after its own
+start, the exact fixture this ticket removes. The helper takes a pinned literal before every Slot
+instead. Read the second checkbox as "the helper no longer reads the wall clock".
+
+Still open after this ticket: the rule against zero-argument `new DateTimeImmutable()` in
+`App\Tests` that the 2026-10-07 comment describes. It needs its own ticket.

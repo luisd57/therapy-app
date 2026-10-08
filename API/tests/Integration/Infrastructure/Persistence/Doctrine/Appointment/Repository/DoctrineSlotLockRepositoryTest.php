@@ -11,7 +11,6 @@ use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Tests\Helper\IntegrationTestCase;
 use App\Tests\Helper\UsesUtcInstants;
-use DateTimeImmutable;
 
 final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
 {
@@ -36,7 +35,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::ONLINE,
             lockToken: 'test-lock-token-123',
             ttlSeconds: 600,
-            now: new DateTimeImmutable(),
+            now: self::utc('2026-05-30 08:55:00'),
         );
         $this->repository->save($lock);
 
@@ -134,7 +133,7 @@ final class DoctrineSlotLockRepositoryTest extends IntegrationTestCase
             modality: AppointmentModality::IN_PERSON,
             lockToken: 'delete-me-token',
             ttlSeconds: 600,
-            now: new DateTimeImmutable(),
+            now: self::utc('2026-05-30 08:55:00'),
         );
         $this->repository->save($lock);
 

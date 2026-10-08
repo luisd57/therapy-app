@@ -21,6 +21,9 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
 {
     use UsesUtcInstants;
 
+    // Before every Slot below, so no fixture is requested after its own start.
+    private const string REQUESTED_AT = '2026-05-01 00:00:00';
+
     private AppointmentRepositoryInterface $repository;
 
     protected function setUp(): void
@@ -44,7 +47,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             phone: Phone::fromString('+1234567890'),
             city: 'New York',
             country: 'US',
-            now: new DateTimeImmutable(),
+            now: self::utc(self::REQUESTED_AT),
         );
     }
 
@@ -83,22 +86,22 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: self::utc('2026-06-02 10:00:00'),
             email: 'confirmed@test.com',
         );
-        $confirmed->confirm(new DateTimeImmutable());
+        $confirmed->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($confirmed);
 
         $completed = $this->createAppointment(
             startTime: self::utc('2026-06-02 11:00:00'),
             email: 'completed@test.com',
         );
-        $completed->confirm(new DateTimeImmutable());
-        $completed->complete(new DateTimeImmutable());
+        $completed->confirm(self::utc(self::REQUESTED_AT));
+        $completed->complete(self::utc('2026-06-02 12:00:00'));
         $this->repository->save($completed);
 
         $cancelled = $this->createAppointment(
             startTime: self::utc('2026-06-02 12:00:00'),
             email: 'cancelled@test.com',
         );
-        $cancelled->cancel(new DateTimeImmutable());
+        $cancelled->cancel(self::utc(self::REQUESTED_AT));
         $this->repository->save($cancelled);
 
         $results = $this->repository->findBlockingByDateRange(
@@ -125,7 +128,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: self::utc('2026-07-01 10:00:00'),
             email: 'status-conf@test.com',
         );
-        $confirmed->confirm(new DateTimeImmutable());
+        $confirmed->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($confirmed);
 
         $results = $this->repository->findByStatus(AppointmentStatus::REQUESTED);
@@ -145,7 +148,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: self::utc('2026-09-15 09:00:00'),
             email: 'confirmed-on-date@test.com',
         );
-        $confirmedOnDate->confirm(new DateTimeImmutable());
+        $confirmedOnDate->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($confirmedOnDate);
 
         // Late evening in the practice zone, already the 16th in UTC - should be included
@@ -153,7 +156,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-15T22:00:00-04:00'),
             email: 'confirmed-on-date2@test.com',
         );
-        $confirmedOnDate2->confirm(new DateTimeImmutable());
+        $confirmedOnDate2->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($confirmedOnDate2);
 
         // Requested on target date - should NOT be included
@@ -168,7 +171,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-09-14T23:00:00-04:00'),
             email: 'confirmed-other-date@test.com',
         );
-        $confirmedOtherDate->confirm(new DateTimeImmutable());
+        $confirmedOtherDate->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($confirmedOtherDate);
 
         $results = $this->repository->findConfirmedByDate($targetDate);
@@ -189,14 +192,14 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: self::utc('2026-09-20 15:00:00'),
             email: 'later@test.com',
         );
-        $later->confirm(new DateTimeImmutable());
+        $later->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($later);
 
         $earlier = $this->createAppointment(
             startTime: self::utc('2026-09-20 08:00:00'),
             email: 'earlier@test.com',
         );
-        $earlier->confirm(new DateTimeImmutable());
+        $earlier->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($earlier);
 
         $results = $this->repository->findConfirmedByDate($targetDate);
@@ -253,7 +256,7 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
             startTime: new DateTimeImmutable('2026-06-01 13:00:00', new DateTimeZone('UTC')),
             email: 'offset-range@test.com',
         );
-        $appointment->confirm(new DateTimeImmutable('2026-05-01 00:00:00', new DateTimeZone('UTC')));
+        $appointment->confirm(self::utc(self::REQUESTED_AT));
         $this->repository->save($appointment);
         $this->entityManager->clear();
 
