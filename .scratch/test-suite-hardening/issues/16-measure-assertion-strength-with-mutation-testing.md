@@ -1,5 +1,7 @@
 # 16 - Measure assertion strength with mutation testing
 
+> Frozen record, resolved 2026-10-08.
+
 **What to build:** a report naming every line of production code that can be
 broken without failing a test, so "the suite is green" stops being the only thing
 anyone knows about it.
@@ -48,21 +50,23 @@ Discovery is worth more once tickets 13 and 18 have landed. See the comment belo
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #106](https://github.com/luisd57/therapy-app/pull/106)
 
 Discovery:
 
-- [ ] Whether a coverage driver is required is confirmed against the current release, and if so one is present in the PHP image with the reason recorded
-- [ ] A full mutation run over the API completes and its surviving mutants are committed as a file, so the next reader starts from the list rather than rerunning the hour
-- [ ] Every survivor falling in code a `test-suite-hardening` ticket already covers is annotated with that ticket number in the committed list
-- [ ] The landing utilities have an equivalent run and list
+- [x] Whether a coverage driver is required is confirmed against the current release, and if so one is present in the PHP image with the reason recorded
+- [x] A full mutation run over the API completes and its surviving mutants are committed as a file, so the next reader starts from the list rather than rerunning the hour
+- [x] Every survivor falling in code a `test-suite-hardening` ticket already covers is annotated with that ticket number in the committed list. Annotated per file, one Ticket line above each file's rows
+- [x] The landing utilities have an equivalent run and list
 
 Gating:
 
-- [ ] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
-- [ ] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date
-- [ ] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds
-- [ ] Full pipeline green, including whatever image change the driver required
+- [x] Continuous integration runs the diff-based mode, so a pull request is never gated on a full run
+- [x] The threshold is taken from a baseline measured after tickets 02, 04, 13 and 18, and the baseline figure is recorded with its date. Corrected 2026-10-08: the baseline is recorded (87.45%), but the gate is 100 on changed lines and not that figure, see the comment of that date
+- [x] Strengthening one named assertion is shown to move the survivor count, proving the measurement responds. Done with a new test, not an edit to an existing assertion
+- [x] Full pipeline green, including whatever image change the driver required. Both jobs green on run 37837573825, where the e2e job builds the image with pcov
 
 ## Comments
 
@@ -184,3 +188,9 @@ survivor fails a small pull request and passes a large one. At 100 a survivor on
 is killed by a test or carries `// @infection-ignore-all <reason>`. This replaces the criterion
 "The threshold is taken from a baseline": the baseline figure is still recorded with its date,
 and it describes the tree, not the gate. Reasons in ADR-0010.
+
+**The gate fires, proven on the pull request.** Green: run 37837573825 on `b1b8e6a`, which
+changes no `API/src` line and exits with "Could not find any modified files". Red: run
+37837594406 on `2bf4372`, a planted edit to `Appointment.php` line 96. Three mutants, two killed,
+the `UnwrapTrim` one escaped, "should be 100%, but actual is 66.67%". Reverted in `84dfdc1`, and
+`git diff b1b8e6a 84dfdc1` is empty.
