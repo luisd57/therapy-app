@@ -1,0 +1,26 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"],
+        // Wire glue pinned at the integration seam instead, see ADR-0010. Paths, not globs.
+        "excludes": [
+            "Infrastructure/Http/Controller",
+            "Infrastructure/Config",
+            "Application/Appointment/DTO",
+            "Application/User/DTO",
+            "Application/Shared/DTO"
+        ]
+    },
+    // The default 10s skips any mutant whose covering tests take longer, and many are integration tests.
+    "timeout": 300,
+    "tmpDir": "var/infection",
+    "logs": {
+        "text": "var/infection/infection.log",
+        "json": "var/infection/infection.json",
+        "summaryJson": "var/infection/summary.json"
+    },
+    "staticAnalysisTool": "phpstan",
+    "staticAnalysisToolOptions": "--memory-limit=1G",
+    // pcov is off in php.ini and php.ini caps memory at 512M.
+    "initialTestsPhpOptions": "-d pcov.enabled=1 -d memory_limit=-1"
+}

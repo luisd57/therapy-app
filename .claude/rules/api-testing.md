@@ -23,6 +23,7 @@ Traits:
 - **SeedsAppointment**: seeds one Appointment. Takes REQUESTED or CONFIRMED only, and throws on a terminal status rather than silently seeding REQUESTED.
 - **KeepsBlocklistAcrossRequests**: puts the JWT blocklist on storage that outlives a request. See the `ArrayAdapter` entry in `dev-gotchas.md` for why it is needed.
 - **KeepsRateLimitsAcrossRequests**: the same swap for both rate limiters, so a sliding window still holds the earlier requests' hits. Call it before the test's first request - the container refuses to replace a service it has already built.
+- Both `Keeps*` pools are named with `TEST_TOKEN`, so parallel Infection workers do not share one. A new helper that keeps state outside the database needs the same (ADR-0010).
 
 Data:
 - **Json**: `at()`, `arrayAt()` and `stringAt()` read a path in decoded JSON and fail the test on a missing key or wrong type. Use them instead of `$data['data']['id']`, which PHPStan rejects as offset access on `mixed` (ADR-0008).

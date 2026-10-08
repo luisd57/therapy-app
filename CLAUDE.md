@@ -43,6 +43,8 @@ docker-compose exec php bash                  # Shell into PHP container
 docker-compose exec php vendor/bin/phpunit    # Full API suite
 # Static analysis, level 10 with no baseline (ADR-0008)
 docker-compose exec php vendor/bin/phpstan analyse --memory-limit=1G
+# Mutation testing, one file. Needs per-worker databases first (dev-gotchas.md, ADR-0010)
+docker-compose exec php vendor/bin/infection --threads=8 --only-covering-test-cases src/<path>
 ```
 
 | Service   | URL                          |
