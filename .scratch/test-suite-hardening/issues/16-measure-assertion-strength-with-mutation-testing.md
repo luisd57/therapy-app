@@ -164,7 +164,7 @@ tests, 12 by PHPStan, 228 escaped, 1 timed out, covered MSI 83.36%. 66 of those 
 Doctrine mapping attributes, which no test can kill and which would fail the diff gate on any
 new column, so `infection.json5` now ignores those lines. The second, 13m 21s, is the committed
 list and the baseline: 1375 mutants, 68 ignored, 1130 killed by tests, 12 by PHPStan, 164 escaped,
-1 timed out, covered MSI 87.45%. The CI threshold is 87. The two runs agree mutant for mutant
+1 timed out, covered MSI 87.45%. The two runs agree mutant for mutant
 apart from those changes. Not "well over an hour": uncovered code and the excluded directories
 are not mutated.
 
@@ -177,3 +177,10 @@ not an edit to an old one, took it to 25 by killing the `UnwrapTrim` mutants on 
 The committed list shows 9 for that file, the 25 less the 16 mapping-attribute survivors.
 
 **Not run locally:** the diff mode. The php container mounts `API/` and has no git repository.
+
+**The gate is 100 on changed lines, not the baseline rounded down.** Decided 2026-10-08, after
+the gate was first written at 87. A percentage over a diff depends on the diff's size, so one
+survivor fails a small pull request and passes a large one. At 100 a survivor on a changed line
+is killed by a test or carries `// @infection-ignore-all <reason>`. This replaces the criterion
+"The threshold is taken from a baseline": the baseline figure is still recorded with its date,
+and it describes the tree, not the gate. Reasons in ADR-0010.

@@ -6,7 +6,8 @@ Status: accepted, implemented on 2026-10-08 (`test-suite-hardening/16`).
 
 The API is mutation tested with **Infection**. A full run is evidence, done by hand and committed
 as a dated list. CI runs the **diff-based mode only**: on a pull request, the `test` job mutates
-the lines the pull request added or changed and fails below a covered MSI of **87**.
+the lines the pull request added or changed and fails on **any surviving mutant** (a covered MSI
+below 100).
 
 **pcov** is in the PHP image and in the CI PHP setup, with `pcov.enabled = 0`. Infection's initial
 test run turns it on for itself through `initialTestsPhpOptions`. Nothing else does.
@@ -81,6 +82,26 @@ survivors to get a build through, and that produces assertions pinned to interna
 break on the next honest refactor. The committed list is evidence, not a backlog. New work is
 what gets gated.
 
+## Why 100 and not the baseline figure
+
+The first version of the gate was the baseline rounded down, 87. A percentage over a diff depends
+on the size of the diff: one survivor in five mutants fails it and the same survivor in twenty
+passes. The result then says more about the pull request's length than about its tests, and an
+agent facing a red build can pad the change to get through.
+
+At 100 the gate is binary, the same stance as ADR-0008. A surviving mutant on a changed line has
+two answers, and a reviewer can reject either one:
+
+- a test that kills it, asserting behaviour and not internal state
+- an `@infection-ignore-all` comment on the statement, with the reason on the same line
+
+The ignore is for a mutant no test should kill, such as a key in a log context array. It is not
+for one that is merely awkward to reach. A whole class of them belongs in `infection.json5`, as
+the mapping attributes are, and not in a comment per line.
+
+Editing an old line brings its old survivors into the diff. That is accepted: the line is being
+touched, so it is the cheapest moment to settle them.
+
 `--git-diff-base=origin/main` is required. Infection falls back to `origin/master`, which this
 repository does not have. `--ignore-msi-with-no-mutations` lets a pull request with no mutable
 change pass.
@@ -102,8 +123,8 @@ Measured 2026-10-08 with Infection 0.35.6, after tickets 02, 04, 13 and 18:
 | Timed out | 1 |
 | Covered MSI | 87.45% |
 
-The threshold is that figure rounded down. Raising it is a decision, taken by editing the number
-in `ci.yml` after a new full run. The lists are in `.scratch/test-suite-hardening/mutation/`.
+This figure describes the tree. It is not the gate. The lists are in
+`.scratch/test-suite-hardening/mutation/`.
 
 Two full runs that day agreed mutant for mutant, apart from the changes made between them. Five of
 the 164 are an artefact: the `getSubscribedEvents()` lines of the two HTTP subscribers are covered
