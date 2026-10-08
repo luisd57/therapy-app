@@ -1,5 +1,7 @@
 # 18 - Pin the fixture Instants the repository and console tests build on
 
+> Frozen record, resolved 2026-10-08.
+
 **What to build:** the integration tests that save an entity straight to the
 database stop depending on a hardcoded date still being in the future, so a
 past-Instant guard can be added without breaking them for an unrelated reason.
@@ -51,13 +53,15 @@ Appointment repository test (6 of its 10), the Schedule Exception repository tes
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Every fixture in the three Doctrine repository test files takes a literal Instant as `now`, not the wall clock
-- [ ] The daily agenda command test builds its Appointments from the instant it froze, rather than around it
-- [ ] The temporary past-Instant guard leaves the whole Integration suite green, not only the controller tests
-- [ ] The Therapist schedule repository test is left unchanged, with the reason stated in the pull request
-- [ ] Full API suite green
+**Resolved by:** [PR #105](https://github.com/luisd57/therapy-app/pull/105)
+
+- [x] Every fixture in the three Doctrine repository test files takes a literal Instant as `now`, not the wall clock
+- [x] The daily agenda command test builds its Appointments from a pinned instant before every Slot, not the wall clock. Corrected 2026-10-08: the frozen instant is after one of the Slots, see the comment of that date
+- [x] The temporary past-Instant guard leaves the whole Integration suite green, not only the controller tests
+- [x] The Therapist schedule repository test is left unchanged, with the reason stated in the pull request
+- [x] Full API suite green
 
 **2026-09-28** - Ticket 13 froze the clock in the Slot Lock repository test and gave
 literal instants to the three methods whose query reads it:
