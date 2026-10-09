@@ -6,7 +6,7 @@ from the list and not from a rerun, and so tickets can be aimed. Gating is on ne
 
 | | |
 |---|---|
-| Date | 2026-10-08 |
+| Date | 2026-10-08, Ticket column updated by hand 2026-10-09 |
 | Tree | the ticket 16 branch as merged, on top of `f52f608` |
 | Tool | Infection 0.35.6, PHPUnit 10.5.63, PHPStan 2.2.16, pcov 1.0.12, PHP 8.4.26 |
 | Command | `vendor/bin/infection --threads=8 --only-covering-test-cases` |
