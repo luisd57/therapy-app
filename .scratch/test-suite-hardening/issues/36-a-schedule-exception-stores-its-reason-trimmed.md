@@ -17,4 +17,4 @@ is nothing for the trim to remove (2026-10-09).
 
 - [ ] A Schedule Exception created with a padded reason returns the reason without the padding
 - [ ] One created with a whitespace-only reason returns an empty reason
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

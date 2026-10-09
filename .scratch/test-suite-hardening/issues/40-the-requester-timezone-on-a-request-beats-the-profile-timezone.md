@@ -21,4 +21,4 @@ of their home zone.
 
 - [ ] A Patient whose profile holds one timezone sends a request carrying another, and the Appointment carries the one from the request
 - [ ] The two zones differ from each other and from the Practice Timezone, so no fallback can produce the expected value
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

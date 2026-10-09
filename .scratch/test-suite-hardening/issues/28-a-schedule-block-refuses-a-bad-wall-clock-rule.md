@@ -30,8 +30,8 @@ or assert which rule did the refusing. A case two rules refuse pins neither.
 **Status:** ready-for-agent
 
 - [ ] Create and update each refuse a malformed start and a malformed end, in cases only the format rule can refuse
-- [ ] Junk before a valid HH:MM is refused, and so is junk after it
+- [ ] Junk before a valid HH:MM is refused, and so is junk after it, each in a case only the format rule can refuse (a letter in front of a start sorts after any end, so the start-before-end check refuses it too, and the case belongs on an end)
 - [ ] An hour past 23 is refused with a valid minute, and a minute past 59 with a valid hour
 - [ ] A block from 23:00 to 23:59 is accepted
 - [ ] Update refuses a start equal to the end
-- [ ] A one-file Infection run no longer reports the ten rows as escaped
+- [ ] A one-file Infection run no longer reports the ten rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

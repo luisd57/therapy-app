@@ -2,7 +2,8 @@
 
 **What to build:** tests that fail when the availability computation offers a
 Slot starting exactly at the end of the window it was asked for, or one
-starting exactly now.
+starting exactly now. The window here is the from-to Instant range of one
+query, not a Schedule Block.
 
 Both edges are deliberate:
 
@@ -29,4 +30,4 @@ Start Increment equals the session duration.
 
 - [ ] A candidate Slot starting exactly at the window end is not returned, and the candidate before it is
 - [ ] A candidate Slot starting exactly at `now` is not returned, and the next candidate is
-- [ ] A one-file Infection run no longer reports the two rows as escaped
+- [ ] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

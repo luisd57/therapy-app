@@ -17,4 +17,4 @@ trimmed too, and no test passes a padded one (2026-10-09).
 
 - [ ] An Address created with a padded postal code returns it without the padding
 - [ ] An Address created with a padded state returns it without the padding
-- [ ] A one-file Infection run no longer reports the two rows as escaped
+- [ ] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

@@ -30,4 +30,4 @@ payment label among them.
 - [ ] HTML body: an Appointment with payment verified reads Verified in its own row, and an unverified one reads Pending
 - [ ] Text body: the same two labels, each on its own Appointment's line
 - [ ] Text body with one Appointment says "1 confirmed appointment", singular, and with two says "2 confirmed appointments"
-- [ ] A one-file Infection run no longer reports the four rows as escaped
+- [ ] A one-file Infection run no longer reports the four rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

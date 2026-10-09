@@ -32,4 +32,4 @@ put an ignore comment there: it would hide the kind 1 rows as well.
 - [ ] With a Schedule Exception covering every Slot of the current week, the search returns the following week, not the current one
 - [ ] With one Slot of the returned week under a confirmed Appointment, that Slot is not among the Slots returned, and a Slot that does not overlap it is
 - [ ] Both are asserted on what the search returns, with the availability computation not stubbed
-- [ ] A one-file Infection run no longer reports the eight rows as escaped
+- [ ] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

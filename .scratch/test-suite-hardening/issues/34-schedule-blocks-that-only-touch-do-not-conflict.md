@@ -27,4 +27,4 @@ three for
 - [ ] Creating a block that starts exactly when an existing block on that day ends succeeds
 - [ ] Creating a block that ends exactly when an existing block on that day starts succeeds
 - [ ] Updating a block so it touches another block on that day succeeds, once on each side
-- [ ] A one-file Infection run on each handler no longer reports its three rows as escaped
+- [ ] A one-file Infection run on each handler no longer reports its three rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

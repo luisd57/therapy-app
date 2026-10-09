@@ -35,4 +35,4 @@ in `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
 - [ ] One starting in the last minute of the day before is not returned
 - [ ] One starting at the next midnight is not returned
 - [ ] The day is named in the Practice Timezone, and every expected Instant is written in UTC
-- [ ] A one-file Infection run no longer reports the seven rows as escaped
+- [ ] A one-file Infection run no longer reports the seven rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

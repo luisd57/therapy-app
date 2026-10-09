@@ -20,4 +20,4 @@ with it, and the Therapist loses a Slot they never closed.
 
 - [ ] A Schedule Exception starting at the Instant a Slot ends does not overlap that Slot
 - [ ] The same exception starting one minute earlier does overlap it
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

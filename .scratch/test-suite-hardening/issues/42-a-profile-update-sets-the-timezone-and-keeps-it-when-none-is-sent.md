@@ -19,4 +19,4 @@ theirs.
 
 - [ ] A profile update carrying a timezone stores that timezone
 - [ ] A profile update carrying no timezone leaves a stored timezone in place
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

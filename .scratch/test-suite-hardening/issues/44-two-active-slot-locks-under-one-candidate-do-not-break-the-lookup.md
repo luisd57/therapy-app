@@ -27,4 +27,4 @@ in `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
 
 - [ ] With two active Slot Locks that do not overlap each other, a lookup over a window overlapping both returns one of them and does not throw
 - [ ] The test does not depend on which of the two comes back
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

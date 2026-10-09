@@ -27,4 +27,4 @@ padded input is the likely case there, not the rare one.
 - [ ] `request()` refuses a whitespace-only city, and a whitespace-only country, each with the other fields valid
 - [ ] `book()` refuses a whitespace-only name, city and country, each with the other fields valid
 - [ ] An Appointment made by `book()` from a padded name, city and country returns all three without the padding
-- [ ] A one-file Infection run no longer reports the eight rows as escaped
+- [ ] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

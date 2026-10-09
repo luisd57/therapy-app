@@ -18,4 +18,4 @@ America/New_York, America/Los_Angeles, America/Argentina/Buenos_Aires.
 **Status:** ready-for-agent
 
 - [ ] An email to a Requester whose timezone is America/New_York labels the time "New York", with no underscore
-- [ ] A one-file Infection run no longer reports the row as escaped
+- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

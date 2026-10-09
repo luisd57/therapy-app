@@ -27,4 +27,4 @@ link.
 - [ ] With a frontend URL ending in a slash, the invitation link has exactly one slash between the host and its path
 - [ ] The same holds for the resent invitation link
 - [ ] The same holds for the password reset link
-- [ ] A one-file Infection run on each handler no longer reports its UnwrapRtrim row as escaped
+- [ ] A one-file Infection run on each handler no longer reports its UnwrapRtrim row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
