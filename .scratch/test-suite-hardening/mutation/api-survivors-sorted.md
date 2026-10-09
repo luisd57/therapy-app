@@ -298,9 +298,9 @@ with the reason stated once and a File column.
 | 23 | IncrementInteger | Same. |
 | 23 | ArrayItemRemoval | Same. |
 
-### Log context `message` key, 6 handlers
+### Log context `message` key (12)
 
-Log context key, the case ADR-0010 names. `exception` still carries the message.
+The case ADR-0010 names. `exception` still carries the message.
 
 | File | Line | Mutator |
 |---|---|---|
@@ -336,7 +336,7 @@ Log context key, the case ADR-0010 names. `exception` still carries the message.
 |---|---|---|
 | 15 | ArrayItemRemoval | Cold-cache artefact, same as RateLimitSubscriber. |
 
-### Doctrine type fast path, 9 types
+### Doctrine type fast path (9)
 
 Equivalent. The value object is Stringable and `__toString()` returns the same value, so the
 fall-through to stringValue() gives the same string.

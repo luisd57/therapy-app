@@ -4,7 +4,7 @@
 scripts here rebuild them from the tools' JSON output, so a later run gives a list in the same
 shape. Nothing in CI uses them.
 
-`api-survivors-sorted.md` is the API list sorted by hand into three kinds, with a reason per row.
+`api-survivors-sorted.md` is the API list sorted by hand into three kinds, with the reason for each call.
 No script rebuilds it, so after a rerun of the API list it is stale until someone sorts it again.
 
 ## Regenerate the API list
