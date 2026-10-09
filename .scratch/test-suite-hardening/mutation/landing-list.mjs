@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const [, , input, output, date, wallTime] = process.argv;
 if (!wallTime) throw new Error('Usage: node <script> <input.json> <output.md> <date> <wall time>');
 const j = JSON.parse(readFileSync(input, 'utf8'));
-const cell = (t) => '`' + (t.length > 100 ? t.slice(0, 97) + '...' : t).replace(/\s+/g, ' ').replace(/\|/g, '\|').replace(/`/g, "'") + '`';
+const cell = (t) => '`' + (t.length > 100 ? t.slice(0, 97) + '...' : t).replace(/\s+/g, ' ').replace(/\|/g, '\\|').replace(/`/g, "'") + '`';
 const count = {};
 const rows = { Survived: [], NoCoverage: [] };
 const perFile = {};

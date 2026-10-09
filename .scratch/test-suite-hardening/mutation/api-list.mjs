@@ -76,11 +76,14 @@ out.push('Ignored mutants sit on a line carrying a Doctrine mapping attribute: a
 out.push('flag. No test reads the schema, so they could only survive. They count in no figure above but');
 out.push('the total.');
 out.push('');
-out.push('Five survivors are an artefact of a cold cache: the `getSubscribedEvents()` lines of the two HTTP');
-out.push('subscribers. They are only covered when the container is compiled during the initial run, and');
-out.push('every mutant then runs against the compiled container, so nothing can kill them. A run on a');
-out.push('warm `var/cache/test` does not generate them (1370 mutants, not 1375).');
-out.push('');
+// Only a cold-cache run covers getSubscribedEvents(), so only that run has these.
+if (j.escaped.some((e) => /EventSubscriber\//.test(e.mutator.originalFilePath) && e.diff.includes('KernelEvents::'))) {
+  out.push('Five survivors are an artefact of a cold cache: the `getSubscribedEvents()` lines of the two HTTP');
+  out.push('subscribers. They are only covered when the container is compiled during the initial run, and');
+  out.push('every mutant then runs against the compiled container, so nothing can kill them. A run on a');
+  out.push('warm `var/cache/test` does not generate them (1370 mutants, not 1375).');
+  out.push('');
+}
 out.push('The Ticket column names the `test-suite-hardening` ticket whose scope the file falls in.');
 out.push('Empty means no ticket covers it.');
 out.push('');

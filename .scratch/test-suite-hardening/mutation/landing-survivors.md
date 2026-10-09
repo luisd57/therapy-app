@@ -32,7 +32,7 @@ No `test-suite-hardening` ticket covers these two files, so nothing here is anno
 
 | File | Line | Mutator | Original | Replacement |
 |---|---|---|---|---|
-| `src/utils/dates.ts` | 79 | ConditionalExpression | `found === null || new Date(instant) < new Date(found)` | `true` |
+| `src/utils/dates.ts` | 79 | ConditionalExpression | `found === null \|\| new Date(instant) < new Date(found)` | `true` |
 | `src/utils/dates.ts` | 79 | EqualityOperator | `new Date(instant) < new Date(found)` | `new Date(instant) <= new Date(found)` |
 | `src/utils/dates.ts` | 161 | OptionalChaining | `timeZone.split('/').pop()?.replace` | `timeZone.split('/').pop().replace` |
 | `src/utils/dates.ts` | 161 | StringLiteral | `' '` | `""` |
@@ -53,9 +53,9 @@ No `test-suite-hardening` ticket covers these two files, so nothing here is anno
 | File | Line | Mutator | Original | Replacement |
 |---|---|---|---|---|
 | `src/utils/dates.ts` | 19 | BlockStatement | `{ ...` | `{}` |
-| `src/utils/dates.ts` | 20 | ConditionalExpression | `Intl.DateTimeFormat().resolvedOptions().timeZone || PRACTICE_TIMEZONE_FALLBACK` | `true` |
-| `src/utils/dates.ts` | 20 | ConditionalExpression | `Intl.DateTimeFormat().resolvedOptions().timeZone || PRACTICE_TIMEZONE_FALLBACK` | `false` |
-| `src/utils/dates.ts` | 20 | LogicalOperator | `Intl.DateTimeFormat().resolvedOptions().timeZone || PRACTICE_TIMEZONE_FALLBACK` | `Intl.DateTimeFormat().resolvedOptions().timeZone && PRACTICE_TIMEZONE_FALLBACK` |
+| `src/utils/dates.ts` | 20 | ConditionalExpression | `Intl.DateTimeFormat().resolvedOptions().timeZone \|\| PRACTICE_TIMEZONE_FALLBACK` | `true` |
+| `src/utils/dates.ts` | 20 | ConditionalExpression | `Intl.DateTimeFormat().resolvedOptions().timeZone \|\| PRACTICE_TIMEZONE_FALLBACK` | `false` |
+| `src/utils/dates.ts` | 20 | LogicalOperator | `Intl.DateTimeFormat().resolvedOptions().timeZone \|\| PRACTICE_TIMEZONE_FALLBACK` | `Intl.DateTimeFormat().resolvedOptions().timeZone && PRACTICE_TIMEZONE_FALLBACK` |
 | `src/utils/dates.ts` | 27 | BlockStatement | `{ ...` | `{}` |
 | `src/utils/dates.ts` | 29 | ConditionalExpression | `typeof navigator !== 'undefined'` | `true` |
 | `src/utils/dates.ts` | 29 | ConditionalExpression | `typeof navigator !== 'undefined'` | `false` |
@@ -63,7 +63,7 @@ No `test-suite-hardening` ticket covers these two files, so nothing here is anno
 | `src/utils/dates.ts` | 29 | StringLiteral | `'undefined'` | `""` |
 | `src/utils/dates.ts` | 30 | ConditionalExpression | `locale && locale.startsWith('es')` | `true` |
 | `src/utils/dates.ts` | 30 | ConditionalExpression | `locale && locale.startsWith('es')` | `false` |
-| `src/utils/dates.ts` | 30 | LogicalOperator | `locale && locale.startsWith('es')` | `locale || locale.startsWith('es')` |
+| `src/utils/dates.ts` | 30 | LogicalOperator | `locale && locale.startsWith('es')` | `locale \|\| locale.startsWith('es')` |
 | `src/utils/dates.ts` | 30 | MethodExpression | `locale.startsWith('es')` | `locale.endsWith('es')` |
 | `src/utils/dates.ts` | 30 | StringLiteral | `'es'` | `""` |
 | `src/utils/dates.ts` | 30 | StringLiteral | `'es-ES'` | `""` |

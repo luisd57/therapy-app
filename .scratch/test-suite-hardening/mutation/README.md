@@ -14,8 +14,11 @@ docker compose exec -T php cat var/infection/infection.json > /tmp/infection.jso
 node .scratch/test-suite-hardening/mutation/api-list.mjs /tmp/infection.json .scratch/test-suite-hardening/mutation/api-survivors.md <date> "<wall time>"
 ```
 
+The commands are for Git Bash. `/tmp` does not resolve in PowerShell.
+
 Run it on a warm `var/cache/test`, after a plain `vendor/bin/phpunit`. On a cold cache five extra
-survivors appear on the `getSubscribedEvents()` lines of the two HTTP subscribers.
+survivors appear on the `getSubscribedEvents()` lines of the two HTTP subscribers, and the script
+then adds a paragraph saying so.
 
 ## Regenerate the landing list
 
@@ -28,6 +31,6 @@ node ../.scratch/test-suite-hardening/mutation/landing-list.mjs reports/mutation
 
 - The `tickets` table at the top of `api-list.mjs`. It maps a source path to the ticket covering
   it, and it was read off the tickets as they stood on 2026-10-08.
-- The Tool, Tree, Command and Config rows in both scripts. They are literals.
-- The paragraph about the five cold-cache survivors in `api-list.mjs`. Drop it if the run does not
-  have them.
+- The literal header rows: Tool, Tree, Command and Config in `api-list.mjs`, and Tool, Command and
+  Mutated in `landing-list.mjs`.
+- The "No ticket covers these two files" sentence in `landing-list.mjs`, if a ticket now does.
