@@ -1,12 +1,14 @@
 # API surviving mutants, sorted
 
-Every survivor in `api-survivors.md` with a call on what it is, made once with the source read.
+The survivors in `api-survivors.md`, outside the files with an open ticket, with a call on what
+each one is. Like that list it is evidence, not a backlog (ADR-0010). The call is there for
+whoever touches the line next. Sorted by hand, so a rerun of the list does not update this file.
 
 | | |
 |---|---|
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
-| Source read at | `339b00e`, with `API/src` unchanged between the two |
+| Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
 | Kind 1, real gap | 63 |
 | Kind 2, harmless | 78 |
 | Kind 3, awkward but real | 9 |
@@ -30,7 +32,7 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 | Line | Mutator | Reason |
 |---|---|---|
 | 72 | LessThan | The lookahead bound is unpinned. The not-found test stubs the computer empty for every call, so one extra week goes unseen. |
-| 78 | LessThanNegotiation | Drops in-week exceptions from the week's context. The unit test stubs the exception repository empty and the controller test seeds none. |
+| 78 | LessThanNegotiation | Drops in-week Schedule Exceptions from the week's context. The unit test stubs the exception repository empty and the controller test seeds none. |
 | 78 | LogicalAndAllSubExprNegation | Same, the filter comes back empty. |
 | 78 | LogicalAndNegation | Same, only out-of-week exceptions get through. |
 | 79 | GreaterThanNegotiation | Same, only exceptions that ended before the week get through. |
@@ -160,7 +162,7 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 87 | TrueValue | The patient list would return only inactive users. No test seeds a patient and reads the list. ListPatientsControllerTest checks shape and paging only. |
+| 87 | TrueValue | The patient list would return only inactive patients. No test seeds a patient and reads the list. ListPatientsControllerTest checks shape and paging only. |
 | 103 | TrueValue | Same for the total. |
 
 ### `src/Application/Appointment/Handler/PatientRequestAppointmentHandler.php`
@@ -195,14 +197,17 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 
 ## Kind 2, harmless (78)
 
-An ignore covers the whole statement. A row marked (shared) sits on a statement that also has kind 1 rows, so an ignore there would hide those.
-The classes that repeat (log `message` key, Doctrine type fast path, console narration) are `infection.json5` material per ADR-0010, not a comment per line.
+An ignore covers the whole statement. A row marked (shared) sits on a statement that also has
+kind 1 rows, so an ignore there would hide those.
+
+The classes that repeat (log `message` key, Doctrine type fast path, console narration) are
+`infection.json5` material per ADR-0010, not a comment per line.
 
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 78 | LessThan | Equivalent. The computer re-checks every slot and no slot crosses the week's midnight edge, so an exception touching the edge blocks nothing. (shared) |
+| 78 | LessThan | Equivalent. The computer re-checks every slot and no slot crosses the week's midnight edge, so a Schedule Exception touching the edge blocks nothing. (shared) |
 | 78 | LogicalAnd | Equivalent. It passes a superset and the computer re-checks. (shared) |
 | 79 | GreaterThan | Equivalent, as 78 LessThan. (shared) |
 | 83 | LessThan | Equivalent, same for appointments. (shared) |
@@ -242,8 +247,8 @@ The classes that repeat (log `message` key, Doctrine type fast path, console nar
 |---|---|---|
 | 77 | BitwiseOr | The name goes into element text. `<`, `>` and `&` are still escaped and a quote needs no escaping there. |
 | 147 | BitwiseOr | Same, requester name. |
-| 229 | BitwiseOr | Same. |
-| 298 | BitwiseOr | Same. |
+| 229 | BitwiseOr | Same as line 77. |
+| 298 | BitwiseOr | Same as line 77. |
 | 437 | Ternary | Inline colour next to the payment label. Presentation only, the label is the kind 1 row. |
 
 ### `src/Domain/Appointment/Entity/Appointment.php`
