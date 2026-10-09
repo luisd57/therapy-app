@@ -45,15 +45,15 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 60 | MethodCallRemoval | The format check on create()'s start time is masked. '9:00' and '25:00' also trip the start-before-end check, and the tests expect only the exception class. |
-| 61 | MethodCallRemoval | No test gives create() a malformed end time. |
-| 87 | MethodCallRemoval | No test gives update() a malformed start time. |
-| 88 | MethodCallRemoval | No test gives update() a malformed end time. |
+| 60 | MethodCallRemoval | The format check on create()'s `$startTime` is masked. '9:00' and '25:00' also trip the start-before-end check, and the tests expect only the exception class. |
+| 61 | MethodCallRemoval | No test gives create() a malformed `$endTime`. |
+| 87 | MethodCallRemoval | No test gives update() a malformed `$startTime`. |
+| 88 | MethodCallRemoval | No test gives update() a malformed `$endTime`. |
 | 90 | GreaterThanOrEqualTo | update() with equal start and end is untested. create() pins its twin. |
 | 208 | PregMatchRemoveCaret | Leading junk ('x09:00') would pass. No test has it. |
 | 208 | PregMatchRemoveDollar | Trailing junk ('09:00x') would pass. No test has it. |
-| 213 | GreaterThan | `(int) $hours >= 23`. No test uses a 23:xx time, so rejecting it goes unseen. |
-| 213 | GreaterThan | `(int) $minutes >= 59`. No test uses an xx:59 time. |
+| 213 | GreaterThan | `(int) $hours >= 23`. No test uses a 23:xx value, so rejecting it goes unseen. |
+| 213 | GreaterThan | `(int) $minutes >= 59`. No test uses an xx:59 value. |
 | 213 | LogicalOr | '25:00' is the only out-of-range case and it is masked like line 60. |
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
@@ -169,7 +169,7 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 47 | Coalesce | The browser's zone must win over the profile zone. No test sets both. |
+| 47 | Coalesce | The Requester Timezone sent with the request must win over the patient's profile timezone. No test sets both. |
 
 ### `src/Domain/Appointment/Exception/InvalidLockTokenException.php`
 
@@ -201,7 +201,8 @@ An ignore covers the whole statement. A row marked (shared) sits on a statement 
 kind 1 rows, so an ignore there would hide those.
 
 The classes that repeat (log `message` key, Doctrine type fast path, console narration) are
-`infection.json5` material per ADR-0010, not a comment per line.
+`infection.json5` material per ADR-0010, not a comment per line. The first two are grouped below,
+with the reason stated once and a File column.
 
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
@@ -262,8 +263,8 @@ The classes that repeat (log `message` key, Doctrine type fast path, console nar
 | Line | Mutator | Reason |
 |---|---|---|
 | 30 | LessThanOrEqualTo | Equivalent. An empty window yields nothing either way, the early return is a shortcut. |
-| 39 | DecrementInteger | `setTime(-1, 0)`. Equivalent. Only the cursor's date is read. This adds one earlier day whose slots all fall before `from`. |
-| 39 | IncrementInteger | `setTime(1, 0)`. Equivalent. Same date, the time of day is never read. |
+| 39 | DecrementInteger | `setTime(-1, 0)`. Equivalent. Only the cursor's day is read. This adds one earlier day whose slots all fall before `from`. |
+| 39 | IncrementInteger | `setTime(1, 0)`. Equivalent. Same day, the hour and minute are never read. |
 | 39 | DecrementInteger | `setTime(0, -1)`. Equivalent, as `setTime(-1, 0)`. |
 | 39 | IncrementInteger | `setTime(0, 1)`. Equivalent, as `setTime(1, 0)`. |
 | 96 | LessThanOrEqualTo | Equivalent. A zero-length block fits no session, so the loop leaves on its first check. |
@@ -297,47 +298,24 @@ The classes that repeat (log `message` key, Doctrine type fast path, console nar
 | 23 | IncrementInteger | Same. |
 | 23 | ArrayItemRemoval | Same. |
 
-### `src/Application/User/Handler/InvitePatientHandler.php`
+### Log context `message` key, 6 handlers
 
-| Line | Mutator | Reason |
+Log context key, the case ADR-0010 names. `exception` still carries the message.
+
+| File | Line | Mutator |
 |---|---|---|
-| 79 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 80 | ArrayItem | Same. |
-
-### `src/Application/User/Handler/RequestPasswordResetHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 73 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 74 | ArrayItem | Same. |
-
-### `src/Application/User/Handler/ResendInvitationHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 80 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 81 | ArrayItem | Same. |
-
-### `src/Application/Appointment/Handler/CancelAppointmentHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 48 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 49 | ArrayItem | Same. |
-
-### `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 48 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 49 | ArrayItem | Same. |
-
-### `src/Application/User/Handler/ActivatePatientHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 77 | ArrayItemRemoval | Log context key, the case ADR-0010 names. `exception` still carries the message. |
-| 78 | ArrayItem | Same. |
+| `src/Application/User/Handler/InvitePatientHandler.php` | 79 | ArrayItemRemoval |
+| `src/Application/User/Handler/InvitePatientHandler.php` | 80 | ArrayItem |
+| `src/Application/User/Handler/RequestPasswordResetHandler.php` | 73 | ArrayItemRemoval |
+| `src/Application/User/Handler/RequestPasswordResetHandler.php` | 74 | ArrayItem |
+| `src/Application/User/Handler/ResendInvitationHandler.php` | 80 | ArrayItemRemoval |
+| `src/Application/User/Handler/ResendInvitationHandler.php` | 81 | ArrayItem |
+| `src/Application/Appointment/Handler/CancelAppointmentHandler.php` | 48 | ArrayItemRemoval |
+| `src/Application/Appointment/Handler/CancelAppointmentHandler.php` | 49 | ArrayItem |
+| `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php` | 48 | ArrayItemRemoval |
+| `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php` | 49 | ArrayItem |
+| `src/Application/User/Handler/ActivatePatientHandler.php` | 77 | ArrayItemRemoval |
+| `src/Application/User/Handler/ActivatePatientHandler.php` | 78 | ArrayItem |
 
 ### `src/Domain/Exception/DomainException.php`
 
@@ -358,65 +336,28 @@ The classes that repeat (log `message` key, Doctrine type fast path, console nar
 |---|---|---|
 | 15 | ArrayItemRemoval | Cold-cache artefact, same as RateLimitSubscriber. |
 
-### `src/Infrastructure/Persistence/Doctrine/Type/AppointmentIdType.php`
+### Doctrine type fast path, 9 types
 
-| Line | Mutator | Reason |
+Equivalent. The value object is Stringable and `__toString()` returns the same value, so the
+fall-through to stringValue() gives the same string.
+
+| File | Line | Mutator |
 |---|---|---|
-| 39 | ReturnRemoval | Equivalent. The value object is Stringable and `__toString()` returns the same value, so the fall-through to stringValue() gives the same string. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/EmailType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/ExceptionIdType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/PhoneType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
+| `src/Infrastructure/Persistence/Doctrine/Type/AppointmentIdType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/EmailType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/ExceptionIdType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/PhoneType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/ScheduleIdType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/SlotLockIdType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/TimezoneType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/TokenIdType.php` | 39 | ReturnRemoval |
+| `src/Infrastructure/Persistence/Doctrine/Type/UserIdType.php` | 39 | ReturnRemoval |
 
 ### `src/Infrastructure/Persistence/Doctrine/Type/ReadsStringValueTrait.php`
 
 | Line | Mutator | Reason |
 |---|---|---|
 | 18 | ArrayItemRemoval | Only changes the expected-types list in a developer-facing exception message. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/ScheduleIdType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/SlotLockIdType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/TimezoneType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/TokenIdType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
-
-### `src/Infrastructure/Persistence/Doctrine/Type/UserIdType.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 39 | ReturnRemoval | Equivalent, as AppointmentIdType line 39. |
 
 ### `src/Infrastructure/Persistence/Doctrine/Type/UtcDateTimeImmutableType.php`
 
