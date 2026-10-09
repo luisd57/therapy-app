@@ -48,40 +48,40 @@ Empty means no ticket covers it.
 
 | Survivors | File | Ticket |
 |---|---|---|
-| 15 | `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php` | 13 |
+| 15 | `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php` | 13, 26, 27 |
 | 15 | `src/Infrastructure/Console/Appointment/SeedScheduleCommand.php` | 06 |
-| 12 | `src/Domain/Appointment/Entity/TherapistSchedule.php` |  |
-| 11 | `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php` |  |
-| 9 | `src/Domain/Appointment/Entity/Appointment.php` |  |
-| 9 | `src/Domain/Appointment/Service/AvailabilityComputer.php` | 01 |
-| 9 | `src/Infrastructure/Security/RedisJwtBlocklist.php` |  |
+| 12 | `src/Domain/Appointment/Entity/TherapistSchedule.php` | 28 |
+| 11 | `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php` | 29 |
+| 9 | `src/Domain/Appointment/Entity/Appointment.php` | 30 |
+| 9 | `src/Domain/Appointment/Service/AvailabilityComputer.php` | 01, 31 |
+| 9 | `src/Infrastructure/Security/RedisJwtBlocklist.php` | 32 |
 | 7 | `src/Application/Appointment/Service/AppointmentRequestService.php` | 17 |
-| 7 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php` | 18 |
+| 7 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php` | 18, 33 |
 | 5 | `src/Infrastructure/Email/User/SymfonyEmailSender.php` |  |
 | 4 | `src/Infrastructure/Http/EventSubscriber/RateLimitSubscriber.php` |  |
 | 4 | `src/Infrastructure/Http/Validation/PasswordStrengthValidator.php` | 04, 21 |
-| 3 | `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php` |  |
-| 3 | `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php` |  |
-| 3 | `src/Application/User/Handler/InvitePatientHandler.php` |  |
-| 3 | `src/Application/User/Handler/RequestPasswordResetHandler.php` |  |
-| 3 | `src/Application/User/Handler/ResendInvitationHandler.php` |  |
+| 3 | `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php` | 34 |
+| 3 | `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php` | 34 |
+| 3 | `src/Application/User/Handler/InvitePatientHandler.php` | 35 |
+| 3 | `src/Application/User/Handler/RequestPasswordResetHandler.php` | 35 |
+| 3 | `src/Application/User/Handler/ResendInvitationHandler.php` | 35 |
 | 2 | `src/Application/Appointment/Handler/CancelAppointmentHandler.php` |  |
 | 2 | `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php` |  |
 | 2 | `src/Application/User/Handler/ActivatePatientHandler.php` |  |
-| 2 | `src/Domain/Appointment/Entity/ScheduleException.php` |  |
+| 2 | `src/Domain/Appointment/Entity/ScheduleException.php` | 36, 37 |
 | 2 | `src/Domain/Appointment/Service/SlotGenerationRules.php` | 01, 17 |
 | 2 | `src/Domain/Exception/DomainException.php` |  |
-| 2 | `src/Domain/User/ValueObject/Address.php` |  |
-| 2 | `src/Infrastructure/Console/User/CreateTherapistCommand.php` | 06 |
+| 2 | `src/Domain/User/ValueObject/Address.php` | 38 |
+| 2 | `src/Infrastructure/Console/User/CreateTherapistCommand.php` | 06, 21 |
 | 2 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineTherapistScheduleRepository.php` |  |
-| 2 | `src/Infrastructure/Persistence/Doctrine/User/Repository/DoctrineUserRepository.php` |  |
+| 2 | `src/Infrastructure/Persistence/Doctrine/User/Repository/DoctrineUserRepository.php` | 39 |
 | 1 | `src/Application/Appointment/Handler/LockSlotHandler.php` | 17 |
-| 1 | `src/Application/Appointment/Handler/PatientRequestAppointmentHandler.php` |  |
-| 1 | `src/Domain/Appointment/Exception/InvalidLockTokenException.php` |  |
-| 1 | `src/Domain/User/Entity/User.php` |  |
-| 1 | `src/Infrastructure/Email/Appointment/RenderedTime.php` |  |
+| 1 | `src/Application/Appointment/Handler/PatientRequestAppointmentHandler.php` | 40 |
+| 1 | `src/Domain/Appointment/Exception/InvalidLockTokenException.php` | 41 |
+| 1 | `src/Domain/User/Entity/User.php` | 42 |
+| 1 | `src/Infrastructure/Email/Appointment/RenderedTime.php` | 43 |
 | 1 | `src/Infrastructure/Http/EventSubscriber/SecurityHeadersSubscriber.php` |  |
-| 1 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php` | 18 |
+| 1 | `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php` | 18, 44 |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Type/AppointmentIdType.php` | 05 |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Type/EmailType.php` | 05 |
 | 1 | `src/Infrastructure/Persistence/Doctrine/Type/ExceptionIdType.php` | 05 |
@@ -102,7 +102,7 @@ Empty means no ticket covers it.
 
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
-Ticket: 13
+Ticket: 13, 26, 27
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -146,7 +146,7 @@ Ticket: 06
 
 ### `src/Domain/Appointment/Entity/TherapistSchedule.php`
 
-Ticket: none
+Ticket: 28
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -165,7 +165,7 @@ Ticket: none
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
 
-Ticket: none
+Ticket: 29
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -183,7 +183,7 @@ Ticket: none
 
 ### `src/Domain/Appointment/Entity/Appointment.php`
 
-Ticket: none
+Ticket: 30
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -199,7 +199,7 @@ Ticket: none
 
 ### `src/Domain/Appointment/Service/AvailabilityComputer.php`
 
-Ticket: 01
+Ticket: 01, 31
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -215,7 +215,7 @@ Ticket: 01
 
 ### `src/Infrastructure/Security/RedisJwtBlocklist.php`
 
-Ticket: none
+Ticket: 32
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -245,7 +245,7 @@ Ticket: 17
 
 ### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php`
 
-Ticket: 18
+Ticket: 18, 33
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -293,7 +293,7 @@ Ticket: 04, 21
 
 ### `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php`
 
-Ticket: none
+Ticket: 34
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -303,7 +303,7 @@ Ticket: none
 
 ### `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php`
 
-Ticket: none
+Ticket: 34
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -313,7 +313,7 @@ Ticket: none
 
 ### `src/Application/User/Handler/InvitePatientHandler.php`
 
-Ticket: none
+Ticket: 35
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -323,7 +323,7 @@ Ticket: none
 
 ### `src/Application/User/Handler/RequestPasswordResetHandler.php`
 
-Ticket: none
+Ticket: 35
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -333,7 +333,7 @@ Ticket: none
 
 ### `src/Application/User/Handler/ResendInvitationHandler.php`
 
-Ticket: none
+Ticket: 35
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -370,7 +370,7 @@ Ticket: none
 
 ### `src/Domain/Appointment/Entity/ScheduleException.php`
 
-Ticket: none
+Ticket: 36, 37
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -397,7 +397,7 @@ Ticket: none
 
 ### `src/Domain/User/ValueObject/Address.php`
 
-Ticket: none
+Ticket: 38
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -406,7 +406,7 @@ Ticket: none
 
 ### `src/Infrastructure/Console/User/CreateTherapistCommand.php`
 
-Ticket: 06
+Ticket: 06, 21
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -424,7 +424,7 @@ Ticket: none
 
 ### `src/Infrastructure/Persistence/Doctrine/User/Repository/DoctrineUserRepository.php`
 
-Ticket: none
+Ticket: 39
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -441,7 +441,7 @@ Ticket: 17
 
 ### `src/Application/Appointment/Handler/PatientRequestAppointmentHandler.php`
 
-Ticket: none
+Ticket: 40
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -449,7 +449,7 @@ Ticket: none
 
 ### `src/Domain/Appointment/Exception/InvalidLockTokenException.php`
 
-Ticket: none
+Ticket: 41
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -457,7 +457,7 @@ Ticket: none
 
 ### `src/Domain/User/Entity/User.php`
 
-Ticket: none
+Ticket: 42
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -465,7 +465,7 @@ Ticket: none
 
 ### `src/Infrastructure/Email/Appointment/RenderedTime.php`
 
-Ticket: none
+Ticket: 43
 
 | Line | Mutator | Change |
 |---|---|---|
@@ -481,7 +481,7 @@ Ticket: none
 
 ### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineSlotLockRepository.php`
 
-Ticket: 18
+Ticket: 18, 44
 
 | Line | Mutator | Change |
 |---|---|---|
