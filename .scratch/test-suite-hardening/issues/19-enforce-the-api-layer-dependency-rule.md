@@ -1,6 +1,6 @@
 # 19 - Enforce the API layer dependency rule
 
-> Frozen record, resolved 2026-10-10.
+> Frozen record, resolved 2026-10-10. Superseded since: `api-architecture.md` no longer opens by saying Domain has no framework dependencies. The same pull request reworded it and listed the sanctioned imports under ORM Pragmatism.
 
 **What to build:** the hexagonal dependency rule fails the build when it is broken, instead
 of being a sentence in a rules file that nothing consults at merge time.
