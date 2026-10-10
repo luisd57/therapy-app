@@ -44,7 +44,7 @@ final class BookAppointmentHandlerTest extends TestCase
             clock: $this->clock,
             slotGenerationRulesFactory: new SlotGenerationRulesFactory(
                 practiceTimezoneProvider: new EnvPracticeTimezoneProvider('America/Caracas'),
-                appointmentDurationMinutes: 50,
+                appointmentDurationMinutes: 45,
                 slotStartIncrementMinutes: 30,
             ),
         );
@@ -71,7 +71,8 @@ final class BookAppointmentHandlerTest extends TestCase
         $this->assertSame('ONLINE', $result->modality);
         $this->assertNull($result->patientId);
         $this->assertSame('2026-04-01T10:00:00+00:00', $result->startTime);
-        $this->assertSame('2026-04-01T10:50:00+00:00', $result->endTime);
+        // 45, not the configured 50, so a handler that ignores the rules fails here.
+        $this->assertSame('2026-04-01T10:45:00+00:00', $result->endTime);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }

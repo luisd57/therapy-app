@@ -8,8 +8,8 @@ use App\Domain\Appointment\Service\PracticeTimezoneProviderInterface;
 use App\Domain\Appointment\Service\SlotGenerationRules;
 
 /**
- * Assembles the configured slot rules so the handlers that compute availability
- * take one dependency instead of three.
+ * Builds the configured slot rules. The only place the session duration is wired,
+ * so anything that needs it takes this instead of the raw int.
  */
 final readonly class SlotGenerationRulesFactory
 {

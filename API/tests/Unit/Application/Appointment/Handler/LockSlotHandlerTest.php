@@ -42,7 +42,7 @@ final class LockSlotHandlerTest extends TestCase
             clock: $this->clock,
             slotGenerationRulesFactory: new SlotGenerationRulesFactory(
                 practiceTimezoneProvider: new EnvPracticeTimezoneProvider('America/Caracas'),
-                appointmentDurationMinutes: 50,
+                appointmentDurationMinutes: 45,
                 slotStartIncrementMinutes: 30,
             ),
             slotLockTtl: 600,
@@ -72,8 +72,8 @@ final class LockSlotHandlerTest extends TestCase
 
         $this->assertSame('generated-lock-token', $result->lockToken);
         $this->assertSame('2025-06-02T09:00:00+00:00', $result->slotStartTime);
-        // 50 minutes of session and 600 seconds of lock. Swapped, both instants move.
-        $this->assertSame('2025-06-02T09:50:00+00:00', $result->slotEndTime);
+        // 45, not the configured 50, so a handler that ignores the rules fails here.
+        $this->assertSame('2025-06-02T09:45:00+00:00', $result->slotEndTime);
         $this->assertSame('2026-06-15T12:10:00+00:00', $result->expiresAt);
     }
 
