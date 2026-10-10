@@ -23,8 +23,8 @@ final readonly class SlotGenerationRulesFactory
     public function create(): SlotGenerationRules
     {
         return SlotGenerationRules::create(
-            durationMinutes: $this->appointmentDurationMinutes,
             practiceTimeZone: $this->practiceTimezoneProvider->getTimeZone(),
+            durationMinutes: $this->appointmentDurationMinutes,
             startIncrementMinutes: $this->slotStartIncrementMinutes,
         );
     }

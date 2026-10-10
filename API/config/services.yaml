@@ -145,12 +145,7 @@ services:
 
     App\Application\Appointment\Handler\LockSlotHandler:
         arguments:
-            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
             $slotLockTtl: '%app.slot_lock_ttl%'
-
-    App\Application\Appointment\Handler\BookAppointmentHandler:
-        arguments:
-            $appointmentDurationMinutes: '%app.appointment_duration_minutes%'
 
 when@test:
     services:

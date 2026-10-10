@@ -6,6 +6,7 @@ namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\LockSlotInputDTO;
 use App\Application\Appointment\DTO\Output\SlotLockOutputDTO;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
@@ -22,7 +23,7 @@ final readonly class LockSlotHandler
         private SlotLockRepositoryInterface $slotLockRepository,
         private TokenGeneratorInterface $tokenGenerator,
         private ClockInterface $clock,
-        private int $appointmentDurationMinutes,
+        private SlotGenerationRulesFactory $slotGenerationRulesFactory,
         private int $slotLockTtl,
     ) {
     }
@@ -32,7 +33,7 @@ final readonly class LockSlotHandler
         $now = $this->clock->now();
         $startTime = new DateTimeImmutable($dto->slotStartTime);
         $modality = AppointmentModality::from($dto->modality);
-        $timeSlot = TimeSlot::create($startTime, $this->appointmentDurationMinutes);
+        $timeSlot = TimeSlot::create($startTime, $this->slotGenerationRulesFactory->create()->durationMinutes);
 
         $existingLock = $this->slotLockRepository->findActiveByTimeSlot(
             $timeSlot->getStartTime(),

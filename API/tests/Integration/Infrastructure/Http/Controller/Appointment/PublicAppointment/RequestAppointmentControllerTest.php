@@ -9,6 +9,7 @@ use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use DateTimeImmutable;
 
 final class RequestAppointmentControllerTest extends ApiTestCase
 {
@@ -47,6 +48,31 @@ final class RequestAppointmentControllerTest extends ApiTestCase
             ['id', 'start_time', 'end_time', 'modality', 'status', 'created_at'],
             array_keys(Json::arrayAt($data, 'data', 'appointment')),
             'data.appointment keys',
+        );
+    }
+
+    public function testRequestedAppointmentCoversTheConfiguredSession(): void
+    {
+        $this->createTherapistWithSchedule();
+        $durationMinutes = self::getContainer()->getParameter('app.appointment_duration_minutes');
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => 'john@test.com',
+            'city' => 'New York',
+            'country' => 'US',
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        // Read, never repeated, so this holds when the session length is retuned.
+        $this->assertSame(
+            new DateTimeImmutable('2026-06-01T13:30:00+00:00')
+                ->modify("+{$durationMinutes} minutes")
+                ->format(DATE_ATOM),
+            Json::at($this->getResponseData(), 'data', 'appointment', 'end_time'),
         );
     }
 

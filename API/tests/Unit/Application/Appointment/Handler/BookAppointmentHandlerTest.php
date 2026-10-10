@@ -6,9 +6,11 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\BookAppointmentInputDTO;
 use App\Application\Appointment\Handler\BookAppointmentHandler;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Repository\UserRepositoryInterface;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
@@ -37,10 +39,14 @@ final class BookAppointmentHandlerTest extends TestCase
         );
 
         $this->handler = new BookAppointmentHandler(
-            $this->appointmentRepository,
-            $userRepository,
-            $this->clock,
-            50,
+            appointmentRepository: $this->appointmentRepository,
+            userRepository: $userRepository,
+            clock: $this->clock,
+            slotGenerationRulesFactory: new SlotGenerationRulesFactory(
+                practiceTimezoneProvider: new EnvPracticeTimezoneProvider('America/Caracas'),
+                appointmentDurationMinutes: 50,
+                slotStartIncrementMinutes: 30,
+            ),
         );
     }
 
@@ -64,6 +70,8 @@ final class BookAppointmentHandlerTest extends TestCase
         $this->assertSame('John Doe', $result->fullName);
         $this->assertSame('ONLINE', $result->modality);
         $this->assertNull($result->patientId);
+        $this->assertSame('2026-04-01T10:00:00+00:00', $result->startTime);
+        $this->assertSame('2026-04-01T10:50:00+00:00', $result->endTime);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->createdAt);
         $this->assertSame('2026-06-15T12:00:00+00:00', $result->updatedAt);
     }
