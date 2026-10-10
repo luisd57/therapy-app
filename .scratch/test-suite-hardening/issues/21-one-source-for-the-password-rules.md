@@ -30,6 +30,14 @@ length bound split into two checks. Sharing rules between the API and an Angular
 front end needs a published contract, which is a design decision rather than this
 refactor. Ticket 09 covers that copy where it lives.
 
+**Mutants waiting on this ticket,** added 2026-10-10 because the ticket predates
+mutation testing. Four ReturnRemoval rows in
+`src/Infrastructure/Http/Validation/PasswordStrengthValidator.php` sit unsorted
+under Skipped in `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md`.
+The kind 1 MethodCallRemoval row for
+`src/Infrastructure/Console/User/CreateTherapistCommand.php` in the same file
+defers to this ticket: a weak password fails with no message checked.
+
 **Blocked by:** None - can start immediately.
 
 **Status:** ready-for-agent
@@ -39,4 +47,5 @@ refactor. Ticket 09 covers that copy where it lives.
 - [ ] An empty password is still refused at the command line, which the constraint does not do on its own
 - [ ] The rule coverage from ticket 04 survives the move rather than being deleted with the class it tested
 - [ ] Deleting any single rule fails a test on both the command line path and the HTTP path
+- [ ] A one-file Infection run on the validator and on the command no longer reports those five rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead. The Skipped section no longer names this ticket
 - [ ] Full API suite green
