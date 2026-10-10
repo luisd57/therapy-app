@@ -10,13 +10,18 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
 | Kind 1, real gap | 63 |
-| Kind 2, harmless | 78 |
+| Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 150 |
-| Skipped | 14 |
-| Total | 164 |
+| Sorted | 153 |
+| Skipped | 4 |
+| Total | 157 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
+
+Ticket 17 closed on 2026-10-10 and its ten skipped rows were sorted then. Seven were real gaps
+and are killed, so they left the total: the lock mismatch check and the four day-start rows in
+`AppointmentRequestService.php`, and the two zero guards in `SlotGenerationRules.php`. The other
+three are in Kind 2.
 
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
@@ -195,7 +200,7 @@ The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and
 |---|---|---|
 | 70 | IncrementInteger | With 50-minute sessions on a 30-minute increment, two active locks can overlap one candidate. The limit keeps that from being a NonUniqueResultException. No test has two matching locks. |
 
-## Kind 2, harmless (78)
+## Kind 2, harmless (81)
 
 An ignore covers the whole statement. A row marked (shared) sits on a statement that also has
 kind 1 rows, so an ignore there would hide those.
@@ -298,7 +303,7 @@ with the reason stated once and a File column.
 | 23 | IncrementInteger | Same. |
 | 23 | ArrayItemRemoval | Same. |
 
-### Log context `message` key (12)
+### Log context `message` key (14)
 
 The case ADR-0010 names. `exception` still carries the message.
 
@@ -316,6 +321,8 @@ The case ADR-0010 names. `exception` still carries the message.
 | `src/Application/Appointment/Handler/ConfirmAppointmentHandler.php` | 49 | ArrayItem |
 | `src/Application/User/Handler/ActivatePatientHandler.php` | 77 | ArrayItemRemoval |
 | `src/Application/User/Handler/ActivatePatientHandler.php` | 78 | ArrayItem |
+| `src/Application/Appointment/Service/AppointmentRequestService.php` | 131 | ArrayItemRemoval |
+| `src/Application/Appointment/Service/AppointmentRequestService.php` | 132 | ArrayItem |
 
 ### `src/Domain/Exception/DomainException.php`
 
@@ -377,6 +384,12 @@ fall-through to stringValue() gives the same string.
 |---|---|---|
 | 14 | IncrementInteger | Equivalent. intdiv(65, 2) and intdiv(64, 2) are both 32 bytes. |
 
+### `src/Application/Appointment/Handler/LockSlotHandler.php`
+
+| Line | Mutator | Reason |
+|---|---|---|
+| 51 | IncrementInteger | Equivalent, same intdiv. generate(33) and generate(32) are both 16 bytes. Line 50 in `api-survivors.md`. |
+
 ## Kind 3, awkward but real (9)
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
@@ -413,13 +426,10 @@ fall-through to stringValue() gives the same string.
 |---|---|---|
 | 57 | IncrementInteger | findValidByUserId() has no caller in src, and it needs two valid tokens for one user. Decide on the method before testing it. |
 
-## Skipped (14)
+## Skipped (4)
 
 Each file has an open ticket, so its rows wait for that.
 
 | Rows | File | Ticket |
 |---|---|---|
-| 7 | `src/Application/Appointment/Service/AppointmentRequestService.php` | 17 |
 | 4 | `src/Infrastructure/Http/Validation/PasswordStrengthValidator.php` | 21 |
-| 2 | `src/Domain/Appointment/Service/SlotGenerationRules.php` | 17 |
-| 1 | `src/Application/Appointment/Handler/LockSlotHandler.php` | 17 |

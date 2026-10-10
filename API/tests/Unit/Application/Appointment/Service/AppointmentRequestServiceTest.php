@@ -48,6 +48,8 @@ final class AppointmentRequestServiceTest extends TestCase
     private LoggerInterface&MockObject $logger;
     private AppointmentRequestService $service;
     private ?\DateTimeImmutable $availabilityNow = null;
+    private ?\DateTimeImmutable $availabilityFrom = null;
+    private ?\DateTimeImmutable $availabilityTo = null;
 
     protected function setUp(): void
     {
@@ -128,11 +130,13 @@ final class AppointmentRequestServiceTest extends TestCase
                 function (
                     mixed $context,
                     mixed $rules,
-                    mixed $from,
-                    mixed $to,
+                    \DateTimeImmutable $from,
+                    \DateTimeImmutable $to,
                     \DateTimeImmutable $now,
                 ) use ($matchingSlot): ArrayCollection {
                     $this->availabilityNow = $now;
+                    $this->availabilityFrom = $from;
+                    $this->availabilityTo = $to;
 
                     return new ArrayCollection([$matchingSlot]);
                 },
@@ -258,6 +262,87 @@ final class AppointmentRequestServiceTest extends TestCase
 
         $this->assertSame('REQUESTED', $result->status);
         $this->assertSame('Jane Doe', $result->fullName);
+    }
+
+    public function testAvailabilityIsCheckedOverThePracticeDayOfTheSlot(): void
+    {
+        $this->stubAvailabilityCheck();
+
+        // 09:00 UTC is 05:00 in Caracas on 2 June, so the day runs 04:00 UTC to 04:00 UTC.
+        $this->service->requestAppointment(
+            slotStartTime: '2025-06-02T09:00:00+00:00',
+            modality: 'ONLINE',
+            fullName: 'Jane Doe',
+            phone: '+1234567890',
+            email: 'jane@example.com',
+            city: 'Berlin',
+            country: 'Germany',
+        );
+
+        $this->assertInstanceOf(\DateTimeImmutable::class, $this->availabilityFrom);
+        self::assertInstantIs('2025-06-02T04:00:00+00:00', $this->availabilityFrom);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $this->availabilityTo);
+        self::assertInstantIs('2025-06-03T04:00:00+00:00', $this->availabilityTo);
+    }
+
+    public function testALockForAnotherModalityIsRejected(): void
+    {
+        $this->slotLockRepository
+            ->method('findByLockToken')
+            ->willReturn($this->activeOnlineLockAt('2025-06-02 09:00:00'));
+
+        $this->appointmentRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(InvalidLockTokenException::class);
+
+        $this->service->requestAppointment(
+            slotStartTime: '2025-06-02T09:00:00+00:00',
+            modality: 'IN_PERSON',
+            fullName: 'Jane Doe',
+            phone: '+1234567890',
+            email: 'jane@example.com',
+            city: 'Berlin',
+            country: 'Germany',
+            lockToken: 'valid-lock-token',
+        );
+    }
+
+    public function testALockForAnotherStartIsRejected(): void
+    {
+        $this->slotLockRepository
+            ->method('findByLockToken')
+            ->willReturn($this->activeOnlineLockAt('2025-06-02 10:00:00'));
+
+        $this->appointmentRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(InvalidLockTokenException::class);
+
+        $this->service->requestAppointment(
+            slotStartTime: '2025-06-02T09:00:00+00:00',
+            modality: 'ONLINE',
+            fullName: 'Jane Doe',
+            phone: '+1234567890',
+            email: 'jane@example.com',
+            city: 'Berlin',
+            country: 'Germany',
+            lockToken: 'valid-lock-token',
+        );
+    }
+
+    private function activeOnlineLockAt(string $startTime): SlotLock
+    {
+        return SlotLock::reconstitute(
+            id: SlotLockId::generate(),
+            timeSlot: TimeSlot::create(self::utc($startTime), 50),
+            modality: AppointmentModality::ONLINE,
+            lockToken: 'valid-lock-token',
+            createdAt: self::utc('2026-06-15 12:00:00'),
+            expiresAt: self::utc('2026-06-15 12:10:00'),
+        );
     }
 
     public function testRequestAppointmentInvalidLockTokenThrowsException(): void
