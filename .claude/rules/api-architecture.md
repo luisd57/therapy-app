@@ -6,12 +6,13 @@ paths:
 
 ## Layer Structure & Dependency Rule
 
-Infrastructure → Application → Domain (never the reverse)
+Infrastructure → Application → Domain (never the reverse). Deptrac fails the build on a breach: `API/deptrac.yaml`.
 
-src/Domain/ (core business logic, no framework deps), src/Application/ (use cases, orchestration), src/Infrastructure/ (external concerns, adapters).
+src/Domain/ (core business logic, imports nothing from the other two layers), src/Application/ (use cases, orchestration), src/Infrastructure/ (external concerns, adapters).
 
 ## ORM Pragmatism (deliberate, do not "fix")
 
+- Domain is not framework-free, and that is on purpose. Doctrine ORM and DBAL attributes, Doctrine Collections, Symfony Uid and Symfony Security are allowed anywhere in `src/Domain/`: entities, value objects, Id classes, repository interfaces and services. Deptrac has no vendor layer for this reason.
 - ORM attributes (`#[ORM\...]`) live directly on Domain entities. No separate mapping layer: the abstraction only pays off if you swap ORMs, and at this scale that isn't happening.
 - Entities declare their relations: `ManyToOne` on the owning side, `OneToMany` inverse on `User`. See ADR-0007 for what this replaced and what it cost.
 - Repositories flush; handlers NEVER call flush or manage transactions. No transaction middleware - an accepted trade-off.

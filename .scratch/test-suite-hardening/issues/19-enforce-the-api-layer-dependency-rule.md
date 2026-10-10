@@ -1,5 +1,7 @@
 # 19 - Enforce the API layer dependency rule
 
+> Frozen record, resolved 2026-10-10. Superseded since: `api-architecture.md` no longer opens by saying Domain has no framework dependencies. The same pull request reworded it and listed the sanctioned imports under ORM Pragmatism.
+
 **What to build:** the hexagonal dependency rule fails the build when it is broken, instead
 of being a sentence in a rules file that nothing consults at merge time.
 
@@ -47,12 +49,14 @@ Ticket 11 does not gate this: deptrac runs as its own binary rather than inside 
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Deptrac is installed for the API and its depfile declares the three layers, with Infrastructure to Application to Domain as the only permitted direction
-- [ ] The depfile records that intra-Domain cycles are deliberately unchecked, citing ADR-0007, so the omission reads as a decision rather than an oversight
-- [ ] The depfile defines no vendor layer and the check does not report uncovered dependencies, and a comment in the depfile points at ORM Pragmatism in `api-architecture.md`, so the Doctrine and Symfony imports in Domain read as a decision rather than an oversight
-- [ ] The first run over the current tree is green, and the pull request reports that as a measurement rather than as evidence the gate works
-- [ ] A deliberate violation, an import of `App\Infrastructure` from a file under `src/Domain/`, fails the pipeline
-- [ ] The check runs in continuous integration and a violation fails the build
-- [ ] Full pipeline green
+**Resolved by:** [PR #114](https://github.com/luisd57/therapy-app/pull/114)
+
+- [x] Deptrac is installed for the API and its depfile declares the three layers, with Infrastructure to Application to Domain as the only permitted direction
+- [x] The depfile records that intra-Domain cycles are deliberately unchecked, citing ADR-0007, so the omission reads as a decision rather than an oversight
+- [x] The depfile defines no vendor layer and the check does not report uncovered dependencies, and a comment in the depfile points at ORM Pragmatism in `api-architecture.md`, so the Doctrine and Symfony imports in Domain read as a decision rather than an oversight
+- [x] The first run over the current tree is green, and the pull request reports that as a measurement rather than as evidence the gate works
+- [x] A deliberate violation, an import of `App\Infrastructure` from a file under `src/Domain/`, fails the pipeline
+- [x] The check runs in continuous integration and a violation fails the build
+- [x] Full pipeline green

@@ -39,3 +39,4 @@ Product-brainstorm-with-client.md
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+/.deptrac.cache
