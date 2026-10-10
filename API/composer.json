@@ -31,6 +31,7 @@
         "symfony/yaml": "8.0.*"
     },
     "require-dev": {
+        "deptrac/deptrac": "^4.7",
         "infection/infection": "^0.35.6",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.2",

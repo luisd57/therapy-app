@@ -1,0 +1,36 @@
+deptrac:
+  paths:
+    - ./src
+
+  # `use` is off by default, and without it a bare import of an outer layer passes.
+  analyser:
+    types:
+      - class
+      - function
+      - use
+
+  layers:
+    - name: Domain
+      collectors:
+        - type: classLike
+          value: ^App\\Domain\\.*
+    - name: Application
+      collectors:
+        - type: classLike
+          value: ^App\\Application\\.*
+    - name: Infrastructure
+      collectors:
+        - type: classLike
+          value: ^App\\Infrastructure\\.*
+
+  # No vendor layer on purpose: the Doctrine and Symfony imports in Domain are a decision,
+  # see "ORM Pragmatism" in .claude/rules/api-architecture.md. Do not report uncovered either.
+  #
+  # No cycle rule on purpose: Domain\User and Domain\Appointment import each other (ADR-0007).
+  ruleset:
+    Domain: ~
+    Application:
+      - Domain
+    Infrastructure:
+      - Application
+      - Domain

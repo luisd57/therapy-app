@@ -6,7 +6,7 @@ paths:
 
 ## Layer Structure & Dependency Rule
 
-Infrastructure → Application → Domain (never the reverse)
+Infrastructure → Application → Domain (never the reverse). Deptrac fails the build on a breach: `API/deptrac.yaml`.
 
 src/Domain/ (core business logic, no framework deps), src/Application/ (use cases, orchestration), src/Infrastructure/ (external concerns, adapters).
 
