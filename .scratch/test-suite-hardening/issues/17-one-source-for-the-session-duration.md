@@ -1,5 +1,6 @@
 # 17 - One source for the session duration
-n> Frozen record, resolved 2026-10-10.
+
+> Frozen record, resolved 2026-10-10.
 
 **What to build:** every part of the system that needs the session duration asks
 the same place for it, so the configured value has one consumer instead of three.
