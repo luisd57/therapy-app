@@ -25,7 +25,7 @@ deptrac:
 
   # No vendor layer on purpose: the Doctrine and Symfony imports in Domain are a decision,
   # see "ORM Pragmatism" in .claude/rules/api-architecture.md. Do not report uncovered either.
-  #
+
   # No cycle rule on purpose: Domain\User and Domain\Appointment import each other (ADR-0007).
   ruleset:
     Domain: ~
