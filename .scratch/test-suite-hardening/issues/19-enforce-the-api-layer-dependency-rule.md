@@ -28,11 +28,15 @@ problem ticket 11 warns about in miniature. Leave it out, and record in the depf
 was left out on purpose.
 
 **The framework imports inside Domain are sanctioned too.** Thirty-seven across twenty-five
-files, measured 2026-09-03: Doctrine ORM and DBAL attributes, Doctrine Collections, Symfony
-Uid, and Symfony Security on the `User` entity. `api-architecture.md` opens by saying the Domain layer has no
-framework dependencies and then blesses most of this under ORM Pragmatism. Do not write a
-rule that contradicts the ADR to satisfy the opening sentence. If that tension is worth
-resolving, it is resolved in the rules file, not here.
+files, measured 2026-09-03 and again 2026-10-10: Doctrine ORM and DBAL attributes, Doctrine
+Collections, Symfony Uid, and Symfony Security. All four are sanctioned for the Domain layer
+as a whole: entities, value objects, Id classes, repository interfaces and services. Not only
+the ORM mapping, and not only the classes that import them today (Symfony Security currently
+appears on `User` alone, which is where it happens to be needed, not a limit). `api-architecture.md` opens by saying the Domain layer has no
+framework dependencies and then keeps the mapping on the entities under ORM Pragmatism. Do
+not write a rule that contradicts that section to satisfy the opening sentence: no vendor
+layer, and no reporting of uncovered dependencies. If that tension is worth resolving, it is
+resolved in the rules file, not here.
 
 **What this cannot catch.** Direction between three layers and nothing else. It does not see
 a handler doing infrastructure work inline, a Domain service reaching through a port it
@@ -47,6 +51,7 @@ Ticket 11 does not gate this: deptrac runs as its own binary rather than inside 
 
 - [ ] Deptrac is installed for the API and its depfile declares the three layers, with Infrastructure to Application to Domain as the only permitted direction
 - [ ] The depfile records that intra-Domain cycles are deliberately unchecked, citing ADR-0007, so the omission reads as a decision rather than an oversight
+- [ ] The depfile defines no vendor layer and does not report uncovered dependencies, and a comment points at ORM Pragmatism in `api-architecture.md`, so the Doctrine and Symfony imports in Domain read as a decision rather than an oversight
 - [ ] The first run over the current tree is green, and the pull request reports that as a measurement rather than as evidence the gate works
 - [ ] A deliberate violation, an import of `App\Infrastructure` from a file under `src/Domain/`, fails the pipeline
 - [ ] The check runs in continuous integration and a violation fails the build
