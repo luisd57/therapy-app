@@ -19,6 +19,18 @@ If the work came from a ticket in `.scratch/`, close it in the same pass:
   snapshot (see `docs/agents/issue-tracker.md`).
 - Keep the file. It carries the reasoning; the next reader needs the why more than the tidiness.
 
+If the ticket is in `.scratch/test-suite-hardening/`, check whether surviving mutants were
+waiting on it. A ticket written before mutation testing will not mention them:
+
+- Find its rows under `## Skipped` in `mutation/api-survivors-sorted.md`. No rows, nothing to do.
+- Run Infection on those files (CLAUDE.md has the command). Kill each real gap with a test in
+  the same PR. Move a harmless one to Kind 2 with its reason, and one that is real but needs
+  input the system does not produce to Kind 3.
+- Remove the rows from Skipped, fix the counts in the table and headings, and add a line saying
+  what was killed.
+- Drop the ticket from the `tickets` table in `mutation/api-list.mjs`, or the next rerun of the
+  list skips those files again. Leave `api-survivors.md` alone, it is generated.
+
 If the work revealed a reusable pattern or a non-obvious gotcha, say so and ask whether to
 record it before writing anything.
 
