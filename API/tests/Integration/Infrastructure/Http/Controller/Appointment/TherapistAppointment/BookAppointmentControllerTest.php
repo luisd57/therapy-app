@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use DateTimeImmutable;
 
 final class BookAppointmentControllerTest extends ApiTestCase
 {
@@ -37,6 +38,30 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertSame('CONFIRMED', Json::at($data, 'data', 'appointment', 'status'));
         $this->assertSame('Walk-in Patient', Json::at($data, 'data', 'appointment', 'full_name'));
         $this->assertSame('Appointment booked successfully.', Json::at($data, 'data', 'message'));
+    }
+
+    public function testBookedAppointmentCoversTheConfiguredSession(): void
+    {
+        $durationMinutes = self::getContainer()->getParameter('app.appointment_duration_minutes');
+
+        $this->jsonRequest('POST', '/api/therapist/appointments', [
+            'slot_start_time' => '2026-06-01T10:00:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'Walk-in Patient',
+            'phone' => '+1234567890',
+            'email' => 'walkin@example.com',
+            'city' => 'Miami',
+            'country' => 'USA',
+        ], $this->therapistToken);
+
+        $this->assertResponseStatusCodeSame(201);
+        // Read, never repeated, so this holds when the session length is retuned.
+        $this->assertSame(
+            new DateTimeImmutable('2026-06-01T14:00:00+00:00')
+                ->modify("+{$durationMinutes} minutes")
+                ->format(DATE_ATOM),
+            Json::at($this->getResponseData(), 'data', 'appointment', 'end_time'),
+        );
     }
 
     public function testBookingForAnUnknownPatientReturns404(): void

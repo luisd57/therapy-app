@@ -19,6 +19,16 @@ If the work came from a ticket in `.scratch/`, close it in the same pass:
   snapshot (see `docs/agents/issue-tracker.md`).
 - Keep the file. It carries the reasoning; the next reader needs the why more than the tidiness.
 
+If the ticket is in `.scratch/test-suite-hardening/`, the survivor docs in `mutation/` point at
+it and go stale when it closes:
+
+- Drop the ticket from the `tickets` table in `api-list.mjs`, or the next rerun of the list
+  still marks those files as waiting on it.
+- If `api-survivors-sorted.md` lists rows under `## Skipped` for this ticket, they are no longer
+  waiting on anything. Record what the work did with them (killed, Kind 2, Kind 3) and fix the
+  counts. If the work did not sort them, say so and leave the rows. Sorting them is its own task.
+- Leave `api-survivors.md` alone, it is generated.
+
 If the work revealed a reusable pattern or a non-obvious gotcha, say so and ask whether to
 record it before writing anything.
 

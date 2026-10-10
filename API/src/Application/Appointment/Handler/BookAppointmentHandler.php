@@ -6,6 +6,7 @@ namespace App\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\BookAppointmentInputDTO;
 use App\Application\Appointment\DTO\Output\AppointmentOutputDTO;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use App\Domain\Appointment\Entity\Appointment;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Id\AppointmentId;
@@ -24,14 +25,14 @@ final readonly class BookAppointmentHandler
         private AppointmentRepositoryInterface $appointmentRepository,
         private UserRepositoryInterface $userRepository,
         private ClockInterface $clock,
-        private int $appointmentDurationMinutes,
+        private SlotGenerationRulesFactory $slotGenerationRulesFactory,
     ) {
     }
 
     public function __invoke(BookAppointmentInputDTO $dto): AppointmentOutputDTO
     {
         $startTime = new DateTimeImmutable($dto->slotStartTime);
-        $timeSlot = TimeSlot::create($startTime, $this->appointmentDurationMinutes);
+        $timeSlot = TimeSlot::create($startTime, $this->slotGenerationRulesFactory->create()->durationMinutes);
         $modality = AppointmentModality::from($dto->modality);
         $email = Email::fromString($dto->email);
         $phone = Phone::fromString($dto->phone);

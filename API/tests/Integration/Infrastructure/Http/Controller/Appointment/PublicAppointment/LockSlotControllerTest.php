@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Publi
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use DateTimeImmutable;
 
 final class LockSlotControllerTest extends ApiTestCase
 {
@@ -59,6 +60,36 @@ final class LockSlotControllerTest extends ApiTestCase
         // rather than a value that moves when either is retuned.
         $this->assertStringEndsWith('+00:00', Json::stringAt($data, 'slot_end_time'));
         $this->assertStringEndsWith('+00:00', Json::stringAt($data, 'expires_at'));
+    }
+
+    public function testLockCoversTheConfiguredSessionAndLivesForTheConfiguredLifetime(): void
+    {
+        $this->createTherapistWithSchedule();
+        $durationMinutes = self::getContainer()->getParameter('app.appointment_duration_minutes');
+        $slotLockTtl = self::getContainer()->getParameter('app.slot_lock_ttl');
+
+        $this->jsonRequest('POST', '/api/appointments/lock-slot', [
+            'slot_start_time' => '2026-06-01T09:00:00-04:00',
+            'modality' => 'ONLINE',
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = $this->getResponseData()['data'];
+
+        // Read, never repeated. Minutes on the window and seconds on the lifetime,
+        // so the two values exchanged in services.yaml move both instants.
+        $this->assertSame(
+            new DateTimeImmutable('2026-06-01T13:00:00+00:00')
+                ->modify("+{$durationMinutes} minutes")
+                ->format(DATE_ATOM),
+            Json::at($data, 'slot_end_time'),
+        );
+        $this->assertSame(
+            new DateTimeImmutable('2026-05-30T09:00:00+00:00')
+                ->modify("+{$slotLockTtl} seconds")
+                ->format(DATE_ATOM),
+            Json::at($data, 'expires_at'),
+        );
     }
 
     public function testLockSlotReturns422WithMissingFields(): void

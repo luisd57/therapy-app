@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Application\Appointment\Handler;
 
 use App\Application\Appointment\DTO\Input\LockSlotInputDTO;
 use App\Application\Appointment\Handler\LockSlotHandler;
+use App\Application\Appointment\Service\SlotGenerationRulesFactory;
 use App\Domain\Appointment\Entity\SlotLock;
 use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Domain\Appointment\Repository\SlotLockRepositoryInterface;
@@ -13,6 +14,7 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use App\Domain\Appointment\Id\SlotLockId;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Service\TokenGeneratorInterface;
+use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Tests\Helper\UsesUtcInstants;
 use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -35,11 +37,15 @@ final class LockSlotHandlerTest extends TestCase
         $this->clock->method('now')->willReturn(self::utc('2026-06-15 12:00:00'));
 
         $this->handler = new LockSlotHandler(
-            $this->slotLockRepository,
-            $this->tokenGenerator,
-            $this->clock,
-            50,
-            600,
+            slotLockRepository: $this->slotLockRepository,
+            tokenGenerator: $this->tokenGenerator,
+            clock: $this->clock,
+            slotGenerationRulesFactory: new SlotGenerationRulesFactory(
+                practiceTimezoneProvider: new EnvPracticeTimezoneProvider('America/Caracas'),
+                appointmentDurationMinutes: 45,
+                slotStartIncrementMinutes: 30,
+            ),
+            slotLockTtl: 600,
         );
     }
 
@@ -65,8 +71,9 @@ final class LockSlotHandlerTest extends TestCase
         $result = $this->handler->__invoke($input);
 
         $this->assertSame('generated-lock-token', $result->lockToken);
-        $this->assertNotEmpty($result->slotStartTime);
-        $this->assertNotEmpty($result->slotEndTime);
+        $this->assertSame('2025-06-02T09:00:00+00:00', $result->slotStartTime);
+        // 45, not the configured 50, so a handler that ignores the rules fails here.
+        $this->assertSame('2025-06-02T09:45:00+00:00', $result->slotEndTime);
         $this->assertSame('2026-06-15T12:10:00+00:00', $result->expiresAt);
     }
 

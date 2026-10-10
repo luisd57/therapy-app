@@ -20,8 +20,8 @@ final readonly class SlotGenerationRules
     }
 
     public static function create(
-        int $durationMinutes,
         DateTimeZone $practiceTimeZone,
+        int $durationMinutes,
         ?int $startIncrementMinutes = null,
     ): self {
         if ($durationMinutes <= 0) {

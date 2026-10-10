@@ -8,7 +8,7 @@ const s = j.stats;
 
 const tickets = [
   [/Domain\/Appointment\/Service\/AvailabilityComputer/, ['01']],
-  [/Domain\/Appointment\/Service\/SlotGenerationRules/, ['01', '17']],
+  [/Domain\/Appointment\/Service\/SlotGenerationRules/, ['01']],
   [/Domain\/User\/Entity\/(InvitationToken|PasswordResetToken)/, ['02']],
   [/Domain\/Appointment\/Entity\/SlotLock/, ['02']],
   [/Infrastructure\/Security\/(SecureTokenGenerator|JwtCookieManager)/, ['04']],
@@ -17,7 +17,6 @@ const tickets = [
   [/Infrastructure\/Console\//, ['06']],
   [/Console\/User\/CreateTherapistCommand/, ['21']],
   [/Handler\/GetNextAvailableWeekHandler/, ['13']],
-  [/Handler\/LockSlotHandler|Service\/AppointmentRequestService/, ['17']],
   [/Repository\/Doctrine(Appointment|SlotLock)Repository/, ['18']],
   [/Handler\/GetNextAvailableWeekHandler/, ['26']],
   [/Handler\/GetNextAvailableWeekHandler/, ['27']],

@@ -1,5 +1,7 @@
 # 17 - One source for the session duration
 
+> Frozen record, resolved 2026-10-10.
+
 **What to build:** every part of the system that needs the session duration asks
 the same place for it, so the configured value has one consumer instead of three.
 
@@ -33,12 +35,14 @@ old duration. Two of those places disappear here.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The Slot Lock and the Appointment both take their length from the rules rather than from a duration passed to them separately
-- [ ] The configured session duration is wired into exactly one service
-- [ ] No service takes a raw session duration alongside another integer of the same type
-- [ ] A test fails if the lock lifetime and the session duration are exchanged at the point where the Slot Lock service is built
-- [ ] A Slot Lock and an Appointment created through the API both cover a window of the configured duration, asserted against the configured value rather than a repeated literal
-- [ ] The named constructor for the rules keeps the session duration and the Start Increment adjacent
-- [ ] Full API suite green
+**Resolved by:** [PR #112](https://github.com/luisd57/therapy-app/pull/112)
+
+- [x] The Slot Lock and the Appointment both take their length from the rules rather than from a duration passed to them separately. Re-measured 2026-10-10: the Requester path already did. The second raw consumer was the handler behind `book()`, and that is the one moved here
+- [x] The configured session duration is wired into exactly one service
+- [x] No service takes a raw session duration alongside another integer of the same type
+- [x] A test fails if the lock lifetime and the session duration are exchanged at the point where the Slot Lock service is built. Verified by breaking it 2026-10-10: wiring the lock lifetime to the duration parameter in `services.yaml` fails `LockSlotControllerTest`, the lock expires after 50 seconds
+- [x] A Slot Lock and an Appointment created through the API both cover a window of the configured duration, asserted against the configured value rather than a repeated literal
+- [x] The named constructor for the rules keeps the session duration and the Start Increment adjacent
+- [x] Full API suite green
