@@ -32,7 +32,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadComponent: () => import('./layout/shell.component').then((c) => c.ShellComponent),
+    loadComponent: () => import('./layout/feature/shell.component').then((c) => c.ShellComponent),
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'appointments', pathMatch: 'full' },
