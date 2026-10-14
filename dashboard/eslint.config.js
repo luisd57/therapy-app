@@ -136,7 +136,7 @@ module.exports = tseslint.config(
           pattern: `src/app/*/${layer}`,
           capture: ["domain"],
         })),
-        // Files outside a layer folder, like all of layout/. Only feature/ may import them.
+        // Catches a file outside a layer folder, which would otherwise be unrestricted.
         { type: "domain-root", pattern: "src/app/*", capture: ["domain"] },
       ],
     },

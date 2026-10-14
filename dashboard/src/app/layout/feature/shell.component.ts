@@ -9,8 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { CurrentUserService } from '../shared/data-access/current-user.service';
-import { NavItem, PATIENT_NAV_ITEMS, THERAPIST_NAV_ITEMS } from './nav-items';
+import { CurrentUserService } from '../../shared/data-access/current-user.service';
+import { NavItem, PATIENT_NAV_ITEMS, THERAPIST_NAV_ITEMS } from '../utils/nav-items';
 
 @Component({
   selector: 'app-shell',
