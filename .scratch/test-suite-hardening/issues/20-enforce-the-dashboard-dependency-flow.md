@@ -1,5 +1,7 @@
 # 20 - Enforce the dashboard dependency flow
 
+> Frozen record, resolved 2026-10-14.
+
 **What to build:** the dashboard's folder dependency rules become lint errors, so an import
 that crosses a boundary is caught by `npm run lint` instead of by whoever happens to notice
 it in review.
@@ -54,13 +56,15 @@ rules file, which are file layout rather than imports.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] All five rules from `dashboard-angular.md` are expressed in `eslint.config.js`: feature to data-access to utils, ui to utils, no cross-domain imports, ui not importing feature or data-access, and data-access not importing feature or ui
-- [ ] `shared/` and `environments/` are reachable from every domain, with the reason for each carve-out in the config
-- [ ] Each rule's message names the convention and where it is written down, not just the offending path
-- [ ] The rules are scoped to `src/`, leaving `e2e/` alone
-- [ ] The `layout/shell.component.ts` import of `auth/data-access/` is resolved by moving the dependency or dropping the injection, not by an allowlist entry, and the pull request says which and why
-- [ ] With that cleared, a full run over `src/` is green, reported as a measurement rather than as evidence the rules are connected
-- [ ] Introducing each violation deliberately fails `npm run lint`, one at a time, proving no rule is inert
-- [ ] Dashboard lint and build green
+**Resolved by:** [PR #115](https://github.com/luisd57/therapy-app/pull/115)
+
+- [x] All five rules from `dashboard-angular.md` are expressed in `eslint.config.js`: feature to data-access to utils, ui to utils, no cross-domain imports, ui not importing feature or data-access, and data-access not importing feature or ui
+- [x] `shared/` and `environments/` are reachable from every domain, with the reason for each carve-out in the config
+- [x] Each rule's message names the convention and where it is written down, not just the offending path
+- [x] The rules are scoped to `src/`, leaving `e2e/` alone
+- [x] The `layout/shell.component.ts` import of `auth/data-access/` is resolved by moving the dependency or dropping the injection, not by an allowlist entry, and the pull request says which and why
+- [x] With that cleared, a full run over `src/` is green, reported as a measurement rather than as evidence the rules are connected
+- [x] Introducing each violation deliberately fails `npm run lint`, one at a time, proving no rule is inert
+- [x] Dashboard lint and build green
