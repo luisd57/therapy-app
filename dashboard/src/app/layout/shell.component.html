@@ -28,7 +28,7 @@
       }
       <span>Therapy Dashboard</span>
       <span class="spacer"></span>
-      <span class="user-name">{{ authService.user()?.full_name }}</span>
+      <span class="user-name">{{ currentUser.user()?.full_name }}</span>
       <button mat-icon-button (click)="onLogout()" matTooltip="Logout">
         <mat-icon>logout</mat-icon>
       </button>

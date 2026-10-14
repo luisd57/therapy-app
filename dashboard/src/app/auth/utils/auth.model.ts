@@ -1,17 +1,12 @@
+import { CurrentUser } from '../../shared/utils/current-user.model';
+
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  full_name: string;
-  role: string;
-}
-
 export interface LoginData {
-  user: AuthUser;
+  user: CurrentUser;
 }
 
 export interface RegisterRequest {

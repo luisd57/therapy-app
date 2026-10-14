@@ -3,6 +3,7 @@ const tseslint = require("typescript-eslint");
 const angular = require("angular-eslint");
 const prettier = require("eslint-config-prettier");
 const playwright = require("eslint-plugin-playwright");
+const boundaries = require("eslint-plugin-boundaries");
 
 // The plugin ships most of its recommended rules as "warn", which never fails the pipeline.
 const playwrightRulesAsErrors = Object.fromEntries(
@@ -111,6 +112,69 @@ module.exports = tseslint.config(
           propertyDeclaration: true,
           variableDeclaration: true,
           variableDeclarationIgnoreFunction: false,
+        },
+      ],
+    },
+  },
+
+  // Dependency flow from .claude/rules/dashboard-angular.md. Scoped to src/, since e2e/ has no
+  // domains. The rules file's five rules map onto the four disallow policies below.
+  {
+    files: ["src/**/*.ts"],
+    plugins: { boundaries },
+    settings: {
+      "import/resolver": { node: { extensions: [".ts"] } },
+      "boundaries/legacy-templates": false,
+      // A cross-domain loadChildren is a dynamic import, which the plugin skips by default.
+      "boundaries/dependency-nodes": ["import", "dynamic-import", "export"],
+      // Unclassified files are unrestricted, on purpose: src/main.ts and src/app/*.ts are the
+      // composition root that wires every domain together, and src/environments/ holds the API
+      // base URL every data-access service reads.
+      "boundaries/elements": [
+        ...["feature", "ui", "data-access", "utils"].map((layer) => ({
+          type: layer,
+          pattern: `src/app/*/${layer}`,
+          capture: ["domain"],
+        })),
+        // layout/ has no layer folders, so only the cross-domain rule can see its files.
+        { type: "domain-root", pattern: "src/app/*", capture: ["domain"] },
+      ],
+    },
+    rules: {
+      "boundaries/dependencies": [
+        "error",
+        {
+          default: "allow",
+          policies: [
+            {
+              disallow: {
+                to: { element: { captured: { domain: "!{{ from.element.captured.domain }}" } } },
+              },
+              message:
+                "Cross-domain imports are forbidden. Shared needs go in shared/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
+            },
+            // shared/ exists so domains have somewhere legal to meet. Must follow the
+            // cross-domain policy, since the last matching policy wins.
+            { allow: { to: { element: { captured: { domain: "shared" } } } } },
+            {
+              from: { element: { type: "ui" } },
+              disallow: { to: { element: { types: ["feature", "data-access"] } } },
+              message:
+                "ui/ may import only ui/ and utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
+            },
+            {
+              from: { element: { type: "data-access" } },
+              disallow: { to: { element: { types: ["feature", "ui"] } } },
+              message:
+                "data-access/ may import only data-access/ and utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
+            },
+            {
+              from: { element: { type: "utils" } },
+              disallow: { to: { element: { types: ["feature", "ui", "data-access"] } } },
+              message:
+                "utils/ is the end of the flow and may import only utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
+            },
+          ],
         },
       ],
     },
