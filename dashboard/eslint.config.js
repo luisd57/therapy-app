@@ -117,8 +117,8 @@ module.exports = tseslint.config(
     },
   },
 
-  // Dependency flow from .claude/rules/dashboard-angular.md. Scoped to src/, since e2e/ has no
-  // domains. The rules file's five rules map onto the four disallow policies below.
+  // Dependency Flow from .claude/rules/dashboard-angular.md, scoped to src/ since e2e/ has no domains.
+  // One policy for cross-domain, then one per layer for the diagram's arrows and the two bullets.
   {
     files: ["src/**/*.ts"],
     plugins: { boundaries },
@@ -127,16 +127,16 @@ module.exports = tseslint.config(
       "boundaries/legacy-templates": false,
       // A cross-domain loadChildren is a dynamic import, which the plugin skips by default.
       "boundaries/dependency-nodes": ["import", "dynamic-import", "export"],
-      // Unclassified files are unrestricted, on purpose: src/main.ts and src/app/*.ts are the
-      // composition root that wires every domain together, and src/environments/ holds the API
-      // base URL every data-access service reads.
+      // The composition root wires every domain together, so no rule applies to it.
+      "boundaries/ignore": ["src/main.ts", "src/app/*.ts"],
+      // src/environments/ is no element, so anything may import it: data-access reads the API URL there.
       "boundaries/elements": [
         ...["feature", "ui", "data-access", "utils"].map((layer) => ({
           type: layer,
           pattern: `src/app/*/${layer}`,
           capture: ["domain"],
         })),
-        // layout/ has no layer folders, so only the cross-domain rule can see its files.
+        // Files outside a layer folder, like all of layout/. Only feature/ may import them.
         { type: "domain-root", pattern: "src/app/*", capture: ["domain"] },
       ],
     },
@@ -158,19 +158,19 @@ module.exports = tseslint.config(
             { allow: { to: { element: { captured: { domain: "shared" } } } } },
             {
               from: { element: { type: "ui" } },
-              disallow: { to: { element: { types: ["feature", "data-access"] } } },
+              disallow: { to: { element: { types: ["feature", "data-access", "domain-root"] } } },
               message:
                 "ui/ may import only ui/ and utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
             },
             {
               from: { element: { type: "data-access" } },
-              disallow: { to: { element: { types: ["feature", "ui"] } } },
+              disallow: { to: { element: { types: ["feature", "ui", "domain-root"] } } },
               message:
                 "data-access/ may import only data-access/ and utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
             },
             {
               from: { element: { type: "utils" } },
-              disallow: { to: { element: { types: ["feature", "ui", "data-access"] } } },
+              disallow: { to: { element: { types: ["feature", "ui", "data-access", "domain-root"] } } },
               message:
                 "utils/ is the end of the flow and may import only utils/ (.claude/rules/dashboard-angular.md, Dependency Flow).",
             },

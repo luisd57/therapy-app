@@ -8,7 +8,7 @@ import { CurrentUser } from '../utils/current-user.model';
 
 const USER_KEY: string = 'auth_user';
 
-// In shared/ because the shell, the guard and the interceptor all read it, and domains may not import each other.
+// In shared/ so layout/'s shell can read it without importing across domains.
 @Injectable({ providedIn: 'root' })
 export class CurrentUserService {
   private readonly http: HttpClient = inject(HttpClient);
