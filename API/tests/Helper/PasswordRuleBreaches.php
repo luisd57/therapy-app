@@ -6,7 +6,7 @@ namespace App\Tests\Helper;
 
 /**
  * One password per rule, each breaking only that rule, with the message it must produce. Shared
- * so the command line and HTTP tests both fail when any single rule is dropped.
+ * so every caller's tests fail when any single rule is dropped.
  */
 final class PasswordRuleBreaches
 {

@@ -10,7 +10,10 @@ use App\Domain\User\Service\TokenGeneratorInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\KeepsBlocklistAcrossRequests;
+use App\Tests\Helper\PasswordRuleBreaches;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class ResetPasswordControllerTest extends ApiTestCase
 {
@@ -33,6 +36,22 @@ final class ResetPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(400);
+    }
+
+    /** The password is validated before the token is looked up, so any token reaches the rule. */
+    #[DataProviderExternal(PasswordRuleBreaches::class, 'cases')]
+    public function testResetPasswordReportsWhichPasswordRuleFailed(string $password, string $message): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/reset', [
+            'token' => 'any-token',
+            'password' => $password,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $data = $this->getResponseData();
+        $this->assertSame('VALIDATION_ERROR', Json::at($data, 'error', 'code'));
+        $this->assertSame($message, Json::at($data, 'error', 'details', 'password'));
+        $this->assertArrayNotHasKey('token', Json::arrayAt($data, 'error', 'details'));
     }
 
     /**
