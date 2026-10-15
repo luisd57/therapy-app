@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Infrastructure\Http\Validation;
 
 use App\Infrastructure\Http\Validation\PasswordStrength;
 use App\Infrastructure\Http\Validation\PasswordStrengthValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\ConstraintValidatorInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -107,6 +108,24 @@ final class PasswordStrengthValidatorTest extends ConstraintValidatorTestCase
         $this->validator->validate('Abc1efgh', $this->passwordStrength);
 
         $this->buildViolation($this->passwordStrength->specialCharMessage)->assertRaised();
+    }
+
+    /** Callers show one message, so a password breaking two rules reports only the first. */
+    #[DataProvider('passwordsBreakingTwoRules')]
+    public function testReportsOnlyTheFirstRuleBroken(string $password, string $message): void
+    {
+        $this->validator->validate($password, $this->passwordStrength);
+
+        $this->buildViolation($message)->assertRaised();
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function passwordsBreakingTwoRules(): iterable
+    {
+        yield 'too short and no uppercase' => ['ab1!', 'Password must be between 8 and 72 characters'];
+        yield 'no uppercase and no digit' => ['abc!efgh', 'Password must contain at least one uppercase letter'];
+        yield 'no lowercase and no digit' => ['ABC!EFGH', 'Password must contain at least one lowercase letter'];
+        yield 'no digit and no special character' => ['Abcdefgh', 'Password must contain at least one number'];
     }
 
     /**

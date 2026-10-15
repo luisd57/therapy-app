@@ -9,7 +9,9 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Domain\User\Service\PasswordHasherInterface;
 use App\Domain\User\ValueObject\Email;
 use App\Tests\Helper\IntegrationTestCase;
+use App\Tests\Helper\PasswordRuleBreaches;
 use App\Tests\Helper\SeedsAuthFixtures;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -85,17 +87,33 @@ final class CreateTherapistCommandTest extends IntegrationTestCase
         $this->assertCount(0, $this->userRepository->findByRole(UserRole::THERAPIST));
     }
 
-    /** Each password rule is ticket 21's to pin, this only holds the exit code. */
-    public function testRefusesAWeakPassword(): void
+    #[DataProviderExternal(PasswordRuleBreaches::class, 'cases')]
+    public function testRefusesAPasswordBreakingARule(string $password, string $message): void
     {
         $tester = $this->commandTester();
         $tester->execute([
             'email' => 'weak-password@test.com',
             'name' => 'Dr. Weak Password',
-            'password' => 'weak',
+            'password' => $password,
         ]);
 
         $this->assertSame(Command::FAILURE, $tester->getStatusCode());
+        $this->assertStringContainsString($message, (string) preg_replace('/\s+/', ' ', $tester->getDisplay()));
+        $this->assertCount(0, $this->userRepository->findByRole(UserRole::THERAPIST));
+    }
+
+    /** The constraint leaves an empty value to NotBlank, so the command has to put one in front. */
+    public function testRefusesAnEmptyPassword(): void
+    {
+        $tester = $this->commandTester();
+        $tester->execute([
+            'email' => 'empty-password@test.com',
+            'name' => 'Dr. Empty Password',
+            'password' => '',
+        ]);
+
+        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
+        $this->assertStringContainsString('Password is required', $tester->getDisplay());
         $this->assertCount(0, $this->userRepository->findByRole(UserRole::THERAPIST));
     }
 

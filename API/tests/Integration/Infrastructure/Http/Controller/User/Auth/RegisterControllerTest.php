@@ -6,8 +6,10 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\PasswordRuleBreaches;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\UsesUtcInstants;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class RegisterControllerTest extends ApiTestCase
 {
@@ -60,24 +62,22 @@ final class RegisterControllerTest extends ApiTestCase
      * Everything else about this request is valid, so the response can only be about the password
      * rule it breaks. The status code alone would still pass with PasswordStrength unwired.
      */
-    public function testRegisterReportsWhichPasswordRuleFailed(): void
+    #[DataProviderExternal(PasswordRuleBreaches::class, 'cases')]
+    public function testRegisterReportsWhichPasswordRuleFailed(string $password, string $message): void
     {
         $invitation = $this->seedInvitation(now: self::utc('2026-05-30 08:00:00'));
 
         $this->jsonRequest('POST', '/api/auth/register', [
             'token' => $invitation->getToken(),
-            'password' => 'Secure1pass',
-            'password_confirmation' => 'Secure1pass',
+            'password' => $password,
+            'password_confirmation' => $password,
         ]);
 
         $this->assertResponseStatusCodeSame(422);
         $data = $this->getResponseData();
         $this->assertFalse($data['success']);
         $this->assertSame('VALIDATION_ERROR', Json::at($data, 'error', 'code'));
-        $this->assertSame(
-            'Password must contain at least one special character',
-            Json::at($data, 'error', 'details', 'password'),
-        );
+        $this->assertSame($message, Json::at($data, 'error', 'details', 'password'));
         $this->assertArrayNotHasKey('token', Json::arrayAt($data, 'error', 'details'));
         $this->assertArrayNotHasKey('password_confirmation', Json::arrayAt($data, 'error', 'details'));
     }
