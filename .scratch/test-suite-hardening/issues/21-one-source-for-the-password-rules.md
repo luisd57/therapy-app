@@ -1,5 +1,7 @@
 # 21 - One source for the password rules
 
+> Frozen record, resolved 2026-10-15.
+
 **What to build:** the password rules exist once in the API. Whoever changes a
 rule changes it in one place, and every caller moves with it.
 
@@ -40,7 +42,9 @@ defers to this ticket: a weak password fails with no message checked.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #117](https://github.com/luisd57/therapy-app/pull/117)
 
 - [x] One implementation of the rules and their message strings remains, and `PasswordValidator` is deleted
 - [x] `app:create-therapist` validates through it and still refuses each rule with the message it prints today
