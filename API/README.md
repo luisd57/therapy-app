@@ -142,7 +142,7 @@ Doctrine hydrates entities directly via reflection - `reconstitute()` is not inv
 - CORS with `allow_credentials: true` to support cookie-based auth
 - Therapist creation is CLI-only (`app:create-therapist`) - no HTTP endpoint exposed
 - Passwords hashed with Symfony's `auto` hasher (`config/packages/security.yaml`), which picks the strongest algorithm available at runtime. The test environment overrides it to `cost: 4` so the suite is not bound by hashing time - that override is under `when@test:` and never applies elsewhere
-- Password policy enforced at 8-72 characters in both HTTP and CLI flows (`PasswordValidator`). The upper bound is there because bcrypt truncates past 72 bytes, so it holds whenever `auto` resolves to bcrypt. It is not a product decision
+- Password policy enforced at 8-72 characters in both HTTP and CLI flows (the `PasswordStrength` constraint). The upper bound is there because bcrypt truncates past 72 bytes, so it holds whenever `auto` resolves to bcrypt. It is not a product decision
 - Default secrets (`APP_SECRET`, `JWT_PASSPHRASE`) are set to `CHANGE_ME_IN_PRODUCTION` - must be replaced before deploying
 
 ### Input Validation & Output Encoding

@@ -8,13 +8,15 @@ use App\Application\User\DTO\Input\CreateTherapistInputDTO;
 use App\Application\User\Handler\CreateTherapistHandler;
 use App\Domain\User\Exception\TherapistAlreadyExistsException;
 use App\Domain\User\Exception\UserAlreadyExistsException;
-use App\Infrastructure\Http\Validation\PasswordValidator;
+use App\Infrastructure\Http\Validation\PasswordStrength;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[AsCommand(
     name: 'app:create-therapist',
@@ -24,6 +26,7 @@ final class CreateTherapistCommand extends Command
 {
     public function __construct(
         private readonly CreateTherapistHandler $handler,
+        private readonly ValidatorInterface $validator,
     ) {
         parent::__construct();
     }
@@ -49,9 +52,12 @@ final class CreateTherapistCommand extends Command
             throw new \LogicException('Required arguments must be strings.');
         }
 
-        $passwordError = PasswordValidator::validate($password);
-        if ($passwordError !== null) {
-            $io->error($passwordError);
+        $passwordViolations = $this->validator->validate($password, [
+            new Assert\NotBlank(message: 'Password is required'),
+            new PasswordStrength(),
+        ]);
+        if (count($passwordViolations) > 0) {
+            $io->error((string) $passwordViolations->get(0)->getMessage());
             return Command::FAILURE;
         }
 
