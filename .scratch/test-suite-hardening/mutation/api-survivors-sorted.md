@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 63 |
+| Kind 1, real gap | 62 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 153 |
-| Skipped | 4 |
-| Total | 157 |
+| Sorted | 152 |
+| Skipped | 0 |
+| Total | 152 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -23,6 +23,12 @@ and are killed, so they left the total: the lock mismatch check and the four day
 `AppointmentRequestService.php`, and the two zero guards in `SlotGenerationRules.php`. The other
 three are in Kind 2.
 
+Ticket 21 closed on 2026-10-15. Its four skipped rows, the `return` after each failed rule in
+`PasswordStrengthValidator.php`, are killed: a password breaking two rules now reports only the
+first. The Kind 1 `CreateTherapistCommand.php` line 54 row is killed too, since each rule's
+message is now checked at the command line. All five left the total. The command's Kind 2
+success line, line 65 here, is line 71 after the change.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -30,7 +36,7 @@ three are in Kind 2.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (63)
+## Kind 1, real gap (62)
 
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
@@ -156,12 +162,6 @@ three are in Kind 2.
 |---|---|---|
 | 54 | UnwrapTrim | Postal code is stored trimmed. No test passes a padded one. |
 | 55 | UnwrapTrim | State is stored trimmed. Same gap. |
-
-### `src/Infrastructure/Console/User/CreateTherapistCommand.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 54 | MethodCallRemoval | A weak password fails with no message. The test holds only the exit code and defers to ticket 21, whose criteria name this command. |
 
 ### `src/Infrastructure/Persistence/Doctrine/User/Repository/DoctrineUserRepository.php`
 
@@ -425,11 +425,3 @@ fall-through to stringValue() gives the same string.
 | Line | Mutator | Reason |
 |---|---|---|
 | 57 | IncrementInteger | findValidByUserId() has no caller in src, and it needs two valid tokens for one user. Decide on the method before testing it. |
-
-## Skipped (4)
-
-Each file has an open ticket, so its rows wait for that.
-
-| Rows | File | Ticket |
-|---|---|---|
-| 4 | `src/Infrastructure/Http/Validation/PasswordStrengthValidator.php` | 21 |

@@ -42,10 +42,10 @@ defers to this ticket: a weak password fails with no message checked.
 
 **Status:** ready-for-agent
 
-- [ ] One implementation of the rules and their message strings remains, and `PasswordValidator` is deleted
-- [ ] `app:create-therapist` validates through it and still refuses each rule with the message it prints today
-- [ ] An empty password is still refused at the command line, which the constraint does not do on its own
-- [ ] The rule coverage from ticket 04 survives the move rather than being deleted with the class it tested
-- [ ] Deleting any single rule fails a test on both the command line path and the HTTP path
-- [ ] A one-file Infection run on the validator and on the command no longer reports those five rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead. The Skipped section no longer names this ticket
-- [ ] Full API suite green
+- [x] One implementation of the rules and their message strings remains, and `PasswordValidator` is deleted
+- [x] `app:create-therapist` validates through it and still refuses each rule with the message it prints today
+- [x] An empty password is still refused at the command line, which the constraint does not do on its own
+- [x] The rule coverage from ticket 04 survives the move rather than being deleted with the class it tested
+- [x] Deleting any single rule fails a test on both the command line path and the HTTP path
+- [x] A one-file Infection run on the validator and on the command no longer reports those five rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead. The Skipped section no longer names this ticket
+- [x] Full API suite green
