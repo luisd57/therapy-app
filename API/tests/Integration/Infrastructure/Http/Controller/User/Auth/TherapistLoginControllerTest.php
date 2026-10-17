@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
+use App\Tests\Helper\WireShapes;
 
 final class TherapistLoginControllerTest extends ApiTestCase
 {
@@ -19,13 +20,14 @@ final class TherapistLoginControllerTest extends ApiTestCase
         $this->assertNotEmpty($token);
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         // The token travels in the httpOnly cookie only, so no key here may carry it.
         $this->assertEqualsCanonicalizing(['user'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
-        $this->assertEqualsCanonicalizing([
-            'id', 'email', 'full_name', 'role', 'is_active', 'phone',
-            'address', 'created_at', 'activated_at', 'timezone',
-        ], array_keys(Json::arrayAt($data, 'data', 'user')), 'data.user keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::USER,
+            array_keys(Json::arrayAt($data, 'data', 'user')),
+            'data.user keys',
+        );
     }
 
     public function testTherapistLoginMissingEmailReturns422(): void

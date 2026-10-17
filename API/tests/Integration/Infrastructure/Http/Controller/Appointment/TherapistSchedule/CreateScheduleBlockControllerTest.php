@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\TestWith;
 
 final class CreateScheduleBlockControllerTest extends ApiTestCase
@@ -25,12 +26,13 @@ final class CreateScheduleBlockControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['schedule', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
-        $this->assertEqualsCanonicalizing([
-            'id', 'day_of_week', 'day_name', 'start_time', 'end_time',
-            'supports_online', 'supports_in_person', 'is_active',
-        ], array_keys(Json::arrayAt($data, 'data', 'schedule')), 'data.schedule keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::SCHEDULE_BLOCK,
+            array_keys(Json::arrayAt($data, 'data', 'schedule')),
+            'data.schedule keys',
+        );
     }
 
     public function testCreateScheduleReturns422WithMissingFields(): void

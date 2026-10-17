@@ -8,6 +8,7 @@ use App\Domain\Appointment\Enum\AppointmentStatus;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
+use App\Tests\Helper\WireShapes;
 
 final class ListAppointmentsControllerTest extends ApiTestCase
 {
@@ -30,19 +31,19 @@ final class ListAppointmentsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['appointments', 'pagination'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
-            ['page', 'limit', 'total', 'total_pages'],
+            WireShapes::PAGINATION,
             array_keys(Json::arrayAt($data, 'data', 'pagination')),
             'data.pagination keys',
         );
         $this->assertTrue(array_is_list(Json::arrayAt($data, 'data', 'appointments')), 'data.appointments is a list');
-        $this->assertEqualsCanonicalizing([
-            'id', 'start_time', 'end_time', 'modality', 'status',
-            'full_name', 'email', 'phone', 'city', 'country',
-            'patient_id', 'payment_verified', 'created_at', 'updated_at', 'requester_timezone',
-        ], array_keys(Json::arrayAt($data, 'data', 'appointments', 0)), 'data.appointments[0] keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::APPOINTMENT,
+            array_keys(Json::arrayAt($data, 'data', 'appointments', 0)),
+            'data.appointments[0] keys',
+        );
         $this->assertGreaterThanOrEqual(1, Json::at($data, 'data', 'pagination', 'total'));
         $this->assertSame(1, Json::at($data, 'data', 'pagination', 'page'));
         $this->assertSame(20, Json::at($data, 'data', 'pagination', 'limit'));

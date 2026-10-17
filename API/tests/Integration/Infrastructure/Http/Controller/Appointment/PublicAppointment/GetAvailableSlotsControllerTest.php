@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Publi
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use App\Tests\Helper\WireShapes;
 
 final class GetAvailableSlotsControllerTest extends ApiTestCase
 {
@@ -34,15 +35,15 @@ final class GetAvailableSlotsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(
-            ['from', 'to', 'modality', 'practice_timezone', 'slots', 'total_slots'],
+            WireShapes::AVAILABLE_SLOTS,
             array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );
         $this->assertTrue(array_is_list(Json::arrayAt($data, 'data', 'slots')), 'data.slots is a list');
         $this->assertEqualsCanonicalizing(
-            ['start_time', 'end_time', 'duration_minutes'],
+            WireShapes::SLOT,
             array_keys(Json::arrayAt($data, 'data', 'slots', 0)),
             'data.slots[0] keys',
         );

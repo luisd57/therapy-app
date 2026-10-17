@@ -257,7 +257,8 @@ the repo has never had, but neither creates a new place where behaviour is asser
    added.
 
 The only new test machinery is the surviving cache pool in ticket 03, and that
-follows an existing helper rather than introducing a mechanism.
+follows an existing helper rather than introducing a mechanism. Superseded by
+ticket 22, which adds the `WireShapes` data class by the maintainer's decision.
 
 ### Prior art
 

@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 
 final class ListPatientsControllerTest extends ApiTestCase
 {
@@ -18,10 +19,10 @@ final class ListPatientsControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['patients', 'pagination'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
-            ['page', 'limit', 'total', 'total_pages'],
+            WireShapes::PAGINATION,
             array_keys(Json::arrayAt($data, 'data', 'pagination')),
             'data.pagination keys',
         );

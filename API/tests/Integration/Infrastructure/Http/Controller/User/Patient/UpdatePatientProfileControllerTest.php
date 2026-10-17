@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Patient;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 final class UpdatePatientProfileControllerTest extends ApiTestCase
@@ -53,14 +54,15 @@ final class UpdatePatientProfileControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['user', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
-        $this->assertEqualsCanonicalizing([
-            'id', 'email', 'full_name', 'role', 'is_active', 'phone',
-            'address', 'created_at', 'activated_at', 'timezone',
-        ], array_keys(Json::arrayAt($data, 'data', 'user')), 'data.user keys');
         $this->assertEqualsCanonicalizing(
-            ['street', 'city', 'country', 'postal_code', 'state'],
+            WireShapes::USER,
+            array_keys(Json::arrayAt($data, 'data', 'user')),
+            'data.user keys',
+        );
+        $this->assertEqualsCanonicalizing(
+            WireShapes::ADDRESS,
             array_keys(Json::arrayAt($data, 'data', 'user', 'address')),
             'data.user.address keys',
         );

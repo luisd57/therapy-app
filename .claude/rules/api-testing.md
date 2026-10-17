@@ -29,6 +29,7 @@ Data:
 - **Json**: `at()`, `arrayAt()` and `stringAt()` read a path in decoded JSON and fail the test on a missing key or wrong type. Use them instead of `$data['data']['id']`, which PHPStan rejects as offset access on `mixed` (ADR-0008).
 - **RateLimitedRoutes**: the rate-limited routes and their ceilings, as `DataProviderExternal` providers plus `urlFor()`, `ceilingFor()`, `names()` and `highestCeiling()`. Not a trait - both rate limit test files read it, and neither should own the list.
 - **PasswordRuleBreaches**: one password per rule with the message it must produce, as a `DataProviderExternal` provider. The command, register and reset tests all read it, so dropping a rule fails on every path.
+- **WireShapes**: the key set of each shape the API sends (envelope, error, pagination, each Output DTO and trimmed projection in a response), as constants. Keep the path in the pin's message, so a failure names it. Keep the lists hand-written, never built from a DTO (ADR-0003). A controller's own wrapper keys stay inline in its test.
 
 Adding or changing a file in `Helper/` updates this list in the same pull request. An undocumented
 helper gets reimplemented: `createTherapistWithSchedule` was copy-pasted into two controller tests
