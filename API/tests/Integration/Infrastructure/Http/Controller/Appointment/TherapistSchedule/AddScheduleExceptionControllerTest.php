@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\TestWith;
 
 final class AddScheduleExceptionControllerTest extends ApiTestCase
@@ -32,10 +33,10 @@ final class AddScheduleExceptionControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['exception', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertEqualsCanonicalizing(
-            ['id', 'start_date_time', 'end_date_time', 'reason', 'is_all_day', 'created_at'],
+            WireShapes::SCHEDULE_EXCEPTION,
             array_keys(Json::arrayAt($data, 'data', 'exception')),
             'data.exception keys',
         );

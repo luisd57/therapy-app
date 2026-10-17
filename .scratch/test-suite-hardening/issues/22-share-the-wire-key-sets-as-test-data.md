@@ -22,10 +22,10 @@ pool in ticket 03" for this one case, by the maintainer's decision.
 
 **Status:** ready-for-agent
 
-- [ ] Every key list ticket 07 wrote inline (envelope, error, pagination, and each Output DTO and projection) is defined once and read from there by the pins
-- [ ] The lists are literals, and no list is derived from a DTO or from `toArray()`
-- [ ] A failing pin still names the path it checked, so the cause reads from the failure without opening the data class
-- [ ] Renaming a key in one Output DTO still turns every pin of that shape red, shown by a temporary mutation per shape, then reverted
-- [ ] The helper list in the API testing rules names the new class
-- [ ] The spec's line about new test machinery notes it is superseded by this ticket
-- [ ] Full API suite green
+- [x] Every key list ticket 07 wrote inline (envelope, error, pagination, and each Output DTO and projection) is defined once and read from there by the pins
+- [x] The lists are literals, and no list is derived from a DTO or from `toArray()`
+- [x] A failing pin still names the path it checked, so the cause reads from the failure without opening the data class
+- [x] Renaming a key in one Output DTO still turns every pin of that shape red, shown by a temporary mutation per shape, then reverted
+- [x] The helper list in the API testing rules names the new class
+- [x] The spec's line about new test machinery notes it is superseded by this ticket
+- [x] Full API suite green

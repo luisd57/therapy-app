@@ -8,6 +8,7 @@ use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\UsesUtcInstants;
+use App\Tests\Helper\WireShapes;
 
 final class ValidateInvitationControllerTest extends ApiTestCase
 {
@@ -30,10 +31,10 @@ final class ValidateInvitationControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         // No email: anyone holding the link could otherwise read who it was sent to.
         $this->assertEqualsCanonicalizing(
-            ['id', 'patient_name', 'status', 'created_at', 'expires_at'],
+            WireShapes::INVITATION_PREVIEW,
             array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );

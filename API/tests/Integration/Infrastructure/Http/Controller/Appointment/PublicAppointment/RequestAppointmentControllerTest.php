@@ -9,6 +9,7 @@ use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use App\Tests\Helper\WireShapes;
 use DateTimeImmutable;
 
 final class RequestAppointmentControllerTest extends ApiTestCase
@@ -41,11 +42,11 @@ final class RequestAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         // A public caller gets no contact details back, not even their own.
         $this->assertEqualsCanonicalizing(
-            ['id', 'start_time', 'end_time', 'modality', 'status', 'created_at'],
+            WireShapes::PUBLIC_APPOINTMENT,
             array_keys(Json::arrayAt($data, 'data', 'appointment')),
             'data.appointment keys',
         );

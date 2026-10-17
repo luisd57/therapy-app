@@ -8,6 +8,7 @@ use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
+use App\Tests\Helper\WireShapes;
 
 final class GetAppointmentControllerTest extends ApiTestCase
 {
@@ -32,13 +33,13 @@ final class GetAppointmentControllerTest extends ApiTestCase
         $this->assertTrue($data['success']);
         $this->assertSame($appointment->getId()->getValue(), Json::at($data, 'data', 'appointment', 'id'));
         $this->assertSame('Test Patient', Json::at($data, 'data', 'appointment', 'full_name'));
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(['appointment'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
-        $this->assertEqualsCanonicalizing([
-            'id', 'start_time', 'end_time', 'modality', 'status',
-            'full_name', 'email', 'phone', 'city', 'country',
-            'patient_id', 'payment_verified', 'created_at', 'updated_at', 'requester_timezone',
-        ], array_keys(Json::arrayAt($data, 'data', 'appointment')), 'data.appointment keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::APPOINTMENT,
+            array_keys(Json::arrayAt($data, 'data', 'appointment')),
+            'data.appointment keys',
+        );
     }
 
     public function testShowNonExistentAppointment(): void
@@ -47,8 +48,8 @@ final class GetAppointmentControllerTest extends ApiTestCase
 
         $this->assertResponseStatusCodeSame(404);
         $data = $this->getResponseData();
-        $this->assertEqualsCanonicalizing(['success', 'error'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(['code', 'message'], array_keys(Json::arrayAt($data, 'error')), 'error keys');
+        $this->assertEqualsCanonicalizing(WireShapes::ERROR_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::ERROR, array_keys(Json::arrayAt($data, 'error')), 'error keys');
         $this->assertFalse($data['success']);
         $this->assertSame('NOT_FOUND', Json::at($data, 'error', 'code'));
     }

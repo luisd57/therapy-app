@@ -9,6 +9,7 @@ use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use App\Tests\Helper\WireShapes;
 
 final class GetNextAvailableWeekControllerTest extends ApiTestCase
 {
@@ -26,15 +27,15 @@ final class GetNextAvailableWeekControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
         $this->assertEqualsCanonicalizing(
-            ['found', 'week_start', 'week_end', 'modality', 'practice_timezone', 'slots', 'total_slots'],
+            WireShapes::NEXT_AVAILABLE_WEEK,
             array_keys(Json::arrayAt($data, 'data')),
             'data keys',
         );
         $this->assertTrue(array_is_list(Json::arrayAt($data, 'data', 'slots')), 'data.slots is a list');
         $this->assertEqualsCanonicalizing(
-            ['start_time', 'end_time', 'duration_minutes'],
+            WireShapes::SLOT,
             array_keys(Json::arrayAt($data, 'data', 'slots', 0)),
             'data.slots[0] keys',
         );

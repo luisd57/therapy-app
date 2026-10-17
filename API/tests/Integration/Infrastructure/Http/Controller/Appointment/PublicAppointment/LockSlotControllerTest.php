@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Publi
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsTherapistSchedule;
+use App\Tests\Helper\WireShapes;
 use DateTimeImmutable;
 
 final class LockSlotControllerTest extends ApiTestCase
@@ -33,12 +34,8 @@ final class LockSlotControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertEqualsCanonicalizing(['success', 'data'], array_keys($data), 'envelope keys');
-        $this->assertEqualsCanonicalizing(
-            ['lock_token', 'slot_start_time', 'slot_end_time', 'expires_at'],
-            array_keys(Json::arrayAt($data, 'data')),
-            'data keys',
-        );
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::SLOT_LOCK, array_keys(Json::arrayAt($data, 'data')), 'data keys');
     }
 
     public function testLockSlotResponseEmitsUtcInstantsWhateverOffsetTheCallerSent(): void
