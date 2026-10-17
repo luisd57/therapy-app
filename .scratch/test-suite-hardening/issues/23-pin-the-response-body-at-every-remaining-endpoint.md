@@ -24,6 +24,10 @@ ticket may have covered some:
 Strengthen the existing success test for each endpoint rather than adding a new
 one. Read the key lists from ticket 22's shared data.
 
+One unit test sits outside the list: `GetNextAvailableWeekHandlerTest` checks the
+week keys with seven `assertArrayHasKey` calls, so an added key passes it. It
+predates ticket 07, which is why 22 left it alone.
+
 **Blocked by:** 22
 
 **Status:** ready-for-agent
@@ -32,4 +36,5 @@ one. Read the key lists from ticket 22's shared data.
 - [ ] Every list is asserted to be a list, and the key set of an item is checked, with at least one item seeded
 - [ ] For each endpoint, a temporary mutation to its wrapper (drop or rename one key) turns its test red, then is reverted
 - [ ] No endpoint's pin is satisfied by a lower bound or an `assertArrayHasKey`, only by the exact key set
+- [ ] `GetNextAvailableWeekHandlerTest` checks the exact key set from `WireShapes::NEXT_AVAILABLE_WEEK` instead of the seven `assertArrayHasKey` calls
 - [ ] Full API suite green
