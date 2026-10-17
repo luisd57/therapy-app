@@ -1,5 +1,7 @@
 # 22 - Share the wire key sets as test data
 
+> Frozen record, resolved 2026-10-17.
+
 **What to build:** each wire shape's expected key list is written down once, and
 every test that pins that shape reads it from there.
 
@@ -20,7 +22,9 @@ pool in ticket 03" for this one case, by the maintainer's decision.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
+
+**Resolved by:** [PR #118](https://github.com/luisd57/therapy-app/pull/118)
 
 - [x] Every key list ticket 07 wrote inline (envelope, error, pagination, and each Output DTO and projection) is defined once and read from there by the pins
 - [x] The lists are literals, and no list is derived from a DTO or from `toArray()`
