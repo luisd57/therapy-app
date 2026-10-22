@@ -1,6 +1,6 @@
 # Therapy App API
 
-A Symfony 8.0 application implementing Pure Hexagonal Architecture with PostgreSQL for a therapy practice management system.
+A Symfony 8.1 application implementing Pure Hexagonal Architecture with PostgreSQL for a therapy practice management system.
 
 ## Features Implemented
 
@@ -689,7 +689,7 @@ This README describes the `API/` subdirectory of the monorepo. Repo-wide layout:
 
 ```
 therapy/
-├── API/                          # this directory - Symfony 8.0 backend
+├── API/                          # this directory - Symfony 8.1 backend
 │   ├── src/
 │   │   ├── Domain/               # Pure business logic (entities, value objects, ports)
 │   │   ├── Application/          # Use cases (handlers, DTOs)
