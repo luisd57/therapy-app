@@ -7,3 +7,7 @@ API/docker/cron/crontab text eol=lf
 # A shebang script fails loudly instead of silently: the kernel reads the interpreter as
 # "php\r" and the container answers "env: 'php\r': No such file or directory".
 API/bin/console text eol=lf
+
+# The container regenerates this on every kernel boot with LF. A CRLF checkout then shows
+# as modified in git status while git diff is empty.
+API/config/reference.php text eol=lf

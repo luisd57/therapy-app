@@ -25,10 +25,6 @@ more. Incident history and dates belong in project memory, not here.
   not copy out of a volume mount point.
 - In Git Bash, `docker compose exec` mangles container paths into Windows ones
   (`bash: C:/Program Files/Git/var/www/...`). Prefix `MSYS_NO_PATHCONV=1` and use a leading `//`.
-- Every kernel boot in the container (PHPUnit, `bin/console`) regenerates `API/config/reference.php`
-  with LF endings (FrameworkBundle's `PhpConfigReferenceDumpPass`). Under `core.autocrlf=true`,
-  `git status` then lists it as modified while `git diff` is empty. Nothing changed and nothing to
-  commit: `git update-index --refresh` clears it.
 - `vendor/` and `var/` must exist in the image before the `chown`, or Docker initialises those named
   volumes root-owned and `composer install` fails with "vendor/symfony does not exist and could not
   be created". Both Dockerfiles `mkdir -p` them first.
