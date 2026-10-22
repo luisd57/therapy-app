@@ -1,6 +1,6 @@
 # Therapy - Gestion de cabinet de psychothérapie
 
-![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
+![PHP 8.5](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)
 ![Symfony 8.0](https://img.shields.io/badge/Symfony-8.0-000000?logo=symfony&logoColor=white)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
@@ -113,7 +113,7 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 
 | Couche | Technologies |
 | ------ | ------------ |
-| Backend | PHP 8.4 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
+| Backend | PHP 8.5 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
 | Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index composites pour les requêtes de disponibilité |

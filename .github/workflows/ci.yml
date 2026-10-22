@@ -69,10 +69,10 @@ jobs:
           # Infection diffs the pull request against origin/main.
           fetch-depth: 0
 
-      - name: Setup PHP 8.4
+      - name: Setup PHP 8.5
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: ctype, iconv, pdo_pgsql, intl
           tools: composer:v2
           # Loaded but off, same as the image. Only Infection's initial run turns it on (ADR-0010).
