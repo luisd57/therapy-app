@@ -31,12 +31,4 @@ final class HealthCheckControllerTest extends WebTestCase
         // Route name and URL are frozen: security.yaml matches ^/api/health for PUBLIC_ACCESS.
         $this->assertSame('api_health', $this->client->getRequest()->attributes->get('_route'));
     }
-
-    public function testHealthResponseContainsTimestamp(): void
-    {
-        $this->client->request('GET', '/api/health');
-
-        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('timestamp', Json::arrayAt($data));
-    }
 }

@@ -35,6 +35,7 @@ final class ListScheduleBlocksControllerTest extends ApiTestCase
             array_keys(Json::arrayAt($data, 'data', 'schedules', 0)),
             'data.schedules[0] keys',
         );
+        $this->assertSame(1, Json::at($data, 'data', 'count'), 'data.count');
     }
 
     public function testListSchedulesUnauthenticatedReturns401(): void

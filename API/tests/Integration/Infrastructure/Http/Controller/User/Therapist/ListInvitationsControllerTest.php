@@ -6,17 +6,18 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
-use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 
 final class ListInvitationsControllerTest extends ApiTestCase
 {
-    use SeedsAuthFixtures;
-
     public function testListInvitationsAuthenticatedReturns200(): void
     {
         $token = $this->createTherapistAndGetToken();
-        $this->seedInvitation();
+        $this->jsonRequest('POST', '/api/therapist/patients/invite', [
+            'email' => 'list-target@test.com',
+            'patient_name' => 'List Target',
+        ], $token);
+        $this->assertResponseStatusCodeSame(201);
 
         $this->jsonRequest('GET', '/api/therapist/invitations', [], $token);
 
@@ -31,6 +32,7 @@ final class ListInvitationsControllerTest extends ApiTestCase
             array_keys(Json::arrayAt($data, 'data', 'invitations', 0)),
             'data.invitations[0] keys',
         );
+        $this->assertSame(1, Json::at($data, 'data', 'count'), 'data.count');
     }
 
     public function testListInvitationsUnauthenticatedReturns401(): void

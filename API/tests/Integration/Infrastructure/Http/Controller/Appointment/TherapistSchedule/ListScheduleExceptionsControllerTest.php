@@ -45,6 +45,7 @@ final class ListScheduleExceptionsControllerTest extends ApiTestCase
             array_keys(Json::arrayAt($data, 'data', 'exceptions', 0)),
             'data.exceptions[0] keys',
         );
+        $this->assertSame(1, Json::at($data, 'data', 'count'), 'data.count');
     }
 
     public function testListExceptionsUnauthenticatedReturns401(): void

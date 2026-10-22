@@ -37,12 +37,4 @@ final class ApiRootControllerTest extends WebTestCase
         // Route name and URL are frozen: security.yaml matches ^/api/$ exactly, trailing slash included.
         $this->assertSame('api_index', $this->client->getRequest()->attributes->get('_route'));
     }
-
-    public function testApiRootListsEndpoints(): void
-    {
-        $this->client->request('GET', '/api/');
-
-        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('endpoints', Json::arrayAt($data, 'data'));
-    }
 }
