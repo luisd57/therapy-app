@@ -1,7 +1,7 @@
 # Therapy - Gestion de cabinet de psychothérapie
 
 ![PHP 8.5](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)
-![Symfony 8.0](https://img.shields.io/badge/Symfony-8.0-000000?logo=symfony&logoColor=white)
+![Symfony 8.1](https://img.shields.io/badge/Symfony-8.1-000000?logo=symfony&logoColor=white)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
 ![Astro 5](https://img.shields.io/badge/Astro-5.7-BC52EE?logo=astro&logoColor=white)
@@ -113,7 +113,7 @@ Portail privé pour la thérapeute et les patients. Application SPA avec navigat
 
 | Couche | Technologies |
 | ------ | ------------ |
-| Backend | PHP 8.5 (`strict_types` obligatoire), Symfony 8.0, Doctrine ORM 3.0 |
+| Backend | PHP 8.5 (`strict_types` obligatoire), Symfony 8.1, Doctrine ORM 3.0 |
 | Frontend Landing | Astro 5.7, Svelte 5, Tailwind CSS 3.4 |
 | Frontend Dashboard | Angular 21, Angular Material 21, TypeScript, RxJS |
 | Base de données | PostgreSQL 16, clés primaires UUID, index composites pour les requêtes de disponibilité |
@@ -266,7 +266,7 @@ Pour le setup complet (BDD test, JWT, troubleshooting), voir le [README de l'API
 
 ```
 therapy/
-├── API/                          # Backend Symfony 8.0
+├── API/                          # Backend Symfony 8.1
 │   ├── src/
 │   │   ├── Domain/               # Logique métier pure (entités, value objects, ports)
 │   │   ├── Application/          # Cas d'usage (handlers, DTOs)

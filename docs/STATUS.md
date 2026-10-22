@@ -1,6 +1,6 @@
 # Implementation Status
 
-- **API**: DONE. All endpoints implemented and tested. One controller class per route action (ADR-0006), entities declare their ORM relations (ADR-0007). Runs on PHP 8.5.12, the floor composer enforces.
+- **API**: DONE. All endpoints implemented and tested. One controller class per route action (ADR-0006), entities declare their ORM relations (ADR-0007). Runs on PHP 8.5.12 (the floor composer enforces) and Symfony 8.1, with `composer audit` clean.
 - **Landing**: IN PROGRESS. Slot browser and request form, timezone-aware (viewer-zone grid, zone banner, dual-time display), modality chosen before Slots render. Vitest unit suite and containerized Playwright e2e.
 - **Dashboard - done**: therapist login, logout, patient login, patient registration, forgot/reset password, role-based navigation, patient manager (invite/resend/revoke + patients list), containerized Playwright e2e for invitation and auth flows.
 - **Dashboard - next**: appointment queue, appointment list.
