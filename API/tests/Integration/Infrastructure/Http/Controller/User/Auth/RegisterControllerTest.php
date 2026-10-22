@@ -9,6 +9,7 @@ use App\Tests\Helper\Json;
 use App\Tests\Helper\PasswordRuleBreaches;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\UsesUtcInstants;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class RegisterControllerTest extends ApiTestCase
@@ -36,6 +37,9 @@ final class RegisterControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['user', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(WireShapes::USER, array_keys(Json::arrayAt($data, 'data', 'user')), 'data.user keys');
         $this->assertSame('ROLE_PATIENT', Json::at($data, 'data', 'user', 'role'));
     }
 

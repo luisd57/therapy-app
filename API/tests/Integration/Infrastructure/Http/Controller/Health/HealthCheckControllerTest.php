@@ -25,16 +25,10 @@ final class HealthCheckControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
 
+        // No success envelope: load balancer probes read this body (see the controller).
+        $this->assertEqualsCanonicalizing(['status', 'timestamp'], array_keys(Json::arrayAt($data)), 'body keys');
         $this->assertSame('healthy', Json::at($data, 'status'));
         // Route name and URL are frozen: security.yaml matches ^/api/health for PUBLIC_ACCESS.
         $this->assertSame('api_health', $this->client->getRequest()->attributes->get('_route'));
-    }
-
-    public function testHealthResponseContainsTimestamp(): void
-    {
-        $this->client->request('GET', '/api/health');
-
-        $data = json_decode((string) $this->client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('timestamp', Json::arrayAt($data));
     }
 }

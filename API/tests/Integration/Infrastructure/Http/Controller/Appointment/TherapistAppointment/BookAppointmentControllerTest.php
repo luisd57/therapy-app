@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use DateTimeImmutable;
 
 final class BookAppointmentControllerTest extends ApiTestCase
@@ -35,6 +36,13 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::APPOINTMENT,
+            array_keys(Json::arrayAt($data, 'data', 'appointment')),
+            'data.appointment keys',
+        );
         $this->assertSame('CONFIRMED', Json::at($data, 'data', 'appointment', 'status'));
         $this->assertSame('Walk-in Patient', Json::at($data, 'data', 'appointment', 'full_name'));
         $this->assertSame('Appointment booked successfully.', Json::at($data, 'data', 'message'));

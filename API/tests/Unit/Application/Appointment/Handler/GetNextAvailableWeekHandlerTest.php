@@ -23,6 +23,7 @@ use App\Domain\Appointment\Enum\AppointmentModality;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use App\Tests\Helper\UsesUtcInstants;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\TestCase;
 
 final class GetNextAvailableWeekHandlerTest extends TestCase
@@ -240,13 +241,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
 
         $array = $result->toArray();
 
-        $this->assertArrayHasKey('found', $array);
-        $this->assertArrayHasKey('week_start', $array);
-        $this->assertArrayHasKey('week_end', $array);
-        $this->assertArrayHasKey('modality', $array);
-        $this->assertArrayHasKey('slots', $array);
-        $this->assertArrayHasKey('practice_timezone', $array);
-        $this->assertArrayHasKey('total_slots', $array);
+        $this->assertEqualsCanonicalizing(WireShapes::NEXT_AVAILABLE_WEEK, array_keys($array), 'toArray keys');
         $this->assertTrue($array['found']);
     }
 }

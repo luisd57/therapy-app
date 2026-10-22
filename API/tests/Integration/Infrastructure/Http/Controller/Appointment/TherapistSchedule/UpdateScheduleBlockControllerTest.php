@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use Symfony\Component\Uid\Uuid;
 
 final class UpdateScheduleBlockControllerTest extends ApiTestCase
@@ -38,7 +39,13 @@ final class UpdateScheduleBlockControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
-        $this->assertArrayHasKey('schedule', Json::arrayAt($data, 'data'));
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['schedule', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::SCHEDULE_BLOCK,
+            array_keys(Json::arrayAt($data, 'data', 'schedule')),
+            'data.schedule keys',
+        );
         $this->assertSame('10:00', Json::at($data, 'data', 'schedule', 'start_time'));
         $this->assertSame('13:00', Json::at($data, 'data', 'schedule', 'end_time'));
     }

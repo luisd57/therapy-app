@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
+use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAuthFixtures;
+use App\Tests\Helper\WireShapes;
 
 final class ForgotPasswordControllerTest extends ApiTestCase
 {
@@ -20,6 +22,10 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
     }
 
     public function testForgotPasswordNonExistentEmailReturns200(): void
