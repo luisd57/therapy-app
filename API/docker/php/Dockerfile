@@ -1,6 +1,6 @@
-FROM php:8.4-fpm
+FROM php:8.5.12-fpm
 
-# Install system dependencies
+# Install system dependencies. No opcache: PHP 8.5 builds it in, and installing it fails the build.
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
         pdo_pgsql \
         zip \
         intl \
-        opcache \
     && pecl install redis pcov \
     && docker-php-ext-enable redis pcov \
     && apt-get clean \

@@ -31,7 +31,7 @@ Single-therapist practice. Requesters and Patients browse Slots and submit Appoi
 
 ## Project Structure
 
-- `API/` - Symfony 8.0 backend (PHP 8.4, PostgreSQL 16, Redis 7)
+- `API/` - Symfony 8.0 backend (PHP 8.5, PostgreSQL 16, Redis 7)
 - `landing/` - Public-facing Astro + Svelte website (slot browser, appointment requests)
 - `dashboard/` - Angular therapist/patient dashboard (schedule, appointments, patients)
 
