@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Infrastructure\Http\Controller\Health;
 
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -26,8 +27,13 @@ final class ApiRootControllerTest extends WebTestCase
         $data = json_decode((string) $this->client->getResponse()->getContent(), true);
 
         $this->assertTrue(Json::at($data, 'success'));
-        $this->assertArrayHasKey('name', Json::arrayAt($data, 'data'));
-        $this->assertArrayHasKey('version', Json::arrayAt($data, 'data'));
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys(Json::arrayAt($data)), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['name', 'version', 'endpoints'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            ['health', 'auth', 'therapist', 'patient'],
+            array_keys(Json::arrayAt($data, 'data', 'endpoints')),
+            'data.endpoints keys',
+        );
         // Route name and URL are frozen: security.yaml matches ^/api/$ exactly, trailing slash included.
         $this->assertSame('api_index', $this->client->getRequest()->attributes->get('_route'));
     }

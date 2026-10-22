@@ -9,6 +9,7 @@ use App\Domain\Appointment\Id\AppointmentId;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\SeedsAppointment;
+use App\Tests\Helper\WireShapes;
 
 final class ConfirmAppointmentControllerTest extends ApiTestCase
 {
@@ -31,6 +32,13 @@ final class ConfirmAppointmentControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['appointment', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::APPOINTMENT,
+            array_keys(Json::arrayAt($data, 'data', 'appointment')),
+            'data.appointment keys',
+        );
         $this->assertSame('CONFIRMED', Json::at($data, 'data', 'appointment', 'status'));
         $this->assertSame('Appointment confirmed successfully.', Json::at($data, 'data', 'message'));
     }

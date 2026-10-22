@@ -9,6 +9,7 @@ use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\KeepsBlocklistAcrossRequests;
 use App\Tests\Helper\SeedsAuthFixtures;
+use App\Tests\Helper\WireShapes;
 
 final class LogoutControllerTest extends ApiTestCase
 {
@@ -47,6 +48,8 @@ final class LogoutControllerTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertSame('Successfully logged out.', Json::at($data, 'data', 'message'));
     }
 

@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Patient;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 
 final class CurrentPatientControllerTest extends ApiTestCase
 {
@@ -18,6 +19,8 @@ final class CurrentPatientControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(WireShapes::USER, array_keys(Json::arrayAt($data, 'data')), 'data keys');
         $this->assertSame('ROLE_PATIENT', Json::at($data, 'data', 'role'));
     }
 

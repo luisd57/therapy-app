@@ -13,6 +13,7 @@ use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\Json;
 use App\Tests\Helper\KeepsBlocklistAcrossRequests;
 use App\Tests\Helper\PasswordRuleBreaches;
+use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class ResetPasswordControllerTest extends ApiTestCase
@@ -77,6 +78,10 @@ final class ResetPasswordControllerTest extends ApiTestCase
             'password' => 'BrandNewPass1!',
         ]);
         $this->assertResponseIsSuccessful();
+        $data = $this->getResponseData();
+        $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
 
         $this->jsonRequest('GET', '/api/auth/me', [], $jwt);
         $this->assertResponseStatusCodeSame(401);

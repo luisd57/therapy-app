@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\WireShapes;
 
 final class ResendInvitationControllerTest extends ApiTestCase
 {
@@ -25,6 +26,13 @@ final class ResendInvitationControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(201);
         $data = $this->getResponseData();
         $this->assertTrue($data['success']);
+        $this->assertEqualsCanonicalizing(WireShapes::SUCCESS_ENVELOPE, array_keys($data), 'envelope keys');
+        $this->assertEqualsCanonicalizing(['invitation', 'message'], array_keys(Json::arrayAt($data, 'data')), 'data keys');
+        $this->assertEqualsCanonicalizing(
+            WireShapes::INVITATION,
+            array_keys(Json::arrayAt($data, 'data', 'invitation')),
+            'data.invitation keys',
+        );
         $this->assertSame('pending', Json::at($data, 'data', 'invitation', 'status'));
         $this->assertNotSame($invitationId, Json::at($data, 'data', 'invitation', 'id'));
     }
