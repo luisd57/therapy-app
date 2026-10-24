@@ -40,6 +40,24 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
     }
 
+    /** No input fails both email rules, so these pin the body shape, not which message wins. */
+    public function testForgotPasswordMissingEmailReturns422(): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/forgot', []);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'email' => 'Email is required',
+                ],
+            ],
+        ], $this->getResponseData());
+    }
+
     public function testForgotPasswordInvalidEmailReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/password/forgot', [
@@ -47,6 +65,16 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'email' => 'Invalid email format',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     #[DataProviderExternal(RefusedEmails::class, 'cases')]
