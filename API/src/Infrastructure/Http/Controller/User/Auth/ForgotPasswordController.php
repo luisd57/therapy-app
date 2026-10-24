@@ -8,11 +8,11 @@ use App\Application\User\DTO\Input\RequestPasswordResetInputDTO;
 use App\Application\User\Handler\RequestPasswordResetHandler;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\JsonBody;
+use App\Infrastructure\Http\Validation\EmailAddress;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class ForgotPasswordController extends AbstractController
@@ -28,10 +28,7 @@ final class ForgotPasswordController extends AbstractController
     {
         $jsonBody = JsonBody::fromRequest($request);
 
-        $violations = $this->validator->validate($jsonBody->string('email'), [
-            new Assert\NotBlank(message: 'Email is required'),
-            new Assert\Email(message: 'Invalid email format'),
-        ]);
+        $violations = $this->validator->validate($jsonBody->string('email'), new EmailAddress());
 
         if (count($violations) > 0) {
             $errors = [];

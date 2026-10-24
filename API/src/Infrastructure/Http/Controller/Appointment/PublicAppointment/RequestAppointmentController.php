@@ -11,6 +11,7 @@ use App\Domain\Appointment\Exception\SlotNotAvailableException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ValidationHelperTrait;
+use App\Infrastructure\Http\Validation\EmailAddress;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -115,10 +116,7 @@ final class RequestAppointmentController extends AbstractController
             $errors['phone'] = (string) $phoneViolations->get(0)->getMessage();
         }
 
-        $emailViolations = $this->validator->validate($jsonBody->string('email'), [
-            new Assert\NotBlank(message: 'Email is required'),
-            new Assert\Email(message: 'Invalid email format'),
-        ]);
+        $emailViolations = $this->validator->validate($jsonBody->string('email'), new EmailAddress());
 
         if (count($emailViolations) > 0) {
             $errors['email'] = (string) $emailViolations->get(0)->getMessage();

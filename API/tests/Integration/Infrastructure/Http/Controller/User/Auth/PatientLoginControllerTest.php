@@ -6,8 +6,10 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\RefusedEmails;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class PatientLoginControllerTest extends ApiTestCase
 {
@@ -28,6 +30,18 @@ final class PatientLoginControllerTest extends ApiTestCase
             array_keys(Json::arrayAt($data, 'data', 'user')),
             'data.user keys',
         );
+    }
+
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testPatientLoginRejectsAnEmailTheValueObjectRefuses(string $email): void
+    {
+        $this->jsonRequest('POST', '/api/auth/patient/login', [
+            'email' => $email,
+            'password' => self::PATIENT_PASSWORD,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Invalid email format', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testPatientLoginWrongRoleReturns401(): void

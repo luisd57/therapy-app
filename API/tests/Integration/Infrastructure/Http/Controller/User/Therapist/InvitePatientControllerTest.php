@@ -6,7 +6,9 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\RefusedEmails;
 use App\Tests\Helper\WireShapes;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class InvitePatientControllerTest extends ApiTestCase
 {
@@ -41,6 +43,20 @@ final class InvitePatientControllerTest extends ApiTestCase
         ], $token);
 
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testInvitePatientRejectsAnEmailTheValueObjectRefuses(string $email): void
+    {
+        $token = $this->createTherapistAndGetToken();
+
+        $this->jsonRequest('POST', '/api/therapist/patients/invite', [
+            'email' => $email,
+            'patient_name' => 'Invited Patient',
+        ], $token);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Invalid email format', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testInvitePatientUnauthenticatedReturns401(): void

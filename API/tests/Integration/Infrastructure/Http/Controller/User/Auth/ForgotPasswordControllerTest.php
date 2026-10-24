@@ -6,8 +6,10 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\RefusedEmails;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class ForgotPasswordControllerTest extends ApiTestCase
 {
@@ -45,5 +47,16 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testForgotPasswordRejectsAnEmailTheValueObjectRefuses(string $email): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/forgot', [
+            'email' => $email,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Invalid email format', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 }
