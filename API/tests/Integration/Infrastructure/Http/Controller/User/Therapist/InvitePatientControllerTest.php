@@ -6,8 +6,9 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Therapist;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
-use App\Tests\Helper\LongEmail;
+use App\Tests\Helper\RefusedEmails;
 use App\Tests\Helper\WireShapes;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class InvitePatientControllerTest extends ApiTestCase
 {
@@ -44,17 +45,18 @@ final class InvitePatientControllerTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
     }
 
-    public function testInvitePatientRejectsAnEmailOverTheLengthCap(): void
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testInvitePatientRejectsAnEmailTheValueObjectRefuses(string $email): void
     {
         $token = $this->createTherapistAndGetToken();
 
         $this->jsonRequest('POST', '/api/therapist/patients/invite', [
-            'email' => LongEmail::ofLength(255),
+            'email' => $email,
             'patient_name' => 'Invited Patient',
         ], $token);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertSame('Email must not exceed 254 characters', Json::at($this->getResponseData(), 'error', 'details', 'email'));
+        $this->assertSame('Invalid email format', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testInvitePatientUnauthenticatedReturns401(): void

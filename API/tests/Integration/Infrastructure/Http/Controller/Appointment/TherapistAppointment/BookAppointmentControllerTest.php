@@ -6,9 +6,10 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\Appointment\Thera
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
-use App\Tests\Helper\LongEmail;
+use App\Tests\Helper\RefusedEmails;
 use App\Tests\Helper\WireShapes;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 
 final class BookAppointmentControllerTest extends ApiTestCase
 {
@@ -49,20 +50,21 @@ final class BookAppointmentControllerTest extends ApiTestCase
         $this->assertSame('Appointment booked successfully.', Json::at($data, 'data', 'message'));
     }
 
-    public function testBookAppointmentRejectsAnEmailOverTheLengthCap(): void
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testBookAppointmentRejectsAnEmailTheValueObjectRefuses(string $email): void
     {
         $this->jsonRequest('POST', '/api/therapist/appointments', [
             'slot_start_time' => '2026-06-01T10:00:00-04:00',
             'modality' => 'ONLINE',
             'full_name' => 'Walk-in Patient',
             'phone' => '+1234567890',
-            'email' => LongEmail::ofLength(255),
+            'email' => $email,
             'city' => 'Miami',
             'country' => 'USA',
         ], $this->therapistToken);
 
         $this->assertResponseStatusCodeSame(422);
-        $this->assertSame('Email must not exceed 254 characters', Json::at($this->getResponseData(), 'error', 'details', 'email'));
+        $this->assertSame('Invalid email format', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testBookedAppointmentCoversTheConfiguredSession(): void

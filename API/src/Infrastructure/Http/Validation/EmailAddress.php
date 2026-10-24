@@ -4,21 +4,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Validation;
 
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Compound;
+use Symfony\Component\Validator\Constraint;
 
-/** The rules every email field shares, so a caller's 422 matches what Email::fromString accepts. */
+/** An email field: required, and valid exactly when Email::fromString accepts it. */
 #[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-final class EmailAddress extends Compound
+final class EmailAddress extends Constraint
 {
-    /** @param array<string, mixed> $options */
-    protected function getConstraints(array $options): array
-    {
-        return [
-            new Assert\NotBlank(message: 'Email is required'),
-            new Assert\Email(message: 'Invalid email format'),
-            // filter_var's own cap, which Email::fromString relies on. The column is 255.
-            new Assert\Length(max: 254, maxMessage: 'Email must not exceed 254 characters'),
-        ];
-    }
+    public string $requiredMessage = 'Email is required';
+    public string $invalidMessage = 'Invalid email format';
 }

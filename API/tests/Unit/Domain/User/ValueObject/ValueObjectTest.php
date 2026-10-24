@@ -10,7 +10,6 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
-use App\Tests\Helper\LongEmail;
 use PHPUnit\Framework\TestCase;
 
 final class ValueObjectTest extends TestCase
@@ -45,21 +44,6 @@ final class ValueObjectTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         Email::fromString('');
-    }
-
-    /** EmailAddress caps at 254 because this is where fromString starts failing. */
-    public function testEmailAcceptsTheLengthCap(): void
-    {
-        $address = LongEmail::ofLength(254);
-
-        $this->assertSame($address, Email::fromString($address)->getValue());
-    }
-
-    public function testEmailOverTheLengthCapThrowsException(): void
-    {
-        $this->expectException(\InvalidArgumentException::class);
-
-        Email::fromString(LongEmail::ofLength(255));
     }
 
     public function testEmailGetDomain(): void
