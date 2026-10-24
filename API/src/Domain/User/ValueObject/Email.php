@@ -22,7 +22,14 @@ final readonly class Email
             throw new \InvalidArgumentException('Invalid email format.');
         }
 
-        return new self($normalized);
+        $email = new self($normalized);
+
+        // An IP-literal domain would let a public form point outgoing mail at any host.
+        if (str_starts_with($email->getDomain(), '[')) {
+            throw new \InvalidArgumentException('Invalid email format.');
+        }
+
+        return $email;
     }
 
     /**
@@ -33,9 +40,10 @@ final readonly class Email
         return $this->value;
     }
 
+    /** Splits on the last "@", because a quoted local part may contain one. */
     public function getDomain(): string
     {
-        return substr($this->value, strpos($this->value, '@') + 1);
+        return substr($this->value, strrpos($this->value, '@') + 1);
     }
 
     public function equals(self $other): bool
