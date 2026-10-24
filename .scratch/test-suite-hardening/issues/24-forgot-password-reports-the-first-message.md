@@ -1,5 +1,7 @@
 # 24 - Forgot password reports the first message
 
+> Frozen record, resolved 2026-10-24.
+
 **What to build:** the forgot password endpoint builds its 422 details the way
 every other endpoint does, keeping each field's first message.
 
@@ -15,9 +17,11 @@ today, so the pinned body proves the shape, not the choice of message.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Forgot password takes the first violation per field, matching the other controllers
-- [ ] Its 422 body for a missing email is asserted whole, envelope, code, message and details
-- [ ] Its 422 body for a malformed email is asserted whole
-- [ ] Full API suite green
+**Resolved by:** [PR #122](https://github.com/luisd57/therapy-app/pull/122)
+
+- [x] Forgot password takes the first violation per field, matching the other controllers
+- [x] Its 422 body for a missing email is asserted whole, envelope, code, message and details
+- [x] Its 422 body for a malformed email is asserted whole
+- [x] Full API suite green
