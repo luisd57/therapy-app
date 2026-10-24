@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\LongEmail;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 
@@ -45,5 +46,24 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
+    }
+
+    public function testForgotPasswordRejectsAnEmailOverTheLengthCap(): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/forgot', [
+            'email' => LongEmail::ofLength(255),
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Email must not exceed 254 characters', Json::at($this->getResponseData(), 'error', 'details', 'email'));
+    }
+
+    public function testForgotPasswordAcceptsAnEmailAtTheLengthCap(): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/forgot', [
+            'email' => LongEmail::ofLength(254),
+        ]);
+
+        $this->assertResponseIsSuccessful();
     }
 }

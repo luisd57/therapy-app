@@ -10,6 +10,7 @@ use App\Domain\User\Exception\UserAlreadyExistsException;
 use App\Infrastructure\Http\Controller\ApiResponseTrait;
 use App\Infrastructure\Http\Controller\JsonBody;
 use App\Infrastructure\Http\Controller\ResolvesCurrentUserTrait;
+use App\Infrastructure\Http\Validation\EmailAddress;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,10 +62,7 @@ final class InvitePatientController extends AbstractController
     {
         $errors = [];
 
-        $emailViolations = $this->validator->validate($jsonBody->string('email'), [
-            new Assert\NotBlank(message: 'Email is required'),
-            new Assert\Email(message: 'Invalid email format'),
-        ]);
+        $emailViolations = $this->validator->validate($jsonBody->string('email'), new EmailAddress());
 
         if (count($emailViolations) > 0) {
             $errors['email'] = (string) $emailViolations->get(0)->getMessage();

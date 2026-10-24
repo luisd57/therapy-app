@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Infrastructure\Http\Controller\User\Auth;
 
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\LongEmail;
 use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 
@@ -47,6 +48,17 @@ final class TherapistLoginControllerTest extends ApiTestCase
                 ],
             ],
         ], $this->getResponseData());
+    }
+
+    public function testTherapistLoginRejectsAnEmailOverTheLengthCap(): void
+    {
+        $this->jsonRequest('POST', '/api/auth/therapist/login', [
+            'email' => LongEmail::ofLength(255),
+            'password' => self::THERAPIST_PASSWORD,
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Email must not exceed 254 characters', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testTherapistLoginWrongPasswordReturns401(): void

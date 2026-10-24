@@ -8,6 +8,7 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\ApiTestCase;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\Json;
+use App\Tests\Helper\LongEmail;
 use App\Tests\Helper\SeedsTherapistSchedule;
 use App\Tests\Helper\WireShapes;
 use DateTimeImmutable;
@@ -50,6 +51,24 @@ final class RequestAppointmentControllerTest extends ApiTestCase
             array_keys(Json::arrayAt($data, 'data', 'appointment')),
             'data.appointment keys',
         );
+    }
+
+    public function testRequestAppointmentRejectsAnEmailOverTheLengthCap(): void
+    {
+        $this->createTherapistWithSchedule();
+
+        $this->jsonRequest('POST', '/api/appointments/request', [
+            'slot_start_time' => '2026-06-01T09:30:00-04:00',
+            'modality' => 'ONLINE',
+            'full_name' => 'John Doe',
+            'phone' => '+1234567890',
+            'email' => LongEmail::ofLength(255),
+            'city' => 'New York',
+            'country' => 'US',
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame('Email must not exceed 254 characters', Json::at($this->getResponseData(), 'error', 'details', 'email'));
     }
 
     public function testRequestedAppointmentCoversTheConfiguredSession(): void

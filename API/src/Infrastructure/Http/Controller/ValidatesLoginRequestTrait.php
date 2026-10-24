@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Http\Controller;
 
+use App\Infrastructure\Http\Validation\EmailAddress;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -16,10 +17,7 @@ trait ValidatesLoginRequestTrait
     {
         $errors = [];
 
-        $emailViolations = $validator->validate($jsonBody->string('email'), [
-            new Assert\NotBlank(message: 'Email is required'),
-            new Assert\Email(message: 'Invalid email format'),
-        ]);
+        $emailViolations = $validator->validate($jsonBody->string('email'), new EmailAddress());
 
         if (count($emailViolations) > 0) {
             $errors['email'] = (string) $emailViolations->get(0)->getMessage();
