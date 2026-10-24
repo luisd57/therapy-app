@@ -11,6 +11,7 @@ use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
+/** EmailAddress raises at most one violation, so the 422 tests pin the body shape, not which message wins. */
 final class ForgotPasswordControllerTest extends ApiTestCase
 {
     use SeedsAuthFixtures;
@@ -40,6 +41,23 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
     }
 
+    public function testForgotPasswordMissingEmailReturns422(): void
+    {
+        $this->jsonRequest('POST', '/api/auth/password/forgot', []);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'email' => 'Email is required',
+                ],
+            ],
+        ], $this->getResponseData());
+    }
+
     public function testForgotPasswordInvalidEmailReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/password/forgot', [
@@ -47,6 +65,16 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(422);
+        $this->assertSame([
+            'success' => false,
+            'error' => [
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Validation failed',
+                'details' => [
+                    'email' => 'Invalid email format',
+                ],
+            ],
+        ], $this->getResponseData());
     }
 
     #[DataProviderExternal(RefusedEmails::class, 'cases')]

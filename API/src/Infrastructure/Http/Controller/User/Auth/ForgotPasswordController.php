@@ -31,12 +31,7 @@ final class ForgotPasswordController extends AbstractController
         $violations = $this->validator->validate($jsonBody->string('email'), new EmailAddress());
 
         if (count($violations) > 0) {
-            $errors = [];
-            foreach ($violations as $violation) {
-                $errors['email'] = (string) $violation->getMessage();
-            }
-
-            return $this->validationError($errors);
+            return $this->validationError(['email' => (string) $violations->get(0)->getMessage()]);
         }
 
         $handler->__invoke(new RequestPasswordResetInputDTO(email: $jsonBody->string('email')));
