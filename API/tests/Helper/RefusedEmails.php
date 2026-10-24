@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Helper;
 
 /**
- * Addresses Symfony's Email rule accepts but Email::fromString refuses. Shared so every email
- * field's tests prove the 422 follows the value object, not the framework rule.
+ * Well-formed-looking addresses Email::fromString refuses. Shared so every email field's tests
+ * prove the 422 follows the value object, not a looser framework rule.
  */
 final class RefusedEmails
 {
@@ -21,5 +21,7 @@ final class RefusedEmails
         yield 'two dots in a row' => ['a..b@example.com'];
         yield 'leading dot' => ['.a@example.com'];
         yield 'trailing dot' => ['a.@example.com'];
+        yield 'IPv4 literal domain' => ['a@[127.0.0.1]'];
+        yield 'IPv6 literal domain' => ['a@[IPv6:::1]'];
     }
 }

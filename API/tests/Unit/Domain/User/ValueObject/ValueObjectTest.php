@@ -10,6 +10,8 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
+use App\Tests\Helper\RefusedEmails;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 
 final class ValueObjectTest extends TestCase
@@ -46,10 +48,27 @@ final class ValueObjectTest extends TestCase
         Email::fromString('');
     }
 
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testEmailRefusesAddressesThatOnlyLookWellFormed(string $address): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Email::fromString($address);
+    }
+
+    public function testEmailAcceptsAnIpLiteralLookalikeInAQuotedLocalPart(): void
+    {
+        $this->assertSame('"a@["@example.com', Email::fromString('"a@["@example.com')->getValue());
+    }
+
     public function testEmailGetDomain(): void
     {
         $email = Email::fromString('user@example.com');
         $this->assertSame('example.com', $email->getDomain());
+    }
+
+    public function testEmailGetDomainSkipsAnAtSignInAQuotedLocalPart(): void
+    {
+        $this->assertSame('example.com', Email::fromString('"a@["@example.com')->getDomain());
     }
 
     public function testEmailEqualsWithSameEmail(): void
