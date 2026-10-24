@@ -11,6 +11,7 @@ use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
+/** No input fails both email rules, so the 422 tests pin the body shape, not which message wins. */
 final class ForgotPasswordControllerTest extends ApiTestCase
 {
     use SeedsAuthFixtures;
@@ -40,7 +41,6 @@ final class ForgotPasswordControllerTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
     }
 
-    /** No input fails both email rules, so these pin the body shape, not which message wins. */
     public function testForgotPasswordMissingEmailReturns422(): void
     {
         $this->jsonRequest('POST', '/api/auth/password/forgot', []);
