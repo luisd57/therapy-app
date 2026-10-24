@@ -55,7 +55,6 @@ final class ValueObjectTest extends TestCase
         Email::fromString($address);
     }
 
-    /** Only the domain may not be an IP literal, so "@[" inside a quoted local part is fine. */
     public function testEmailAcceptsAnIpLiteralLookalikeInAQuotedLocalPart(): void
     {
         $this->assertSame('"a@["@example.com', Email::fromString('"a@["@example.com')->getValue());
@@ -65,6 +64,11 @@ final class ValueObjectTest extends TestCase
     {
         $email = Email::fromString('user@example.com');
         $this->assertSame('example.com', $email->getDomain());
+    }
+
+    public function testEmailGetDomainSkipsAnAtSignInAQuotedLocalPart(): void
+    {
+        $this->assertSame('example.com', Email::fromString('"a@["@example.com')->getDomain());
     }
 
     public function testEmailEqualsWithSameEmail(): void
