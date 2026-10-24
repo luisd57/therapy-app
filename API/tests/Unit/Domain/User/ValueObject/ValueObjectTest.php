@@ -10,6 +10,7 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
 final class ValueObjectTest extends TestCase
@@ -44,6 +45,15 @@ final class ValueObjectTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         Email::fromString('');
+    }
+
+    /** filter_var accepts these, but mail to them reaches a host by address, not by domain. */
+    #[TestWith(['user@[127.0.0.1]'])]
+    #[TestWith(['user@[IPv6:::1]'])]
+    public function testEmailWithAnIpLiteralDomainThrowsException(string $address): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Email::fromString($address);
     }
 
     public function testEmailGetDomain(): void
