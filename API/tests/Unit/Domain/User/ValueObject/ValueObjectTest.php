@@ -10,7 +10,8 @@ use App\Domain\User\ValueObject\Phone;
 use App\Domain\User\Id\TokenId;
 use App\Domain\User\Id\UserId;
 use App\Domain\User\Enum\UserRole;
-use PHPUnit\Framework\Attributes\TestWith;
+use App\Tests\Helper\RefusedEmails;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 
 final class ValueObjectTest extends TestCase
@@ -47,13 +48,17 @@ final class ValueObjectTest extends TestCase
         Email::fromString('');
     }
 
-    /** filter_var accepts these, but mail to them reaches a host by address, not by domain. */
-    #[TestWith(['user@[127.0.0.1]'])]
-    #[TestWith(['user@[IPv6:::1]'])]
-    public function testEmailWithAnIpLiteralDomainThrowsException(string $address): void
+    #[DataProviderExternal(RefusedEmails::class, 'cases')]
+    public function testEmailRefusesAddressesThatOnlyLookWellFormed(string $address): void
     {
         $this->expectException(\InvalidArgumentException::class);
         Email::fromString($address);
+    }
+
+    /** Only the domain may not be an IP literal, so "@[" inside a quoted local part is fine. */
+    public function testEmailAcceptsAnIpLiteralLookalikeInAQuotedLocalPart(): void
+    {
+        $this->assertSame('"a@["@example.com', Email::fromString('"a@["@example.com')->getValue());
     }
 
     public function testEmailGetDomain(): void

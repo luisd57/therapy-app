@@ -19,7 +19,8 @@ final readonly class Email
         $normalized = filter_var(strtolower(trim($value)), FILTER_VALIDATE_EMAIL);
 
         // An IP-literal domain would let a public form point outgoing mail at any host.
-        if ($normalized === false || str_contains($normalized, '@[')) {
+        // Last "@", because a quoted local part may contain one.
+        if ($normalized === false || str_starts_with(substr($normalized, strrpos($normalized, '@') + 1), '[')) {
             throw new \InvalidArgumentException('Invalid email format.');
         }
 
