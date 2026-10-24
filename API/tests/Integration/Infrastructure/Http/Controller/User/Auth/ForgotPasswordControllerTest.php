@@ -11,7 +11,7 @@ use App\Tests\Helper\SeedsAuthFixtures;
 use App\Tests\Helper\WireShapes;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 
-/** No input fails both email rules, so the 422 tests pin the body shape, not which message wins. */
+/** EmailAddress raises at most one violation, so the 422 tests pin the body shape, not which message wins. */
 final class ForgotPasswordControllerTest extends ApiTestCase
 {
     use SeedsAuthFixtures;
