@@ -36,7 +36,7 @@
   let topError = $state('');
   let isSubmitting = $state(false);
 
-  const modalityLabel = modality === 'ONLINE' ? 'Online' : 'Presencial';
+  const modalityLabel = $derived(modality === 'ONLINE' ? 'Online' : 'Presencial');
 
   async function handleSubmit() {
     fieldErrors = {};

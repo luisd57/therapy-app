@@ -9,6 +9,7 @@
 
   let { preselected, onChoose }: Props = $props();
 
+  // svelte-ignore state_referenced_locally (the prop only seeds the choice, the visitor changes it)
   let selected: Modality | null = $state(preselected);
 
   const options: { value: Modality; label: string; detail: string }[] = [

@@ -40,10 +40,12 @@
   let practiceZone = $state(PRACTICE_TIMEZONE_FALLBACK);
 
   let weekStart = $state(weekStartKey(todayKeyInZone(detectTimeZone())));
+  // svelte-ignore state_referenced_locally (the prop only seeds the toggle, the visitor changes it)
   let modality: Modality = $state(initialModality);
   let slots: SlotData[] = $state([]);
   let isLoading = $state(false);
   let isInitialLoading = $state(true);
+  // svelte-ignore state_referenced_locally (the prop only seeds the banner, a reload clears it)
   let error = $state(errorMessage);
 
   const weekDates = $derived(weekKeys(weekStart));

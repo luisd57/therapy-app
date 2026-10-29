@@ -11,7 +11,7 @@
 
   let { appointment, viewerZone, practiceZone, onRestart }: Props = $props();
 
-  const modalityLabel = appointment.modality === 'ONLINE' ? 'Online' : 'Presencial';
+  const modalityLabel = $derived(appointment.modality === 'ONLINE' ? 'Online' : 'Presencial');
 </script>
 
 <div class="mx-auto max-w-lg text-center">

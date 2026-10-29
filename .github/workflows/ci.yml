@@ -185,6 +185,11 @@ jobs:
         working-directory: landing
         run: npm run check
 
+      # astro check skips .svelte files, so the components get their own step.
+      - name: Typecheck landing Svelte
+        working-directory: landing
+        run: npm run check:svelte
+
       - name: Test landing
         working-directory: landing
         run: npm test
