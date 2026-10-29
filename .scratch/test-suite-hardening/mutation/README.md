@@ -32,8 +32,8 @@ node ../.scratch/test-suite-hardening/mutation/landing-list.mjs reports/mutation
 
 ## Update by hand before a rerun
 
-- The `tickets` table at the top of `api-list.mjs`. It maps a source path to the ticket covering
-  it, and it was read off the tickets as they stood on 2026-10-09.
+- The `tickets` table at the top of `api-list.mjs`. It maps a source path to the open ticket
+  covering it. A ticket leaves the table when it closes (`/done`).
 - The literal header rows: Tool, Tree, Command and Config in `api-list.mjs`, and Tool, Command and
   Mutated in `landing-list.mjs`.
 - The "No ticket covers these two files" sentence in `landing-list.mjs`, if a ticket now does.
