@@ -29,7 +29,15 @@ rather than widening this ticket.
 
 **Status:** ready-for-agent
 
-- [ ] Every landing `.svelte` component is typechecked, in a step of the required CI job
-- [ ] Whatever the first run finds is fixed rather than excluded, and any remaining exclusion carries its reason
+- [x] Every landing `.svelte` component is typechecked, in a step of the required CI job
+- [x] Whatever the first run finds is fixed rather than excluded, and any remaining exclusion carries its reason
 - [ ] A type error planted in a component, of the kind the Astro checker passes today, fails the pipeline, proving the gate is connected
-- [ ] Landing unit tests, e2e suite and build still green
+- [x] Landing unit tests, e2e suite and build still green
+
+**2026-10-29** - `npm run check:svelte` runs `svelte-check --fail-on-warnings`, as the "Typecheck
+landing Svelte" step of the `test` job. The first run found no type errors and six
+`state_referenced_locally` warnings. Two were labels computed once from a prop, now `$derived`.
+Four seed editable state from a prop on purpose and carry a `svelte-ignore` with the reason.
+Warnings fail the step so a new one cannot land unseen. Locally, a planted
+`const planted: number = 'a'` in `SlotCard.svelte` passed `astro check` with 0 errors and failed
+`check:svelte` with exit 1, a planted warning alone failed it too. Svelte linting did not come up.

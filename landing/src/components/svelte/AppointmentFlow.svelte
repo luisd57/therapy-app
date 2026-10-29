@@ -23,6 +23,7 @@
     | { step: 'filling_form'; slot: SlotData; modality: Modality; lockData: LockResponse | null; lockWarning?: string }
     | { step: 'success'; modality: Modality; appointment: AppointmentSummary };
 
+  // svelte-ignore state_referenced_locally (the zones are read once for the first step only)
   let current: FlowStep = $state({
     step: 'choosing_modality',
     preselected: preselectedModality(viewerZone, practiceZone),
