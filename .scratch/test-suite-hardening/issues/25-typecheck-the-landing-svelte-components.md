@@ -40,4 +40,4 @@ landing Svelte" step of the `test` job. The first run found no type errors and s
 Four seed editable state from a prop on purpose and carry a `svelte-ignore` with the reason.
 Warnings fail the step so a new one cannot land unseen. Locally, a planted
 `const planted: number = 'a'` in `SlotCard.svelte` passed `astro check` with 0 errors and failed
-`check:svelte` with exit 1, a planted warning alone failed it too. Svelte linting did not come up.
+`check:svelte` with exit 1. A planted warning alone failed it too. Svelte linting did not come up.
