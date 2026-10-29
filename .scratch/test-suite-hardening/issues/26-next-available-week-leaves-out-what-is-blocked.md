@@ -31,6 +31,8 @@ put an ignore comment there: it would hide the kind 1 rows as well.
 
 **Status:** resolved
 
+**Resolved by:** [PR #125](https://github.com/luisd57/therapy-app/pull/125)
+
 - [x] With a Schedule Exception covering every Slot of the current week, the search returns the following week, not the current one
 - [x] With one Slot of the returned week under a confirmed Appointment, that Slot is not among the Slots returned, and a Slot that does not overlap it is
 - [x] Both are asserted on what the search returns, with the availability computation not stubbed
