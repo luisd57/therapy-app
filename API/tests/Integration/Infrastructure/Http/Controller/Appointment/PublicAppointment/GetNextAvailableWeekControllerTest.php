@@ -68,22 +68,37 @@ final class GetNextAvailableWeekControllerTest extends ApiTestCase
     {
         $this->freezeClock('2026-05-30 09:00:00+00:00');
         $this->createTherapistWithSchedule();
-        // 16:00 in Caracas, eight hours into the block, so on the Slot grid and clear of its first Slot.
-        self::getContainer()->get(AppointmentRepositoryInterface::class)->save(
-            DomainTestHelper::createConfirmedAppointment(startTime: new \DateTimeImmutable('2026-06-01 20:00:00+00:00')),
-        );
+        // 16:00 in Caracas. Offered before the booking, so its absence after is the Appointment's doing.
+        $this->assertContains('2026-06-01T20:00:00+00:00', $this->requestFirstWeekSlotStarts());
 
+        $this->seedConfirmedAppointment('2026-06-01 20:00:00+00:00');
+
+        $startTimes = $this->requestFirstWeekSlotStarts();
+        $this->assertNotContains('2026-06-01T20:00:00+00:00', $startTimes);
+        $this->assertContains('2026-06-01T12:00:00+00:00', $startTimes);
+    }
+
+    /** @return list<string> start times of the Slots returned, after checking the first week came back */
+    private function requestFirstWeekSlotStarts(): array
+    {
         $this->client->request('GET', '/api/appointments/next-available-week');
 
         $this->assertResponseIsSuccessful();
         $data = $this->getResponseData();
+        $this->assertTrue(Json::at($data, 'data', 'found'));
         $this->assertSame('2026-05-30T04:00:00+00:00', Json::at($data, 'data', 'week_start'));
-        $startTimes = array_map(
+
+        return array_values(array_map(
             fn (mixed $slot) => Json::stringAt($slot, 'start_time'),
             Json::arrayAt($data, 'data', 'slots'),
+        ));
+    }
+
+    private function seedConfirmedAppointment(string $start): void
+    {
+        self::getContainer()->get(AppointmentRepositoryInterface::class)->save(
+            DomainTestHelper::createConfirmedAppointment(startTime: new \DateTimeImmutable($start)),
         );
-        $this->assertNotContains('2026-06-01T20:00:00+00:00', $startTimes);
-        $this->assertContains('2026-06-01T12:00:00+00:00', $startTimes);
     }
 
     public function testNextAvailableWeekReturnsFoundFalseWithNoSchedule(): void
