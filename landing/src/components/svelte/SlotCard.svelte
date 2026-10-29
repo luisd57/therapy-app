@@ -11,7 +11,6 @@
   }
 
   let { slot, timeZone, onClick, isLoading }: Props = $props();
-  const planted: number = 'a';
 </script>
 
 <button
