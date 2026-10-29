@@ -7,17 +7,6 @@ const j = JSON.parse(readFileSync(input, 'utf8'));
 const s = j.stats;
 
 const tickets = [
-  [/Domain\/Appointment\/Service\/AvailabilityComputer/, ['01']],
-  [/Domain\/Appointment\/Service\/SlotGenerationRules/, ['01']],
-  [/Domain\/User\/Entity\/(InvitationToken|PasswordResetToken)/, ['02']],
-  [/Domain\/Appointment\/Entity\/SlotLock/, ['02']],
-  [/Infrastructure\/Security\/(SecureTokenGenerator|JwtCookieManager)/, ['04']],
-  [/Infrastructure\/Http\/Validation\/PasswordStrengthValidator/, ['04']],
-  [/Infrastructure\/Persistence\/Doctrine\/Type\//, ['05']],
-  [/Infrastructure\/Console\//, ['06']],
-  [/Handler\/GetNextAvailableWeekHandler/, ['13']],
-  [/Repository\/Doctrine(Appointment|SlotLock)Repository/, ['18']],
-  [/Handler\/GetNextAvailableWeekHandler/, ['26']],
   [/Handler\/GetNextAvailableWeekHandler/, ['27']],
   [/Domain\/Appointment\/Entity\/TherapistSchedule/, ['28']],
   [/Email\/Appointment\/AppointmentEmailSender/, ['29']],

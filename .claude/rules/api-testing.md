@@ -40,6 +40,7 @@ before it became a trait.
 - All integration tests run in transactions that rollback in `tearDown()` - no data persists.
 - Kernel reboot disabled in API tests for transaction isolation across multiple HTTP requests.
 - `reconstitute()` is for test helpers ONLY - never in handlers or controllers.
+- Before asserting a Slot is not offered, show the same Slot offered without the blocker. A Slot off the grid is absent anyway, so a duration or Start Increment change turns the check into one that cannot fail.
 
 ## Enforced by PHPStan
 

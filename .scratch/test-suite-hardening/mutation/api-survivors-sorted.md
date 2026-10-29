@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 62 |
+| Kind 1, real gap | 54 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 152 |
+| Sorted | 144 |
 | Skipped | 0 |
-| Total | 152 |
+| Total | 144 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -29,6 +29,12 @@ first. The Kind 1 `CreateTherapistCommand.php` line 54 row is killed too, since 
 message is now checked at the command line. All five left the total. The command's Kind 2
 success line, line 65 here, is line 71 after the change.
 
+Ticket 26 closed on 2026-10-29. Its eight Kind 1 rows, the two week filters in
+`GetNextAvailableWeekHandler.php`, are killed: the controller test now seeds a Schedule Exception
+and a confirmed Appointment and runs the real availability computation. All eight left the
+total. The six Kind 2 rows on the same lines stay. They are no longer shared with a Kind 1 row,
+but an ignore there would still drop the eight kills.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -36,21 +42,13 @@ success line, line 65 here, is line 71 after the change.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (62)
+## Kind 1, real gap (54)
 
 ### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
 
 | Line | Mutator | Reason |
 |---|---|---|
 | 72 | LessThan | The lookahead bound is unpinned. The not-found test stubs the computer empty for every call, so one extra week goes unseen. |
-| 78 | LessThanNegotiation | Drops in-week Schedule Exceptions from the week's context. The unit test stubs the exception repository empty and the controller test seeds none. |
-| 78 | LogicalAndAllSubExprNegation | Same, the filter comes back empty. |
-| 78 | LogicalAndNegation | Same, only out-of-week exceptions get through. |
-| 79 | GreaterThanNegotiation | Same, only exceptions that ended before the week get through. |
-| 83 | LessThanNegotiation | Drops in-week confirmed appointments from the week's context. No test puts one in front of this handler. |
-| 83 | LogicalAndAllSubExprNegation | Same, the filter comes back empty. |
-| 83 | LogicalAndNegation | Same, only out-of-week appointments get through. |
-| 84 | GreaterThanNegotiation | Same, only appointments that ended before the week get through. |
 
 ### `src/Domain/Appointment/Entity/TherapistSchedule.php`
 
@@ -213,12 +211,12 @@ with the reason stated once and a File column.
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 78 | LessThan | Equivalent. The computer re-checks every slot and no slot crosses the week's midnight edge, so a Schedule Exception touching the edge blocks nothing. (shared) |
-| 78 | LogicalAnd | Equivalent. It passes a superset and the computer re-checks. (shared) |
-| 79 | GreaterThan | Equivalent, as 78 LessThan. (shared) |
-| 83 | LessThan | Equivalent, same for appointments. (shared) |
-| 83 | LogicalAnd | Equivalent, superset. (shared) |
-| 84 | GreaterThan | Equivalent, as 83 LessThan. (shared) |
+| 78 | LessThan | Equivalent. The computer re-checks every slot and no slot crosses the week's midnight edge, so a Schedule Exception touching the edge blocks nothing. |
+| 78 | LogicalAnd | Equivalent. It passes a superset and the computer re-checks. |
+| 79 | GreaterThan | Equivalent, as 78 LessThan. |
+| 83 | LessThan | Equivalent, same for appointments. |
+| 83 | LogicalAnd | Equivalent, superset. |
+| 84 | GreaterThan | Equivalent, as 83 LessThan. |
 
 ### `src/Infrastructure/Console/Appointment/SeedScheduleCommand.php`
 
