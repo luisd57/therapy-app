@@ -17,7 +17,6 @@ const tickets = [
   [/Infrastructure\/Console\//, ['06']],
   [/Handler\/GetNextAvailableWeekHandler/, ['13']],
   [/Repository\/Doctrine(Appointment|SlotLock)Repository/, ['18']],
-  [/Handler\/GetNextAvailableWeekHandler/, ['26']],
   [/Handler\/GetNextAvailableWeekHandler/, ['27']],
   [/Domain\/Appointment\/Entity\/TherapistSchedule/, ['28']],
   [/Email\/Appointment\/AppointmentEmailSender/, ['29']],

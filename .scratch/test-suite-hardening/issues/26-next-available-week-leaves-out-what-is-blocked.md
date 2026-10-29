@@ -1,5 +1,7 @@
 # 26 - Next available week leaves out what is blocked
 
+> Frozen record, resolved 2026-10-29.
+
 **What to build:** a test that fails when the next-available-week search stops
 passing a week's Schedule Exceptions or confirmed Appointments on to the
 availability computation.
@@ -27,9 +29,9 @@ put an ignore comment there: it would hide the kind 1 rows as well.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] With a Schedule Exception covering every Slot of the current week, the search returns the following week, not the current one
-- [ ] With one Slot of the returned week under a confirmed Appointment, that Slot is not among the Slots returned, and a Slot that does not overlap it is
-- [ ] Both are asserted on what the search returns, with the availability computation not stubbed
-- [ ] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+- [x] With a Schedule Exception covering every Slot of the current week, the search returns the following week, not the current one
+- [x] With one Slot of the returned week under a confirmed Appointment, that Slot is not among the Slots returned, and a Slot that does not overlap it is
+- [x] Both are asserted on what the search returns, with the availability computation not stubbed
+- [x] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
