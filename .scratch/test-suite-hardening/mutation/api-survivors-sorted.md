@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 39 |
+| Kind 1, real gap | 31 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 129 |
+| Sorted | 121 |
 | Skipped | 0 |
-| Total | 129 |
+| Total | 121 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -52,6 +52,11 @@ bodies say "1 confirmed appointment" for one and "2 confirmed appointments" for 
 asserted through to the words after the count. All four left the total. The Kind 2 colour row on
 line 437 and the Kind 3 href rows stay.
 
+Ticket 30 closed on 2026-11-17. Its eight Kind 1 rows in `Appointment.php` are killed: request()
+refuses a whitespace-only city and country, book() refuses a whitespace-only name, city and
+country, and book() stores all three trimmed. All eight left the total. The Kind 2 FalseValue row
+on reconstitute() stays.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -59,20 +64,7 @@ line 437 and the Kind 3 href rows stay.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (39)
-
-### `src/Domain/Appointment/Entity/Appointment.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 96 | UnwrapTrim | request() with a whitespace-only city. Only the name has that test. |
-| 100 | UnwrapTrim | request() with a whitespace-only country. |
-| 132 | UnwrapTrim | book() with a whitespace-only name. book() only has the empty-string case. |
-| 136 | UnwrapTrim | book() with a whitespace-only city. |
-| 140 | UnwrapTrim | book() with a whitespace-only country. |
-| 148 | UnwrapTrim | book() stores the name trimmed. request() pins this, book() does not. |
-| 151 | UnwrapTrim | book() stores the city trimmed. |
-| 152 | UnwrapTrim | book() stores the country trimmed. |
+## Kind 1, real gap (31)
 
 ### `src/Domain/Appointment/Service/AvailabilityComputer.php`
 
