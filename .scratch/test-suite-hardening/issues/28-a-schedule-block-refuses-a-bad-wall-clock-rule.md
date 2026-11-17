@@ -1,5 +1,7 @@
 # 28 - A Schedule Block refuses a bad Wall-clock rule on create and on update
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** tests that fail when a Schedule Block accepts a start or an
 end that is not a real HH:MM Wall-clock rule, or an update that leaves it with
 no length.
@@ -27,11 +29,13 @@ or assert which rule did the refusing. A case two rules refuse pins neither.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Create and update each refuse a malformed start and a malformed end, in cases only the format rule can refuse
-- [ ] Junk before a valid HH:MM is refused, and so is junk after it, each in a case only the format rule can refuse (a letter in front of a start sorts after any end, so the start-before-end check refuses it too, and the case belongs on an end)
-- [ ] An hour past 23 is refused with a valid minute, and a minute past 59 with a valid hour
-- [ ] A block from 23:00 to 23:59 is accepted
-- [ ] Update refuses a start equal to the end
-- [ ] A one-file Infection run no longer reports the ten rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #127](https://github.com/luisd57/therapy-app/pull/127)
+
+- [x] Create and update each refuse a malformed start and a malformed end, in cases only the format rule can refuse
+- [x] Junk before a valid HH:MM is refused, and so is junk after it, each in a case only the format rule can refuse (a letter in front of a start sorts after any end, so the start-before-end check refuses it too, and the case belongs on an end)
+- [x] An hour past 23 is refused with a valid minute, and a minute past 59 with a valid hour
+- [x] A block from 23:00 to 23:59 is accepted
+- [x] Update refuses a start equal to the end
+- [x] A one-file Infection run no longer reports the ten rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

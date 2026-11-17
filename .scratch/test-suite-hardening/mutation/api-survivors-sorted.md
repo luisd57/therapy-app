@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 53 |
+| Kind 1, real gap | 43 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 143 |
+| Sorted | 133 |
 | Skipped | 0 |
-| Total | 143 |
+| Total | 133 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -40,6 +40,12 @@ Ticket 27 closed on 2026-11-17. Its Kind 1 row, the LessThan on the lookahead lo
 with a Schedule Exception, leaves the next one open, and runs the real availability computation.
 The row is removed from the counts, and that file has no Kind 1 rows left.
 
+Ticket 28 closed on 2026-11-17. Its ten Kind 1 rows in `TherapistSchedule.php` are killed: create
+and update each get a malformed start and end, junk before and after an end, an hour past 23 and
+a minute past 59, every case one only the named rule refuses, plus a 23:00 to 23:59 block and an
+update with equal start and end. All ten left the total. The two Kind 2 CastInt rows stay. They
+are no longer shared with a Kind 1 row, but an ignore on line 213 would still drop the kills.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -47,22 +53,7 @@ The row is removed from the counts, and that file has no Kind 1 rows left.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (53)
-
-### `src/Domain/Appointment/Entity/TherapistSchedule.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 60 | MethodCallRemoval | The format check on create()'s `$startTime` is masked. '9:00' and '25:00' also trip the start-before-end check, and the tests expect only the exception class. |
-| 61 | MethodCallRemoval | No test gives create() a malformed `$endTime`. |
-| 87 | MethodCallRemoval | No test gives update() a malformed `$startTime`. |
-| 88 | MethodCallRemoval | No test gives update() a malformed `$endTime`. |
-| 90 | GreaterThanOrEqualTo | update() with equal start and end is untested. create() pins its twin. |
-| 208 | PregMatchRemoveCaret | Leading junk ('x09:00') would pass. No test has it. |
-| 208 | PregMatchRemoveDollar | Trailing junk ('09:00x') would pass. No test has it. |
-| 213 | GreaterThan | `(int) $hours >= 23`. No test uses a 23:xx value, so rejecting it goes unseen. |
-| 213 | GreaterThan | `(int) $minutes >= 59`. No test uses an xx:59 value. |
-| 213 | LogicalOr | '25:00' is the only out-of-range case and it is masked like line 60. |
+## Kind 1, real gap (43)
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
 
@@ -241,8 +232,8 @@ with the reason stated once and a File column.
 
 | Line | Mutator | Reason |
 |---|---|---|
-| 213 | CastInt | `$hours > 23`. Equivalent. The regex already guarantees two digits and PHP compares a numeric string with an int as numbers. (shared) |
-| 213 | CastInt | `$minutes > 59`. Same. (shared) |
+| 213 | CastInt | `$hours > 23`. Equivalent. The regex already guarantees two digits and PHP compares a numeric string with an int as numbers. |
+| 213 | CastInt | `$minutes > 59`. Same. |
 
 ### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
 
