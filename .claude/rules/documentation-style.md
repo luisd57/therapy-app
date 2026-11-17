@@ -1,3 +1,14 @@
+---
+paths:
+  - CLAUDE.md
+  - .claude/rules/**
+  - .claude/skills/**
+  - .claude/hooks/**
+  - .claude/settings.json
+  - docs/**
+  - "**/*.md"
+---
+
 # Documentation Style
 
 When writing or updating CLAUDE.md, .claude/rules/ files, or any project documentation:
@@ -17,5 +28,5 @@ When writing or updating CLAUDE.md, .claude/rules/ files, or any project documen
 - Growing CLAUDE.md is the wrong move. Add a `paths:`-scoped rule in `.claude/rules/` so it loads only for matching files.
 - Multi-step workflows go in `.claude/skills/`, not in a rules file - skills load on demand.
 - A convention worth enforcing rather than only stating goes in `.claude/hooks/`, registered in `.claude/settings.json`. Hooks fail open, so one never replaces the rule that says why. Run `npm test` in that directory after changing one; nothing else does.
-- The hooks come from the `symfony-angular-starter-rules` kit and that copy is canonical. A fix belongs there first, then here. `SOURCE_DIRS` in `skill-gate.mjs` is the exception: it is trimmed to this repo's deployables and is meant to differ.
+- The hooks come from the `symfony-angular-starter-rules` kit and that copy is canonical. A fix belongs there first, then here. `SOURCE_DIRS` in `skill-gate.mjs` and `AREAS` in `verify-on-stop.mjs` are the exceptions: both are trimmed to this repo's deployables and are meant to differ.
 - State the reason behind a non-obvious convention. A rule with a reason survives; a bare prohibition gets "helpfully" undone.
