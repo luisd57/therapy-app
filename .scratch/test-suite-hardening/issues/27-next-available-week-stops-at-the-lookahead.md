@@ -28,8 +28,8 @@ Do not count calls on a stub: that pins the loop, not the answer.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] With every week inside the lookahead closed by a Schedule Exception and the week after it open, the search answers not found
-- [ ] The assertion is on what the search returns, with the availability computation not stubbed
-- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+- [x] With every week inside the lookahead closed by a Schedule Exception and the week after it open, the search answers not found
+- [x] The assertion is on what the search returns, with the availability computation not stubbed
+- [x] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

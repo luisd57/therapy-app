@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 54 |
+| Kind 1, real gap | 53 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 144 |
+| Sorted | 143 |
 | Skipped | 0 |
-| Total | 144 |
+| Total | 143 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -35,6 +35,11 @@ and a confirmed Appointment and runs the real availability computation. All eigh
 total. The six Kind 2 rows on the same lines stay. They are no longer shared with a Kind 1 row,
 but an ignore there would still drop the eight kills.
 
+Ticket 27 closed on 2026-11-17. Its Kind 1 row, the LessThan on the lookahead loop in
+`GetNextAvailableWeekHandler.php`, is killed: a unit test closes every week inside the lookahead
+with a Schedule Exception, leaves the next one open, and runs the real availability computation.
+It left the total, and that file has no Kind 1 rows left.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -42,13 +47,7 @@ but an ignore there would still drop the eight kills.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (54)
-
-### `src/Application/Appointment/Handler/GetNextAvailableWeekHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 72 | LessThan | The lookahead bound is unpinned. The not-found test stubs the computer empty for every call, so one extra week goes unseen. |
+## Kind 1, real gap (53)
 
 ### `src/Domain/Appointment/Entity/TherapistSchedule.php`
 
