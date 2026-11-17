@@ -1,5 +1,7 @@
 # 30 - request() and book() treat blank and padded contact fields alike
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** tests that fail when an Appointment accepts a name, city or
 country made only of whitespace, or stores one with its padding, on either
 entry point.
@@ -22,9 +24,11 @@ padded input is the likely case there, not the rare one.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `request()` refuses a whitespace-only city, and a whitespace-only country, each with the other fields valid
-- [ ] `book()` refuses a whitespace-only name, city and country, each with the other fields valid
-- [ ] An Appointment made by `book()` from a padded name, city and country returns all three without the padding
-- [ ] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #129](https://github.com/luisd57/therapy-app/pull/129)
+
+- [x] `request()` refuses a whitespace-only city, and a whitespace-only country, each with the other fields valid
+- [x] `book()` refuses a whitespace-only name, city and country, each with the other fields valid
+- [x] An Appointment made by `book()` from a padded name, city and country returns all three without the padding
+- [x] A one-file Infection run no longer reports the eight rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

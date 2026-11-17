@@ -189,6 +189,42 @@ final class AppointmentTest extends TestCase
         );
     }
 
+    public function testRequestWithWhitespaceOnlyCityThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('City is required.');
+
+        Appointment::request(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: '   ',
+            country: 'USA',
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public function testRequestWithWhitespaceOnlyCountryThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Country is required.');
+
+        Appointment::request(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: '   ',
+            now: new DateTimeImmutable(),
+        );
+    }
+
     // --- Status transitions ---
 
     public function testConfirmFromRequested(): void
@@ -393,6 +429,79 @@ final class AppointmentTest extends TestCase
             country: 'USA',
             now: new DateTimeImmutable(),
         );
+    }
+
+    public function testBookWithWhitespaceOnlyFullNameThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Full name is required.');
+
+        Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: '   ',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: 'USA',
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public function testBookWithWhitespaceOnlyCityThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('City is required.');
+
+        Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: '   ',
+            country: 'USA',
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public function testBookWithWhitespaceOnlyCountryThrowsException(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Country is required.');
+
+        Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: 'John Doe',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: 'New York',
+            country: '   ',
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public function testBookTrimsTheNameCityAndCountry(): void
+    {
+        $appointment = Appointment::book(
+            id: AppointmentId::generate(),
+            timeSlot: TimeSlot::create(new DateTimeImmutable('+1 day'), 50),
+            modality: AppointmentModality::ONLINE,
+            fullName: '  John Doe ',
+            email: Email::fromString('john@example.com'),
+            phone: Phone::fromString('+1234567890'),
+            city: ' New York  ',
+            country: "\tUSA\n",
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
+        );
+
+        $this->assertSame('John Doe', $appointment->getFullName());
+        $this->assertSame('New York', $appointment->getCity());
+        $this->assertSame('USA', $appointment->getCountry());
     }
 
     // --- paymentVerified ---

@@ -7,7 +7,6 @@ const j = JSON.parse(readFileSync(input, 'utf8'));
 const s = j.stats;
 
 const tickets = [
-  [/Domain\/Appointment\/Entity\/Appointment\.php/, ['30']],
   [/Domain\/Appointment\/Service\/AvailabilityComputer/, ['31']],
   [/Infrastructure\/Security\/RedisJwtBlocklist/, ['32']],
   [/Repository\/DoctrineAppointmentRepository/, ['33']],
