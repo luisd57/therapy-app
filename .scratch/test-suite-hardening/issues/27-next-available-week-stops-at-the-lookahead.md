@@ -1,5 +1,7 @@
 # 27 - Next available week stops at the lookahead
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** a test that fails when the next-available-week search looks
 one week past the configured lookahead.
 
