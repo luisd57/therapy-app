@@ -29,12 +29,6 @@ Keep this file and `.claude/rules/` focused on project facts the plugin doesn't 
 
 Single-therapist practice. Requesters and Patients browse Slots and submit Appointment requests. The Therapist manages schedules, confirms/cancels Appointments, and onboards Patients via invitation-only registration. Payments verified manually.
 
-## Project Structure
-
-- `API/` - Symfony 8.1 backend (PHP 8.5, PostgreSQL 16, Redis 7)
-- `landing/` - Public-facing Astro + Svelte website (slot browser, appointment requests)
-- `dashboard/` - Angular therapist/patient dashboard (schedule, appointments, patients)
-
 ## Dev Environment
 
 ```bash
@@ -48,13 +42,6 @@ docker-compose exec php vendor/bin/deptrac analyse  # Layer direction, rules in 
 docker-compose exec php vendor/bin/infection --threads=8 --only-covering-test-cases src/<path>
 ```
 
-| Service   | URL                          |
-|-----------|------------------------------|
-| API       | http://localhost:8080/api     |
-| Frontend  | http://localhost:4321         |
-| MailHog   | http://localhost:8025         |
-| pgAdmin   | http://localhost:5050         |
-
 ## Appointment Status Lifecycle
 
 ```
@@ -67,14 +54,6 @@ request() ──> REQUESTED ──> CONFIRMED ──> COMPLETED
 - Two entry points, not one. `request()` starts at REQUESTED. `book()` starts at CONFIRMED and never passes through REQUESTED - it is the therapist entering an appointment for a patient who phoned. Do not assume a CONFIRMED appointment has a REQUESTED history.
 - Only CONFIRMED appointments block a slot. REQUESTED appointments do NOT block - multiple visitors can request the same slot.
 - COMPLETED and CANCELLED are terminal states.
-
-## API Response Envelope
-
-```json
-{"success": true, "data": {...}}
-{"success": false, "error": {"code": "...", "message": "..."}}
-{"success": true, "data": {"<items>": [...], "pagination": {"page": 1, "limit": 20, "total": 42, "total_pages": 3}}}
-```
 
 Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: ISO-8601 throughout.
 

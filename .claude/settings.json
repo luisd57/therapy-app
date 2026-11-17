@@ -7,7 +7,8 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git checkout:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git checkout main)",
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "mcp__playwright__browser_snapshot",
@@ -23,7 +24,73 @@
       "mcp__playwright__browser_close"
     ],
     "deny": [
-      "Read(./API/Product-brainstorm-with-client.md)"
+      "Read(./API/Product-brainstorm-with-client.md)",
+      "Read(./API/.env)",
+      "Read(./API/.env.dev)",
+      "Read(./API/.env.local*)",
+      "Read(./API/.env.dev.local)",
+      "Read(./landing/.env)",
+      "Read(./API/config/jwt/private.pem)",
+      "Bash(*API/.env)",
+      "Bash(*API/.env *)",
+      "Bash(*API/.env.dev)",
+      "Bash(*API/.env.dev *)",
+      "Bash(*landing/.env)",
+      "Bash(*landing/.env *)",
+      "Bash(*private.pem)",
+      "Bash(*private.pem *)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)",
+      "Bash(git push * +*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git -C * reset --hard*)",
+      "Bash(git clean:*)",
+      "Bash(git -C * clean*)",
+      "Bash(git checkout -- :*)",
+      "Bash(git checkout .)",
+      "Bash(git checkout * -- *)",
+      "Bash(git checkout -f*)",
+      "Bash(git -C * checkout *)",
+      "Bash(git restore:*)",
+      "Bash(git -C * restore*)",
+      "Bash(git switch --discard-changes*)",
+      "Bash(git switch -f*)",
+      "Bash(git stash drop*)",
+      "Bash(git stash clear*)",
+      "Bash(git branch -D*)",
+      "PowerShell(*API/.env)",
+      "PowerShell(*API/.env *)",
+      "PowerShell(*API/.env.dev)",
+      "PowerShell(*API/.env.dev *)",
+      "PowerShell(*landing/.env)",
+      "PowerShell(*landing/.env *)",
+      "PowerShell(*private.pem)",
+      "PowerShell(*private.pem *)",
+      "PowerShell(git push --force:*)",
+      "PowerShell(git push -f:*)",
+      "PowerShell(git push * --force*)",
+      "PowerShell(git push * -f)",
+      "PowerShell(git push * -f *)",
+      "PowerShell(git push * +*)",
+      "PowerShell(git reset --hard:*)",
+      "PowerShell(git -C * reset --hard*)",
+      "PowerShell(git clean:*)",
+      "PowerShell(git -C * clean*)",
+      "PowerShell(git checkout -- :*)",
+      "PowerShell(git checkout .)",
+      "PowerShell(git checkout * -- *)",
+      "PowerShell(git checkout -f*)",
+      "PowerShell(git -C * checkout *)",
+      "PowerShell(git restore:*)",
+      "PowerShell(git -C * restore*)",
+      "PowerShell(git switch --discard-changes*)",
+      "PowerShell(git switch -f*)",
+      "PowerShell(git stash drop*)",
+      "PowerShell(git stash clear*)",
+      "PowerShell(git branch -D*)"
     ]
   },
   "hooks": {
@@ -47,6 +114,18 @@
             "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/ticket-duplicate.mjs",
             "timeout": 10,
             "statusMessage": "Checking the tracker for a duplicate"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/verify-on-stop.mjs",
+            "timeout": 600,
+            "statusMessage": "Running checks on uncommitted changes"
           }
         ]
       }

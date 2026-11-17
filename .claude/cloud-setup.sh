@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Setup script for a Claude Code cloud environment. Paste into the environment's setup field.
+# Mirrors the "test" job in .github/workflows/ci.yml, with services on localhost instead of docker-compose.
+set -euo pipefail
+
+cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
+
+# Same as the CI job env. Without APP_ENV=test, composer's cache:clear boots dev and crashes on missing vars.
+export APP_ENV=test TZ=UTC PGTZ=UTC
+
+if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -lt 20 ]; then
+  echo "Node 20+ is required, the image has $(node -v 2>/dev/null || echo none)." >&2
+  exit 1
+fi
+
+# PHP 8.5 is not in the Ubuntu archive. Add ppa.launchpadcontent.net and getcomposer.org to the network allowlist.
+sudo apt-get update -q
+sudo apt-get install -y -q software-properties-common
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt-get update -q
+sudo apt-get install -y -q \
+  php8.5-cli php8.5-pgsql php8.5-intl php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-redis php8.5-pcov \
+  redis-server unzip
+# postgresql-16 is only in the 24.04 archive. Older images get their default version.
+sudo apt-get install -y -q postgresql-16 || sudo apt-get install -y -q postgresql
+
+if ! command -v composer >/dev/null; then
+  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+fi
+
+sudo service postgresql start
+sudo service redis-server start
+
+sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='therapy_user'" | grep -q 1 \
+  || sudo -u postgres psql -c "CREATE USER therapy_user WITH PASSWORD 'therapy_pass' CREATEDB;"
+
+# Test-only values from ci.yml. .env.test.local overrides the docker hostnames in .env.test.
+cd API
+touch .env
+cat > .env.test.local <<'EOF'
+DATABASE_URL="postgresql://therapy_user:therapy_pass@localhost:5432/therapy_db?serverVersion=16&charset=utf8"
+REDIS_URL="redis://localhost:6379"
+MAILER_DSN="null://null"
+JWT_PASSPHRASE=therapy_jwt_passphrase
+APPOINTMENT_DURATION_MINUTES=50
+SLOT_LOCK_TTL=600
+PRACTICE_TIMEZONE=America/Caracas
+SLOT_START_INCREMENT_MINUTES=30
+DEFAULT_URI=http://localhost
+JWT_COOKIE_SECURE=false
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+EOF
+
+composer install --no-interaction --prefer-dist --no-progress
+php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
+php bin/console doctrine:database:create --if-not-exists --no-interaction
+php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+cd ..
+
+(cd dashboard && npm ci --no-audit --no-fund)
+(cd landing && npm ci --no-audit --no-fund)

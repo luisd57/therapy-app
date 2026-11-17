@@ -10,5 +10,6 @@
 - On the default branch (main/master), create a branch before committing - never commit directly to it.
 - `git checkout -b`: confirm you are on `main` first. A branch cut from another feature branch inherits that branch's commits, and the PR carries them even when your own commit is clean.
 - After opening a PR, check `gh pr diff --name-only`. `git diff --stat` before committing only proves your commit is clean; the PR diff is against the base branch, and that is what merges.
+- A PR touching only `docs/`, `.scratch/` or `*.md` may auto-merge on green CI (`gh pr merge --auto`), unless it touches `CLAUDE.md` or `.claude/`. Everything else waits for the user's review. Docs carry no runtime code and CI still gates them, but agent instructions change how every later session behaves.
 - Never `--no-verify` or skip signing unless the user explicitly asks; if a hook fails, fix the cause.
 - `gh pr merge`: switch off the feature branch first (`git checkout main`), then merge, then `git fetch origin && git pull --ff-only` before deleting the local branch - otherwise local main can't fast-forward.
