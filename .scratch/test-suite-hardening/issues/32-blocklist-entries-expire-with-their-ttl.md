@@ -33,6 +33,8 @@ clock at a fixed Instant as `api-testing.md` asks.
 
 **Status:** resolved
 
+**Resolved by:** [PR #131](https://github.com/luisd57/therapy-app/pull/131)
+
 - [x] A jti revoked with a TTL is reported revoked before the TTL has passed, and not after
 - [x] A per-user cutoff stored with a TTL rejects an older token before the TTL has passed, and not after
 - [x] Time moves through an injected clock, with no sleep, and both answers come from the blocklist's public methods
