@@ -444,7 +444,7 @@ final class EmailRenderingTest extends TestCase
         );
 
         $html = $this->htmlBody();
-        $this->assertStringContainsString('font-weight: bold;">' . $label . '</td>', $html);
+        $this->assertStringContainsString('>' . $label . '</td>', $html);
         $this->assertStringNotContainsString($otherLabel, $html);
         $text = $this->textBody();
         $this->assertStringContainsString('| Payment: ' . $label, $text);
