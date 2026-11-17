@@ -10,6 +10,7 @@ use App\Domain\Appointment\Id\ScheduleId;
 use App\Domain\Appointment\Enum\WeekDay;
 use App\Tests\Helper\DomainTestHelper;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class TherapistScheduleTest extends TestCase
@@ -78,32 +79,50 @@ final class TherapistScheduleTest extends TestCase
         $this->assertTrue($schedule->isSupportsInPerson());
     }
 
-    public function testCreateWithInvalidTimeFormatThrowsException(): void
+    /**
+     * Each start sorts before its end, so only the rule named in the message can refuse it.
+     *
+     * @return iterable<string, array{string, string, string}>
+     */
+    public static function refusedWallClockRules(): iterable
+    {
+        yield 'malformed start' => ['0900', '17:00', 'Invalid time format: 0900. Expected HH:MM.'];
+        yield 'malformed end' => ['09:00', '1700', 'Invalid time format: 1700. Expected HH:MM.'];
+        yield 'junk before the end' => ['09:00', 'x17:00', 'Invalid time format: x17:00. Expected HH:MM.'];
+        yield 'junk after the end' => ['09:00', '17:00x', 'Invalid time format: 17:00x. Expected HH:MM.'];
+        yield 'hour past 23' => ['09:00', '24:00', 'Invalid time value: 24:00.'];
+        yield 'minute past 59' => ['09:00', '17:60', 'Invalid time value: 17:60.'];
+    }
+
+    #[DataProvider('refusedWallClockRules')]
+    public function testCreateRefusesABadWallClockRule(string $startTime, string $endTime, string $message): void
     {
         $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
 
         TherapistSchedule::create(
             id: ScheduleId::generate(),
             therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
-            startTime: '9:00',
-            endTime: '17:00',
+            startTime: $startTime,
+            endTime: $endTime,
             now: new DateTimeImmutable(),
         );
     }
 
-    public function testCreateWithInvalidTimeValueThrowsException(): void
+    public function testCreateAcceptsABlockFrom2300To2359(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-
-        TherapistSchedule::create(
+        $schedule = TherapistSchedule::create(
             id: ScheduleId::generate(),
             therapist: DomainTestHelper::createTherapist(),
             dayOfWeek: WeekDay::MONDAY,
-            startTime: '25:00',
-            endTime: '17:00',
+            startTime: '23:00',
+            endTime: '23:59',
             now: new DateTimeImmutable(),
         );
+
+        $this->assertSame('23:00', $schedule->getStartTime());
+        $this->assertSame('23:59', $schedule->getEndTime());
     }
 
     public function testCreateWithStartTimeAfterEndTimeThrowsException(): void
@@ -181,6 +200,55 @@ final class TherapistScheduleTest extends TestCase
         $schedule->update(
             dayOfWeek: WeekDay::MONDAY,
             startTime: '17:00',
+            endTime: '09:00',
+            supportsOnline: true,
+            supportsInPerson: true,
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    #[DataProvider('refusedWallClockRules')]
+    public function testUpdateRefusesABadWallClockRule(string $startTime, string $endTime, string $message): void
+    {
+        $schedule = TherapistSchedule::create(
+            id: ScheduleId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
+            dayOfWeek: WeekDay::MONDAY,
+            startTime: '09:00',
+            endTime: '17:00',
+            now: new DateTimeImmutable(),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+
+        $schedule->update(
+            dayOfWeek: WeekDay::MONDAY,
+            startTime: $startTime,
+            endTime: $endTime,
+            supportsOnline: true,
+            supportsInPerson: true,
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    public function testUpdateWithEqualStartAndEndTimeThrowsException(): void
+    {
+        $schedule = TherapistSchedule::create(
+            id: ScheduleId::generate(),
+            therapist: DomainTestHelper::createTherapist(),
+            dayOfWeek: WeekDay::MONDAY,
+            startTime: '09:00',
+            endTime: '17:00',
+            now: new DateTimeImmutable(),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Start time must be before end time.');
+
+        $schedule->update(
+            dayOfWeek: WeekDay::MONDAY,
+            startTime: '09:00',
             endTime: '09:00',
             supportsOnline: true,
             supportsInPerson: true,
