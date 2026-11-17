@@ -1,5 +1,7 @@
 # 27 - Next available week stops at the lookahead
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** a test that fails when the next-available-week search looks
 one week past the configured lookahead.
 
@@ -28,8 +30,10 @@ Do not count calls on a stub: that pins the loop, not the answer.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] With every week inside the lookahead closed by a Schedule Exception and the week after it open, the search answers not found
-- [ ] The assertion is on what the search returns, with the availability computation not stubbed
-- [ ] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #126](https://github.com/luisd57/therapy-app/pull/126)
+
+- [x] With every week inside the lookahead closed by a Schedule Exception and the week after it open, the search answers not found
+- [x] The assertion is on what the search returns, with the availability computation not stubbed
+- [x] A one-file Infection run no longer reports the row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

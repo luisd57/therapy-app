@@ -11,7 +11,10 @@ use App\Infrastructure\Config\EnvPracticeTimezoneProvider;
 use App\Domain\Appointment\Repository\AppointmentRepositoryInterface;
 use App\Domain\Appointment\Repository\ScheduleExceptionRepositoryInterface;
 use App\Domain\Appointment\Repository\TherapistScheduleRepositoryInterface;
+use App\Domain\Appointment\Enum\WeekDay;
+use App\Domain\Appointment\Service\AvailabilityComputer;
 use App\Domain\Appointment\Service\AvailabilityComputerInterface;
+use App\Tests\Helper\DomainTestHelper;
 use Symfony\Component\Clock\ClockInterface;
 use App\Domain\Appointment\ValueObject\TimeSlot;
 use App\Domain\User\Entity\User;
@@ -53,8 +56,10 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         );
     }
 
-    private function createHandler(int $maxLookaheadWeeks = 3): GetNextAvailableWeekHandler
-    {
+    private function createHandler(
+        int $maxLookaheadWeeks = 3,
+        ?AvailabilityComputerInterface $availabilityComputer = null,
+    ): GetNextAvailableWeekHandler {
         $practiceTimezoneProvider = new EnvPracticeTimezoneProvider('America/Caracas');
 
         return new GetNextAvailableWeekHandler(
@@ -62,7 +67,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
             $this->scheduleRepository,
             $this->exceptionRepository,
             $this->appointmentRepository,
-            $this->availabilityComputer,
+            $availabilityComputer ?? $this->availabilityComputer,
             new SlotGenerationRulesFactory(
                 practiceTimezoneProvider: $practiceTimezoneProvider,
                 appointmentDurationMinutes: 50,
@@ -148,6 +153,41 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->assertFalse($result->found);
         $this->assertNull($result->weekStart);
         $this->assertNull($result->weekEnd);
+        $this->assertCount(0, $result->slots);
+    }
+
+    public function testDoesNotSearchPastTheLookahead(): void
+    {
+        $lookaheadWeeks = 3;
+        $therapist = $this->createTherapist();
+        // Practice-local midnight on the frozen Monday, where the first week starts.
+        $firstWeekStart = self::utc('2026-06-15 04:00:00');
+
+        $this->userRepository->method('findSingleTherapist')->willReturn($therapist);
+        $this->scheduleRepository->method('findActiveByTherapist')->willReturn(new ArrayCollection([
+            DomainTestHelper::createScheduleBlock($therapist, WeekDay::MONDAY, '08:00', '18:00'),
+        ]));
+        $this->appointmentRepository->method('findConfirmedByDateRange')->willReturn(new ArrayCollection());
+        // Ends exactly where the lookahead ends. Any later and it would close the next week too.
+        $this->exceptionRepository->method('findByTherapistAndDateRange')->willReturn(new ArrayCollection([
+            DomainTestHelper::createScheduleException(
+                therapist: $therapist,
+                startDateTime: $firstWeekStart,
+                endDateTime: $firstWeekStart->modify("+{$lookaheadWeeks} weeks"),
+            ),
+        ]));
+
+        // The week right after the lookahead is open, so the not-found below is the bound's doing.
+        $resultWithOneMoreWeek = $this->createHandler($lookaheadWeeks + 1, new AvailabilityComputer())
+            ->__invoke(new GetNextAvailableWeekInputDTO());
+        $this->assertTrue($resultWithOneMoreWeek->found);
+        $this->assertSame('2026-07-06T04:00:00+00:00', $resultWithOneMoreWeek->weekStart);
+
+        $result = $this->createHandler($lookaheadWeeks, new AvailabilityComputer())
+            ->__invoke(new GetNextAvailableWeekInputDTO());
+
+        $this->assertFalse($result->found);
+        $this->assertNull($result->weekStart);
         $this->assertCount(0, $result->slots);
     }
 
