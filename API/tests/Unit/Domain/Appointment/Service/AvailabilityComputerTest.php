@@ -459,6 +459,57 @@ final class AvailabilityComputerTest extends TestCase
         );
     }
 
+    /**
+     * The window end is exclusive. Callers pass the next week's start as `to`,
+     * so an inclusive end would list that Slot in both weeks.
+     */
+    public function testACandidateStartingExactlyAtTheWindowEndIsNotOffered(): void
+    {
+        // 08:00-12:00 Caracas, 90-minute sessions every 30 minutes: starts 12:00 to 14:30 UTC.
+        $arguments = [
+            'availabilityContext' => $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00')],
+            ),
+            'slotGenerationRules' => self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            'from' => self::utc('2026-06-01 00:00:00'),
+            'now' => self::utc('2026-05-01 00:00:00'),
+        ];
+
+        $wholeDay = $this->computer->computeAvailableSlots(...[...$arguments, 'to' => self::utc('2026-06-02 00:00:00')]);
+        $endingOnACandidate = $this->computer->computeAvailableSlots(...[...$arguments, 'to' => self::utc('2026-06-01 13:30:00')]);
+
+        $this->assertContains('2026-06-01T13:30:00Z', self::startsAsUtc($wholeDay));
+        $this->assertSame(
+            ['2026-06-01T12:00:00Z', '2026-06-01T12:30:00Z', '2026-06-01T13:00:00Z'],
+            self::startsAsUtc($endingOnACandidate),
+        );
+    }
+
+    /**
+     * A Slot starting at the current instant is past. Only a later start is still open.
+     */
+    public function testACandidateStartingExactlyNowIsPast(): void
+    {
+        // 08:00-12:00 Caracas, 90-minute sessions every 30 minutes: starts 12:00 to 14:30 UTC.
+        $arguments = [
+            'availabilityContext' => $this->createContext(
+                schedules: [$this->createSchedule(WeekDay::MONDAY, '08:00', '12:00')],
+            ),
+            'slotGenerationRules' => self::rules(durationMinutes: 90, startIncrementMinutes: 30),
+            'from' => self::utc('2026-06-01 00:00:00'),
+            'to' => self::utc('2026-06-02 00:00:00'),
+        ];
+
+        $monthBefore = $this->computer->computeAvailableSlots(...[...$arguments, 'now' => self::utc('2026-05-01 00:00:00')]);
+        $nowOnACandidate = $this->computer->computeAvailableSlots(...[...$arguments, 'now' => self::utc('2026-06-01 12:30:00')]);
+
+        $this->assertContains('2026-06-01T12:30:00Z', self::startsAsUtc($monthBefore));
+        $this->assertSame(
+            ['2026-06-01T13:00:00Z', '2026-06-01T13:30:00Z', '2026-06-01T14:00:00Z', '2026-06-01T14:30:00Z'],
+            self::startsAsUtc($nowOnACandidate),
+        );
+    }
+
     public function testPastSlotsAreFilteredRegardlessOfTheZoneNowIsExpressedIn(): void
     {
         $schedules = [$this->createSchedule(WeekDay::MONDAY, '08:00', '13:00')];
