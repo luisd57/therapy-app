@@ -60,7 +60,6 @@
       "Bash(git switch -f*)",
       "Bash(git stash drop*)",
       "Bash(git stash clear*)",
-      "Bash(git branch -D*)",
       "PowerShell(*API/.env)",
       "PowerShell(*API/.env *)",
       "PowerShell(*API/.env.dev)",
@@ -89,12 +88,22 @@
       "PowerShell(git switch --discard-changes*)",
       "PowerShell(git switch -f*)",
       "PowerShell(git stash drop*)",
-      "PowerShell(git stash clear*)",
-      "PowerShell(git branch -D*)"
+      "PowerShell(git stash clear*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/branch-delete-guard.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking the branch matches main"
+          }
+        ]
+      },
       {
         "matcher": "Write|Edit|Bash",
         "hooks": [
