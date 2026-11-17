@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 29 |
+| Kind 1, real gap | 27 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 119 |
+| Sorted | 117 |
 | Skipped | 0 |
-| Total | 119 |
+| Total | 117 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -61,6 +61,11 @@ Ticket 31 closed on 2026-11-17. Its two Kind 1 rows in `AvailabilityComputer.php
 candidate starting exactly at the window end is not offered, and one starting exactly at `now` is
 past, each with the Slot shown offered first. Both left the total. The seven Kind 2 rows stay.
 
+Ticket 32 closed on 2026-11-17. Its two Kind 1 rows in `RedisJwtBlocklist.php` are killed: a
+revoked jti and a per-user cutoff each hold one second before their TTL and are gone at exactly
+the TTL, for two TTLs, with time moved on a `MockClock` behind the `ArrayAdapter`. Both left the
+total. The seven Kind 2 rows stay.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -68,14 +73,7 @@ past, each with the Slot shown offered first. Both left the total. The seven Kin
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (29)
-
-### `src/Infrastructure/Security/RedisJwtBlocklist.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 20 | MethodCallRemoval | A revoked jti never expires, one Redis key per logout for good. Storage growth, not a security hole. ArrayAdapter takes a clock, so a unit test can see it. |
-| 33 | MethodCallRemoval | Same for the per-user cutoff key. Bounded by user count, so lower stakes. |
+## Kind 1, real gap (27)
 
 ### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php`
 

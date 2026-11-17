@@ -1,5 +1,7 @@
 # 32 - Blocklist entries expire with their TTL
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** a test that fails when the JWT blocklist keeps an entry past
 the TTL it was stored with.
 
@@ -18,6 +20,10 @@ from the system clock, and the pool reads its injected clock only when it
 compares (checked in the vendored Symfony cache, 2026-10-09). A clock frozen at
 a fixture Instant is red on correct code. Start it at now and move it forward.
 
+Correction, 2026-11-17: that premise was wrong. `ArrayAdapter` hands its clock to
+each item, and `CacheItem::expiresAfter` stamps from it, so the tests pin the
+clock at a fixed Instant as `api-testing.md` asks.
+
 **Mutants this should kill:** the two kind 1 rows for
 `src/Infrastructure/Security/RedisJwtBlocklist.php` in
 `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
@@ -25,9 +31,11 @@ a fixture Instant is red on correct code. Start it at now and move it forward.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A jti revoked with a TTL is reported revoked before the TTL has passed, and not after
-- [ ] A per-user cutoff stored with a TTL rejects an older token before the TTL has passed, and not after
-- [ ] Time moves through an injected clock, with no sleep, and both answers come from the blocklist's public methods
-- [ ] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #131](https://github.com/luisd57/therapy-app/pull/131)
+
+- [x] A jti revoked with a TTL is reported revoked before the TTL has passed, and not after
+- [x] A per-user cutoff stored with a TTL rejects an older token before the TTL has passed, and not after
+- [x] Time moves through an injected clock, with no sleep, and both answers come from the blocklist's public methods
+- [x] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
