@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Infrastructure\Security;
 
 use App\Infrastructure\Security\RedisJwtBlocklist;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Clock\MockClock;
@@ -13,11 +14,25 @@ final class RedisJwtBlocklistTest extends TestCase
 {
     private const CUTOFF = 1787306400;
 
+    private MockClock $clock;
+
     private RedisJwtBlocklist $blocklist;
 
     protected function setUp(): void
     {
-        $this->blocklist = new RedisJwtBlocklist(new ArrayAdapter());
+        $this->clock = new MockClock(new \DateTimeImmutable('2026-11-17 09:00:00', new \DateTimeZone('UTC')));
+        $this->blocklist = new RedisJwtBlocklist(new ArrayAdapter(clock: $this->clock));
+    }
+
+    /**
+     * Two TTLs, so a hardcoded expiry cannot match both.
+     *
+     * @return iterable<string, array{int}>
+     */
+    public static function ttls(): iterable
+    {
+        yield 'one minute' => [60];
+        yield 'one hour' => [3600];
     }
 
     public function testATokenIssuedBeforeTheCutoffIsRejected(): void
@@ -66,29 +81,28 @@ final class RedisJwtBlocklistTest extends TestCase
         $this->assertFalse($this->blocklist->isRevoked('jti-2'));
     }
 
-    public function testARevokedJtiExpiresWithItsTtl(): void
+    /** Gone at exactly the TTL, as Redis expires it, so a one-second-longer TTL fails. */
+    #[DataProvider('ttls')]
+    public function testARevokedJtiExpiresWithItsTtl(int $ttlSeconds): void
     {
-        $clock = new MockClock();
-        $blocklist = new RedisJwtBlocklist(new ArrayAdapter(clock: $clock));
-        $blocklist->revoke('jti-1', 3600);
+        $this->blocklist->revoke('jti-1', $ttlSeconds);
 
-        $clock->sleep(3599);
-        $this->assertTrue($blocklist->isRevoked('jti-1'));
+        $this->clock->sleep($ttlSeconds - 1);
+        $this->assertTrue($this->blocklist->isRevoked('jti-1'));
 
-        $clock->sleep(2);
-        $this->assertFalse($blocklist->isRevoked('jti-1'));
+        $this->clock->sleep(1);
+        $this->assertFalse($this->blocklist->isRevoked('jti-1'));
     }
 
-    public function testACutoffExpiresWithItsTtl(): void
+    #[DataProvider('ttls')]
+    public function testACutoffExpiresWithItsTtl(int $ttlSeconds): void
     {
-        $clock = new MockClock();
-        $blocklist = new RedisJwtBlocklist(new ArrayAdapter(clock: $clock));
-        $blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
+        $this->blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, $ttlSeconds);
 
-        $clock->sleep(3599);
-        $this->assertTrue($blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
+        $this->clock->sleep($ttlSeconds - 1);
+        $this->assertTrue($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
 
-        $clock->sleep(2);
-        $this->assertFalse($blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
+        $this->clock->sleep(1);
+        $this->assertFalse($this->blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
     }
 }

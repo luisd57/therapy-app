@@ -62,9 +62,9 @@ candidate starting exactly at the window end is not offered, and one starting ex
 past, each with the Slot shown offered first. Both left the total. The seven Kind 2 rows stay.
 
 Ticket 32 closed on 2026-11-17. Its two Kind 1 rows in `RedisJwtBlocklist.php` are killed: a
-revoked jti and a per-user cutoff each hold one second before their TTL and are gone one second
-after, with time moved on a `MockClock` behind the `ArrayAdapter`. Both left the total. The seven
-Kind 2 rows stay.
+revoked jti and a per-user cutoff each hold one second before their TTL and are gone at exactly
+the TTL, for two TTLs, with time moved on a `MockClock` behind the `ArrayAdapter`. Both left the
+total. The seven Kind 2 rows stay.
 
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.

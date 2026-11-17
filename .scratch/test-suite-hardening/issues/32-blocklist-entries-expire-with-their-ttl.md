@@ -20,6 +20,10 @@ from the system clock, and the pool reads its injected clock only when it
 compares (checked in the vendored Symfony cache, 2026-10-09). A clock frozen at
 a fixture Instant is red on correct code. Start it at now and move it forward.
 
+Correction, 2026-11-17: that premise was wrong. `ArrayAdapter` hands its clock to
+each item, and `CacheItem::expiresAfter` stamps from it, so the tests pin the
+clock at a fixed Instant as `api-testing.md` asks.
+
 **Mutants this should kill:** the two kind 1 rows for
 `src/Infrastructure/Security/RedisJwtBlocklist.php` in
 `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
