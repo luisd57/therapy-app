@@ -5,14 +5,24 @@ set -euo pipefail
 
 cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# PHP 8.5 is not in the Ubuntu archive. The PPA host needs to be on the environment's network allowlist.
+# Same as the CI job env. Without APP_ENV=test, composer's cache:clear boots dev and crashes on missing vars.
+export APP_ENV=test TZ=UTC PGTZ=UTC
+
+if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -lt 20 ]; then
+  echo "Node 20+ is required, the image has $(node -v 2>/dev/null || echo none)." >&2
+  exit 1
+fi
+
+# PHP 8.5 is not in the Ubuntu archive. Add ppa.launchpadcontent.net and getcomposer.org to the network allowlist.
 sudo apt-get update -q
 sudo apt-get install -y -q software-properties-common
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt-get update -q
 sudo apt-get install -y -q \
   php8.5-cli php8.5-pgsql php8.5-intl php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-redis php8.5-pcov \
-  postgresql-16 redis-server unzip
+  redis-server unzip
+# postgresql-16 is only in the 24.04 archive. Older images get their default version.
+sudo apt-get install -y -q postgresql-16 || sudo apt-get install -y -q postgresql
 
 if ! command -v composer >/dev/null; then
   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -43,8 +53,8 @@ EOF
 
 composer install --no-interaction --prefer-dist --no-progress
 php bin/console lexik:jwt:generate-keypair --skip-if-exists --no-interaction
-php bin/console doctrine:database:create --env=test --if-not-exists --no-interaction
-php bin/console doctrine:migrations:migrate --env=test --no-interaction --all-or-nothing
+php bin/console doctrine:database:create --if-not-exists --no-interaction
+php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
 cd ..
 
 (cd dashboard && npm ci --no-audit --no-fund)

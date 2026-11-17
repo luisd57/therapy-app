@@ -55,6 +55,8 @@ request() ──> REQUESTED ──> CONFIRMED ──> COMPLETED
 - Only CONFIRMED appointments block a slot. REQUESTED appointments do NOT block - multiple visitors can request the same slot.
 - COMPLETED and CANCELLED are terminal states.
 
+Auth: JWT via httpOnly cookie (browser) or Bearer token (API clients). Dates: ISO-8601 throughout.
+
 ## Key Business Rules
 
 - Single-therapist system. API guards against creating a second therapist.
