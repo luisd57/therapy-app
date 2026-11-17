@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 43 |
+| Kind 1, real gap | 39 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 133 |
+| Sorted | 129 |
 | Skipped | 0 |
-| Total | 133 |
+| Total | 129 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -46,6 +46,12 @@ a minute past 59, every case one only the named rule refuses, plus a 23:00 to 23
 update with equal start and end. All ten left the total. The two Kind 2 CastInt rows stay. They
 are no longer shared with a Kind 1 row, but an ignore on line 213 would still drop the kills.
 
+Ticket 29 closed on 2026-11-17. Its four Kind 1 rows in `AppointmentEmailSender.php` are killed:
+the daily agenda, sent with one Appointment, states Verified or Pending in both bodies, and both
+bodies say "1 confirmed appointment" for one and "2 confirmed appointments" for two, each
+asserted through to the words after the count. All four left the total. The Kind 2 colour row on
+line 437 and the Kind 3 href rows stay.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -53,16 +59,7 @@ are no longer shared with a Kind 1 row, but an ignore on line 213 would still dr
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (43)
-
-### `src/Infrastructure/Email/Appointment/AppointmentEmailSender.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 436 | Ternary | The HTML agenda's payment label is never asserted, so Verified and Pending can swap. |
-| 520 | IncrementInteger | The text agenda's summary line is never asserted. The HTML one is. |
-| 520 | Ternary | Same line, singular and plural can swap in the text body. |
-| 537 | Ternary | The text agenda's payment label is never asserted. |
+## Kind 1, real gap (39)
 
 ### `src/Domain/Appointment/Entity/Appointment.php`
 

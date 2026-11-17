@@ -14,6 +14,7 @@ use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\UsesUtcInstants;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Mailer\MailerInterface;
@@ -418,6 +419,72 @@ final class EmailRenderingTest extends TestCase
         $this->assertStringContainsString('No confirmed appointments for today', $html);
         $expectedUrl = self::FRONTEND_URL . '/login';
         $this->assertStringContainsString('href="' . $expectedUrl . '"', $html);
+    }
+
+    /** One Appointment per agenda, so a swapped label cannot hide behind the other row. */
+    #[DataProvider('paymentStates')]
+    public function testDailyAgendaStatesTheAppointmentsPayment(
+        bool $paymentVerified,
+        string $label,
+        string $otherLabel,
+    ): void {
+        $appointment = DomainTestHelper::createConfirmedAppointment(
+            startTime: self::instant(),
+            fullName: 'Alice Patient',
+        );
+        if ($paymentVerified) {
+            $appointment->markPaymentVerified(self::utc('2026-06-14 12:00:00'));
+        }
+
+        $this->appointmentSender()->sendDailyAgendaToTherapist(
+            Email::fromString('therapist@example.com'),
+            'Dr. Therapist',
+            new DateTimeImmutable('2026-06-15T00:00:00-04:00'),
+            new ArrayCollection([$appointment]),
+        );
+
+        $html = $this->htmlBody();
+        $this->assertStringContainsString('font-weight: bold;">' . $label . '</td>', $html);
+        $this->assertStringNotContainsString($otherLabel, $html);
+        $text = $this->textBody();
+        $this->assertStringContainsString('| Payment: ' . $label, $text);
+        $this->assertStringNotContainsString($otherLabel, $text);
+    }
+
+    /** @return iterable<string, array{bool, string, string}> */
+    public static function paymentStates(): iterable
+    {
+        yield 'verified' => [true, 'Verified', 'Pending'];
+        yield 'unverified' => [false, 'Pending', 'Verified'];
+    }
+
+    /** The whole sentence, since "1 confirmed appointment" is the start of the wrong plural. */
+    #[DataProvider('agendaSizes')]
+    public function testDailyAgendaCountsTheDayInBothBodies(int $appointmentCount, string $summary): void
+    {
+        $appointments = new ArrayCollection();
+        for ($index = 0; $index < $appointmentCount; ++$index) {
+            $appointments->add(DomainTestHelper::createConfirmedAppointment(
+                startTime: self::instant()->modify("+{$index} hour"),
+            ));
+        }
+
+        $this->appointmentSender()->sendDailyAgendaToTherapist(
+            Email::fromString('therapist@example.com'),
+            'Dr. Therapist',
+            new DateTimeImmutable('2026-06-15T00:00:00-04:00'),
+            $appointments,
+        );
+
+        $this->assertStringContainsString('You have <strong>' . $summary . '</strong> for today.', $this->htmlBody());
+        $this->assertStringContainsString('You have ' . $summary . ' for today.', $this->textBody());
+    }
+
+    /** @return iterable<string, array{int, string}> */
+    public static function agendaSizes(): iterable
+    {
+        yield 'one' => [1, '1 confirmed appointment'];
+        yield 'two' => [2, '2 confirmed appointments'];
     }
 
     /**
