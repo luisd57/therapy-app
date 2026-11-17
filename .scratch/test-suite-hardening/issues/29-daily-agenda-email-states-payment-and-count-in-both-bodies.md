@@ -29,6 +29,8 @@ payment label among them.
 
 **Status:** resolved
 
+**Resolved by:** [PR #128](https://github.com/luisd57/therapy-app/pull/128)
+
 - [x] HTML body: an Appointment with payment verified reads Verified in its own row, and an unverified one reads Pending
 - [x] Text body: the same two labels, each on its own Appointment's line
 - [x] Text body with one Appointment says "1 confirmed appointment", singular, and with two says "2 confirmed appointments"
