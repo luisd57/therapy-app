@@ -460,8 +460,8 @@ final class AvailabilityComputerTest extends TestCase
     }
 
     /**
-     * The window end is exclusive. Callers pass the next week's start as `to`,
-     * so an inclusive end would list that Slot in both weeks.
+     * The window end is exclusive. The next-week lookup passes the following week's
+     * start as `to`, so an inclusive end would list that Slot in both weeks.
      */
     public function testACandidateStartingExactlyAtTheWindowEndIsNotOffered(): void
     {
@@ -486,7 +486,7 @@ final class AvailabilityComputerTest extends TestCase
     }
 
     /**
-     * A Slot starting at the current instant is past. Only a later start is still open.
+     * A Slot starting at the current instant is past. Only a later start is still offered.
      */
     public function testACandidateStartingExactlyNowIsPast(): void
     {
