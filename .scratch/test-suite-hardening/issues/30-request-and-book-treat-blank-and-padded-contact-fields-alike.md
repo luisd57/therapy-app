@@ -26,6 +26,8 @@ padded input is the likely case there, not the rare one.
 
 **Status:** resolved
 
+**Resolved by:** [PR #129](https://github.com/luisd57/therapy-app/pull/129)
+
 - [x] `request()` refuses a whitespace-only city, and a whitespace-only country, each with the other fields valid
 - [x] `book()` refuses a whitespace-only name, city and country, each with the other fields valid
 - [x] An Appointment made by `book()` from a padded name, city and country returns all three without the padding
