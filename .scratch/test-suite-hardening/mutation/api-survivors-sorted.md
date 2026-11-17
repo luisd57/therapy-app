@@ -38,7 +38,7 @@ but an ignore there would still drop the eight kills.
 Ticket 27 closed on 2026-11-17. Its Kind 1 row, the LessThan on the lookahead loop in
 `GetNextAvailableWeekHandler.php`, is killed: a unit test closes every week inside the lookahead
 with a Schedule Exception, leaves the next one open, and runs the real availability computation.
-It left the total, and that file has no Kind 1 rows left.
+The row is removed from the counts, and that file has no Kind 1 rows left.
 
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.

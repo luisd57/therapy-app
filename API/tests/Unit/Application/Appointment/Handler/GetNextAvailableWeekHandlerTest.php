@@ -161,7 +161,7 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $lookaheadWeeks = 3;
         $therapist = $this->createTherapist();
         // Practice-local midnight on the frozen Monday, where the first week starts.
-        $today = self::utc('2026-06-15 04:00:00');
+        $firstWeekStart = self::utc('2026-06-15 04:00:00');
 
         $this->userRepository->method('findSingleTherapist')->willReturn($therapist);
         $this->scheduleRepository->method('findActiveByTherapist')->willReturn(new ArrayCollection([
@@ -172,16 +172,16 @@ final class GetNextAvailableWeekHandlerTest extends TestCase
         $this->exceptionRepository->method('findByTherapistAndDateRange')->willReturn(new ArrayCollection([
             DomainTestHelper::createScheduleException(
                 therapist: $therapist,
-                startDateTime: $today,
-                endDateTime: $today->modify("+{$lookaheadWeeks} weeks"),
+                startDateTime: $firstWeekStart,
+                endDateTime: $firstWeekStart->modify("+{$lookaheadWeeks} weeks"),
             ),
         ]));
 
         // The week right after the lookahead is open, so the not-found below is the bound's doing.
-        $oneWeekLonger = $this->createHandler($lookaheadWeeks + 1, new AvailabilityComputer())
+        $resultWithOneMoreWeek = $this->createHandler($lookaheadWeeks + 1, new AvailabilityComputer())
             ->__invoke(new GetNextAvailableWeekInputDTO());
-        $this->assertTrue($oneWeekLonger->found);
-        $this->assertSame('2026-07-06T04:00:00+00:00', $oneWeekLonger->weekStart);
+        $this->assertTrue($resultWithOneMoreWeek->found);
+        $this->assertSame('2026-07-06T04:00:00+00:00', $resultWithOneMoreWeek->weekStart);
 
         $result = $this->createHandler($lookaheadWeeks, new AvailabilityComputer())
             ->__invoke(new GetNextAvailableWeekInputDTO());
