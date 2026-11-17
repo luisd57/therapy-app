@@ -1,5 +1,7 @@
 # 32 - Blocklist entries expire with their TTL
 
+> Frozen record, resolved 2026-11-17.
+
 **What to build:** a test that fails when the JWT blocklist keeps an entry past
 the TTL it was stored with.
 
@@ -25,9 +27,9 @@ a fixture Instant is red on correct code. Start it at now and move it forward.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A jti revoked with a TTL is reported revoked before the TTL has passed, and not after
-- [ ] A per-user cutoff stored with a TTL rejects an older token before the TTL has passed, and not after
-- [ ] Time moves through an injected clock, with no sleep, and both answers come from the blocklist's public methods
-- [ ] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+- [x] A jti revoked with a TTL is reported revoked before the TTL has passed, and not after
+- [x] A per-user cutoff stored with a TTL rejects an older token before the TTL has passed, and not after
+- [x] Time moves through an injected clock, with no sleep, and both answers come from the blocklist's public methods
+- [x] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Infrastructure\Security;
 use App\Infrastructure\Security\RedisJwtBlocklist;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Clock\MockClock;
 
 final class RedisJwtBlocklistTest extends TestCase
 {
@@ -63,5 +64,31 @@ final class RedisJwtBlocklistTest extends TestCase
 
         $this->assertTrue($this->blocklist->isRevoked('jti-1'));
         $this->assertFalse($this->blocklist->isRevoked('jti-2'));
+    }
+
+    public function testARevokedJtiExpiresWithItsTtl(): void
+    {
+        $clock = new MockClock();
+        $blocklist = new RedisJwtBlocklist(new ArrayAdapter(clock: $clock));
+        $blocklist->revoke('jti-1', 3600);
+
+        $clock->sleep(3599);
+        $this->assertTrue($blocklist->isRevoked('jti-1'));
+
+        $clock->sleep(2);
+        $this->assertFalse($blocklist->isRevoked('jti-1'));
+    }
+
+    public function testACutoffExpiresWithItsTtl(): void
+    {
+        $clock = new MockClock();
+        $blocklist = new RedisJwtBlocklist(new ArrayAdapter(clock: $clock));
+        $blocklist->revokeIssuedAtOrBefore('user@example.com', self::CUTOFF, 3600);
+
+        $clock->sleep(3599);
+        $this->assertTrue($blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
+
+        $clock->sleep(2);
+        $this->assertFalse($blocklist->isRevokedByCutoff('user@example.com', self::CUTOFF - 1));
     }
 }
