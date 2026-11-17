@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 31 |
+| Kind 1, real gap | 29 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 121 |
+| Sorted | 119 |
 | Skipped | 0 |
-| Total | 121 |
+| Total | 119 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -57,6 +57,10 @@ refuses a whitespace-only city and country, book() refuses a whitespace-only nam
 country, and book() stores all three trimmed. All eight left the total. The Kind 2 FalseValue row
 on reconstitute() stays.
 
+Ticket 31 closed on 2026-11-17. Its two Kind 1 rows in `AvailabilityComputer.php` are killed: a
+candidate starting exactly at the window end is not offered, and one starting exactly at `now` is
+past, each with the Slot shown offered first. Both left the total. The seven Kind 2 rows stay.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -64,14 +68,7 @@ on reconstitute() stays.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (31)
-
-### `src/Domain/Appointment/Service/AvailabilityComputer.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 112 | LessThan | The window end is exclusive, and no test has a candidate starting exactly at `to`. |
-| 151 | LessThanOrEqualTo | A slot starting exactly at `now` counts as past. No test puts `now` on a slot start. |
+## Kind 1, real gap (29)
 
 ### `src/Infrastructure/Security/RedisJwtBlocklist.php`
 

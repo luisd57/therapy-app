@@ -26,8 +26,10 @@ Start Increment equals the session duration.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A candidate Slot starting exactly at the window end is not returned, and the candidate before it is
-- [ ] A candidate Slot starting exactly at `now` is not returned, and the next candidate is
-- [ ] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #130](https://github.com/luisd57/therapy-app/pull/130)
+
+- [x] A candidate Slot starting exactly at the window end is not returned, and the candidate before it is
+- [x] A candidate Slot starting exactly at `now` is not returned, and the next candidate is
+- [x] A one-file Infection run no longer reports the two rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
