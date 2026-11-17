@@ -106,7 +106,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: $startTime,
             endTime: $endTime,
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
     }
 
@@ -118,7 +118,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '23:00',
             endTime: '23:59',
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
 
         $this->assertSame('23:00', $schedule->getStartTime());
@@ -216,7 +216,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -228,7 +228,7 @@ final class TherapistScheduleTest extends TestCase
             endTime: $endTime,
             supportsOnline: true,
             supportsInPerson: true,
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
     }
 
@@ -240,7 +240,7 @@ final class TherapistScheduleTest extends TestCase
             dayOfWeek: WeekDay::MONDAY,
             startTime: '09:00',
             endTime: '17:00',
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -252,7 +252,7 @@ final class TherapistScheduleTest extends TestCase
             endTime: '09:00',
             supportsOnline: true,
             supportsInPerson: true,
-            now: new DateTimeImmutable(),
+            now: new DateTimeImmutable('2026-03-01T10:00:00+00:00'),
         );
     }
 
