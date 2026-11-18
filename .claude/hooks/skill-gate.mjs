@@ -123,9 +123,12 @@ function skillIndex(body, skill, userOnly = false) {
   // with a leading slash and would otherwise satisfy the next check.
   const typed = lastIndexOf(body, new RegExp(`command-name>\\s*/${escaped}\\s*<`));
 
-  // A disable-model-invocation skill refuses Claude's call and the refusal still
-  // writes the input shape, so a userOnly gate must not accept it.
-  const called = userOnly ? -1 : lastIndexOf(body, new RegExp(`"skill"\\s*:\\s*"${escaped}"`));
+  // Claude's call counts only through its result object, written on success alone: a refused
+  // or unknown skill still writes the call's input. A userOnly gate never accepts Claude's call.
+  const called = userOnly ? -1 : lastIndexOf(
+    body,
+    new RegExp(`"toolUseResult"\\s*:\\s*\\{[^{}]*"commandName"\\s*:\\s*"${escaped}"`),
+  );
 
   return Math.max(typed, called);
 }

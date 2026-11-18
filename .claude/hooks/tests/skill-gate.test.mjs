@@ -39,7 +39,21 @@ const denyEcho = fixture('deny-echo.jsonl', [
 
 // Transcript-line builders, in the shapes Claude Code actually writes.
 const said = (text) => JSON.stringify({ message: { content: text } });
-const ranSkill = (skill) => JSON.stringify({ message: { content: [{ name: 'Skill', input: { skill } }] } });
+const ranSkill = (skill) => [
+  JSON.stringify({ message: { content: [{ type: 'tool_use', id: 'toolu_s', name: 'Skill', input: { skill } }] } }),
+  JSON.stringify({
+    message: { content: [{ type: 'tool_result', tool_use_id: 'toolu_s', content: `Launching skill: ${skill}` }] },
+    toolUseResult: { success: true, commandName: skill },
+  }),
+].join('\n');
+// A call that failed, for example a plugin that is not installed. Shape seen in a 2026-11-18 transcript.
+const failedSkill = (skill) => [
+  JSON.stringify({ message: { content: [{ type: 'tool_use', id: 'toolu_f', name: 'Skill', input: { skill } }] } }),
+  JSON.stringify({
+    message: { content: [{ type: 'tool_result', content: `<tool_use_error>Unknown skill: ${skill}</tool_use_error>`, is_error: true, tool_use_id: 'toolu_f' }] },
+    toolUseResult: `Error: Unknown skill: ${skill}`,
+  }),
+].join('\n');
 const ranBash = (command) => JSON.stringify({ message: { content: [{ name: 'Bash', input: { command } }] } });
 const PR = 'gh pr create --fill';
 
@@ -266,6 +280,16 @@ const cases = [
     tool_name: 'Edit', transcript_path: tddAfterPr,
     tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
   }, 'ALLOW'],
+  ['src edit, tdd call failed', {
+    tool_name: 'Edit',
+    transcript_path: fixture('tdd-failed.jsonl', [failedSkill('mattpocock-skills:tdd')]),
+    tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
+  }, 'DENY', 'has not run in this session'],
+  ['PR, code-review call failed', {
+    tool_name: 'Bash',
+    transcript_path: fixture('review-failed.jsonl', [failedSkill('mattpocock-skills:code-review'), ranBash(PR)]),
+    tool_input: { command: PR },
+  }, 'DENY', 'has not run in this session'],
   ['test edit stays ungated after a PR', {
     tool_name: 'Edit', transcript_path: tddBeforePr,
     tool_input: { file_path: `${REPO}/API/tests/FooTest.php` },
