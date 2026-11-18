@@ -87,3 +87,13 @@ cd ..
 
 (cd dashboard && npm ci --no-audit --no-fund)
 (cd landing && npm ci --no-audit --no-fund)
+
+# skill-gate.mjs needs the mattpocock-skills plugin, and enabledPlugins in project settings
+# does not install it in a cloud session. A failure here only warns: the rest of setup is done.
+if command -v claude >/dev/null \
+  && claude plugin marketplace add mattpocock/skills \
+  && claude plugin install mattpocock-skills@mattpocock; then
+  echo "Installed the mattpocock-skills plugin"
+else
+  echo "Warning: could not install the mattpocock-skills plugin, so skill-gate will block API/src edits." >&2
+fi
