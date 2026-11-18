@@ -9,30 +9,28 @@ import { join } from 'node:path';
 const WIN = process.platform === 'win32';
 const OUTPUT_LIMIT = 4000;
 // Five checks must fit the 600s hook timeout in settings.json.
-const CHECK_TIMEOUT_MS = 110_000;
+// The env override lets the tests hit a timeout without waiting two minutes.
+const CHECK_TIMEOUT_MS = Number(process.env.VERIFY_ON_STOP_TIMEOUT_MS) || 110_000;
 
-// Which checks each deployable gets. Repo-specific, like SOURCE_DIRS in skill-gate.
+// Which checks each deployable gets: { checks } or { skip: reason }. Repo-specific, like SOURCE_DIRS in skill-gate.
 const AREAS = [
-  {
-    prefix: 'API/',
-    ready: (root) => (apiReady(root) ? null : 'the php container is not running'),
-    checks: [
-      ['PHPStan', 'docker-compose', ['exec', '-T', 'php', 'vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=1G']],
-      ['Deptrac', 'docker-compose', ['exec', '-T', 'php', 'vendor/bin/deptrac', 'analyse', '--no-progress']],
-    ],
-  },
+  { prefix: 'API/', plan: apiPlan },
   {
     prefix: 'dashboard/',
-    ready: (root) => (existsSync(join(root, 'dashboard', 'node_modules')) ? null : 'dashboard has no node_modules'),
-    checks: [['dashboard lint', 'npm', ['run', 'lint'], 'dashboard']],
+    plan: (root) => (existsSync(join(root, 'dashboard', 'node_modules'))
+      ? { checks: [['dashboard lint', 'npm', ['run', 'lint'], 'dashboard']] }
+      : { skip: 'dashboard has no node_modules' }),
   },
   {
     prefix: 'landing/',
-    ready: (root) => (existsSync(join(root, 'landing', 'node_modules')) ? null : 'landing has no node_modules'),
-    checks: [
-      ['landing check', 'npm', ['run', 'check'], 'landing'],
-      ['landing check:svelte', 'npm', ['run', 'check:svelte'], 'landing'],
-    ],
+    plan: (root) => (existsSync(join(root, 'landing', 'node_modules'))
+      ? {
+          checks: [
+            ['landing check', 'npm', ['run', 'check'], 'landing'],
+            ['landing check:svelte', 'npm', ['run', 'check:svelte'], 'landing'],
+          ],
+        }
+      : { skip: 'landing has no node_modules' }),
   },
 ];
 
@@ -66,9 +64,35 @@ function unavailable(result) {
   return Boolean(result.error) || result.status === 127 || result.status === 9009 || result.status === null;
 }
 
-function apiReady(root) {
+// A missing binary, not a timeout or an error exit. A hung Docker Desktop must not count as "no docker".
+function missing(result) {
+  return result.error?.code === 'ENOENT' || result.status === 127 || result.status === 9009;
+}
+
+const PHPSTAN = ['vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=1G'];
+const DEPTRAC = ['vendor/bin/deptrac', 'analyse', '--no-progress'];
+
+// The container when it runs. Host PHP only with no docker-compose and no docker daemon (a cloud
+// session): a local host install has different config, so a stopped or hung docker skips instead.
+function apiPlan(root) {
   const ps = exec('docker-compose', ['ps', '--status', 'running', '-q', 'php'], root);
-  return !unavailable(ps) && ps.status === 0 && ps.stdout.trim() !== '';
+  if (!missing(ps)) {
+    if (ps.status === 0 && ps.stdout.trim() !== '') {
+      return {
+        checks: [
+          ['PHPStan', 'docker-compose', ['exec', '-T', 'php', ...PHPSTAN]],
+          ['Deptrac', 'docker-compose', ['exec', '-T', 'php', ...DEPTRAC]],
+        ],
+      };
+    }
+    return { skip: 'the php container is not running' };
+  }
+  // The cloud image ships the docker CLI with no daemon, so ask the daemon, not the binary.
+  const info = exec('docker', ['info'], root);
+  if (info.status === 0) return { skip: 'docker-compose is not installed' };
+  if (info.status === null) return { skip: 'docker is not responding' };
+  if (!existsSync(join(root, 'API', 'vendor'))) return { skip: 'no docker and API/vendor is missing' };
+  return { checks: [['PHPStan', 'php', PHPSTAN, 'API'], ['Deptrac', 'php', DEPTRAC, 'API']] };
 }
 
 function lines(text) {
@@ -105,9 +129,9 @@ const failures = [];
 const skipped = [];
 for (const area of AREAS) {
   if (!files.some((f) => f.startsWith(area.prefix))) continue;
-  const notReady = area.ready(root);
-  if (notReady) { skipped.push(notReady); continue; }
-  for (const [label, cmd, args, sub] of area.checks) {
+  const { checks, skip } = area.plan(root);
+  if (skip) { skipped.push(skip); continue; }
+  for (const [label, cmd, args, sub] of checks) {
     const result = exec(cmd, args, sub ? join(root, sub) : root);
     if (unavailable(result)) { skipped.push(`${label} could not run`); continue; }
     if (result.status === 0) continue;
