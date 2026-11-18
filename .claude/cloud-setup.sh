@@ -26,17 +26,18 @@ if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -l
   exit 1
 fi
 
-# The Launchpad PPA often returns 503 on single packages, even after apt's own retries.
-# Downloaded packages stay cached, so each pass only fetches what is still missing.
+# Launchpad (the PPA and its API) often returns 503, sometimes for minutes, even after apt's own retries.
+# Downloaded packages stay cached, so each install pass only fetches what is still missing.
 echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
-apt_install() {
-  for attempt in 1 2 3 4 5 6; do
-    sudo apt-get install -y -q "$@" && return 0
-    echo "apt-get install failed (attempt $attempt of 6), retrying in 20s" >&2
-    sleep 20
+retry() {
+  for attempt in 1 2 3 4 5 6 7 8; do
+    "$@" && return 0
+    echo "Failed (attempt $attempt of 8), retrying in 30s: $*" >&2
+    sleep 30
   done
   return 1
 }
+apt_install() { retry sudo apt-get install -y -q "$@"; }
 
 # Ubuntu archive packages first, before the PPA is added, so a PPA outage cannot block them.
 sudo apt-get update -q
@@ -45,8 +46,8 @@ apt_install software-properties-common redis-server unzip
 if apt-cache show postgresql-16 >/dev/null 2>&1; then apt_install postgresql-16; else apt_install postgresql; fi
 
 # PHP 8.5 is not in the Ubuntu archive. Add ppa.launchpadcontent.net and getcomposer.org to the network allowlist.
-sudo add-apt-repository -y ppa:ondrej/php
-sudo apt-get update -q
+retry sudo add-apt-repository -y ppa:ondrej/php
+retry sudo apt-get update -q
 apt_install php8.5-cli php8.5-pgsql php8.5-intl php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-redis php8.5-pcov
 # The image pins php to 8.3 in manual alternatives mode, so installing 8.5 alone does not switch it.
 sudo update-alternatives --set php /usr/bin/php8.5
