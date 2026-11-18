@@ -101,6 +101,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-session-start.mjs",
+            "timeout": 120,
+            "statusMessage": "Starting services and syncing the checkout in cloud sessions"
+          },
+          {
+            "type": "command",
             "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-config.mjs",
             "timeout": 90,
             "statusMessage": "Loading the global config in cloud sessions"
