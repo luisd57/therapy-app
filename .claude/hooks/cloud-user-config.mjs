@@ -3,7 +3,7 @@
 // returns its CLAUDE.md and output style as context. The setup script cannot see CLAUDE_CONFIG_TOKEN.
 
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,17 +22,24 @@ if (process.env.CLAUDE_CODE_REMOTE !== 'true') finish();
 const token = process.env.CLAUDE_CONFIG_TOKEN;
 if (!token) skip('CLAUDE_CONFIG_TOKEN is not set in the environment');
 
-// The token goes in a header for this one command, so it is never in a URL or a git config file.
-const src = join(mkdtempSync(join(tmpdir(), 'claude-config-')), 'repo');
+// The header goes through env for this one command: not in argv (ps), a URL, or a git config file.
+const tmp = mkdtempSync(join(tmpdir(), 'claude-config-'));
+process.on('exit', () => rmSync(tmp, { recursive: true, force: true }));
+const src = join(tmp, 'repo');
 const auth = Buffer.from(`x-access-token:${token}`).toString('base64');
-const clone = spawnSync(
-  'git',
-  ['-c', `http.extraHeader=Authorization: Basic ${auth}`, 'clone', '-q', '--depth', '1', REPO, src],
-  { encoding: 'utf8', timeout: 60_000 },
-);
+const clone = spawnSync('git', ['clone', '-q', '--depth', '1', REPO, src], {
+  encoding: 'utf8',
+  timeout: 60_000,
+  env: {
+    ...process.env,
+    GIT_CONFIG_COUNT: '1',
+    GIT_CONFIG_KEY_0: 'http.extraHeader',
+    GIT_CONFIG_VALUE_0: `Authorization: Basic ${auth}`,
+  },
+});
 if (clone.status !== 0) {
   const reason = `${clone.stderr ?? ''}${clone.error?.message ?? ''}`.trim().split('\n').pop() || 'no output';
-  skip(`cloning claude-config failed (${reason.replaceAll(token, '***')})`);
+  skip(`cloning claude-config failed (${reason.replaceAll(token, '***').replaceAll(auth, '***')})`);
 }
 
 const dest = join(homedir(), '.claude');
@@ -53,7 +60,7 @@ finish({
   hookSpecificOutput: {
     hookEventName: 'SessionStart',
     additionalContext: [
-      "The user's global instructions (their ~/.claude/CLAUDE.md, from luisd57/claude-config). Follow them like a CLAUDE.md.",
+      "The user's global instructions (their ~/.claude/CLAUDE.md, from the claude-config repo). Follow them like a CLAUDE.md.",
       rules,
       ...(style ? [`The user's output style, ${STYLE}. Write in it.`, style] : []),
     ].join('\n\n'),

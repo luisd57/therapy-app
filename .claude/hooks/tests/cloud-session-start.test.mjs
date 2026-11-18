@@ -1,7 +1,7 @@
 // Drives cloud-session-start.mjs like a SessionStart hook. Real git repos stand in for the stale
 // cached checkout, and stub pg_isready, redis-cli and sudo on PATH stand in for the services.
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, chmodSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, delimiter } from 'node:path';
 
@@ -19,13 +19,13 @@ function staleClone() {
   const work = join(root, 'work');
   const clone = join(root, 'clone');
   execFileSync('git', ['init', '-q', '--bare', '-b', 'feature', remote]);
-  execFileSync('git', ['clone', '-q', remote, work], { stdio: 'pipe' });
+  execFileSync('git', ['clone', '-q', '-c', 'core.autocrlf=false', remote, work], { stdio: 'pipe' });
   git(work, 'checkout', '-q', '-b', 'feature');
   writeFileSync(join(work, 'a.txt'), 'one\n');
   git(work, 'add', '-A');
   git(work, 'commit', '-q', '-m', 'one');
   git(work, 'push', '-q', 'origin', 'feature');
-  execFileSync('git', ['clone', '-q', '-b', 'feature', remote, clone], { stdio: 'pipe' });
+  execFileSync('git', ['clone', '-q', '-c', 'core.autocrlf=false', '-b', 'feature', remote, clone], { stdio: 'pipe' });
   writeFileSync(join(work, 'a.txt'), 'two\n');
   git(work, 'commit', '-q', '-am', 'two');
   git(work, 'push', '-q', 'origin', 'feature');
@@ -39,9 +39,9 @@ function stubs() {
     writeFileSync(join(dir, name), `#!/usr/bin/env bash\necho "${name} $*" >> "$STUB_LOG"\n${body}\n`);
     chmodSync(join(dir, name), 0o755);
   };
-  sh('pg_isready', '[ "$STUB_PG" = up ]');
-  sh('redis-cli', '[ "$STUB_REDIS" = up ]');
-  sh('sudo', '[ "$STUB_SUDO" = fail ] && exit 1; exit 0');
+  sh('pg_isready', '[ "$STUB_PG" = up ] || [ -f "$STUB_LOG.postgresql" ]');
+  sh('redis-cli', '[ "$STUB_REDIS" = up ] || [ -f "$STUB_LOG.redis-server" ]');
+  sh('sudo', '[ "$STUB_SUDO" = fail ] && exit 1; touch "$STUB_LOG.$2"');
   return dir;
 }
 const STUBS = stubs();
@@ -64,7 +64,7 @@ function run(cwd, env) {
       try { json = out.trim() ? JSON.parse(out) : null; } catch { json = { unparsed: out }; }
       resolve({ code, json, calls: readFileSync(log, 'utf8') });
     });
-    child.stdin.end(JSON.stringify({ hook_event_name: 'SessionStart', cwd }));
+    child.stdin.end(JSON.stringify({ hook_event_name: 'SessionStart', source: env.SOURCE ?? 'startup', cwd }));
   });
 }
 
@@ -87,6 +87,18 @@ const message = (got) => `${got.json?.systemMessage ?? ''} ${got.json?.hookSpeci
   const got = await run(repo.clone, REMOTE);
   check('stale clean checkout moves to the branch tip', got.code === 0 && git(repo.clone, 'rev-parse', 'HEAD') === repo.tip, got);
   check('the move is reported', /feature/.test(message(got)) && /behind|moved/i.test(message(got)), got);
+}
+
+{
+  const repo = staleClone();
+  const got = await run(repo.clone, { ...REMOTE, SOURCE: 'resume' });
+  check('a resumed session also moves the checkout', git(repo.clone, 'rev-parse', 'HEAD') === repo.tip, got);
+}
+
+for (const source of ['compact', 'clear']) {
+  const repo = staleClone();
+  const got = await run(repo.clone, { ...REMOTE, SOURCE: source });
+  check(`a ${source} mid-session never moves the checkout`, got.code === 0 && git(repo.clone, 'rev-parse', 'HEAD') !== repo.tip, got);
 }
 
 {
@@ -121,6 +133,7 @@ const message = (got) => `${got.json?.systemMessage ?? ''} ${got.json?.hookSpeci
   git(repo.clone, 'merge', '-q', '--ff-only', 'origin/feature');
   const got = await run(repo.clone, { ...REMOTE, STUB_PG: 'down', STUB_REDIS: 'down' });
   check('down services get started', /sudo service postgresql start/.test(got.calls) && /sudo service redis-server start/.test(got.calls), got);
+  check('a started service is reported', /Postgres was down, started/.test(message(got)) && /Redis was down, started/.test(message(got)), got);
 }
 
 {
@@ -134,9 +147,8 @@ const message = (got) => `${got.json?.systemMessage ?? ''} ${got.json?.hookSpeci
 
 {
   const dir = mkdtempSync(join(tmpdir(), 'no-repo-'));
-  mkdirSync(join(dir, 'x'));
   const got = await run(dir, REMOTE);
-  check('outside a git repo it still passes', got.code === 0 && !existsSync(join(dir, '.git')), got);
+  check('outside a git repo it passes silently', got.code === 0 && got.json === null, got);
 }
 
 console.log(`\n${bad === 0 ? 'all pass' : `${bad} FAILED`}`);

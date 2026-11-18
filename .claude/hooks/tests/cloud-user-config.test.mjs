@@ -1,6 +1,7 @@
 // Drives cloud-user-config.mjs like a SessionStart hook. A real local git repo stands in for
 // luisd57/claude-config through CLAUDE_CONFIG_REPO, so every clone here is a real one.
 import { spawn, execFileSync } from 'node:child_process';
+import { createServer } from 'node:http';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -75,8 +76,11 @@ function check(name, ok, detail = '') {
   check('cloud without a token warns', got.code === 0 && /CLAUDE_CONFIG_TOKEN/.test(got.json?.systemMessage ?? ''), JSON.stringify(got));
 }
 
+const clones = () => new Set(readdirSync(tmpdir()).filter((d) => d.startsWith('claude-config-')));
+
 {
   const dir = home('{"enabledPlugins":{"x@y":true}}\n');
+  const before = clones();
   const got = await run(cloud(dir));
   const context = got.json?.hookSpecificOutput?.additionalContext ?? '';
   check('cloud returns the rules as context', got.code === 0 && got.json?.hookSpecificOutput?.hookEventName === 'SessionStart' && context.includes('No em dashes.'), JSON.stringify(got));
@@ -84,11 +88,22 @@ function check(name, ok, detail = '') {
   check('rules, hooks and skills land in ~/.claude', ['CLAUDE.md', 'hooks/scrub-check.mjs', 'skills/strip-hidden-chars/SKILL.md', 'output-styles/terse-engineer.md']
     .every((p) => existsSync(join(dir, '.claude', p))));
   check('settings.json is left alone', readFileSync(join(dir, '.claude', 'settings.json'), 'utf8') === '{"enabledPlugins":{"x@y":true}}\n');
-  const configs = readdirSync(tmpdir())
-    .filter((d) => d.startsWith('claude-config-'))
-    .map((d) => join(tmpdir(), d, 'repo', '.git', 'config'))
-    .filter((p) => existsSync(p));
-  check('no clone keeps the token in its git config', configs.length > 0 && configs.every((p) => !readFileSync(p, 'utf8').includes(Buffer.from(`x-access-token:${TOKEN}`).toString('base64')) && !readFileSync(p, 'utf8').includes(TOKEN)), configs.join(', '));
+  const after = clones();
+  check('the temporary clone is removed', [...after].every((d) => before.has(d)), [...after].join(', '));
+}
+
+// An HTTP remote that records the Authorization header and answers 404, so the clone fails.
+{
+  const headers = [];
+  const server = createServer((req, res) => { headers.push(req.headers.authorization ?? ''); res.writeHead(404).end(); });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const dir = home();
+  const url = `http://127.0.0.1:${server.address().port}/claude-config.git`;
+  const got = await run(cloud(dir, { CLAUDE_CONFIG_REPO: url, GIT_TERMINAL_PROMPT: '0' }));
+  server.close();
+  const basic = `Basic ${Buffer.from(`x-access-token:${TOKEN}`).toString('base64')}`;
+  check('the clone sends the token as a basic auth header', headers.length > 0 && headers.every((h) => h === basic), headers);
+  check('an HTTP failure warns without the token or its header', /clon/i.test(got.json?.systemMessage ?? '') && !JSON.stringify(got).includes(TOKEN) && !JSON.stringify(got).includes(basic.slice(6)), JSON.stringify(got));
 }
 
 {

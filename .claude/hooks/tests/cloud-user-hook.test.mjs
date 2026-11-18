@@ -53,7 +53,7 @@ check('cloud forwards stdin and stdout', got.code === 0 && got.out === 'got:{"to
 got = await run(['missing.mjs'], REMOTE);
 check('cloud with the hook not installed passes', got.code === 0 && got.out === '' && got.err === '', got);
 
-got = await run(['../outside.mjs'], REMOTE);
+got = await run(['../../outside.mjs'], REMOTE);
 check('a path outside ~/.claude/hooks is refused', got.code === 0, got);
 
 got = await run([], REMOTE);

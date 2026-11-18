@@ -3,8 +3,12 @@
 // and can land on an old commit, so this starts the services and moves a stale checkout to its tip.
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 if (process.env.CLAUDE_CODE_REMOTE !== 'true') process.exit(0);
+
+let source = '';
+try { source = JSON.parse(readFileSync(0, 'utf8')).source ?? ''; } catch { /* no input: treat as a start */ }
 
 const notes = [];
 const run = (cmd, args) => spawnSync(cmd, args, { encoding: 'utf8', timeout: 60_000 });
@@ -18,13 +22,14 @@ const SERVICES = [
 ];
 for (const [label, probe, service] of SERVICES) {
   if (run('bash', ['-c', probe]).status === 0) continue;
-  if (run('bash', ['-c', `sudo service ${service} start >/dev/null 2>&1 && ${probe}`]).status !== 0) {
-    notes.push(`${label} is not running and did not start`);
-  }
+  const started = run('bash', ['-c', `sudo service ${service} start >/dev/null 2>&1 && ${probe}`]).status === 0;
+  notes.push(started ? `${label} was down, started it` : `${label} is not running and did not start`);
 }
 
 // The resume path fetches the branch tip but checks out the snapshot's older local branch.
-const branch = out(git('symbolic-ref', '--quiet', '--short', 'HEAD'));
+// A compact or clear is mid-session, where moving HEAD would change code under the user.
+const starting = source === '' || source === 'startup' || source === 'resume';
+const branch = starting ? out(git('symbolic-ref', '--quiet', '--short', 'HEAD')) : null;
 if (branch && git('fetch', '-q', 'origin', branch).status === 0) {
   const behind = Number(out(git('rev-list', '--count', 'HEAD..FETCH_HEAD')) ?? 0);
   const ahead = Number(out(git('rev-list', '--count', 'FETCH_HEAD..HEAD')) ?? 0);
