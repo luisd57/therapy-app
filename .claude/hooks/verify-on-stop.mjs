@@ -72,8 +72,8 @@ function missing(result) {
 const PHPSTAN = ['vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=1G'];
 const DEPTRAC = ['vendor/bin/deptrac', 'analyse', '--no-progress'];
 
-// The container when it runs. Host PHP only without docker at all (a cloud session): a local
-// host install has different config, and a stopped container should skip, not fail on that.
+// The container when it runs. Host PHP only with no docker-compose and no docker daemon (a cloud
+// session): a local host install has different config, so a stopped or hung docker skips instead.
 function apiPlan(root) {
   const ps = exec('docker-compose', ['ps', '--status', 'running', '-q', 'php'], root);
   if (!missing(ps)) {
@@ -87,7 +87,10 @@ function apiPlan(root) {
     }
     return { skip: 'the php container is not running' };
   }
-  if (!missing(exec('docker', ['--version'], root))) return { skip: 'docker-compose is not installed' };
+  // The cloud image ships the docker CLI with no daemon, so ask the daemon, not the binary.
+  const info = exec('docker', ['info'], root);
+  if (info.status === 0) return { skip: 'docker-compose is not installed' };
+  if (info.status === null) return { skip: 'docker is not responding' };
   if (!existsSync(join(root, 'API', 'vendor'))) return { skip: 'no docker and API/vendor is missing' };
   return { checks: [['PHPStan', 'php', PHPSTAN, 'API'], ['Deptrac', 'php', DEPTRAC, 'API']] };
 }

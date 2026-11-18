@@ -38,7 +38,11 @@ if (a === 'run check:svelte' && process.env.STUB_SVELTE === 'fail') { process.st
 process.exit(0);
 `,
   docker: `
+const a = process.argv.slice(2).join(' ');
 if (process.env.STUB_DOCKER === 'missing') process.exit(127);
+if (a !== 'info') { process.stderr.write('unexpected args: ' + a); process.exit(1); }
+if (process.env.STUB_DOCKER === 'hang') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3000);
+if (process.env.STUB_DOCKER === 'nodaemon') { process.stderr.write('Cannot connect to the Docker daemon at unix:///var/run/docker.sock'); process.exit(1); }
 process.exit(0);
 `,
   // Host PHP, used only without docker at all and with API/vendor (a cloud session).
@@ -128,7 +132,9 @@ const cases = [
   ['failing ps counts as container down', stop(CLOUD), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DC: 'psfail' }, 0, null, 'skipped: the php container is not running.'],
   ['hung docker-compose counts as container down', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'hang', VERIFY_ON_STOP_TIMEOUT_MS: '500', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: the php container is not running.'],
   ['container down skips even with host vendor', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'down', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: the php container is not running.'],
-  ['docker without docker-compose skips', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: docker-compose is not installed.'],
+  ['running docker without docker-compose skips', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: docker-compose is not installed.'],
+  ['hung docker without docker-compose skips', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_DOCKER: 'hang', VERIFY_ON_STOP_TIMEOUT_MS: '500', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: docker is not responding.'],
+  ['docker CLI without a daemon runs host PHPStan', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_DOCKER: 'nodaemon', STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable', null, 'PHPStan failed'],
   ['no docker and no vendor skips', stop(PROJ), { STUB_CHANGED: API, ...NO_DOCKER }, 0, null, 'skipped: no docker and API/vendor is missing.'],
   ['no docker but API/vendor runs host PHPStan', stop(CLOUD), { STUB_CHANGED: API, ...NO_DOCKER, STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable', null, 'PHPStan failed'],
   ['no docker but API/vendor runs host Deptrac', stop(CLOUD), { STUB_CHANGED: API, ...NO_DOCKER, STUB_DEPTRAC: 'fail' }, 2, 'must not depend', null, 'Deptrac failed'],
