@@ -13,21 +13,30 @@ if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -l
   exit 1
 fi
 
-# The Launchpad PPA sometimes returns 503 for one package. Retry it instead of failing the whole setup.
+# The Launchpad PPA often returns 503 on single packages, even after apt's own retries.
+# Downloaded packages stay cached, so each pass only fetches what is still missing.
 echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+apt_install() {
+  for attempt in 1 2 3 4 5 6; do
+    sudo apt-get install -y -q "$@" && return 0
+    echo "apt-get install failed (attempt $attempt of 6), retrying in 20s" >&2
+    sleep 20
+  done
+  return 1
+}
 
 # PHP 8.5 is not in the Ubuntu archive. Add ppa.launchpadcontent.net and getcomposer.org to the network allowlist.
 sudo apt-get update -q
 sudo apt-get install -y -q software-properties-common
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt-get update -q
-sudo apt-get install -y -q \
+apt_install \
   php8.5-cli php8.5-pgsql php8.5-intl php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-redis php8.5-pcov \
   redis-server unzip
 # The image pins php to 8.3 in manual alternatives mode, so installing 8.5 alone does not switch it.
 sudo update-alternatives --set php /usr/bin/php8.5
 # postgresql-16 is only in the 24.04 archive. Older images get their default version.
-sudo apt-get install -y -q postgresql-16 || sudo apt-get install -y -q postgresql
+if apt-cache show postgresql-16 >/dev/null 2>&1; then apt_install postgresql-16; else apt_install postgresql; fi
 
 if ! command -v composer >/dev/null; then
   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
