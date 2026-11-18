@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup script for a Claude Code cloud environment. Paste into the environment's setup field.
+# Setup for the Claude Code cloud environment. The environment runs it through .claude/cloud-bootstrap.sh.
 # Mirrors the "test" job in .github/workflows/ci.yml, with services on localhost instead of docker-compose.
 set -euo pipefail
 
@@ -97,3 +97,6 @@ if command -v claude >/dev/null \
 else
   echo "Warning: could not install the mattpocock-skills plugin, so skill-gate will block API/src edits." >&2
 fi
+
+# The user's global config is loaded at session start by .claude/hooks/cloud-user-config.mjs, not
+# here: this script cannot see the environment's variables, so it has no token for the private repo.

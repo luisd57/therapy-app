@@ -29,5 +29,6 @@ When writing or updating CLAUDE.md, .claude/rules/ files, or any project documen
 - Multi-step workflows go in `.claude/skills/`, not in a rules file - skills load on demand.
 - A convention worth enforcing rather than only stating goes in `.claude/hooks/`, registered in `.claude/settings.json`. Hooks fail open, so one never replaces the rule that says why. Run `npm test` in that directory after changing one; nothing else does.
 - The hooks come from the `symfony-angular-starter-rules` kit and that copy is canonical. A fix belongs there first, then here. `SOURCE_DIRS` in `skill-gate.mjs` and `AREAS` in `verify-on-stop.mjs` are the exceptions: both are trimmed to this repo's deployables and are meant to differ.
+- After changing `.claude/cloud-setup.sh`, `.claude/cloud-bootstrap.sh` or a `cloud-*.mjs` hook, bump `CLOUD_ENV_REV` in the `therapy` environment's variables. A resumed start skips setup and restores an old snapshot, so only a fresh container shows the change.
 - `verify-on-stop.mjs` checks uncommitted changes only. Committed work is CI's job, and a branch-wide diff would run the checks on every turn, questions included. Full PHPUnit stays in CI for the same reason: minutes per turn.
 - State the reason behind a non-obvious convention. A rule with a reason survives; a bare prohibition gets "helpfully" undone.

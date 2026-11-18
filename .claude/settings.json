@@ -96,6 +96,24 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-session-start.mjs",
+            "timeout": 120,
+            "statusMessage": "Starting services and syncing the checkout in cloud sessions"
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-config.mjs",
+            "timeout": 90,
+            "statusMessage": "Loading the global config in cloud sessions"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
@@ -105,6 +123,12 @@
             "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/branch-delete-guard.mjs",
             "timeout": 10,
             "statusMessage": "Checking the branch matches main"
+          },
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-hook.mjs authorship-trailer.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking authorship on commits and PRs (cloud)"
           }
         ]
       },
@@ -158,6 +182,17 @@
             "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/post-merge-nudge.mjs",
             "timeout": 10,
             "statusMessage": "Checking for a merged PR"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-hook.mjs scrub-check.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking for hidden characters (cloud)"
           }
         ]
       }
