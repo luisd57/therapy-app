@@ -97,3 +97,12 @@ if command -v claude >/dev/null \
 else
   echo "Warning: could not install the mattpocock-skills plugin, so skill-gate will block API/src edits." >&2
 fi
+
+# The user's global config (CLAUDE.md, output style, scrub and authorship hooks) is the private
+# luisd57/claude-config repo. It is installed when the environment lists it as a second repository.
+installer="$(find /home /root /workspace -maxdepth 3 -path '*/claude-config/cloud-install.sh' 2>/dev/null | head -1 || true)"
+if [ -n "$installer" ] && bash "$installer"; then
+  :
+else
+  echo "Warning: luisd57/claude-config was not installed, so cloud sessions run without the global CLAUDE.md and hooks." >&2
+fi
