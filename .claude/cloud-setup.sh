@@ -18,6 +18,8 @@ echo "Using the clone at $repo"
 
 # Same as the CI job env. Without APP_ENV=test, composer's cache:clear boots dev and crashes on missing vars.
 export APP_ENV=test TZ=UTC PGTZ=UTC
+# Setup runs as root, and composer disables plugins as root. Symfony Flex is a plugin, and auto-scripts need it.
+export COMPOSER_ALLOW_SUPERUSER=1
 
 if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -lt 20 ]; then
   echo "Node 20+ is required, the image has $(node -v 2>/dev/null || echo none)." >&2
