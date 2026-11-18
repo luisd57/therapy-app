@@ -23,9 +23,9 @@
 // and typo fixes stay cheap. Test files are never gated: writing the test is the
 // step TDD wants to be frictionless.
 //
-// "Was the skill used" reads the transcript for the Skill tool's own input
-// shape rather than the bare skill name, because this hook's deny text lands in
-// the transcript and would otherwise satisfy the next check.
+// "Was the skill used" reads the transcript for the Skill tool's success record
+// rather than the bare skill name, because this hook's deny text lands in the
+// transcript, and a failed call still records its input.
 //
 // The two gates Claude can satisfy on its own - tdd and code-review - also ask
 // WHEN. Both reset at each pull request, so one invocation licenses one PR's work
@@ -94,10 +94,6 @@ function deny(reason) {
   process.exit(0);
 }
 
-// A skill starts one of two ways and the transcript records them differently.
-// The user typing /skill leaves <command-name>/skill</command-name>; Claude calling
-// it leaves the Skill tool's input shape. Miss the first and a userOnly gate can
-// never open, since the user is the only one allowed to start those.
 function readTranscript(transcript) {
   if (typeof transcript !== 'string' || !existsSync(transcript)) return null;
   try { return readFileSync(transcript, 'utf8'); } catch { return null; }
@@ -114,8 +110,8 @@ function lastIndexOf(body, pattern) {
   return last;
 }
 
-// Where the skill was last started, or -1. Returns a position rather than a
-// boolean so callers can ask whether it came before or after something else.
+// Where the skill was last started, or -1, as a position so callers can order it against a PR.
+// The user's /skill leaves a command-name tag, Claude's call a result record (userOnly takes only the tag).
 function skillIndex(body, skill, userOnly = false) {
   const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -123,9 +119,12 @@ function skillIndex(body, skill, userOnly = false) {
   // with a leading slash and would otherwise satisfy the next check.
   const typed = lastIndexOf(body, new RegExp(`command-name>\\s*/${escaped}\\s*<`));
 
-  // A disable-model-invocation skill refuses Claude's call and the refusal still
-  // writes the input shape, so a userOnly gate must not accept it.
-  const called = userOnly ? -1 : lastIndexOf(body, new RegExp(`"skill"\\s*:\\s*"${escaped}"`));
+  // Claude's call counts only through its result object, written on success alone: a refused
+  // or unknown skill still writes the call's input. A userOnly gate never accepts Claude's call.
+  const called = userOnly ? -1 : lastIndexOf(
+    body,
+    new RegExp(`"toolUseResult"\\s*:\\s*\\{[^{}]*"commandName"\\s*:\\s*"${escaped}"`),
+  );
 
   return Math.max(typed, called);
 }

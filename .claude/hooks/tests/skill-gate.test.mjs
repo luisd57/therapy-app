@@ -23,10 +23,20 @@ const typed = fixture('typed.jsonl', [
   JSON.stringify({ type: 'user', message: { content: '<command-name>/mattpocock-skills:to-tickets</command-name>' } }),
 ]);
 
-// Claude tried to call it and was refused. The refusal still carries the input shape.
+// Transcript-line builders, in the shapes Claude Code actually writes (checked 2026-11-18).
+// A call writes its input whether or not it works. Only success adds the result object.
+const skillCall = (skill) => JSON.stringify({ message: { content: [{ type: 'tool_use', id: 'toolu_1', name: 'Skill', input: { skill } }] } });
+const skillResult = (toolUseResult, isError) => JSON.stringify({
+  message: { content: [{ type: 'tool_result', tool_use_id: 'toolu_1', is_error: isError }] },
+  toolUseResult,
+});
+const ranSkill = (skill) => [skillCall(skill), skillResult({ success: true, commandName: skill }, false)].join('\n');
+const failedSkill = (skill, error = `Unknown skill: ${skill}`) =>
+  [skillCall(skill), skillResult(`Error: ${error}`, true)].join('\n');
+
+// Claude tried to call it and was refused.
 const refused = fixture('refused.jsonl', [
-  JSON.stringify({ message: { content: [{ name: 'Skill', input: { skill: 'mattpocock-skills:to-tickets' } }] } }),
-  JSON.stringify({ message: { content: [{ type: 'tool_result', content: 'Skill mattpocock-skills:to-tickets cannot be used with Skill tool due to disable-model-invocation.' }] } }),
+  failedSkill('mattpocock-skills:to-tickets', 'Skill mattpocock-skills:to-tickets cannot be used with Skill tool due to disable-model-invocation.'),
 ]);
 
 // Nothing at all.
@@ -37,9 +47,7 @@ const denyEcho = fixture('deny-echo.jsonl', [
   JSON.stringify({ message: { content: 'New ticket files go through /mattpocock-skills:to-tickets or /mattpocock-skills:wayfinder, and neither has run.' } }),
 ]);
 
-// Transcript-line builders, in the shapes Claude Code actually writes.
 const said = (text) => JSON.stringify({ message: { content: text } });
-const ranSkill = (skill) => JSON.stringify({ message: { content: [{ name: 'Skill', input: { skill } }] } });
 const ranBash = (command) => JSON.stringify({ message: { content: [{ name: 'Bash', input: { command } }] } });
 const PR = 'gh pr create --fill';
 
@@ -266,6 +274,35 @@ const cases = [
     tool_name: 'Edit', transcript_path: tddAfterPr,
     tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
   }, 'ALLOW'],
+  ['src edit, tdd call failed', {
+    tool_name: 'Edit',
+    transcript_path: fixture('tdd-failed.jsonl', [failedSkill('mattpocock-skills:tdd')]),
+    tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
+  }, 'DENY', 'has not run in this session'],
+  ['src edit, tdd failed, then another skill succeeded', {
+    tool_name: 'Edit',
+    transcript_path: fixture('tdd-failed-other-ok.jsonl', [failedSkill('mattpocock-skills:tdd'), ranSkill('mattpocock-skills:grilling')]),
+    tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
+  }, 'DENY'],
+  ['src edit, commandName outside a result record', {
+    tool_name: 'Edit',
+    transcript_path: fixture('loose-command-name.jsonl', [
+      failedSkill('mattpocock-skills:tdd'),
+      JSON.stringify({ attachment: { commandName: 'mattpocock-skills:tdd' } }),
+    ]),
+    tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
+  }, 'DENY'],
+  ['src edit, only a longer skill name succeeded', {
+    tool_name: 'Edit',
+    transcript_path: fixture('tdd-prefix.jsonl', [ranSkill('mattpocock-skills:tdd-extra')]),
+    tool_input: { file_path: `${REPO}/API/src/Domain/X.php` },
+  }, 'DENY'],
+  ['ticket + a success record for Claude\'s own call', newTicket(fixture('ticket-called.jsonl', [ranSkill('mattpocock-skills:to-tickets')])), 'DENY'],
+  ['PR, code-review call failed', {
+    tool_name: 'Bash',
+    transcript_path: fixture('review-failed.jsonl', [failedSkill('mattpocock-skills:code-review'), ranBash(PR)]),
+    tool_input: { command: PR },
+  }, 'DENY', 'has not run in this session'],
   ['test edit stays ungated after a PR', {
     tool_name: 'Edit', transcript_path: tddBeforePr,
     tool_input: { file_path: `${REPO}/API/tests/FooTest.php` },
