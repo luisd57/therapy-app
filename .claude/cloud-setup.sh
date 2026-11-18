@@ -13,6 +13,9 @@ if [ "$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)" -l
   exit 1
 fi
 
+# The Launchpad PPA sometimes returns 503 for one package. Retry it instead of failing the whole setup.
+echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+
 # PHP 8.5 is not in the Ubuntu archive. Add ppa.launchpadcontent.net and getcomposer.org to the network allowlist.
 sudo apt-get update -q
 sudo apt-get install -y -q software-properties-common
