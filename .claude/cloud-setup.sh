@@ -3,7 +3,18 @@
 # Mirrors the "test" job in .github/workflows/ci.yml, with services on localhost instead of docker-compose.
 set -euo pipefail
 
-cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
+# The setup phase runs from /tmp without CLAUDE_PROJECT_DIR, so find the clone (/home/user/therapy-app so far).
+repo="${CLAUDE_PROJECT_DIR:-$PWD}"
+if [ ! -f "$repo/API/composer.json" ]; then
+  repo="$(find /home /root /workspace -maxdepth 4 -path '*/API/composer.json' 2>/dev/null | head -1 || true)"
+  repo="${repo%/API/composer.json}"
+fi
+if [ -z "$repo" ]; then
+  echo "Could not find the repository clone with API/composer.json." >&2
+  exit 1
+fi
+cd "$repo"
+echo "Using the clone at $repo"
 
 # Same as the CI job env. Without APP_ENV=test, composer's cache:clear boots dev and crashes on missing vars.
 export APP_ENV=test TZ=UTC PGTZ=UTC
