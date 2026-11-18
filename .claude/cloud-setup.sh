@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup script for a Claude Code cloud environment. Paste into the environment's setup field.
+# Setup for the Claude Code cloud environment. The environment runs it through .claude/cloud-bootstrap.sh.
 # Mirrors the "test" job in .github/workflows/ci.yml, with services on localhost instead of docker-compose.
 set -euo pipefail
 
