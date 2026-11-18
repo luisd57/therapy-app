@@ -1,5 +1,5 @@
 // Drives verify-on-stop.mjs the way Claude Code does: JSON on stdin, read the exit
-// code. Stub git, docker-compose and npm on PATH keep every case offline.
+// code. Stub git, docker-compose, docker, npm and php on PATH keep every case offline.
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdtempSync, chmodSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,8 +21,10 @@ process.exit(0);
   'docker-compose': `
 const a = process.argv.slice(2).join(' ');
 if (process.env.STUB_DC === 'missing') process.exit(127);
-if (a === 'ps --status running -q php') { process.stdout.write(process.env.STUB_DC === 'down' ? '' : 'abc123\\n'); process.exit(0); }
-if (!a.startsWith('exec -T php ')) { process.stderr.write('the input device is not a TTY'); process.exit(1); }
+if (process.env.STUB_DC === 'hang') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3000);
+if (a === 'ps --status running -q php') { process.stdout.write(process.env.STUB_DC === 'down' ? '' : 'abc123\\n'); process.exit(process.env.STUB_DC === 'psfail' ? 1 : 0); }
+const exact = ['exec -T php vendor/bin/phpstan analyse --no-progress --memory-limit=1G', 'exec -T php vendor/bin/deptrac analyse --no-progress'];
+if (!exact.includes(a)) { process.stderr.write('unexpected args: ' + a); process.exit(1); }
 if (a.includes('phpstan') && process.env.STUB_PHPSTAN === 'fail') { process.stdout.write('Line 12: Undefined variable $x'); process.exit(1); }
 if (a.includes('deptrac') && process.env.STUB_DEPTRAC === 'fail') { process.stderr.write('Domain must not depend on Infrastructure'); process.exit(1); }
 process.exit(0);
@@ -35,10 +37,16 @@ if (a === 'run check' && process.env.STUB_CHECK === 'fail') { process.stdout.wri
 if (a === 'run check:svelte' && process.env.STUB_SVELTE === 'fail') { process.stdout.write('Svelte warning in Slot.svelte'); process.exit(1); }
 process.exit(0);
 `,
-  // Host PHP, used when there is no container but API/vendor exists (a cloud session).
+  docker: `
+if (process.env.STUB_DOCKER === 'missing') process.exit(127);
+process.exit(0);
+`,
+  // Host PHP, used only without docker at all and with API/vendor (a cloud session).
   php: `
 const a = process.argv.slice(2).join(' ');
 if (!/[\\\\/]API$/.test(process.cwd())) { process.stderr.write('Could not open input file: vendor/bin/phpstan'); process.exit(1); }
+const exact = ['vendor/bin/phpstan analyse --no-progress --memory-limit=1G', 'vendor/bin/deptrac analyse --no-progress'];
+if (!exact.includes(a)) { process.stderr.write('unexpected args: ' + a); process.exit(1); }
 if (a.startsWith('vendor/bin/phpstan') && process.env.STUB_PHPSTAN === 'fail') { process.stdout.write('Line 12: Undefined variable $x'); process.exit(1); }
 if (a.startsWith('vendor/bin/deptrac') && process.env.STUB_DEPTRAC === 'fail') { process.stderr.write('Domain must not depend on Infrastructure'); process.exit(1); }
 process.exit(0);
@@ -99,14 +107,15 @@ const PROJ = project();
 const BARE = project({ modules: false });
 const CLOUD = project({ vendor: true });
 const API = 'API/src/Foo.php\n';
+const NO_DOCKER = { STUB_DC: 'missing', STUB_DOCKER: 'missing' };
 
 // [name, payload, env, exit code, stderr must include, stdout must include]
 const cases = [
   ['no changes passes', stop(PROJ), {}, 0],
   ['docs-only change passes', stop(PROJ), { STUB_CHANGED: 'docs/STATUS.md\nCLAUDE.md\n' }, 0],
   ['clean API change passes', stop(PROJ), { STUB_CHANGED: API }, 0],
-  ['PHPStan failure blocks', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable'],
-  ['Deptrac failure on stderr blocks', stop(PROJ), { STUB_CHANGED: API, STUB_DEPTRAC: 'fail' }, 2, 'must not depend'],
+  ['PHPStan failure blocks', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable', null, 'PHPStan failed'],
+  ['Deptrac failure on stderr blocks', stop(PROJ), { STUB_CHANGED: API, STUB_DEPTRAC: 'fail' }, 2, 'must not depend', null, 'Deptrac failed'],
   ['both API failures reported', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DEPTRAC: 'fail' }, 2, 'must not depend', null, 'Undefined variable'],
   ['untracked file counts', stop(PROJ), { STUB_UNTRACKED: 'API/src/New.php\n', STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable'],
   ['dashboard lint failure blocks', stop(PROJ), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_LINT: 'fail' }, 2, 'no-unused-vars'],
@@ -115,12 +124,15 @@ const cases = [
   ['API failure ignored when only landing changed', stop(PROJ), { STUB_CHANGED: 'landing/src/x.ts\n', STUB_PHPSTAN: 'fail' }, 0],
   ['session in a subdirectory still checks', stop(join(PROJ, 'API'), { root: PROJ }), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_LINT: 'fail' }, 2, 'no-unused-vars'],
   ['second stop never blocks', stop(PROJ, { stop_hook_active: true }), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail' }, 0],
-  ['container down fails open with a note', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DC: 'down' }, 0, null, 'php container'],
-  ['docker-compose missing fails open', stop(PROJ), { STUB_CHANGED: API, STUB_DC: 'missing' }, 0, null, 'skipped'],
-  ['no docker but API/vendor runs host PHPStan', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable'],
-  ['no docker but API/vendor runs host Deptrac', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_DEPTRAC: 'fail' }, 2, 'must not depend'],
-  ['no docker, clean API passes on host', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing' }, 0],
-  ['container down skips even with host vendor', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'down', STUB_PHPSTAN: 'fail' }, 0, null, 'php container'],
+  ['container down fails open with a note', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DC: 'down' }, 0, null, 'skipped: the php container is not running.'],
+  ['failing ps counts as container down', stop(CLOUD), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DC: 'psfail' }, 0, null, 'skipped: the php container is not running.'],
+  ['hung docker-compose counts as container down', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'hang', VERIFY_ON_STOP_TIMEOUT_MS: '500', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: the php container is not running.'],
+  ['container down skips even with host vendor', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'down', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: the php container is not running.'],
+  ['docker without docker-compose skips', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_PHPSTAN: 'fail' }, 0, null, 'skipped: docker-compose is not installed.'],
+  ['no docker and no vendor skips', stop(PROJ), { STUB_CHANGED: API, ...NO_DOCKER }, 0, null, 'skipped: no docker and API/vendor is missing.'],
+  ['no docker but API/vendor runs host PHPStan', stop(CLOUD), { STUB_CHANGED: API, ...NO_DOCKER, STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable', null, 'PHPStan failed'],
+  ['no docker but API/vendor runs host Deptrac', stop(CLOUD), { STUB_CHANGED: API, ...NO_DOCKER, STUB_DEPTRAC: 'fail' }, 2, 'must not depend', null, 'Deptrac failed'],
+  ['no docker, clean API passes on host', stop(CLOUD), { STUB_CHANGED: API, ...NO_DOCKER }, 0],
   ['npm missing fails open', stop(PROJ), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_NPM: 'missing' }, 0, null, 'skipped'],
   ['no dashboard node_modules fails open', stop(BARE), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_LINT: 'fail' }, 0, null, 'node_modules'],
   ['no landing node_modules fails open', stop(BARE), { STUB_CHANGED: 'landing/src/x.ts\n', STUB_CHECK: 'fail' }, 0, null, 'node_modules'],
