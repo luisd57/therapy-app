@@ -24,6 +24,8 @@ sudo apt-get update -q
 sudo apt-get install -y -q \
   php8.5-cli php8.5-pgsql php8.5-intl php8.5-xml php8.5-mbstring php8.5-curl php8.5-zip php8.5-redis php8.5-pcov \
   redis-server unzip
+# The image pins php to 8.3 in manual alternatives mode, so installing 8.5 alone does not switch it.
+sudo update-alternatives --set php /usr/bin/php8.5
 # postgresql-16 is only in the 24.04 archive. Older images get their default version.
 sudo apt-get install -y -q postgresql-16 || sudo apt-get install -y -q postgresql
 
