@@ -35,6 +35,14 @@ if (a === 'run check' && process.env.STUB_CHECK === 'fail') { process.stdout.wri
 if (a === 'run check:svelte' && process.env.STUB_SVELTE === 'fail') { process.stdout.write('Svelte warning in Slot.svelte'); process.exit(1); }
 process.exit(0);
 `,
+  // Host PHP, used when there is no container but API/vendor exists (a cloud session).
+  php: `
+const a = process.argv.slice(2).join(' ');
+if (!/[\\\\/]API$/.test(process.cwd())) { process.stderr.write('Could not open input file: vendor/bin/phpstan'); process.exit(1); }
+if (a.startsWith('vendor/bin/phpstan') && process.env.STUB_PHPSTAN === 'fail') { process.stdout.write('Line 12: Undefined variable $x'); process.exit(1); }
+if (a.startsWith('vendor/bin/deptrac') && process.env.STUB_DEPTRAC === 'fail') { process.stderr.write('Domain must not depend on Infrastructure'); process.exit(1); }
+process.exit(0);
+`,
 };
 
 function stubs() {
@@ -54,9 +62,9 @@ function stubs() {
 }
 
 // A project dir with node_modules in both front ends, unless a case removes them.
-function project({ modules = true } = {}) {
+function project({ modules = true, vendor = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'verify-proj-'));
-  mkdirSync(join(dir, 'API'), { recursive: true });
+  mkdirSync(join(dir, 'API', vendor ? 'vendor' : ''), { recursive: true });
   for (const app of ['dashboard', 'landing']) {
     mkdirSync(join(dir, app, modules ? 'node_modules' : ''), { recursive: true });
   }
@@ -89,6 +97,7 @@ let raw = null;
 const stop = (cwd, extra = {}) => ({ hook_event_name: 'Stop', cwd, stop_hook_active: false, ...extra });
 const PROJ = project();
 const BARE = project({ modules: false });
+const CLOUD = project({ vendor: true });
 const API = 'API/src/Foo.php\n';
 
 // [name, payload, env, exit code, stderr must include, stdout must include]
@@ -108,6 +117,10 @@ const cases = [
   ['second stop never blocks', stop(PROJ, { stop_hook_active: true }), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail' }, 0],
   ['container down fails open with a note', stop(PROJ), { STUB_CHANGED: API, STUB_PHPSTAN: 'fail', STUB_DC: 'down' }, 0, null, 'php container'],
   ['docker-compose missing fails open', stop(PROJ), { STUB_CHANGED: API, STUB_DC: 'missing' }, 0, null, 'skipped'],
+  ['no docker but API/vendor runs host PHPStan', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_PHPSTAN: 'fail' }, 2, 'Undefined variable'],
+  ['no docker but API/vendor runs host Deptrac', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing', STUB_DEPTRAC: 'fail' }, 2, 'must not depend'],
+  ['no docker, clean API passes on host', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'missing' }, 0],
+  ['container down skips even with host vendor', stop(CLOUD), { STUB_CHANGED: API, STUB_DC: 'down', STUB_PHPSTAN: 'fail' }, 0, null, 'php container'],
   ['npm missing fails open', stop(PROJ), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_NPM: 'missing' }, 0, null, 'skipped'],
   ['no dashboard node_modules fails open', stop(BARE), { STUB_CHANGED: 'dashboard/src/app.ts\n', STUB_LINT: 'fail' }, 0, null, 'node_modules'],
   ['no landing node_modules fails open', stop(BARE), { STUB_CHANGED: 'landing/src/x.ts\n', STUB_CHECK: 'fail' }, 0, null, 'node_modules'],

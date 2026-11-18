@@ -15,11 +15,8 @@ const CHECK_TIMEOUT_MS = 110_000;
 const AREAS = [
   {
     prefix: 'API/',
-    ready: (root) => (apiReady(root) ? null : 'the php container is not running'),
-    checks: [
-      ['PHPStan', 'docker-compose', ['exec', '-T', 'php', 'vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=1G']],
-      ['Deptrac', 'docker-compose', ['exec', '-T', 'php', 'vendor/bin/deptrac', 'analyse', '--no-progress']],
-    ],
+    ready: (root) => (apiChecks(root) ? null : 'the php container is not running and API/vendor is missing'),
+    checks: (root) => apiChecks(root),
   },
   {
     prefix: 'dashboard/',
@@ -66,9 +63,32 @@ function unavailable(result) {
   return Boolean(result.error) || result.status === 127 || result.status === 9009 || result.status === null;
 }
 
-function apiReady(root) {
+function phpContainer(root) {
   const ps = exec('docker-compose', ['ps', '--status', 'running', '-q', 'php'], root);
-  return !unavailable(ps) && ps.status === 0 && ps.stdout.trim() !== '';
+  if (unavailable(ps)) return 'no-docker';
+  return ps.status === 0 && ps.stdout.trim() !== '' ? 'up' : 'down';
+}
+
+const PHPSTAN = ['vendor/bin/phpstan', 'analyse', '--no-progress', '--memory-limit=1G'];
+const DEPTRAC = ['vendor/bin/deptrac', 'analyse', '--no-progress'];
+let apiPlan;
+
+// The container when it runs. Host PHP only without docker at all (a cloud session): a local
+// host install has different config, and a stopped container should skip, not fail on that.
+function apiChecks(root) {
+  if (apiPlan !== undefined) return apiPlan;
+  const container = phpContainer(root);
+  if (container === 'up') {
+    apiPlan = [
+      ['PHPStan', 'docker-compose', ['exec', '-T', 'php', ...PHPSTAN]],
+      ['Deptrac', 'docker-compose', ['exec', '-T', 'php', ...DEPTRAC]],
+    ];
+  } else if (container === 'no-docker' && existsSync(join(root, 'API', 'vendor'))) {
+    apiPlan = [['PHPStan', 'php', PHPSTAN, 'API'], ['Deptrac', 'php', DEPTRAC, 'API']];
+  } else {
+    apiPlan = null;
+  }
+  return apiPlan;
 }
 
 function lines(text) {
@@ -107,7 +127,8 @@ for (const area of AREAS) {
   if (!files.some((f) => f.startsWith(area.prefix))) continue;
   const notReady = area.ready(root);
   if (notReady) { skipped.push(notReady); continue; }
-  for (const [label, cmd, args, sub] of area.checks) {
+  const checks = typeof area.checks === 'function' ? area.checks(root) : area.checks;
+  for (const [label, cmd, args, sub] of checks) {
     const result = exec(cmd, args, sub ? join(root, sub) : root);
     if (unavailable(result)) { skipped.push(`${label} could not run`); continue; }
     if (result.status === 0) continue;
