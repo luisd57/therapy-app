@@ -98,20 +98,5 @@ else
   echo "Warning: could not install the mattpocock-skills plugin, so skill-gate will block API/src edits." >&2
 fi
 
-# The user's global config (CLAUDE.md, output style, scrub and authorship hooks) is the private
-# luisd57/claude-config repo. A session clones only the repo picked for it, so setup clones this one
-# with CLAUDE_CONFIG_TOKEN (read-only, set in the environment). The token goes in a header, never a URL.
-installer="$(find /home /root /workspace -maxdepth 3 -path '*/claude-config/cloud-install.sh' 2>/dev/null | head -1 || true)"
-if [ -z "$installer" ] && [ -n "${CLAUDE_CONFIG_TOKEN:-}" ]; then
-  config_dir="$(mktemp -d)/claude-config"
-  auth="$(printf 'x-access-token:%s' "$CLAUDE_CONFIG_TOKEN" | base64 | tr -d '\n')"
-  if git -c "http.extraHeader=Authorization: Basic $auth" clone -q --depth 1 \
-    https://github.com/luisd57/claude-config.git "$config_dir"; then
-    installer="$config_dir/cloud-install.sh"
-  fi
-fi
-if [ -n "$installer" ] && bash "$installer"; then
-  :
-else
-  echo "Warning: luisd57/claude-config was not installed, so cloud sessions run without the global CLAUDE.md and hooks." >&2
-fi
+# The user's global config is loaded at session start by .claude/hooks/cloud-user-config.mjs, not
+# here: this script cannot see the environment's variables, so it has no token for the private repo.
