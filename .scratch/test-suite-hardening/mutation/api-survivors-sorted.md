@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 27 |
+| Kind 1, real gap | 20 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 117 |
+| Sorted | 110 |
 | Skipped | 0 |
-| Total | 117 |
+| Total | 110 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -66,6 +66,11 @@ revoked jti and a per-user cutoff each hold one second before their TTL and are 
 the TTL, for two TTLs, with time moved on a `MockClock` behind the `ArrayAdapter`. Both left the
 total. The seven Kind 2 rows stay.
 
+Ticket 33 closed on 2026-11-21. Its seven Kind 1 rows in `DoctrineAppointmentRepository.php` are
+killed: the confirmed lookup for one practice day returns Appointments at the day's midnight and
+in its last minute, and leaves out the last minute of the day before and the next midnight. All
+seven left the total, and that file has no rows left.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -73,19 +78,7 @@ total. The seven Kind 2 rows stay.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (27)
-
-### `src/Infrastructure/Persistence/Doctrine/Appointment/Repository/DoctrineAppointmentRepository.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 158 | DecrementInteger | `setTime(0, -1)`. Day start is pinned to the hour only. The evening-before fixture sits at 23:00, one at 23:59 would catch it. |
-| 158 | IncrementInteger | `setTime(1, 0)`. No fixture in the first hour of the day. |
-| 158 | IncrementInteger | `setTime(0, 1)`. No fixture exactly at the day's midnight, so the inclusive start is unpinned. |
-| 159 | DecrementInteger | `setTime(-1, 0)`. The latest in-day fixture is 22:00, nothing in the last hour. |
-| 159 | IncrementInteger | `setTime(1, 0)`. No confirmed fixture after the day ends, so the next day's first hour leaks in unseen. |
-| 159 | DecrementInteger | `setTime(0, -1)`. Nothing in the day's last minute. |
-| 159 | IncrementInteger | `setTime(0, 1)`. No fixture exactly at the next midnight, so the exclusive end is unpinned. |
+## Kind 1, real gap (20)
 
 ### `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php`
 

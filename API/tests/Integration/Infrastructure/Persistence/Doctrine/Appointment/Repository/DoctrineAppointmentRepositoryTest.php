@@ -207,6 +207,34 @@ final class DoctrineAppointmentRepositoryTest extends IntegrationTestCase
         $this->assertSame([$earlier, $later], $results->toArray());
     }
 
+    public function testFindConfirmedByDateTakesTheWholePracticeDayStartInclusiveEndExclusive(): void
+    {
+        // A Day key read in the Practice Timezone, as SendDailyAgendaHandler builds it.
+        $targetDate = new DateTimeImmutable('2026-10-14', new DateTimeZone('America/Caracas'));
+
+        $lastMinuteOfDayBefore = $this->createConfirmedAt(new DateTimeImmutable('2026-10-13T23:59:00-04:00'), 'day-before@test.com');
+        $atMidnight = $this->createConfirmedAt(new DateTimeImmutable('2026-10-14T00:00:00-04:00'), 'midnight@test.com');
+        $lastMinute = $this->createConfirmedAt(new DateTimeImmutable('2026-10-14T23:59:00-04:00'), 'last-minute@test.com');
+        $atNextMidnight = $this->createConfirmedAt(new DateTimeImmutable('2026-10-15T00:00:00-04:00'), 'next-midnight@test.com');
+
+        $results = $this->repository->findConfirmedByDate($targetDate);
+
+        $this->assertSame([$atMidnight, $lastMinute], $results->toArray());
+        $this->assertInstantIs('2026-10-14T04:00:00+00:00', $atMidnight->getTimeSlot()->getStartTime());
+        $this->assertInstantIs('2026-10-15T03:59:00+00:00', $lastMinute->getTimeSlot()->getStartTime());
+        $this->assertNotContains($lastMinuteOfDayBefore, $results->toArray());
+        $this->assertNotContains($atNextMidnight, $results->toArray());
+    }
+
+    private function createConfirmedAt(DateTimeImmutable $startTime, string $email): Appointment
+    {
+        $appointment = $this->createAppointment(startTime: $startTime, email: $email);
+        $appointment->confirm(self::utc(self::REQUESTED_AT));
+        $this->repository->save($appointment);
+
+        return $appointment;
+    }
+
     public function testFindConfirmedByDateReturnsEmptyCollectionWhenNone(): void
     {
         $results = $this->repository->findConfirmedByDate(self::utc('2030-01-01'));
