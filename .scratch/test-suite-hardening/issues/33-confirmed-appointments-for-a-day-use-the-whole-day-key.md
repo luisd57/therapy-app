@@ -32,6 +32,8 @@ in `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
 
 **Status:** resolved
 
+**Resolved by:** [PR #137](https://github.com/luisd57/therapy-app/pull/137)
+
 - [x] A confirmed Appointment starting at the day's midnight is returned
 - [x] One starting in the day's last minute is returned
 - [x] One starting in the last minute of the day before is not returned
