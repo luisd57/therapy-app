@@ -153,6 +153,17 @@
             "statusMessage": "Checking the tracker for a duplicate"
           }
         ]
+      },
+      {
+        "matcher": "mcp__.*github.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-hook.mjs authorship-trailer.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking authorship on GitHub MCP publishes (cloud)"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -168,6 +179,17 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "mcp__.*github.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/cloud-user-hook.mjs mcp-pr-footer.mjs",
+            "timeout": 10,
+            "statusMessage": "Checking for a server-added footer (cloud)"
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [

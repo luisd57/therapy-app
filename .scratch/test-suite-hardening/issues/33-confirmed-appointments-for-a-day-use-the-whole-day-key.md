@@ -1,5 +1,7 @@
 # 33 - Confirmed Appointments for a day use the whole Day key, end exclusive
 
+> Frozen record, resolved 2026-11-21.
+
 **What to build:** a test that fails when the lookup of confirmed Appointments
 for one day drops an Appointment at either end of that day, or takes one from
 the day before or the day after.
@@ -28,11 +30,13 @@ in `.scratch/test-suite-hardening/mutation/api-survivors-sorted.md` as sorted
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A confirmed Appointment starting at the day's midnight is returned
-- [ ] One starting in the day's last minute is returned
-- [ ] One starting in the last minute of the day before is not returned
-- [ ] One starting at the next midnight is not returned
-- [ ] The day is named in the Practice Timezone, and every expected Instant is written in UTC
-- [ ] A one-file Infection run no longer reports the seven rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #137](https://github.com/luisd57/therapy-app/pull/137)
+
+- [x] A confirmed Appointment starting at the day's midnight is returned
+- [x] One starting in the day's last minute is returned
+- [x] One starting in the last minute of the day before is not returned
+- [x] One starting at the next midnight is not returned
+- [x] The day is named in the Practice Timezone, and every expected Instant is written in UTC
+- [x] A one-file Infection run no longer reports the seven rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
