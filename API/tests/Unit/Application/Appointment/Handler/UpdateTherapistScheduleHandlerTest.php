@@ -15,6 +15,7 @@ use App\Domain\Appointment\Enum\WeekDay;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -170,5 +171,49 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
 
         $this->expectException(ScheduleConflictException::class);
         $this->handler->__invoke($input);
+    }
+
+    /**
+     * Each block touches another Monday block from 10:00 to 12:00.
+     *
+     * @return iterable<string, array{string, string}>
+     */
+    public static function blocksTouchingTenToNoon(): iterable
+    {
+        yield 'starts when the other block ends' => ['12:00', '14:00'];
+        yield 'ends when the other block starts' => ['08:00', '10:00'];
+    }
+
+    #[DataProvider('blocksTouchingTenToNoon')]
+    public function testHandleMoveToTouchAnotherBlockIsSaved(string $startTime, string $endTime): void
+    {
+        $therapist = DomainTestHelper::createTherapist();
+        $schedule = DomainTestHelper::createScheduleBlock($therapist, WeekDay::MONDAY, '15:00', '17:00');
+        $otherSchedule = DomainTestHelper::createScheduleBlock($therapist, WeekDay::MONDAY, '10:00', '12:00');
+
+        $this->scheduleRepository
+            ->method('findById')
+            ->willReturn($schedule);
+
+        $this->scheduleRepository
+            ->method('findActiveByTherapistAndDay')
+            ->willReturn(new ArrayCollection([$schedule, $otherSchedule]));
+
+        $this->scheduleRepository
+            ->expects($this->once())
+            ->method('save');
+
+        $input = new UpdateTherapistScheduleInputDTO(
+            scheduleId: $schedule->getId()->getValue(),
+            therapistId: $therapist->getId()->getValue(),
+            dayOfWeek: 1,
+            startTime: $startTime,
+            endTime: $endTime,
+        );
+
+        $result = $this->handler->__invoke($input);
+
+        $this->assertSame($startTime, $result->startTime);
+        $this->assertSame($endTime, $result->endTime);
     }
 }
