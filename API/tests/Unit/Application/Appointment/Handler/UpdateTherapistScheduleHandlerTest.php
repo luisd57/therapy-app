@@ -188,34 +188,8 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
     public function testHandleMoveToTouchAnotherBlockIsSaved(string $startTime, string $endTime): void
     {
         $therapist = DomainTestHelper::createTherapist();
-        $scheduleId = ScheduleId::generate();
-        $lastSavedAt = self::utc('2026-06-01 09:00:00');
-
-        $schedule = TherapistSchedule::reconstitute(
-            id: $scheduleId,
-            therapist: $therapist,
-            dayOfWeek: WeekDay::MONDAY,
-            startTime: '15:00',
-            endTime: '17:00',
-            supportsOnline: true,
-            supportsInPerson: true,
-            isActive: true,
-            createdAt: $lastSavedAt,
-            updatedAt: $lastSavedAt,
-        );
-
-        $otherSchedule = TherapistSchedule::reconstitute(
-            id: ScheduleId::generate(),
-            therapist: $therapist,
-            dayOfWeek: WeekDay::MONDAY,
-            startTime: '10:00',
-            endTime: '12:00',
-            supportsOnline: true,
-            supportsInPerson: true,
-            isActive: true,
-            createdAt: $lastSavedAt,
-            updatedAt: $lastSavedAt,
-        );
+        $schedule = DomainTestHelper::createScheduleBlock($therapist, WeekDay::MONDAY, '15:00', '17:00');
+        $otherSchedule = DomainTestHelper::createScheduleBlock($therapist, WeekDay::MONDAY, '10:00', '12:00');
 
         $this->scheduleRepository
             ->method('findById')
@@ -230,7 +204,7 @@ final class UpdateTherapistScheduleHandlerTest extends TestCase
             ->method('save');
 
         $input = new UpdateTherapistScheduleInputDTO(
-            scheduleId: $scheduleId->getValue(),
+            scheduleId: $schedule->getId()->getValue(),
             therapistId: $therapist->getId()->getValue(),
             dayOfWeek: 1,
             startTime: $startTime,

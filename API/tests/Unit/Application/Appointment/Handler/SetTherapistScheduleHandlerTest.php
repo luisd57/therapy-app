@@ -16,8 +16,8 @@ use App\Domain\User\Repository\UserRepositoryInterface;
 use App\Tests\Helper\DomainTestHelper;
 use App\Tests\Helper\UsesUtcInstants;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Clock\ClockInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -139,20 +139,7 @@ final class SetTherapistScheduleHandlerTest extends TestCase
     #[DataProvider('blocksTouchingTenToNoon')]
     public function testHandleBlockTouchingAnExistingBlockIsCreated(string $startTime, string $endTime): void
     {
-        $lastSavedAt = self::utc('2026-06-01 09:00:00');
-
-        $existingSchedule = TherapistSchedule::reconstitute(
-            id: ScheduleId::generate(),
-            therapist: $this->therapist,
-            dayOfWeek: WeekDay::MONDAY,
-            startTime: '10:00',
-            endTime: '12:00',
-            supportsOnline: true,
-            supportsInPerson: true,
-            isActive: true,
-            createdAt: $lastSavedAt,
-            updatedAt: $lastSavedAt,
-        );
+        $existingSchedule = DomainTestHelper::createScheduleBlock($this->therapist, WeekDay::MONDAY, '10:00', '12:00');
 
         $this->scheduleRepository
             ->method('findActiveByTherapistAndDay')
