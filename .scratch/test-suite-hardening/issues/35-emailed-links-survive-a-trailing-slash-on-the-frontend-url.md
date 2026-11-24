@@ -1,5 +1,7 @@
 # 35 - Emailed links survive a trailing slash on the frontend URL
 
+> Frozen record, resolved 2026-11-24.
+
 **What to build:** tests that fail when a trailing slash on `APP_FRONTEND_URL`
 puts a double slash into a link the API emails.
 
@@ -22,9 +24,11 @@ link.
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] With a frontend URL ending in a slash, the invitation link has exactly one slash between the host and its path
-- [ ] The same holds for the resent invitation link
-- [ ] The same holds for the password reset link
-- [ ] A one-file Infection run on each handler no longer reports its UnwrapRtrim row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #139](https://github.com/luisd57/therapy-app/pull/139)
+
+- [x] With a frontend URL ending in a slash, the invitation link has exactly one slash between the host and its path
+- [x] The same holds for the resent invitation link
+- [x] The same holds for the password reset link
+- [x] A one-file Infection run on each handler no longer reports its UnwrapRtrim row as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

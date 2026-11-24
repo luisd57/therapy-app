@@ -129,6 +129,33 @@ final class RequestPasswordResetHandlerTest extends TestCase
         $this->handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
     }
 
+    public function testResetUrlHasOneSlashWhenFrontendUrlEndsInSlash(): void
+    {
+        $handler = new RequestPasswordResetHandler(
+            $this->userRepository,
+            $this->resetTokenRepository,
+            $this->tokenGenerator,
+            $this->emailSender,
+            'http://localhost:3000/',
+            3600,
+            $this->clock,
+            $this->logger,
+        );
+        $this->userRepository->method('findByEmail')
+            ->willReturn(DomainTestHelper::createReconstitutedActivePatient());
+        $this->tokenGenerator->method('generate')->willReturn('my-reset-token');
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendPasswordReset')
+            ->with(
+                $this->anything(),
+                'http://localhost:3000/reset-password?token=my-reset-token',
+            );
+
+        $handler->__invoke(new RequestPasswordResetInputDTO(email: 'patient@example.com'));
+    }
+
     public function testHandleSucceedsWhenEmailFails(): void
     {
         $user = DomainTestHelper::createReconstitutedActivePatient(email: 'active@example.com');
