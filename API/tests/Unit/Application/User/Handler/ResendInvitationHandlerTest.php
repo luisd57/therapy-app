@@ -107,7 +107,7 @@ final class ResendInvitationHandlerTest extends TestCase
             $this->repository,
             $this->tokenGenerator,
             $this->emailSender,
-            'http://localhost:4200/',
+            self::FRONTEND_URL . '/',
             self::INVITATION_TTL,
             $this->clock,
             $this->logger,
