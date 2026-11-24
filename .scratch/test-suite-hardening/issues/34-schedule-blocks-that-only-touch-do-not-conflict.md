@@ -1,5 +1,7 @@
 # 34 - Schedule Blocks that only touch do not conflict
 
+> Frozen record, resolved 2026-11-24.
+
 **What to build:** tests that fail when the Therapist cannot put two Schedule
 Blocks back to back on the same day, when creating one or when updating one.
 
@@ -22,9 +24,11 @@ three for
 
 **Blocked by:** None - can start immediately.
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Creating a block that starts exactly when an existing block on that day ends succeeds
-- [ ] Creating a block that ends exactly when an existing block on that day starts succeeds
-- [ ] Updating a block so it touches another block on that day succeeds, once on each side
-- [ ] A one-file Infection run on each handler no longer reports its three rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead
+**Resolved by:** [PR #PRNUM](https://github.com/luisd57/therapy-app/pull/PRNUM)
+
+- [x] Creating a block that starts exactly when an existing block on that day ends succeeds
+- [x] Creating a block that ends exactly when an existing block on that day starts succeeds
+- [x] Updating a block so it touches another block on that day succeeds, once on each side
+- [x] A one-file Infection run on each handler no longer reports its three rows as escaped. If a row proves equivalent, move it to kind 2 in the sorted list with the reason instead

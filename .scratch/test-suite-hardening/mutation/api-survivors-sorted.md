@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 20 |
+| Kind 1, real gap | 14 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 110 |
+| Sorted | 104 |
 | Skipped | 0 |
-| Total | 110 |
+| Total | 104 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -71,6 +71,11 @@ killed: the confirmed lookup for one practice day returns Appointments at the da
 in its last minute, and leaves out the last minute of the day before and the next midnight. All
 seven left the total, and that file has no rows left.
 
+Ticket 34 closed on 2026-11-24. Its six Kind 1 rows, three in `SetTherapistScheduleHandler.php`
+and three in `UpdateTherapistScheduleHandler.php`, are killed: creating a block that starts when
+another on that day ends, or ends when it starts, succeeds, and so does updating a block to touch
+another on either side. All six left the total, and neither file has rows left.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -78,23 +83,7 @@ seven left the total, and that file has no rows left.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (20)
-
-### `src/Application/Appointment/Handler/SetTherapistScheduleHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 73 | LessThan | `$start1 <= $end2`. A block starting exactly when an existing one ends must be allowed. No test has adjacent blocks. |
-| 73 | LessThan | `$start2 <= $end1`. A block ending exactly when an existing one starts. Same gap. |
-| 73 | LogicalAnd | Any second block on the same day would conflict. The success test has no existing block and the conflict test has a true overlap. |
-
-### `src/Application/Appointment/Handler/UpdateTherapistScheduleHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 76 | LessThan | `$start1 <= $end2`. Same as SetTherapistScheduleHandler line 73, no test has adjacent blocks. |
-| 76 | LessThan | `$start2 <= $end1`. Same. |
-| 76 | LogicalAnd | Any other block on the same day would conflict. Same gap as the Set handler. |
+## Kind 1, real gap (14)
 
 ### `src/Application/User/Handler/InvitePatientHandler.php`
 
