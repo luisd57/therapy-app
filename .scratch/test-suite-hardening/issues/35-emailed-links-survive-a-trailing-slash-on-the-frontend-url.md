@@ -26,6 +26,8 @@ link.
 
 **Status:** resolved
 
+**Resolved by:** [PR #139](https://github.com/luisd57/therapy-app/pull/139)
+
 - [x] With a frontend URL ending in a slash, the invitation link has exactly one slash between the host and its path
 - [x] The same holds for the resent invitation link
 - [x] The same holds for the password reset link
