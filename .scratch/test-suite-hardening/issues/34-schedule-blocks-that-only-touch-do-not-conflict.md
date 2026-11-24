@@ -26,7 +26,7 @@ three for
 
 **Status:** resolved
 
-**Resolved by:** [PR #PRNUM](https://github.com/luisd57/therapy-app/pull/PRNUM)
+**Resolved by:** [PR #138](https://github.com/luisd57/therapy-app/pull/138)
 
 - [x] Creating a block that starts exactly when an existing block on that day ends succeeds
 - [x] Creating a block that ends exactly when an existing block on that day starts succeeds
