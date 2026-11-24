@@ -140,6 +140,38 @@ final class InvitePatientHandlerTest extends TestCase
         $this->handler->__invoke($input);
     }
 
+    public function testRegistrationUrlHasOneSlashWhenFrontendUrlEndsInSlash(): void
+    {
+        $handler = new InvitePatientHandler(
+            $this->userRepository,
+            $this->invitationRepository,
+            $this->tokenGenerator,
+            $this->emailSender,
+            'http://localhost:3000/',
+            86400,
+            $this->clock,
+            $this->logger,
+        );
+        $this->userRepository->method('existsByEmail')->willReturn(false);
+        $this->invitationRepository->method('findValidByEmail')->willReturn(null);
+        $this->tokenGenerator->method('generate')->willReturn('my-token');
+
+        $this->emailSender
+            ->expects($this->once())
+            ->method('sendInvitation')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                'http://localhost:3000/register?token=my-token',
+            );
+
+        $handler->__invoke(new InvitePatientInputDTO(
+            email: 'patient@example.com',
+            patientName: 'Patient',
+            therapistId: UserId::generate()->getValue(),
+        ));
+    }
+
     public function testHandleSucceedsWhenEmailFails(): void
     {
         $this->userRepository->method('existsByEmail')->willReturn(false);

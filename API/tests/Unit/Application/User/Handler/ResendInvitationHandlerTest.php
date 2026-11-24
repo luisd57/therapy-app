@@ -101,6 +101,31 @@ final class ResendInvitationHandlerTest extends TestCase
         self::assertInstantIs('2026-06-15T12:00:00+00:00', $revokedAt);
     }
 
+    public function testRegistrationUrlHasOneSlashWhenFrontendUrlEndsInSlash(): void
+    {
+        $handler = new ResendInvitationHandler(
+            $this->repository,
+            $this->tokenGenerator,
+            $this->emailSender,
+            'http://localhost:4200/',
+            self::INVITATION_TTL,
+            $this->clock,
+            $this->logger,
+        );
+        $this->repository->method('findById')->willReturn(DomainTestHelper::createValidInvitation());
+        $this->tokenGenerator->method('generate')->willReturn(self::FRESH_TOKEN);
+
+        $this->emailSender->expects($this->once())
+            ->method('sendInvitation')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                'http://localhost:4200/register?token=fresh-raw-token-abc',
+            );
+
+        $handler->__invoke(new ResendInvitationInputDTO(tokenId: TokenId::generate()->getValue()));
+    }
+
     public function testThrowsWhenInvitationNotFound(): void
     {
         $this->repository->method('findById')->willReturn(null);

@@ -7,7 +7,6 @@ const j = JSON.parse(readFileSync(input, 'utf8'));
 const s = j.stats;
 
 const tickets = [
-  [/Handler\/(InvitePatient|RequestPasswordReset|ResendInvitation)Handler/, ['35']],
   [/Domain\/Appointment\/Entity\/ScheduleException/, ['36']],
   [/Domain\/Appointment\/Entity\/ScheduleException/, ['37']],
   [/Domain\/User\/ValueObject\/Address/, ['38']],

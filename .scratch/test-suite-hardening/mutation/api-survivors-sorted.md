@@ -9,12 +9,12 @@ whoever touches the line next. Sorted by hand, so a rerun of the list does not u
 | Date | 2026-10-09 |
 | Sorted from | `api-survivors.md` at `ccfdc24` |
 | Source read at | `339b00e`, squashed into `fd6e403`. `API/src` is the same at all three commits |
-| Kind 1, real gap | 14 |
+| Kind 1, real gap | 11 |
 | Kind 2, harmless | 81 |
 | Kind 3, awkward but real | 9 |
-| Sorted | 104 |
+| Sorted | 101 |
 | Skipped | 0 |
-| Total | 104 |
+| Total | 101 |
 
 The timed-out mutant (`AvailabilityComputer.php` line 108) is not a survivor and is not sorted.
 
@@ -76,6 +76,11 @@ and three in `UpdateTherapistScheduleHandler.php`, are killed: creating a block 
 another on that day ends, or ends when it starts, succeeds, and so does updating a block to touch
 another on either side. All six left the total, and neither file has rows left.
 
+Ticket 35 closed on 2026-11-24. Its three Kind 1 UnwrapRtrim rows, one each in
+`InvitePatientHandler.php`, `RequestPasswordResetHandler.php` and `ResendInvitationHandler.php`,
+are killed: with a frontend URL ending in a slash, each link handed to the email sender has one
+slash before its path. All three left the total. The two Kind 2 log-context rows on each file stay.
+
 - **1, real gap**: output or stored state changes through a public seam, on input the system can
   really receive, and an existing test seam can see it.
 - **2, harmless**: equivalent mutant, or it only changes diagnostics or narration (log context,
@@ -83,25 +88,7 @@ another on either side. All six left the total, and neither file has rows left.
 - **3, awkward but real**: a true difference that needs input the system does not produce today
   (a second therapist, a race, a config value with a quote in it).
 
-## Kind 1, real gap (14)
-
-### `src/Application/User/Handler/InvitePatientHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 68 | UnwrapRtrim | A trailing slash on APP_FRONTEND_URL gives `//register` in the invitation link. No test uses a base URL ending in a slash. |
-
-### `src/Application/User/Handler/RequestPasswordResetHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 63 | UnwrapRtrim | Same as InvitePatientHandler line 68, for the password reset link. |
-
-### `src/Application/User/Handler/ResendInvitationHandler.php`
-
-| Line | Mutator | Reason |
-|---|---|---|
-| 69 | UnwrapRtrim | Same as InvitePatientHandler line 68, for the resent invitation link. |
+## Kind 1, real gap (11)
 
 ### `src/Domain/Appointment/Entity/ScheduleException.php`
 
